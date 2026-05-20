@@ -8,8 +8,9 @@ use crate::{
     consts::{
         ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR, ACTION_WIN_CHANGE_BUS,
         ACTION_WIN_FAVORITE_SET, ACTION_WIN_FAVORITE_TOGGLE, ACTION_WIN_HIDE_UNIT_COL,
-        ACTION_WIN_REFRESH_POP_MENU, ACTION_WIN_REFRESH_UNIT_LIST, ALL_FILTER_KEY, FILTER_MARK,
-        KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY, WIN_ACTION_INCLUDE_UNIT_FILES,
+        ACTION_WIN_REFRESH_POP_MENU, ACTION_WIN_REFRESH_UNIT_LIST, ACTION_WIN_RESET_ALL_COLUMNS,
+        ALL_FILTER_KEY, FILTER_MARK, KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY,
+        WIN_ACTION_INCLUDE_UNIT_FILES,
     },
     systemd::{
         ListUnitResponse, UnitProperties, UnitPropertiesFlags,
@@ -288,6 +289,8 @@ pub struct UnitListPanelImp {
 
     abort_handles: RefCell<Vec<AbortHandle>>,
     pop_menu: OnceCell<pop_menu::UnitPopMenu>,
+
+    dbus_level: Cell<DbusLevel>,
 }
 
 macro_rules! update_search_entry {
@@ -383,6 +386,16 @@ impl UnitListPanelImp {
                 .build()
         };
 
+        let reset_all_columns = {
+            let unit_list_panel = self.obj().clone();
+            gio::ActionEntry::builder(&ACTION_WIN_RESET_ALL_COLUMNS[4..])
+                .activate(move |_application: &AppWindow, _, _| {
+                    let panel = unit_list_panel.imp();
+                    panel.reset_all_columns();
+                })
+                .build()
+        };
+
         let list_filter_action_entry = {
             let unit_list_panel = self.obj().clone();
             gio::ActionEntry::builder(ACTION_UNIT_LIST_FILTER)
@@ -441,6 +454,10 @@ impl UnitListPanelImp {
                 .activate(move |_application: &AppWindow, _, param| {
                     info!("Action refresh called {:?}", param);
                     unit_list_panel.imp().save_config();
+                    unit_list_panel
+                        .imp()
+                        .dbus_level
+                        .set(PREFERENCES.dbus_level());
                     unit_list_panel.imp().fill_store(None);
                 })
                 .build()
@@ -479,6 +496,7 @@ impl UnitListPanelImp {
             change_bus,
             refresh_pop_menu,
             set_favorite,
+            reset_all_columns,
         ]);
 
         let settings = systemd_gui::new_settings();
@@ -569,7 +587,7 @@ impl UnitListPanelImp {
 
         let cols = self.construct_column_view();
 
-        self.set_new_columns(cols, false);
+        self.set_new_columns(cols, false, true);
 
         self.fill_browser();
     }
@@ -578,7 +596,7 @@ impl UnitListPanelImp {
         let view = self.selected_list_view.get();
         info!("Selected Browser View : {:?}", view);
 
-        let id = self.config_id();
+        let id = self.generate_view_config_id();
         construct::construct_column_view(
             self.display_color.get(),
             view,
@@ -1355,6 +1373,7 @@ impl UnitListPanelImp {
         &self,
         property_list: IndexMap<String, UnitPropertySelection>,
         fetch_custom_props: bool,
+        forward_current_props: bool,
     ) {
         if property_list.is_empty() {
             warn!("Column list empty, Abort");
@@ -1403,7 +1422,8 @@ impl UnitListPanelImp {
                 continue;
             };
 
-            if let Some(id) = column.id()
+            if forward_current_props
+                && let Some(id) = column.id()
                 && let Some(prop) = property_list.get(id.as_str())
             {
                 let col = prop.column();
@@ -1430,6 +1450,7 @@ impl UnitListPanelImp {
                         sort_col = Some(cur_column.clone());
                     }
                     unit_property.set_column(cur_column);
+
                     cur_column.clone()
                 } else {
                     info!(
@@ -1440,6 +1461,14 @@ impl UnitListPanelImp {
                     units_browser.append_column(&new_column);
                     new_column
                 };
+
+                if col.factory().is_none() || col.sorter().is_none() {
+                    crate::widget::unit_list::imp::construct::set_column_factory_and_sorter(
+                        &col,
+                        self.display_color.get(),
+                        &unit_property.sysd_column(),
+                    );
+                }
 
                 if sort_col_id == col.id() {
                     sort_col = Some(col.clone());
@@ -1685,7 +1714,7 @@ impl UnitListPanelImp {
         let column_view = units_browser!(self);
         let (primary_col, sort_type) = get_sorted_column(column_view);
 
-        let config_id = self.config_id();
+        let config_id = self.generate_view_config_id();
 
         save::save_column_config(
             Some(&column_view.columns()),
@@ -1697,14 +1726,26 @@ impl UnitListPanelImp {
         );
     }
 
-    fn config_id(&self) -> u32 {
-        let id: u32 = match PREFERENCES.dbus_level() {
+    fn reset_all_columns(&self) {
+        let view = self.selected_list_view.get();
+        info!("Reseting all columns for View: {:?}", view);
+
+        runtime().block_on(save::delete_column_config(view));
+
+        let cols = self.construct_column_view();
+        self.set_new_columns(cols, false, false);
+        // self.fill_store(None);
+    }
+
+    fn generate_view_config_id(&self) -> u32 {
+        let id: u32 = match self.dbus_level.get() {
             DbusLevel::UserSession | DbusLevel::System => 0,
             DbusLevel::SystemAndSession => 1,
         };
 
-        let idf = if self.include_unit_files.get() { 2 } else { 0 };
-        id | idf
+        // let idf = if self.include_unit_files.get() { 2 } else { 0 };
+        // id | idf
+        id
     }
 
     fn add_tokio_handle(&self, handle: tokio::task::JoinHandle<()>) {
@@ -2078,6 +2119,7 @@ impl ObjectSubclass for UnitListPanelImp {
 impl ObjectImpl for UnitListPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
+        self.dbus_level.set(PREFERENCES.dbus_level());
 
         let settings = systemd_gui::new_settings();
 

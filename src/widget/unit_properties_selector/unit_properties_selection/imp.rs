@@ -1,15 +1,4 @@
-use std::cell::OnceCell;
-
-use gio::glib::object::Cast;
-use gtk::{
-    ListScrollFlags,
-    glib::{self},
-    prelude::*,
-    subclass::prelude::*,
-};
-use indexmap::IndexMap;
-use tracing::{error, info, warn};
-
+use super::UnitPropertiesSelectionPanel;
 use crate::widget::{
     unit_list::{UnitCuratedList, UnitListPanel},
     unit_properties_selector::{
@@ -19,8 +8,16 @@ use crate::widget::{
         unit_properties_selection::row::UnitPropertiesSelectionRow,
     },
 };
-
-use super::UnitPropertiesSelectionPanel;
+use gio::glib::object::Cast;
+use gtk::{
+    ListScrollFlags,
+    glib::{self},
+    prelude::*,
+    subclass::prelude::*,
+};
+use indexmap::IndexMap;
+use std::cell::OnceCell;
+use tracing::{error, info, warn};
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_properties_selection.ui")]

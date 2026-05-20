@@ -3,8 +3,8 @@ use gtk::glib::variant::ToVariant;
 
 use crate::{
     consts::{
-        ACTION_WIN_HIDE_UNIT_COL, APP_ACTION_PROPERTIES_SELECTOR, NS_ACTION_UNIT_LIST_FILTER,
-        NS_ACTION_UNIT_LIST_FILTER_CLEAR,
+        ACTION_APP_PROPERTIES_SELECTOR, ACTION_WIN_HIDE_UNIT_COL, ACTION_WIN_RESET_ALL_COLUMNS,
+        NS_ACTION_UNIT_LIST_FILTER, NS_ACTION_UNIT_LIST_FILTER_CLEAR,
     },
     widget::unit_list::column::SysdColumn,
 };
@@ -25,9 +25,15 @@ pub fn create_col_menu(key: &SysdColumn) -> gio::MenuModel {
         &menu,
         //column header menu
         &pgettext("menu", "Configure columns"),
-        APP_ACTION_PROPERTIES_SELECTOR,
+        ACTION_APP_PROPERTIES_SELECTOR,
         &variant,
     );
+
+    let item = gio::MenuItem::new(
+        Some(&pgettext("menu", "Reset all columns")),
+        Some(ACTION_WIN_RESET_ALL_COLUMNS),
+    );
+    menu.append_item(&item);
 
     if key.is_custom() {
         let sub_menu = gio::Menu::new();

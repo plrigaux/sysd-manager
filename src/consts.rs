@@ -23,8 +23,8 @@ pub const ACTION_DAEMON_RELOAD: &str = "app.daemon-reload";
 pub const ACTION_DAEMON_RELOAD_BUS: &str = "daemon-reload-bus";
 pub const APP_ACTION_DAEMON_RELOAD_BUS: &str = concat!(APP, ACTION_DAEMON_RELOAD_BUS);
 
-pub const ACTION_PROPERTIES_SELECTOR: &str = "properties_selector";
-pub const APP_ACTION_PROPERTIES_SELECTOR: &str = concat!(APP, ACTION_PROPERTIES_SELECTOR);
+pub const ACTION_APP_PROPERTIES_SELECTOR: &str = "app.properties_selector";
+pub const ACTION_WIN_RESET_ALL_COLUMNS: &str = "win.reset-all-columns";
 
 pub const ACTION_PROPERTIES_SELECTOR_GENERAL: &str = "properties_selector_general";
 pub const APP_ACTION_PROPERTIES_SELECTOR_GENERAL: &str =

@@ -2,11 +2,11 @@ use crate::gtk::prelude::ListModelExtManual;
 use crate::widget::{
     unit_list::UnitCuratedList, unit_properties_selector::data_selection::UnitPropertySelection,
 };
-use indexmap::IndexMap;
+use indexmap::{IndexMap, IndexSet};
 use serde::{Deserialize, Serialize};
 use std::{env, fmt::Display, path::Path};
 use systemd::runtime;
-use tokio::fs::{File, create_dir_all};
+use tokio::fs::{self};
 use tokio::io::AsyncWriteExt;
 use tracing::{error, info, warn};
 
@@ -114,7 +114,7 @@ impl From<gtk::SortType> for SortType {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MyConfigOrder {
     pub id: u32,
-    pub order: Vec<String>,
+    pub order: IndexSet<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -140,29 +140,61 @@ pub fn save_column_config(
 ) {
     let ids = order_columns(columns, data, primary_sort_id, sort_type);
 
-    let data_list: Vec<UnitColumn> = data.iter().map(|(_, up)| UnitColumn::from(up)).collect();
+    let data_list: IndexMap<String, UnitColumn> = data
+        .iter()
+        .map(|(key, up)| (key.clone(), UnitColumn::from(up)))
+        .collect();
 
     runtime().spawn(save_config(view, data_list, ids, id));
 }
 
 async fn save_config(
     view: UnitCuratedList,
-    data_list: Vec<UnitColumn>,
-    ids: Vec<String>,
+    current_columns: IndexMap<String, UnitColumn>,
+    ids: IndexSet<String>,
     config_id: u32,
 ) {
-    let order = MyConfigOrder {
-        id: config_id,
-        order: ids,
-    };
+    let config = if let Some(loaded) = load_column_config(view).await
+        && let Some(mut orders) = loaded.orders
+    {
+        if let Some(a) = orders.iter_mut().find(|c| c.id == config_id) {
+            a.order = ids;
+        } else {
+            let order = MyConfigOrder {
+                id: config_id,
+                order: ids,
+            };
+            orders.push(order);
+        }
 
-    let config = MyConfig {
-        columns: data_list,
-        orders: Some(vec![order]),
+        //add the current loaded col definission
+        let mut loaded_col: Vec<_> = loaded
+            .columns
+            .into_iter()
+            .filter(|col| !current_columns.contains_key(&col.id))
+            .collect();
+
+        let mut columns: Vec<_> = current_columns.into_values().collect();
+        columns.append(&mut loaded_col);
+
+        MyConfig {
+            columns,
+            orders: Some(orders),
+        }
+    } else {
+        let order = MyConfigOrder {
+            id: config_id,
+            order: ids,
+        };
+
+        MyConfig {
+            columns: current_columns.into_values().collect(),
+            orders: Some(vec![order]),
+        }
     };
 
     let sysd_manager_config_dir = get_sysd_manager_config_dir();
-    if let Err(e) = create_dir_all(&sysd_manager_config_dir).await {
+    if let Err(e) = fs::create_dir_all(&sysd_manager_config_dir).await {
         error!(
             "Failed to create config directory {:?}: {}",
             sysd_manager_config_dir, e
@@ -194,17 +226,18 @@ pub fn order_columns(
     data: &IndexMap<String, UnitPropertySelection>,
     primary_sort_id: Option<glib::GString>,
     sort_type: gtk::SortType,
-) -> Vec<String> {
+) -> IndexSet<String> {
     let Some(columns) = columns else {
-        return vec![];
+        return IndexSet::new();
     };
 
-    let ids: Vec<_> = columns
+    let columns_ids: IndexSet<_> = columns
         .iter::<gtk::ColumnViewColumn>()
         .filter_map(|result| result.inspect_err(|err| warn!("Error: {err:?}")).ok())
         .filter_map(|column| column.id().map(|s| s.to_string()))
         .collect();
 
+    //Set the sort
     if let Some(ref primary_sort_id) = primary_sort_id {
         for (id, property_display) in data {
             if id.as_str() == primary_sort_id.as_str() {
@@ -215,7 +248,8 @@ pub fn order_columns(
             }
         }
     }
-    ids
+
+    columns_ids
 }
 
 pub(crate) fn get_sysd_manager_config_dir() -> std::path::PathBuf {
@@ -236,12 +270,12 @@ where
     T: Serialize,
 {
     let toml_str = toml::to_string_pretty(data).expect("Failed to serialize data to TOML");
-    let mut file = File::create(path).await?;
+    let mut file = fs::File::create(path).await?;
     file.write_all(toml_str.as_bytes()).await?;
     Ok(())
 }
 
-pub fn load_column_config(view: UnitCuratedList) -> Option<MyConfig> {
+pub async fn load_column_config(view: UnitCuratedList) -> Option<MyConfig> {
     let sysd_manager_config_dir = get_sysd_manager_config_dir();
 
     if !sysd_manager_config_dir.exists() {
@@ -264,7 +298,7 @@ pub fn load_column_config(view: UnitCuratedList) -> Option<MyConfig> {
         return None;
     }
 
-    match std::fs::read_to_string(&config_path) {
+    match fs::read_to_string(&config_path).await {
         Ok(toml_str) => match toml::from_str::<MyConfig>(&toml_str) {
             Ok(config) => {
                 if config.is_empty() {
@@ -283,6 +317,30 @@ pub fn load_column_config(view: UnitCuratedList) -> Option<MyConfig> {
             error!("Failed to read config file {:?}: {}", config_path, e);
             None
         }
+    }
+}
+
+pub(crate) async fn delete_column_config(view: UnitCuratedList) {
+    let sysd_manager_config_dir = get_sysd_manager_config_dir();
+
+    if !sysd_manager_config_dir.exists() {
+        info!(
+            "Config directory {:?} does not exist. Using default configuration.",
+            sysd_manager_config_dir
+        );
+        return;
+    }
+
+    let file_name = file_name(view);
+
+    let config_path = sysd_manager_config_dir.join(file_name);
+
+    if let Err(err) = fs::remove_file(&config_path).await {
+        warn!(
+            "Delete file {:?} Error {:?}",
+            config_path.to_string_lossy(),
+            err
+        );
     }
 }
 

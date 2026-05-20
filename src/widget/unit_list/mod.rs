@@ -1,30 +1,32 @@
-use std::cell::{Ref, RefCell, RefMut};
-use std::rc::Rc;
-
-use crate::consts::*;
-use crate::systemd::data::UnitInfo;
-use crate::widget::unit_list::column::SysdColumn;
-use crate::widget::unit_list::filter::unit_prop_filter::{
-    UnitPropertyAssessor, UnitPropertyFilter,
-};
-use crate::widget::unit_properties_selector::data_selection::UnitPropertySelection;
-
-use super::InterPanelMessage;
-use super::app_window::AppWindow;
-
-use gettextrs::pgettext;
-use glib::variant::ToVariant;
-use gtk::glib;
-use gtk::subclass::prelude::*;
-use indexmap::IndexMap;
-use strum::IntoEnumIterator;
-use tracing::warn;
-
 pub mod column;
 mod filter;
-mod imp;
+pub mod imp;
 pub mod menus;
 mod search_controls;
+
+use crate::{
+    consts::*,
+    systemd::data::UnitInfo,
+    widget::{
+        InterPanelMessage,
+        app_window::AppWindow,
+        unit_list::{
+            column::SysdColumn,
+            filter::unit_prop_filter::{UnitPropertyAssessor, UnitPropertyFilter},
+        },
+        unit_properties_selector::data_selection::UnitPropertySelection,
+    },
+};
+use gettextrs::pgettext;
+use glib::variant::ToVariant;
+use gtk::{glib, subclass::prelude::*};
+use indexmap::IndexMap;
+use std::{
+    cell::{Ref, RefCell, RefMut},
+    rc::Rc,
+};
+use strum::IntoEnumIterator;
+use tracing::warn;
 
 pub const COL_ID_UNIT: &str = "sysdm-unit";
 pub const COL_ID_UNIT_FULL: &str = "sysdm-unit-full";
@@ -84,7 +86,7 @@ impl UnitListPanel {
     }
 
     pub fn set_new_columns(&self, list: IndexMap<String, UnitPropertySelection>) {
-        self.imp().set_new_columns(list, true);
+        self.imp().set_new_columns(list, true, true);
     }
 
     pub fn current_columns(&self) -> Ref<'_, IndexMap<String, UnitPropertySelection>> {

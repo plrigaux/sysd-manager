@@ -12,10 +12,7 @@ use crate::{
         unit_list::{
             UnitCuratedList,
             column::SysdColumn,
-            imp::{
-                column_factories::{self, *},
-                construct,
-            },
+            imp::column_factories::{self, *},
             menus::create_col_menu,
         },
         unit_properties_selector::{
@@ -38,10 +35,10 @@ pub fn construct_column_view(
     config_id: u32,
 ) -> IndexMap<String, UnitPropertySelection> {
     //Get the saved data
-    let (loaded_list, _order) = build_from_load(display_color, view, config_id);
+    let (mut loaded_list, order) = build_from_load(view, config_id);
 
     //Get the the defautl data
-    let default_column_set = match view {
+    let mut default_column_set = match view {
         UnitCuratedList::Defaut => default_column_definition_list(display_color),
         UnitCuratedList::LoadedUnit => generate_loaded_units_columns(display_color),
         UnitCuratedList::UnitFiles => generate_unit_files_columns(display_color),
@@ -75,22 +72,26 @@ pub fn construct_column_view(
         UnitCuratedList::Favorites => default_column_definition_list(display_color),
     };
 
-    let mut dict = loaded_list.clone();
-
-    let mut out = IndexMap::with_capacity(default_column_set.len());
-    for (id, default_up) in default_column_set.into_iter() {
-        let unit_prop = if let Some(loaded_up) = dict.swap_remove(&id) {
-            // loaded_up.set_sort(default_up.sort());
-            loaded_up
-        } else {
-            default_up
-        };
-
-        unit_prop.column().set_expand(false);
-        out.insert(id, unit_prop);
+    if let Some(saved_order) = order {
+        let mut out = IndexMap::with_capacity(default_column_set.len());
+        for col_name in saved_order.order.iter() {
+            if let Some((_, key, value)) = loaded_list.swap_remove_full(col_name.as_str()) {
+                default_column_set.swap_remove(col_name.as_str());
+                out.insert(key, value);
+            } else if let Some((_, key, value)) =
+                default_column_set.swap_remove_full(col_name.as_str())
+            {
+                out.insert(key, value);
+            }
+        }
+        for (key, value) in default_column_set.into_iter() {
+            out.insert(key, value);
+        }
+        out
+    } else {
+        info!("Use default columns settings");
+        default_column_set
     }
-
-    out
 }
 
 fn show_dbus_level() -> bool {
@@ -190,8 +191,10 @@ fn generate_sockets_columns(
     let unit_col = create_unit_display_full_name_column(display_color);
     insert!(columns, unit_col);
 
-    let bus_col = create_bus_column(display_color, show_dbus_level);
-    insert!(columns, bus_col);
+    if show_dbus_level {
+        let bus_col = create_bus_column(display_color, show_dbus_level);
+        insert!(columns, bus_col);
+    }
 
     if include_unit_files {
         let col = create_unit_file_state(display_color);
@@ -223,8 +226,10 @@ fn generate_timers_columns(
     let unit_col = create_unit_display_full_name_column(display_color);
     insert!(columns, unit_col);
 
-    let bus_col = create_bus_column(display_color, show_dbus_level);
-    insert!(columns, bus_col);
+    if show_dbus_level {
+        let bus_col = create_bus_column(display_color, show_dbus_level);
+        insert!(columns, bus_col);
+    }
 
     if include_unit_files {
         let col = create_unit_file_state(display_color);
@@ -259,8 +264,10 @@ fn generate_paths_columns(
     let unit_col = create_unit_display_full_name_column(display_color);
     insert!(columns, unit_col);
 
-    let bus_col = create_bus_column(display_color, show_dbus_level);
-    insert!(columns, bus_col);
+    if show_dbus_level {
+        let bus_col = create_bus_column(display_color, show_dbus_level);
+        insert!(columns, bus_col);
+    }
 
     if include_unit_files {
         let col = create_unit_file_state(display_color);
@@ -338,14 +345,13 @@ fn generate_unit_files_columns(display_color: bool) -> IndexMap<String, UnitProp
 }
 
 pub fn build_from_load(
-    display_color: bool,
     view: UnitCuratedList,
     config_id: u32,
 ) -> (
     IndexMap<String, UnitPropertySelection>,
     Option<MyConfigOrder>,
 ) {
-    let Some(saved_config) = save::load_column_config(view) else {
+    let Some(saved_config) = runtime().block_on(save::load_column_config(view)) else {
         return (IndexMap::new(), None);
     };
 
@@ -386,10 +392,6 @@ pub fn build_from_load(
         let prop_selection =
             UnitPropertySelection::from_column_config2(unit_column_config, col_id.clone());
 
-        let column = prop_selection.column();
-
-        construct::set_column_factory_and_sorter(&column, display_color, &col_id);
-
         columns_list.insert(col_id.id().to_owned(), prop_selection);
     }
     (columns_list, config_order)
@@ -414,6 +416,7 @@ fn fetch_properties_map() -> HashMap<String, (Rc<String>, String)> {
     map
 }
 
+#[macro_export]
 macro_rules! compare_units {
     ($unit1:expr, $unit2:expr, $func:ident) => {{
         $unit1.$func().cmp(&$unit2.$func()).into()
@@ -466,9 +469,10 @@ pub fn generate_service_columns(
 
     let unit_col = create_unit_display_full_name_column(display_color);
     insert!(columns, unit_col);
-
-    let bus_col = create_bus_column(display_color, show_dbus_level);
-    insert!(columns, bus_col);
+    if show_dbus_level {
+        let bus_col = create_bus_column(display_color, show_dbus_level);
+        insert!(columns, bus_col);
+    }
 
     let state_col = create_unit_file_state(display_color);
 
@@ -689,7 +693,7 @@ fn create_load_column(display_color: bool) -> UnitPropertySelection {
     UnitPropertySelection::from_column_view_column(load_col, sysd_col, true, None)
 }
 
-fn create_bus_column(display_color: bool, show_dbus_level: bool) -> UnitPropertySelection {
+fn create_bus_column(display_color: bool, _show_dbus_level: bool) -> UnitPropertySelection {
     let sysd_col = SysdColumn::Bus;
     let sorter = create_column_filter!(dbus_level);
     let column_menu = create_col_menu(&sysd_col);
@@ -700,11 +704,11 @@ fn create_bus_column(display_color: bool, show_dbus_level: bool) -> UnitProperty
         .header_menu(&column_menu)
         .factory(&factory)
         .resizable(true)
-        .fixed_width(61)
+        .fixed_width(64)
         .title(pgettext("list column", "Bus"))
         .build();
 
-    UnitPropertySelection::from_column_view_column(bus_col, sysd_col, show_dbus_level, None)
+    UnitPropertySelection::from_column_view_column(bus_col, sysd_col, true, None)
 }
 
 fn create_unit_file_preset_column(display_color: bool) -> UnitPropertySelection {
@@ -807,7 +811,7 @@ fn create_unit_display_full_name_column(display_color: bool) -> UnitPropertySele
     let sysd_col = SysdColumn::FullName;
     let sorter = create_column_filter!(primary, dbus_level);
     let column_menu = create_col_menu(&sysd_col);
-    let factory = fac_unit_name(display_color);
+    let factory = fac_unit_name_full(display_color);
 
     let col = gtk::ColumnViewColumn::builder()
         .id(sysd_col.id())
@@ -815,7 +819,7 @@ fn create_unit_display_full_name_column(display_color: bool) -> UnitPropertySele
         .header_menu(&column_menu)
         .factory(&factory)
         .resizable(true)
-        .fixed_width(150)
+        .fixed_width(185)
         .title(pgettext("list column", "Unit"))
         .build();
 

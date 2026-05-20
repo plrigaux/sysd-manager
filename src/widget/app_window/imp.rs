@@ -1,7 +1,7 @@
 use crate::{
     consts::{
-        ACTION_APP_CREATE_UNIT, ACTION_DAEMON_RELOAD, ACTION_FIND_IN_TEXT_OPEN, ACTION_LIST_BOOT,
-        ACTION_PROPERTIES_SELECTOR, ACTION_PROPERTIES_SELECTOR_GENERAL,
+        ACTION_APP_CREATE_UNIT, ACTION_APP_PROPERTIES_SELECTOR, ACTION_DAEMON_RELOAD,
+        ACTION_FIND_IN_TEXT_OPEN, ACTION_LIST_BOOT, ACTION_PROPERTIES_SELECTOR_GENERAL,
         ACTION_UNIT_PROPERTIES_DISPLAY, ACTION_WIN_CHANGE_BUS, APP_ACTION_LIST_BOOT,
         APP_ACTION_PROPERTIES_SELECTOR_GENERAL, APP_ACTION_SEARCH_UNITS,
         APP_ACTION_UNIT_PROPERTIES_DISPLAY, WIN_ACTION_SAVE_UNIT_FILE,
@@ -523,7 +523,7 @@ impl AppWindowImpl {
         let properties_selector = {
             let app_window = self.obj().clone();
             let unit_list_panel = self.unit_list_panel.clone();
-            gio::ActionEntry::builder(ACTION_PROPERTIES_SELECTOR)
+            gio::ActionEntry::builder(&ACTION_APP_PROPERTIES_SELECTOR[4..])
                 .activate(move |_, _action, variant| {
                     let column_id = variant.map(|v| v.get::<String>().unwrap());
                     let dialog = UnitPropertiesSelectorDialog::new(&unit_list_panel, column_id);
