@@ -151,7 +151,7 @@ fn inactive_display(widget: &impl IsA<gtk::Widget>, unit: &UnitInfo) {
 }
 
 pub fn fac_unit_name(display_color: bool) -> gtk::SignalListItemFactory {
-    common_factory(display_color, UnitInfo::display_name)
+    common_factory(display_color, UnitInfo::prefix)
 }
 
 pub fn fac_unit_name_full(display_color: bool) -> gtk::SignalListItemFactory {

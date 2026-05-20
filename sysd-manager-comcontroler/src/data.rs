@@ -204,7 +204,7 @@ impl UnitInfo {
     pub fn equals(&self, other: &UnitInfo) -> bool {
         self.dbus_level() == other.dbus_level()
             && self.unit_type() == other.unit_type()
-            && self.display_name() == other.display_name()
+            && self.prefix() == other.prefix()
     }
 
     pub fn equals_op(&self, other: Option<&UnitInfo>) -> bool {
@@ -258,8 +258,8 @@ mod imp {
         #[property(get, construct_only, set = Self::set_primary)]
         pub(super) primary: OnceCell<String>,
 
-        #[property(get = Self::get_display_name, type = String)]
-        display_name: OnceCell<u32>,
+        #[property(get = Self::get_prefix, type = String)]
+        prefix: OnceCell<u32>,
 
         #[property(get, default)]
         unit_type: Cell<UnitType>,
@@ -357,8 +357,7 @@ mod imp {
                 }
             }
 
-            // let display_name = primary[..split_char_index - 1].to_owned();
-            self.display_name.set((split_char_index - 1) as u32);
+            self.prefix.set((split_char_index - 1) as u32);
 
             let unit_type = UnitType::new(&primary[(split_char_index)..]);
             self.unit_type.set(unit_type);
@@ -366,8 +365,8 @@ mod imp {
             self.primary.set(primary);
         }
 
-        pub fn get_display_name(&self) -> String {
-            let index = *self.display_name.get_or_init(|| unreachable!()) as usize;
+        pub fn get_prefix(&self) -> String {
+            let index = *self.prefix.get_or_init(|| unreachable!()) as usize;
             let s = &self.primary.get().expect("Being set")[..index];
             s.to_owned()
         }
@@ -417,9 +416,7 @@ mod imp {
         }
 
         pub(crate) fn is_template_unit_file(&self) -> bool {
-            let index = *self
-                .display_name
-                .get_or_init(|| unreachable!("Has to be set")) as usize;
+            let index = *self.prefix.get_or_init(|| unreachable!("Has to be set")) as usize;
             let s = &self.primary.get().expect("Being set")[..index];
             s.ends_with('@')
         }
