@@ -86,6 +86,19 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="2.19.5" date="2026-05-20">
+      <description translate="no">
+        <p>Added</p>
+        <ul>
+          <li>Column sizes are preserved between list refresh</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>[Issue 56] Remember the sorting column order</li>
+          <li>[Issue 65] Journal events was always displaying horizontal scrollbar</li>
+        </ul>
+      </description>
+    </release>
     <release version="2.19.4" date="2026-05-13">
       <description translate="no">
         <p>Added</p>
@@ -121,7 +134,7 @@ https://hughsie.github.io/oars/index.html
         <ul>
           <li>Esc key to clear Text Search and Unit Search Entries [Issue 46] and [Issue 49]</li>
           <li>Unit browser add or remove units when loaded in systemd</li>
-          <li>Transaltion strings</li>
+          <li>Translation strings</li>
           <li>Add Open Find in Text shortcut Shift+Ctrl+F</li>
         </ul>
         <p>Changed</p>

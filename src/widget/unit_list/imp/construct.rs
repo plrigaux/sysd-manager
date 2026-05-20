@@ -8,22 +8,21 @@ use crate::{
     gtk::prelude::*,
     systemd::data::UnitInfo,
     widget::{
+        preferences::data::{DbusLevel, PREFERENCES},
         unit_list::{
             UnitCuratedList,
             column::SysdColumn,
-            imp::{
-                column_factories::{self, *},
-                construct,
-            },
+            imp::column_factories::{self, *},
             menus::create_col_menu,
         },
         unit_properties_selector::{
             data_selection::UnitPropertySelection,
-            save::{self, SortType, UnitColumn},
+            save::{self, MyConfigOrder, SortType, UnitColumn},
         },
     },
 };
 use gettextrs::pgettext;
+use indexmap::IndexMap;
 use std::{cell::OnceCell, collections::HashMap, rc::Rc};
 use systemd::{enums::UnitType, runtime, socket_unit::SocketUnitInfo};
 use tracing::{info, warn};
@@ -33,71 +32,107 @@ pub fn construct_column_view(
     display_color: bool,
     view: UnitCuratedList,
     include_unit_files: bool,
-) -> Vec<UnitPropertySelection> {
-    let list = build_from_load(display_color, view);
+    config_id: u32,
+) -> IndexMap<String, UnitPropertySelection> {
+    //Get the saved data
+    let (mut loaded_list, order) = build_from_load(view, config_id);
 
-    let default_column_set = match view {
+    //Get the the defautl data
+    let mut default_column_set = match view {
         UnitCuratedList::Defaut => default_column_definition_list(display_color),
         UnitCuratedList::LoadedUnit => generate_loaded_units_columns(display_color),
         UnitCuratedList::UnitFiles => generate_unit_files_columns(display_color),
-        UnitCuratedList::Timers => generate_timers_columns(display_color, include_unit_files),
-        UnitCuratedList::Services => generate_service_columns(display_color, include_unit_files),
-        UnitCuratedList::Sockets => generate_sockets_columns(display_color, include_unit_files),
-        UnitCuratedList::Path => generate_paths_columns(display_color, include_unit_files),
+        UnitCuratedList::Timers => {
+            let show_dbus_level = show_dbus_level();
+            generate_timers_columns(display_color, include_unit_files, show_dbus_level)
+        }
+        UnitCuratedList::Services => {
+            let show_dbus_level = show_dbus_level();
+            generate_service_columns(display_color, include_unit_files, show_dbus_level)
+        }
+        UnitCuratedList::Sockets => {
+            let show_dbus_level = show_dbus_level();
+            generate_sockets_columns(display_color, include_unit_files, show_dbus_level)
+        }
+        UnitCuratedList::Path => {
+            let show_dbus_level = show_dbus_level();
+            generate_paths_columns(display_color, include_unit_files, show_dbus_level)
+        }
         UnitCuratedList::Automount => {
-            generate_automounts_columns(display_color, include_unit_files)
+            let show_dbus_level = show_dbus_level();
+            generate_automounts_columns(display_color, include_unit_files, show_dbus_level)
         }
         UnitCuratedList::Custom => {
-            if list.is_empty() {
+            if loaded_list.is_empty() {
                 return default_column_definition_list(display_color);
             }
-            return list;
+
+            return loaded_list;
         }
         UnitCuratedList::Favorites => default_column_definition_list(display_color),
     };
 
-    let mut dict: HashMap<_, _> = list
-        .into_iter()
-        .filter_map(|property_selection| property_selection.id().map(|id| (id, property_selection)))
-        .collect();
-
-    let mut out = Vec::with_capacity(default_column_set.len());
-    for (id, default_up) in default_column_set
-        .into_iter()
-        .filter_map(|property_selection| property_selection.id().map(|id| (id, property_selection)))
-    {
-        let unit_prop = if let Some(loaded_up) = dict.remove(&id) {
-            //FIXME to be removed in 1 mounth (Was to fix a bug)
-            if loaded_up.id().as_deref() == Some(SysdColumn::Bus.id())
-                && loaded_up.title().as_deref() == Some("Sub")
+    if let Some(saved_order) = order {
+        let mut out = IndexMap::with_capacity(default_column_set.len());
+        for col_name in saved_order.order.iter() {
+            if let Some((_, key, value)) = loaded_list.swap_remove_full(col_name.as_str()) {
+                default_column_set.swap_remove(col_name.as_str());
+                out.insert(key, value);
+            } else if let Some((_, key, value)) =
+                default_column_set.swap_remove_full(col_name.as_str())
             {
-                loaded_up.set_title("Bus");
+                out.insert(key, value);
             }
-            loaded_up.set_sort(default_up.sort());
-            loaded_up
-        } else {
-            default_up
-        };
-
-        unit_prop.column().set_expand(false);
-        out.push(unit_prop);
+        }
+        for (key, value) in default_column_set.into_iter() {
+            out.insert(key, value);
+        }
+        out
+    } else {
+        info!("Use default columns settings");
+        default_column_set
     }
+}
 
-    out
+fn show_dbus_level() -> bool {
+    PREFERENCES.dbus_level() == DbusLevel::SystemAndSession
+}
+
+macro_rules! insert {
+    ($column:expr, $($a:expr),*) => {
+       $(
+            $column.insert($a.sysd_column().id().to_owned(), $a);
+        )*
+    }
+}
+
+macro_rules! insert_config {
+    ($column:expr, $config:expr) => {{
+        let p = UnitPropertySelection::from_column_config($config);
+        insert!($column, p);
+    }};
+    ($column:expr, $config:expr, $sysd_col:expr) => {{
+        let p = UnitPropertySelection::from_column_config2($config, $sysd_col);
+        insert!($column, p);
+    }};
 }
 
 fn generate_automounts_columns(
     display_color: bool,
     include_unit_files: bool,
-) -> Vec<UnitPropertySelection> {
-    let mut columns = vec![];
+    show_dbus_level: bool,
+) -> IndexMap<String, UnitPropertySelection> {
+    let mut columns = IndexMap::new();
 
     let unit_col = create_unit_display_full_name_column(display_color);
-    columns.push(unit_col);
+    insert!(columns, unit_col);
+
+    let bus_col = create_bus_column(display_color, show_dbus_level);
+    insert!(columns, bus_col);
 
     if include_unit_files {
         let col = create_unit_file_state(display_color);
-        columns.push(col);
+        insert!(columns, col);
     }
 
     let sysd_col = SysdColumn::fill_custom(UnitType::Mount, "Where", "s");
@@ -109,10 +144,8 @@ fn generate_automounts_columns(
         fixed_width: 120,
         ..Default::default()
     };
-    columns.push(UnitPropertySelection::from_column_config2(
-        unit_column,
-        sysd_col,
-    ));
+
+    insert_config!(columns, unit_column, sysd_col);
 
     let sysd_col = SysdColumn::AutomountWhat;
     let unit_column = UnitColumn {
@@ -122,10 +155,8 @@ fn generate_automounts_columns(
         fixed_width: 120,
         ..Default::default()
     };
-    columns.push(UnitPropertySelection::from_column_config2(
-        unit_column,
-        sysd_col,
-    ));
+
+    insert_config!(columns, unit_column, sysd_col);
 
     let sysd_col = SysdColumn::AutomountMounted;
     let unit_column = UnitColumn {
@@ -135,12 +166,9 @@ fn generate_automounts_columns(
         fixed_width: 120,
         ..Default::default()
     };
-    columns.push(UnitPropertySelection::from_column_config2(
-        unit_column,
-        sysd_col,
-    ));
+    insert_config!(columns, unit_column, sysd_col);
 
-    let col = SysdColumn::AutomountIdleTimeOut;
+    let sysd_col = SysdColumn::AutomountIdleTimeOut;
     let unit_column = UnitColumn {
         resizable: true,
         //Automounts list column name
@@ -148,7 +176,7 @@ fn generate_automounts_columns(
         fixed_width: 120,
         ..Default::default()
     };
-    columns.push(UnitPropertySelection::from_column_config2(unit_column, col));
+    insert_config!(columns, unit_column, sysd_col);
 
     columns
 }
@@ -156,28 +184,34 @@ fn generate_automounts_columns(
 fn generate_sockets_columns(
     display_color: bool,
     include_unit_files: bool,
-) -> Vec<UnitPropertySelection> {
-    let mut columns = vec![];
+    show_dbus_level: bool,
+) -> IndexMap<String, UnitPropertySelection> {
+    let mut columns = IndexMap::new();
 
     let unit_col = create_unit_display_full_name_column(display_color);
-    columns.push(unit_col);
+    insert!(columns, unit_col);
+
+    if show_dbus_level {
+        let bus_col = create_bus_column(display_color, show_dbus_level);
+        insert!(columns, bus_col);
+    }
 
     if include_unit_files {
         let col = create_unit_file_state(display_color);
-        columns.push(col);
+        insert!(columns, col);
     }
 
     let col = create_unit_active_status_columun(display_color);
-    columns.push(col);
+    insert!(columns, col);
 
     let col = create_socket_listen_type_column();
-    columns.push(UnitPropertySelection::from_column_config(col));
+    insert_config!(columns, col);
 
     let col = create_socket_listen_column();
-    columns.push(UnitPropertySelection::from_column_config(col));
+    insert_config!(columns, col);
 
     let col = create_col_activates();
-    columns.push(UnitPropertySelection::from_column_config(col));
+    insert_config!(columns, col);
 
     columns
 }
@@ -185,31 +219,37 @@ fn generate_sockets_columns(
 fn generate_timers_columns(
     display_color: bool,
     include_unit_files: bool,
-) -> Vec<UnitPropertySelection> {
-    let mut columns = vec![];
+    show_dbus_level: bool,
+) -> IndexMap<String, UnitPropertySelection> {
+    let mut columns = IndexMap::new();
 
     let unit_col = create_unit_display_full_name_column(display_color);
-    columns.push(unit_col);
+    insert!(columns, unit_col);
+
+    if show_dbus_level {
+        let bus_col = create_bus_column(display_color, show_dbus_level);
+        insert!(columns, bus_col);
+    }
 
     if include_unit_files {
         let col = create_unit_file_state(display_color);
-        columns.push(col);
+        insert!(columns, col);
     }
 
     let col = create_time_next_time();
-    columns.push(UnitPropertySelection::from_column_config(col));
+    insert_config!(columns, col);
 
     let col = create_time_next_delay();
-    columns.push(UnitPropertySelection::from_column_config(col));
+    insert_config!(columns, col);
 
     let col = create_time_last();
-    columns.push(UnitPropertySelection::from_column_config(col));
+    insert_config!(columns, col);
 
     let col = create_time_passed();
-    columns.push(UnitPropertySelection::from_column_config(col));
+    insert_config!(columns, col);
 
     let col = create_col_activates();
-    columns.push(UnitPropertySelection::from_column_config(col));
+    insert_config!(columns, col);
 
     columns
 }
@@ -217,25 +257,31 @@ fn generate_timers_columns(
 fn generate_paths_columns(
     display_color: bool,
     include_unit_files: bool,
-) -> Vec<UnitPropertySelection> {
-    let mut columns = vec![];
+    show_dbus_level: bool,
+) -> IndexMap<String, UnitPropertySelection> {
+    let mut columns = IndexMap::new();
 
     let unit_col = create_unit_display_full_name_column(display_color);
-    columns.push(unit_col);
+    insert!(columns, unit_col);
+
+    if show_dbus_level {
+        let bus_col = create_bus_column(display_color, show_dbus_level);
+        insert!(columns, bus_col);
+    }
 
     if include_unit_files {
         let col = create_unit_file_state(display_color);
-        columns.push(col);
+        insert!(columns, col);
     }
 
     let col = create_path_paths_column();
-    columns.push(col);
+    insert!(columns, col);
 
-    let col = create_path_condition_column();
-    columns.push(UnitPropertySelection::from_column_config(col));
+    let condition_col = create_path_condition_column();
+    insert_config!(columns, condition_col);
 
     let col = create_path_unit_column();
-    columns.push(UnitPropertySelection::from_column_config(col));
+    insert_config!(columns, col);
 
     columns
 }
@@ -283,46 +329,52 @@ fn create_path_unit_column() -> UnitColumn {
     unit_column
 }
 
-fn generate_unit_files_columns(display_color: bool) -> Vec<UnitPropertySelection> {
-    let mut columns = vec![];
+fn generate_unit_files_columns(display_color: bool) -> IndexMap<String, UnitPropertySelection> {
+    let mut columns = IndexMap::new();
 
     let unit_col = create_unit_display_name_column(display_color);
 
-    columns.push(unit_col);
-
     let type_col = create_unit_type_column(display_color);
-    columns.push(type_col);
 
     let state_col = create_unit_file_state(display_color);
-    columns.push(state_col);
 
     let preset_col = create_unit_file_preset_column(display_color);
-    columns.push(preset_col);
 
+    insert!(columns, unit_col, type_col, state_col, preset_col);
     columns
 }
 
-pub fn build_from_load(display_color: bool, view: UnitCuratedList) -> Vec<UnitPropertySelection> {
-    let Some(saved_config) = save::load_column_config(view) else {
-        return vec![];
+pub fn build_from_load(
+    view: UnitCuratedList,
+    config_id: u32,
+) -> (
+    IndexMap<String, UnitPropertySelection>,
+    Option<MyConfigOrder>,
+) {
+    let Some(saved_config) = runtime().block_on(save::load_column_config(view)) else {
+        return (IndexMap::new(), None);
     };
 
-    let oc = OnceCell::new();
-    let mut list = Vec::with_capacity(saved_config.columns.len());
+    let config_order = saved_config
+        .orders
+        .into_iter()
+        .flatten()
+        .find(|a| a.id == config_id);
+
+    let map_cell = OnceCell::new();
+    let mut columns_list = IndexMap::with_capacity(saved_config.columns.len());
     for unit_column_config in saved_config.columns {
-        let id = match SysdColumn::verify(&unit_column_config) {
+        let col_id = match SysdColumn::verify(&unit_column_config) {
             Ok(sysd_column) => sysd_column,
             Err((_e, err_sc)) => {
-                let m = oc.get_or_init(|| {
-                    info!("Fetching Unit Properties for Sanitation purpose");
-                    xxx()
-                });
+                let pmap = map_cell.get_or_init(fetch_properties_map);
                 if let Some((property_name, (interface, signature))) =
-                    m.get_key_value(&unit_column_config.id)
+                    pmap.get_key_value(&unit_column_config.id)
                 {
                     SysdColumn::new_from_props(property_name, interface, Some(signature.to_owned()))
                 } else if let Some((_utype, prop)) = unit_column_config.id.split_once('@') {
-                    if let Some((property_name, (interface, signature))) = m.get_key_value(prop) {
+                    if let Some((property_name, (interface, signature))) = pmap.get_key_value(prop)
+                    {
                         SysdColumn::new_from_props(
                             property_name,
                             interface,
@@ -338,18 +390,15 @@ pub fn build_from_load(display_color: bool, view: UnitCuratedList) -> Vec<UnitPr
         };
 
         let prop_selection =
-            UnitPropertySelection::from_column_config2(unit_column_config, id.clone());
+            UnitPropertySelection::from_column_config2(unit_column_config, col_id.clone());
 
-        let column = prop_selection.column();
-
-        construct::set_column_factory_and_sorter(&column, display_color, &id);
-
-        list.push(prop_selection);
+        columns_list.insert(col_id.id().to_owned(), prop_selection);
     }
-    list
+    (columns_list, config_order)
 }
 
-fn xxx() -> HashMap<String, (Rc<String>, String)> {
+fn fetch_properties_map() -> HashMap<String, (Rc<String>, String)> {
+    info!("Fetching Unit Properties");
     let mut map = HashMap::new();
     for (interface, fetch_results) in runtime()
         .block_on(async move { systemd::fetch_unit_interface_properties().await })
@@ -367,6 +416,7 @@ fn xxx() -> HashMap<String, (Rc<String>, String)> {
     map
 }
 
+#[macro_export]
 macro_rules! compare_units {
     ($unit1:expr, $unit2:expr, $func:ident) => {{
         $unit1.$func().cmp(&$unit2.$func()).into()
@@ -404,15 +454,47 @@ macro_rules! create_column_filter {
     }};
 }
 
-pub fn default_column_definition_list(display_color: bool) -> Vec<UnitPropertySelection> {
+pub fn default_column_definition_list(
+    display_color: bool,
+) -> IndexMap<String, UnitPropertySelection> {
     generate_default_columns(display_color, true)
 }
 
 pub fn generate_service_columns(
     display_color: bool,
     include_unit_files: bool,
-) -> Vec<UnitPropertySelection> {
-    generate_default_columns(display_color, include_unit_files)
+    show_dbus_level: bool,
+) -> IndexMap<String, UnitPropertySelection> {
+    let mut columns = IndexMap::new();
+
+    let unit_col = create_unit_display_full_name_column(display_color);
+    insert!(columns, unit_col);
+    if show_dbus_level {
+        let bus_col = create_bus_column(display_color, show_dbus_level);
+        insert!(columns, bus_col);
+    }
+
+    let state_col = create_unit_file_state(display_color);
+
+    insert!(columns, state_col);
+    if include_unit_files {
+        let preset_col = create_unit_file_preset_column(display_color);
+        insert!(columns, preset_col);
+    }
+
+    let load_col = create_load_column(display_color);
+    insert!(columns, load_col);
+
+    let active_col = create_unit_active_status_columun(display_color);
+    insert!(columns, active_col);
+
+    let sub_col = create_sub_state_column(display_color);
+    insert!(columns, sub_col);
+
+    let description = create_unit_description_column(display_color);
+    insert!(columns, description);
+
+    columns
 }
 
 pub fn set_column_factory_and_sorter(
@@ -539,66 +621,43 @@ where
     v1.into_iter().cmp(v2).into()
 }
 
-const SYSDM_STATE: &str = "sysdm-state";
-const SYSDM_PRESET: &str = "sysdm-preset";
-
 fn generate_default_columns(
     display_color: bool,
     include_unit_files: bool,
-) -> Vec<UnitPropertySelection> {
-    let mut columns = vec![];
+) -> IndexMap<String, UnitPropertySelection> {
+    let mut columns = IndexMap::new();
 
     let unit_col = create_unit_display_name_column(display_color);
-    columns.push(unit_col);
+    insert!(columns, unit_col);
 
     let type_col = create_unit_type_column(display_color);
-    columns.push(type_col);
+    insert!(columns, type_col);
 
-    let sysd_col = SysdColumn::Bus;
-    let sorter = create_column_filter!(dbus_level);
-    let column_menu = create_col_menu(&sysd_col);
-    let factory = fac_bus(display_color);
-    let bus_col = gtk::ColumnViewColumn::builder()
-        .id(sysd_col.id())
-        .sorter(&sorter)
-        .header_menu(&column_menu)
-        .factory(&factory)
-        .resizable(true)
-        .fixed_width(61)
-        .title(pgettext("list column", "Bus"))
-        .build();
-
-    let bus_col = UnitPropertySelection::from_column_view_column(bus_col, sysd_col);
-    columns.push(bus_col);
+    let bus_col = create_bus_column(display_color, true);
+    insert!(columns, bus_col);
 
     let state_col = create_unit_file_state(display_color);
-    columns.push(state_col);
+    insert!(columns, state_col);
 
     if include_unit_files {
         let preset_col = create_unit_file_preset_column(display_color);
-        columns.push(preset_col);
+        insert!(columns, preset_col);
     }
 
-    let sysd_col = SysdColumn::Load;
-    let sorter = create_column_filter!(load_state);
-    let column_menu = create_col_menu(&sysd_col);
-    let factory = fac_load_state(display_color);
-    let load_col = gtk::ColumnViewColumn::builder()
-        .id(sysd_col.id())
-        .sorter(&sorter)
-        .header_menu(&column_menu)
-        .factory(&factory)
-        .resizable(true)
-        .fixed_width(80)
-        .title(pgettext("list column", "Load"))
-        .build();
-
-    let load_col = UnitPropertySelection::from_column_view_column(load_col, sysd_col);
-    columns.push(load_col);
+    let load_col = create_load_column(display_color);
 
     let active_col = create_unit_active_status_columun(display_color);
-    columns.push(active_col);
 
+    let sub_col = create_sub_state_column(display_color);
+
+    let sub_description = create_unit_description_column(display_color);
+
+    insert!(columns, load_col, active_col, sub_col, sub_description);
+
+    columns
+}
+
+fn create_sub_state_column(display_color: bool) -> UnitPropertySelection {
     let sysd_col = SysdColumn::SubState;
     let sorter = create_column_filter!(sub_state);
     let column_menu = create_col_menu(&sysd_col);
@@ -613,13 +672,43 @@ fn generate_default_columns(
         .title(pgettext("list column", "Sub"))
         .build();
 
-    let sub_col = UnitPropertySelection::from_column_view_column(sub_col, sysd_col);
-    columns.push(sub_col);
+    UnitPropertySelection::from_column_view_column(sub_col, sysd_col, true, None)
+}
 
-    let sub_description = create_unit_description_column(display_color);
-    columns.push(sub_description);
+fn create_load_column(display_color: bool) -> UnitPropertySelection {
+    let sysd_col = SysdColumn::Load;
+    let sorter = create_column_filter!(load_state);
+    let column_menu = create_col_menu(&sysd_col);
+    let factory = fac_load_state(display_color);
+    let load_col = gtk::ColumnViewColumn::builder()
+        .id(sysd_col.id())
+        .sorter(&sorter)
+        .header_menu(&column_menu)
+        .factory(&factory)
+        .resizable(true)
+        .fixed_width(80)
+        .title(pgettext("list column", "Load"))
+        .build();
 
-    columns
+    UnitPropertySelection::from_column_view_column(load_col, sysd_col, true, None)
+}
+
+fn create_bus_column(display_color: bool, _show_dbus_level: bool) -> UnitPropertySelection {
+    let sysd_col = SysdColumn::Bus;
+    let sorter = create_column_filter!(dbus_level);
+    let column_menu = create_col_menu(&sysd_col);
+    let factory = fac_bus(display_color);
+    let bus_col = gtk::ColumnViewColumn::builder()
+        .id(sysd_col.id())
+        .sorter(&sorter)
+        .header_menu(&column_menu)
+        .factory(&factory)
+        .resizable(true)
+        .fixed_width(64)
+        .title(pgettext("list column", "Bus"))
+        .build();
+
+    UnitPropertySelection::from_column_view_column(bus_col, sysd_col, true, None)
 }
 
 fn create_unit_file_preset_column(display_color: bool) -> UnitPropertySelection {
@@ -638,7 +727,7 @@ fn create_unit_file_preset_column(display_color: bool) -> UnitPropertySelection 
         .title(pgettext("list column", "Preset"))
         .build();
 
-    UnitPropertySelection::from_column_view_column(column, sysd_col)
+    UnitPropertySelection::from_column_view_column(column, sysd_col, true, None)
 }
 
 fn create_unit_file_state(display_color: bool) -> UnitPropertySelection {
@@ -657,7 +746,7 @@ fn create_unit_file_state(display_color: bool) -> UnitPropertySelection {
         .title(pgettext("list column", "State"))
         .build();
 
-    UnitPropertySelection::from_column_view_column(column, sysd_col)
+    UnitPropertySelection::from_column_view_column(column, sysd_col, true, None)
 }
 
 fn create_unit_active_status_columun(display_color: bool) -> UnitPropertySelection {
@@ -676,7 +765,7 @@ fn create_unit_active_status_columun(display_color: bool) -> UnitPropertySelecti
         .title(pgettext("list column", "Active"))
         .build();
 
-    UnitPropertySelection::from_column_view_column(column, sysd_col)
+    UnitPropertySelection::from_column_view_column(column, sysd_col, true, None)
 }
 
 fn create_unit_description_column(display_color: bool) -> UnitPropertySelection {
@@ -695,7 +784,7 @@ fn create_unit_description_column(display_color: bool) -> UnitPropertySelection 
         .title(pgettext("list column", "Description"))
         .build();
 
-    UnitPropertySelection::from_column_view_column(column, sysd_col)
+    UnitPropertySelection::from_column_view_column(column, sysd_col, true, None)
 }
 
 fn create_unit_display_name_column(display_color: bool) -> UnitPropertySelection {
@@ -715,14 +804,14 @@ fn create_unit_display_name_column(display_color: bool) -> UnitPropertySelection
         .title(pgettext("list column", "Unit"))
         .build();
 
-    UnitPropertySelection::from_column_view_column(column, sysd_col)
+    UnitPropertySelection::from_column_view_column(column, sysd_col, true, None)
 }
 
 fn create_unit_display_full_name_column(display_color: bool) -> UnitPropertySelection {
     let sysd_col = SysdColumn::FullName;
     let sorter = create_column_filter!(primary, dbus_level);
     let column_menu = create_col_menu(&sysd_col);
-    let factory = fac_unit_name(display_color);
+    let factory = fac_unit_name_full(display_color);
 
     let col = gtk::ColumnViewColumn::builder()
         .id(sysd_col.id())
@@ -730,11 +819,11 @@ fn create_unit_display_full_name_column(display_color: bool) -> UnitPropertySele
         .header_menu(&column_menu)
         .factory(&factory)
         .resizable(true)
-        .fixed_width(150)
+        .fixed_width(185)
         .title(pgettext("list column", "Unit"))
         .build();
 
-    UnitPropertySelection::from_column_view_column(col, sysd_col)
+    UnitPropertySelection::from_column_view_column(col, sysd_col, true, None)
 }
 
 fn create_unit_type_column(display_color: bool) -> UnitPropertySelection {
@@ -753,7 +842,7 @@ fn create_unit_type_column(display_color: bool) -> UnitPropertySelection {
         .title(pgettext("list column", "Type"))
         .build();
 
-    UnitPropertySelection::from_column_view_column(col, sysd_col)
+    UnitPropertySelection::from_column_view_column(col, sysd_col, true, None)
 }
 
 fn create_socket_listen_type_column() -> UnitColumn {
@@ -827,12 +916,11 @@ fn create_col_activates() -> UnitColumn {
     unit_column
 }
 
-fn generate_loaded_units_columns(display_color: bool) -> Vec<UnitPropertySelection> {
-    generate_default_columns(display_color, false)
-        .into_iter()
-        .filter(|c| {
-            c.id().map(|s| s.as_str() != SYSDM_STATE).unwrap_or(true)
-                && c.id().map(|s| s.as_str() != SYSDM_PRESET).unwrap_or(true)
-        })
-        .collect()
+fn generate_loaded_units_columns(display_color: bool) -> IndexMap<String, UnitPropertySelection> {
+    let mut cols = generate_default_columns(display_color, false);
+
+    cols.shift_remove(SysdColumn::State.id());
+    cols.shift_remove(SysdColumn::Preset.id());
+
+    cols
 }

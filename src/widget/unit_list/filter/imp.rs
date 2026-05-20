@@ -111,16 +111,13 @@ impl UnitListFilterWindowImp {
         // for (name, key, _num_id, _) in &*UNIT_LIST_COLUMNS
 
         let case_incensitive_default = self.case_incensitive_default.get();
-        for unit_prop_selection in unit_list_panel.default_displayed_columns().iter().chain(
+        for (_, unit_prop_selection) in unit_list_panel.default_displayed_columns().iter().chain(
             unit_list_panel
                 .current_columns()
                 .iter()
-                .filter(|col| col.is_custom()),
+                .filter(|(_, col)| col.is_custom()),
         ) {
-            let Some(key) = unit_prop_selection.sysd_column() else {
-                warn!("No key for filtering");
-                continue;
-            };
+            let key = unit_prop_selection.sysd_column();
 
             let Some(unit_property_filter_configurator) =
                 unit_list_panel.lazy_get_filter_assessor(&key)

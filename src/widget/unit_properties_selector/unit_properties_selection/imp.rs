@@ -1,14 +1,4 @@
-use std::cell::OnceCell;
-
-use gio::glib::object::Cast;
-use gtk::{
-    ListScrollFlags,
-    glib::{self},
-    prelude::*,
-    subclass::prelude::*,
-};
-use tracing::{error, info, warn};
-
+use super::UnitPropertiesSelectionPanel;
 use crate::widget::{
     unit_list::{UnitCuratedList, UnitListPanel},
     unit_properties_selector::{
@@ -18,8 +8,16 @@ use crate::widget::{
         unit_properties_selection::row::UnitPropertiesSelectionRow,
     },
 };
-
-use super::UnitPropertiesSelectionPanel;
+use gio::glib::object::Cast;
+use gtk::{
+    ListScrollFlags,
+    glib::{self},
+    prelude::*,
+    subclass::prelude::*,
+};
+use indexmap::IndexMap;
+use std::cell::OnceCell;
+use tracing::{error, info, warn};
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_properties_selection.ui")]
@@ -71,12 +69,20 @@ impl UnitPropertiesSelectionPanelImp {
 
         let list_store = get_list_store!(self);
 
-        let mut list: Vec<UnitPropertySelection> = list_store
+        let list: IndexMap<String, UnitPropertySelection> = list_store
             .iter::<UnitPropertySelection>()
             .filter_map(|result| result.ok())
+            .map(|up| (up.sysd_column().id().to_owned(), up))
             .collect();
 
-        save_column_config(None, &mut list, UnitCuratedList::Custom);
+        save_column_config(
+            None,
+            &list,
+            UnitCuratedList::Custom,
+            None,
+            gtk::SortType::Ascending,
+            0,
+        );
 
         let unit_list_panel = get_unit_list_panel!(self);
 
@@ -105,7 +111,7 @@ impl UnitPropertiesSelectionPanelImp {
 
         list_store.remove_all(); //TBSafe
 
-        for unit_property_column in unit_list_panel.default_displayed_columns().iter() {
+        for (_, unit_property_column) in unit_list_panel.default_displayed_columns().iter() {
             let unit_property_column = unit_property_column.copy();
             list_store.append(&unit_property_column);
         }
@@ -136,10 +142,15 @@ impl UnitPropertiesSelectionPanelImp {
 
         let list_store = get_list_store!(self);
 
-        let mut columns = { unit_list_panel.current_columns_mut() };
-        save::order_columns(Some(&unit_list_panel.columns()), &mut columns);
+        let columns = { unit_list_panel.current_columns_mut() };
+        save::order_columns(
+            Some(&unit_list_panel.columns()),
+            &columns,
+            None,
+            gtk::SortType::Ascending,
+        );
 
-        for unit_property_column in columns.iter() {
+        for (_, unit_property_column) in columns.iter() {
             let unit_property_column = unit_property_column.copy(); //if no copy the column prop are in sync
             list_store.append(&unit_property_column);
         }

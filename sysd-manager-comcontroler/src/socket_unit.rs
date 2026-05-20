@@ -65,8 +65,8 @@ mod imp {
         #[property(get, construct_only, set = Self::set_primary)]
         pub(super) primary: OnceCell<String>,
 
-        #[property(get = Self::get_display_name, type = String)]
-        display_name: OnceCell<u32>,
+        #[property(get = Self::get_prefix, type = String)]
+        prefix: OnceCell<u32>,
         #[property(get, builder(UnitType::Socket))]
         unit_type: Cell<UnitType>,
 
@@ -106,8 +106,8 @@ mod imp {
             self.base_unit.replace(Some(unit.clone()));
         }
 
-        pub fn get_display_name(&self) -> String {
-            let index = *self.display_name.get_or_init(|| unreachable!()) as usize;
+        pub fn get_prefix(&self) -> String {
+            let index = *self.prefix.get_or_init(|| unreachable!()) as usize;
             let s = &self.primary.get().expect("Being set")[..index];
             s.to_owned()
         }
@@ -133,8 +133,7 @@ mod imp {
                 }
             }
 
-            // let display_name = primary[..split_char_index - 1].to_owned();
-            self.display_name.set((split_char_index - 1) as u32);
+            self.prefix.set((split_char_index - 1) as u32);
 
             let unit_type = UnitType::new(&primary[(split_char_index)..]);
             self.unit_type.set(unit_type);

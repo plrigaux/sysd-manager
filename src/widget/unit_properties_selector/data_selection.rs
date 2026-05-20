@@ -37,19 +37,26 @@ impl UnitPropertySelection {
             col
         };
 
-        let this_object = Self::from_column_view_column(col, sysd_col);
+        let this_object = Self::from_column_view_column(col, sysd_col, true, None);
         let p_imp = this_object.imp();
         p_imp.access.replace(broswer_property.access());
         this_object
     }
 
-    pub fn from_column_view_column(column: gtk::ColumnViewColumn, sysd_col: SysdColumn) -> Self {
+    pub fn from_column_view_column(
+        column: gtk::ColumnViewColumn,
+        sysd_col: SysdColumn,
+        use_column: bool,
+        sort: Option<super::save::SortType>,
+    ) -> Self {
         let this_object: Self = glib::Object::new();
 
         let p_imp = this_object.imp();
 
         p_imp.column.replace(column);
-        p_imp.sysd_column.replace(Some(sysd_col));
+        p_imp.sysd_column.replace(sysd_col);
+        p_imp.use_column.replace(use_column);
+        p_imp.sort.replace(sort.unwrap_or_default());
 
         this_object
     }
@@ -82,28 +89,18 @@ impl UnitPropertySelection {
             .resizable(unit_column_config.resizable)
             .visible(unit_column_config.visible)
             .title(title)
-            // .sorter(&unit_column_config.sort)
             .build();
 
         let column_menu = create_col_menu(&sysd_col);
         column.set_header_menu(Some(&column_menu));
-        let this_object = Self::from_column_view_column(column, sysd_col);
+        let this_object =
+            Self::from_column_view_column(column, sysd_col, true, unit_column_config.sort);
 
         //TODO simplify
         this_object.set_sort(unit_column_config.sort.unwrap_or_default());
 
         this_object
     }
-
-    // pub fn from_column(column_name: String) -> Self {
-    //     let this_object: Self = glib::Object::new();
-
-    //     let p_imp = this_object.imp();
-
-    //     p_imp.unit_property.replace(column_name);
-
-    //     this_object
-    // }
 
     pub fn is_custom(&self) -> bool {
         self.imp().is_custom()
@@ -119,10 +116,7 @@ impl UnitPropertySelection {
     pub fn copy_to(&self, to: &Self) {
         let p_imp = to.imp();
 
-        // p_imp.unit_property.replace(self.unit_property());
-        // p_imp.prop_type.replace(self.prop_type());
         p_imp.access.replace(self.access());
-        // p_imp.unit_type.set(self.unit_type());
 
         p_imp.sysd_column.replace(self.sysd_column());
         {
@@ -146,14 +140,15 @@ impl UnitPropertySelection {
     }
 
     pub fn fill_property_fetcher(&self, property_list_send: &mut HashSet<SysdColumn>) {
-        if let Some(col) = self.sysd_column()
-            && !matches!(col, SysdColumn::FullName | SysdColumn::Active)
-        {
-            property_list_send.insert(col);
+        if !matches!(
+            self.sysd_column(),
+            SysdColumn::FullName | SysdColumn::Active
+        ) {
+            property_list_send.insert(self.sysd_column());
         }
     }
 
-    pub fn sysd_column(&self) -> Option<SysdColumn> {
+    pub fn sysd_column(&self) -> SysdColumn {
         self.imp().sysd_column()
     }
 
@@ -206,16 +201,14 @@ mod imp2 {
         #[property(get, set, default)]
         pub(super) sort: Cell<SortType>,
 
-        pub(super) sysd_column: RefCell<Option<SysdColumn>>,
+        pub(super) sysd_column: RefCell<SysdColumn>,
+        #[property(get, set)]
+        pub(super) use_column: Cell<bool>,
     }
 
     impl UnitPropertySelectionImpl {
         pub fn is_custom(&self) -> bool {
-            self.sysd_column
-                .borrow()
-                .as_ref()
-                .map(|s| s.is_custom())
-                .unwrap_or(true)
+            self.sysd_column.borrow().is_custom()
         }
 
         fn interface(&self) -> String {
@@ -273,31 +266,20 @@ mod imp2 {
             self.column.borrow().set_expand(expand)
         }
 
-        pub fn sysd_column(&self) -> Option<SysdColumn> {
-            self.sysd_column.borrow().as_ref().cloned()
+        pub fn sysd_column(&self) -> SysdColumn {
+            self.sysd_column.borrow().clone()
         }
 
         fn unit_type(&self) -> UnitType {
-            self.sysd_column
-                .borrow()
-                .as_ref()
-                .map(|s| s.utype())
-                .unwrap_or(UnitType::Unknown)
+            self.sysd_column.borrow().utype()
         }
 
         pub(crate) fn prop_type(&self) -> Option<String> {
-            self.sysd_column
-                .borrow()
-                .as_ref()
-                .and_then(|s| s.property_type().clone())
+            self.sysd_column.borrow().property_type().clone()
         }
 
         pub(crate) fn unit_property(&self) -> String {
-            self.sysd_column
-                .borrow()
-                .as_ref()
-                .map(|s| s.property().to_owned())
-                .unwrap_or_default()
+            self.sysd_column.borrow().property().to_owned()
         }
     }
 

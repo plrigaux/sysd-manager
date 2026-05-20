@@ -1,29 +1,32 @@
-use std::cell::{Ref, RefCell, RefMut};
-use std::rc::Rc;
-
-use crate::consts::*;
-use crate::systemd::data::UnitInfo;
-use crate::widget::unit_list::column::SysdColumn;
-use crate::widget::unit_list::filter::unit_prop_filter::{
-    UnitPropertyAssessor, UnitPropertyFilter,
-};
-use crate::widget::unit_properties_selector::data_selection::UnitPropertySelection;
-
-use super::InterPanelMessage;
-use super::app_window::AppWindow;
-
-use gettextrs::pgettext;
-use glib::variant::ToVariant;
-use gtk::glib;
-use gtk::subclass::prelude::*;
-use strum::IntoEnumIterator;
-use tracing::warn;
-
 pub mod column;
 mod filter;
-mod imp;
+pub mod imp;
 pub mod menus;
 mod search_controls;
+
+use crate::{
+    consts::*,
+    systemd::data::UnitInfo,
+    widget::{
+        InterPanelMessage,
+        app_window::AppWindow,
+        unit_list::{
+            column::SysdColumn,
+            filter::unit_prop_filter::{UnitPropertyAssessor, UnitPropertyFilter},
+        },
+        unit_properties_selector::data_selection::UnitPropertySelection,
+    },
+};
+use gettextrs::pgettext;
+use glib::variant::ToVariant;
+use gtk::{glib, subclass::prelude::*};
+use indexmap::IndexMap;
+use std::{
+    cell::{Ref, RefCell, RefMut},
+    rc::Rc,
+};
+use strum::IntoEnumIterator;
+use tracing::warn;
 
 pub const COL_ID_UNIT: &str = "sysdm-unit";
 pub const COL_ID_UNIT_FULL: &str = "sysdm-unit-full";
@@ -82,19 +85,19 @@ impl UnitListPanel {
         self.imp().button_action(action)
     }
 
-    pub fn set_new_columns(&self, list: Vec<UnitPropertySelection>) {
-        self.imp().set_new_columns(list, true);
+    pub fn set_new_columns(&self, list: IndexMap<String, UnitPropertySelection>) {
+        self.imp().set_new_columns(list, true, true);
     }
 
-    pub fn current_columns(&self) -> Ref<'_, Vec<UnitPropertySelection>> {
+    pub fn current_columns(&self) -> Ref<'_, IndexMap<String, UnitPropertySelection>> {
         self.imp().current_columns()
     }
 
-    pub fn current_columns_mut(&self) -> RefMut<'_, Vec<UnitPropertySelection>> {
+    pub fn current_columns_mut(&self) -> RefMut<'_, IndexMap<String, UnitPropertySelection>> {
         self.imp().current_columns_mut()
     }
 
-    pub(super) fn default_displayed_columns(&self) -> &Vec<UnitPropertySelection> {
+    pub(super) fn default_displayed_columns(&self) -> &IndexMap<String, UnitPropertySelection> {
         self.imp().default_displayed_columns()
     }
 
@@ -281,6 +284,19 @@ impl From<&glib::Variant> for UnitCuratedList {
             }
         }
         warn!("Value {value_str:?} has no match for UnitListView, fallback to \"default\"");
+
+        UnitCuratedList::Defaut
+    }
+}
+
+impl From<glib::GString> for UnitCuratedList {
+    fn from(value: glib::GString) -> Self {
+        for unit_list_view in UnitCuratedList::iter() {
+            if unit_list_view.id() == value.as_str() {
+                return unit_list_view;
+            }
+        }
+        warn!("Value {value:?} has no match for UnitListView, fallback to \"default\"");
 
         UnitCuratedList::Defaut
     }

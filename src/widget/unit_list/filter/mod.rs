@@ -15,7 +15,7 @@ use super::UnitListPanel;
 use crate::{
     systemd::{
         data::UnitInfo,
-        enums::{ActiveState, UnitFileStatus, LoadState, Preset, UnitType},
+        enums::{ActiveState, LoadState, Preset, UnitFileStatus, UnitType},
     },
     widget::unit_list::{
         COL_ID_UNIT,
@@ -61,7 +61,7 @@ pub fn filter_unit_name(
     unit: &UnitInfo,
     _key: glib::Quark,
 ) -> bool {
-    let name = unit.display_name();
+    let name = unit.prefix();
     (property_assessor.filter_unit_value_func)(property_assessor, Some(&name))
 }
 

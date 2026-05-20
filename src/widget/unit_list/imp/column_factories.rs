@@ -5,6 +5,7 @@ use gtk::{
     glib::{self, Binding, Quark},
     prelude::*,
 };
+use indexmap::IndexMap;
 use systemd::{
     data::get_custom_property_typed_raw,
     enums::UnitType,
@@ -150,7 +151,7 @@ fn inactive_display(widget: &impl IsA<gtk::Widget>, unit: &UnitInfo) {
 }
 
 pub fn fac_unit_name(display_color: bool) -> gtk::SignalListItemFactory {
-    common_factory(display_color, UnitInfo::display_name)
+    common_factory(display_color, UnitInfo::prefix)
 }
 
 pub fn fac_unit_name_full(display_color: bool) -> gtk::SignalListItemFactory {
@@ -292,7 +293,7 @@ pub fn fac_descrition(display_color: bool) -> gtk::SignalListItemFactory {
 pub fn setup_factories(
     unit_list: &UnitListPanel,
     column_view_column_list: &Vec<gtk::ColumnViewColumn>,
-    current_column_view_column_definition_list: &[UnitPropertySelection],
+    current_column_view_column_definition_list: &IndexMap<String, UnitPropertySelection>,
 ) {
     let display_color = unit_list.display_color();
 
@@ -302,19 +303,13 @@ pub fn setup_factories(
             continue;
         };
 
-        let col_id = current_column_view_column_definition_list
-            .iter()
-            .find_map(|prop_selection| {
-                if prop_selection.id().is_some_and(|s| id == s.as_str()) {
-                    prop_selection.sysd_column()
-                } else {
-                    None
-                }
-            });
-
-        if let Some(col_id) = col_id {
-            let factory = get_factory_by_id(&col_id, display_color);
+        if let Some(p) = current_column_view_column_definition_list.get(id.as_str()) {
+            let factory = get_factory_by_id(&p.sysd_column(), display_color);
             column.set_factory(factory.as_ref());
+        } else {
+            warn!("not found {id} ------------------ {:?}", id);
+
+            println!("{:#?}", current_column_view_column_definition_list.keys(),);
         }
     }
 }
@@ -346,10 +341,6 @@ pub fn get_factory_by_id(
         SysdColumn::AutomountWhat => Some(fac_automount_what()),
         SysdColumn::AutomountMounted => Some(fac_automount_mounted()),
         SysdColumn::AutomountIdleTimeOut => Some(fac_automount_idle_timeout()),
-        // _ => {
-        //     warn!("What to do?. Id {id:?} not handle with factory");
-        //     None
-        // }
     }
 }
 

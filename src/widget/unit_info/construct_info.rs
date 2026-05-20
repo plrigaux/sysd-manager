@@ -652,7 +652,7 @@ fn fill_main_pid(
     let exec_val = if let Some(exec) = get_exec(map) {
         exec
     } else {
-        unit.display_name()
+        unit.prefix()
     };
 
     let v = &format!("{main_pid} ({exec_val})");
