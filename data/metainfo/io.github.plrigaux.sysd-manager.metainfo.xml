@@ -86,7 +86,7 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1"/>
   <releases>
-    <release version="2.19.5" date="2026-05-20">
+    <release version="2.19.6" date="2026-05-20">
       <description translate="no">
         <p>Added</p>
         <ul>
@@ -96,6 +96,7 @@ https://hughsie.github.io/oars/index.html
         <ul>
           <li>[Issue 56] Remember the sorting column order</li>
           <li>[Issue 65] Journal events was always displaying horizontal scrollbar</li>
+          <li>About dialog crash</li>
         </ul>
       </description>
     </release>
