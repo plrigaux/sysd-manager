@@ -1,7 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 1.0 -->
+<!-- Created with Cambalache 1.0.1 -->
 <interface>
   <!-- interface-name timer_creator_page.ui -->
+  <requires lib="gio" version="2.0"/>
   <requires lib="gtk" version="4.20"/>
   <requires lib="libadwaita" version="1.8"/>
   <template class="TimerCreatorPage" parent="AdwNavigationPage">
@@ -45,37 +46,50 @@
               <object class="AdwPreferencesGroup">
                 <child>
                   <object class="AdwActionRow">
-                    <property name="activatable-widget">timer_cal</property>
-                    <property name="title" translatable="yes">Calendar Time </property>
-                    <child type="prefix">
-                      <object class="GtkCheckButton" id="timer_cal">
-                        <property name="valign">center</property>
+                    <property name="title">Monotonic Timer</property>
+                    <child>
+                      <object class="AdwSplitButton" id="monotonic_timer_adder">
+                        <property name="label">Add</property>
+                        <property name="menu-model">
+                          <menu>
+                            <item>
+                              <attribute name="label">OnActiveSec</attribute>
+                            </item>
+                            <item>
+                              <attribute name="label">OnBootSec</attribute>
+                            </item>
+                            <item>
+                              <attribute name="label">OnStartupSec</attribute>
+                            </item>
+                            <item>
+                              <attribute name="label">OnUnitActiveSec</attribute>
+                            </item>
+                            <item>
+                              <attribute name="label">OnUnitInactiveSec</attribute>
+                            </item>
+                          </menu>
+                        </property>
+                        <property name="valign">baseline-center</property>
                       </object>
                     </child>
                   </object>
                 </child>
                 <child>
                   <object class="AdwActionRow">
-                    <property name="activatable-widget">mono_timer</property>
-                    <property name="title" translatable="yes">Monotonic Timer</property>
-                    <child type="prefix">
-                      <object class="GtkCheckButton" id="mono_timer">
-                        <property name="valign">center</property>
+                    <property name="title">Real-time Timer</property>
+                    <child>
+                      <object class="AdwSplitButton" id="realtime_timer_adder">
+                        <property name="label">Add</property>
+                        <property name="valign">baseline-center</property>
                       </object>
                     </child>
                   </object>
                 </child>
-                <child>
-                  <object class="AdwActionRow">
-                    <property name="activatable-widget">boot_timer</property>
-                    <property name="title" translatable="yes">Boot Timer</property>
-                    <child type="prefix">
-                      <object class="GtkCheckButton" id="boot_timer">
-                        <property name="valign">center</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwPreferencesGroup" id="timers_group">
+                <property name="description">Timers</property>
               </object>
             </child>
             <child>
@@ -93,47 +107,20 @@
                   </object>
                 </child>
                 <child>
-                  <object class="AdwActionRow">
-                    <property name="subtitle">test</property>
-                    <property name="title">test</property>
-                    <child>
-                      <object class="GtkMenuButton">
-                        <property name="popover">
-                          <object class="GtkPopover">
-                            <property name="child">
-                              <object class="GtkBox">
-                                <child>
-                                  <object class="GtkLabel">
-                                    <property name="label">aasdf</property>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="GtkLabel">
-                                    <property name="label">zxcv</property>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="GtkLabel">
-                                    <property name="label">qwer</property>
-                                  </object>
-                                </child>
-                              </object>
-                            </property>
-                            <property name="default-widget">
-                              <object class="GtkLabel">
-                                <property name="label">XXXXXXXXXXXXX</property>
-                              </object>
-                            </property>
-                          </object>
-                        </property>
-                      </object>
-                    </child>
+                  <object class="AdwSwitchRow" id="timer_persistent">
+                    <property name="title">Persistant</property>
                   </object>
                 </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwPreferencesGroup">
                 <child>
-                  <object class="AdwPreferencesRow">
-                    <property name="title">ddddddddd</property>
-                    <property name="title-selectable">True</property>
+                  <object class="AdwButtonRow">
+                    <property name="action-name">navigation.push</property>
+                    <property name="action-target">'unit_file_page'</property>
+                    <property name="end-icon-name">go-next</property>
+                    <property name="title">Generated File</property>
                   </object>
                 </child>
               </object>
