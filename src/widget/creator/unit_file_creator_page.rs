@@ -98,7 +98,7 @@ mod imp {
                 return;
             };
 
-            let data_string = data.to_file_data();
+            let data_string = data.to_file();
             buffer.set_text(&data_string);
         }
 

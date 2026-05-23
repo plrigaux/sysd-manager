@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 1.0.2 -->
+<interface>
+  <!-- interface-name dropdown.ui -->
+  <requires lib="gtk" version="4.20"/>
+  <requires lib="libadwaita" version="1.8"/>
+  <template class="SysDDropDown" parent="AdwActionRow">
+    <property name="title">Unit</property>
+    <child>
+      <object class="GtkMenuButton">
+        <property name="css-classes">flat</property>
+        <property name="popover">
+          <object class="GtkPopover">
+            <child>
+              <object class="GtkBox">
+                <property name="orientation">vertical</property>
+                <property name="spacing">5</property>
+                <property name="width-request">300</property>
+                <child>
+                  <object class="GtkSearchEntry"/>
+                </child>
+                <child>
+                  <object class="GtkScrolledWindow">
+                    <property name="min-content-height">200</property>
+                    <child>
+                      <object class="GtkListView" id="drop_list_view">
+                        <property name="accessible-role">label</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </property>
+        <property name="valign">center</property>
+      </object>
+    </child>
+  </template>
+</interface>

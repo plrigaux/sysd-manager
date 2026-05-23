@@ -1,5 +1,3 @@
-// const WINDOW_HEIGHT: &str = "unit-creator-window-height";
-// const WINDOW_WIDTH: &str = "unit-creator-window-width";
 use super::UnitCreatorWindow;
 use crate::{
     upgrade,
@@ -20,10 +18,7 @@ use base::enums::UnitDBusLevel;
 use gettextrs::pgettext;
 use gio::{SimpleActionGroup, prelude::ActionMapExtManual};
 use glib::variant::ToVariant;
-use gtk::{
-    glib::{self},
-    subclass::prelude::*,
-};
+use gtk::{TemplateChild, gio, glib, subclass::prelude::*};
 use regex::Regex;
 use std::{
     cell::{Cell, OnceCell, Ref, RefCell},
@@ -66,6 +61,7 @@ pub struct UnitCreatorWindowImp {
     sections: RefCell<HashMap<PageType, gtk::Widget>>,
 
     pub(super) app_window: OnceCell<AppWindow>,
+    pub timer_page: OnceCell<TimerCreatorPage>,
 
     creation_type: Cell<UnitCreateType>,
     level: Cell<UnitDBusLevel>,
@@ -141,8 +137,36 @@ impl UnitCreatorWindowImp {
             widget.set_property(PROPERTY_NAME, unit_creation_type);
         } else {
             let timer_page = TimerCreatorPage::new(self.obj().downgrade());
+            let _ = self.timer_page.set(timer_page.clone());
             timer_page.set_property(PROPERTY_NAME, unit_creation_type);
-            self.add_page(&PageType::Timer, timer_page);
+            let unit_file_page = UnitFileCreatorPage::new();
+            let service_navigation = adw::NavigationView::new();
+
+            //The push add is important , case if 2 adds the navigation stamer
+            service_navigation.push(&timer_page);
+            service_navigation.add(&unit_file_page);
+
+            let unit_file_page = unit_file_page.downgrade();
+            let timer_page = timer_page.downgrade();
+            service_navigation.connect_visible_page_notify(move |nav| {
+                match nav.visible_page_tag().as_deref() {
+                    Some("timer_creation") => {
+                        let unit_file_page = upgrade!(unit_file_page);
+                        let timer_page = upgrade!(timer_page);
+                        // let data = timer_page.file_data();
+                        let text = unit_file_page.file_text();
+                        timer_page.update_file_data(&text);
+                    }
+                    Some("unit_file_page") => {
+                        let unit_file_page = upgrade!(unit_file_page);
+                        let timer_page = upgrade!(timer_page);
+                        timer_page.update_view(&unit_file_page);
+                    }
+                    Some(visible_page) => warn!("Service page notify page {:?}", visible_page),
+                    None => warn!("Service page notify page None"),
+                }
+            });
+            self.add_page(&PageType::Timer, service_navigation);
         }
     }
 
@@ -168,16 +192,14 @@ impl UnitCreatorWindowImp {
                     Some("service_base") => {
                         let unit_file_page = upgrade!(unit_file_page);
                         let service_page = upgrade!(service_page);
-                        let data = service_page.data();
                         let text = unit_file_page.file_text();
 
-                        data.update_file_data(&text);
+                        service_page.update_file_data(&text);
                     }
                     Some("unit_file_page") => {
                         let unit_file_page = upgrade!(unit_file_page);
                         let service_page = upgrade!(service_page);
-                        let data = service_page.data();
-                        unit_file_page.update_view(&data);
+                        service_page.update_view(&unit_file_page);
                     }
                     Some(visible_page) => warn!("Service page notify page {:?}", visible_page),
                     None => warn!("Service page notify page None"),
@@ -247,6 +269,10 @@ impl UnitCreatorWindowImp {
             }
             Err(err) => warn!("List unit {:?}", err),
         };
+
+        if let Some(timer_page) = self.timer_page.get() {
+            timer_page.update_from_unit_info();
+        }
     }
 
     pub fn get_trigger_units(&self) -> Ref<'_, HashSet<String>> {
@@ -354,7 +380,7 @@ impl ObjectImpl for UnitCreatorWindowImp {
                     }
                 })
                 .parameter_type(Some(glib::VariantTy::STRING))
-                .state("service".to_variant())
+                .state(UnitCreateType::Timer.id().to_variant())
                 .build()
         };
 
@@ -415,6 +441,11 @@ impl ObjectImpl for UnitCreatorWindowImp {
 
         self.banner.set_use_markup(true);
         self.banner.set_css_classes(&["warning", "construction"]);
+
+        action_group.activate_action(
+            &ACTION_CREATOR_UNIT_TYPE_SELECTION[8..],
+            Some(&UnitCreateType::Timer.id().to_variant()),
+        );
     }
 }
 

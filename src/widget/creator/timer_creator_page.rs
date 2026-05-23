@@ -1,5 +1,5 @@
 mod imp;
-use crate::widget::creator::UnitCreatorWindow;
+use crate::widget::creator::{UnitCreatorWindow, unit_file_creator_page::UnitFileCreatorPage};
 use glib::{WeakRef, subclass::types::ObjectSubclassIsExt};
 use gtk::glib::{self};
 
@@ -17,5 +17,17 @@ impl TimerCreatorPage {
         obj.imp().update_from_unit_info();
         obj.imp().create_actions();
         obj
+    }
+
+    pub fn update_from_unit_info(&self) {
+        self.imp().update_from_unit_info();
+    }
+
+    pub fn update_view(&self, page: &UnitFileCreatorPage) {
+        self.imp().update_view(page);
+    }
+
+    pub fn update_file_data(&self, content: &str) {
+        self.imp().update_file_data(content);
     }
 }

@@ -1,3 +1,4 @@
+pub mod dropdown;
 mod imp;
 mod launch_creator_page;
 mod service_creator_page;
@@ -44,6 +45,14 @@ impl UnitCreateType {
             UnitCreateType::Service => ".service".len(),
             UnitCreateType::Timer => ".timer".len(),
             UnitCreateType::TimerService => ".service".len(),
+        }
+    }
+
+    fn id(&self) -> &str {
+        match self {
+            UnitCreateType::Service => "service",
+            UnitCreateType::Timer => "timer",
+            UnitCreateType::TimerService => "timer_service",
         }
     }
 }

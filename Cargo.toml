@@ -65,6 +65,7 @@ flagset = "0.4"
 gettext-rs = { version = "0.7.2", features = ["gettext-system"] }
 gio = { version = "0", package = "gio", features = ["v2_84"] }
 glib = { version = "0", package = "glib", features = ["v2_84"] }
+indexmap = { version = "2", features = ["serde"] }
 libc = "0.2"
 regex = "1.12"
 serde = "1.0"
@@ -107,7 +108,7 @@ foreign-types-shared = "0.3.1"
 freedesktop_entry_parser = "2"
 futures-util = "0.3"
 gettext-rs.workspace = true
-indexmap = { version = "2", features = ["serde"] }
+indexmap.workspace = true
 libc.workspace = true
 paste = "1"
 regex.workspace = true

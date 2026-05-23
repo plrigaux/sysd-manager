@@ -1,7 +1,7 @@
 use glib::{WeakRef, subclass::types::ObjectSubclassIsExt};
 use gtk::glib::{self};
 
-use crate::widget::creator::UnitCreatorWindow;
+use crate::widget::creator::{UnitCreatorWindow, unit_file_creator_page::UnitFileCreatorPage};
 
 glib::wrapper! {
 
@@ -17,6 +17,14 @@ impl ServiceCreatorPage {
         // obj.imp().update_from_unit_info();
         obj
     }
+
+    pub fn update_view(&self, page: &UnitFileCreatorPage) {
+        self.imp().update_view(page);
+    }
+
+    pub fn update_file_data(&self, content: &str) {
+        self.imp().update_file_data(content);
+    }
 }
 
 mod imp {
@@ -26,7 +34,7 @@ mod imp {
     use adw::{prelude::PreferencesRowExt, subclass::prelude::*};
     use gtk::{glib, prelude::*};
     use std::{
-        cell::{Cell, OnceCell},
+        cell::{Cell, OnceCell, RefCell},
         fs,
         os::unix::fs::PermissionsExt,
         path::Path,
@@ -51,8 +59,7 @@ mod imp {
 
         pub(super) window: OnceCell<WeakRef<UnitCreatorWindow>>,
 
-        #[property(get)]
-        pub(super) data: OnceCell<UnitFileData>,
+        pub(super) file_data: RefCell<UnitFileData>,
     }
 
     #[glib::object_subclass]
@@ -76,23 +83,6 @@ mod imp {
     impl ObjectImpl for ServiceCreatorPageImp {
         fn constructed(&self) {
             self.parent_constructed();
-
-            let data = self.data.get_or_init(UnitFileData::new);
-
-            self.description_entry
-                .bind_property("text", data, "description")
-                .bidirectional()
-                .build();
-
-            self.exec_start_entry
-                .bind_property("text", data, "exec_start")
-                .bidirectional()
-                .build();
-
-            self.working_directory_entry
-                .bind_property("text", data, "working_directory")
-                .bidirectional()
-                .build();
 
             let event_foc = gtk::EventControllerFocus::new();
             event_foc.connect_leave(|event| {
@@ -241,6 +231,34 @@ mod imp {
                 }
                 Err(e) => warn!("Unit File Selection Error {e:?}"),
             });
+        }
+
+        pub(super) fn update_view(&self, page: &UnitFileCreatorPage) {
+            self.fill_data();
+            let data = self.file_data.borrow();
+            page.update_view(&data);
+        }
+
+        fn fill_data(&self) {
+            let mut file_data = self.file_data.borrow_mut();
+
+            file_data.set_description(self.description_entry.text());
+            file_data.set_working_directory(self.working_directory_entry.text());
+            file_data.set_exec_start(self.exec_start_entry.text());
+
+            file_data.sort();
+        }
+
+        pub fn update_file_data(&self, content: &str) {
+            let Some(data) = UnitFileData::from_content(content) else {
+                return;
+            };
+
+            self.description_entry.set_text(data.description());
+            self.working_directory_entry
+                .set_text(data.working_directory());
+            self.exec_start_entry.set_text(data.exec_start());
+            self.file_data.replace(data);
         }
     }
 

@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 1.0.1 -->
+<!-- Created with Cambalache 1.0.2 -->
 <interface>
   <!-- interface-name timer_creator_page.ui -->
   <requires lib="gio" version="2.0"/>
@@ -36,7 +36,7 @@
             <child>
               <object class="AdwPreferencesGroup">
                 <child>
-                  <object class="AdwEntryRow">
+                  <object class="AdwEntryRow" id="description">
                     <property name="title">Description</property>
                   </object>
                 </child>
@@ -101,15 +101,17 @@
                       <lookup name="string" type="GtkStringObject"/>
                     </property>
                     <property name="search-match-mode">substring</property>
-                    <property name="subtitle">sdffsdf</property>
                     <property name="title">Trigger Unit</property>
                     <property name="use-subtitle">True</property>
                   </object>
                 </child>
                 <child>
-                  <object class="AdwSwitchRow" id="timer_persistent">
+                  <object class="AdwSwitchRow" id="persistent">
                     <property name="title">Persistant</property>
                   </object>
+                </child>
+                <child>
+                  <object class="SysDDropDown" id="trigger_unit2"/>
                 </child>
               </object>
             </child>

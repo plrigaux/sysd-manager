@@ -3,11 +3,14 @@ use crate::{
     upgrade, upgrade_opt,
     widget::{
         self,
-        creator::{UnitCreateType, UnitCreatorWindow},
+        creator::{
+            UnitCreateType, UnitCreatorWindow, dropdown::SysDDropDown, unit_file::UnitFileData,
+            unit_file_creator_page::UnitFileCreatorPage,
+        },
     },
 };
 use adw::{
-    prelude::{ComboRowExt, EntryRowExt, PreferencesGroupExt},
+    prelude::{ActionRowExt, ComboRowExt, EntryRowExt, PreferencesGroupExt},
     subclass::prelude::*,
 };
 use gettextrs::pgettext;
@@ -15,11 +18,11 @@ use gio::prelude::*;
 use glib::{VariantTy, WeakRef, clone::Downgrade};
 use gtk::{
     glib::{self},
-    prelude::{ButtonExt, ObjectExt, WidgetExt},
+    prelude::{ButtonExt, EditableExt, ObjectExt, WidgetExt},
 };
 use std::{
     borrow::Cow,
-    cell::{Cell, OnceCell},
+    cell::{Cell, OnceCell, RefCell},
 };
 use strum::{EnumIter, IntoEnumIterator};
 const ACTION_CREATOR_MONOTONIC_ADD: &str = "creator.monotonic-add";
@@ -36,13 +39,24 @@ pub struct TimerCreatorPageImp {
     trigger_unit: TemplateChild<adw::ComboRow>,
 
     #[template_child]
+    trigger_unit2: TemplateChild<SysDDropDown>,
+
+    #[template_child]
+    description: TemplateChild<adw::EntryRow>,
+
+    #[template_child]
     monotonic_timer_adder: TemplateChild<adw::SplitButton>,
+
+    #[template_child]
+    persistent: TemplateChild<adw::SwitchRow>,
 
     #[template_child]
     realtime_timer_adder: TemplateChild<adw::SplitButton>,
 
     #[template_child]
     timers_group: TemplateChild<adw::PreferencesGroup>,
+
+    pub(super) file_data: RefCell<UnitFileData>,
 
     pub(super) window: OnceCell<WeakRef<UnitCreatorWindow>>,
 
@@ -57,7 +71,8 @@ impl ObjectSubclass for TimerCreatorPageImp {
     type ParentType = adw::NavigationPage;
 
     fn class_init(klass: &mut Self::Class) {
-        // The layout manager determines how child widgets are laid out.
+        //To force the read
+        widget::creator::dropdown::SysDDropDown::default();
         klass.bind_template();
         //klass.bind_template_callbacks();
     }
@@ -120,13 +135,21 @@ impl TimerCreatorPageImp {
             .filter(|s| !s.ends_with(".timer"))
             .map(|s| s.as_ref())
             .collect::<Vec<_>>();
-        vec.push(""); //for unselect
+        // vec.push(""); //for unselect
         vec.sort();
 
+        dbg!("l {}", vec.len());
         let model = gtk::StringList::new(&vec);
+        let model2 = gtk::SingleSelection::builder()
+            .can_unselect(true)
+            .autoselect(false)
+            .model(&model)
+            .build();
         // self.trigger_unit.set_selected(gtk::INVALID_LIST_POSITION);
-        self.trigger_unit.set_model(Some(&model));
+        self.trigger_unit.set_model(Some(&model2));
         self.trigger_unit.set_selected(gtk::INVALID_LIST_POSITION);
+
+        self.trigger_unit2.set_model(Some(&model));
     }
 
     pub(super) fn create_actions(&self) {
@@ -221,6 +244,34 @@ impl TimerCreatorPageImp {
         self.monotonic_timer_adder
             .set_label(&format!("Add {}", timer.label()));
         self.monotonic_type.set(timer);
+    }
+
+    pub fn update_view(&self, page: &UnitFileCreatorPage) {
+        self.fill_data();
+        let data = self.file_data.borrow();
+        page.update_view(&data);
+    }
+
+    fn fill_data(&self) {
+        let mut file_data = self.file_data.borrow_mut();
+
+        file_data.set_description(self.description.text());
+        file_data.set_persistent(self.persistent.is_active());
+        file_data.set_trigger_unit(self.trigger_unit2.subtitle());
+
+        file_data.sort();
+    }
+
+    pub fn update_file_data(&self, content: &str) {
+        let Some(data) = UnitFileData::from_content(content) else {
+            return;
+        };
+
+        self.description.set_text(data.description());
+        self.persistent.set_active(data.persistent());
+        self.trigger_unit2.set_subtitle(data.trigger_unit());
+
+        self.file_data.replace(data);
     }
 }
 
