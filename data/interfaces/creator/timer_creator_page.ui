@@ -50,25 +50,6 @@
                     <child>
                       <object class="AdwSplitButton" id="monotonic_timer_adder">
                         <property name="label">Add</property>
-                        <property name="menu-model">
-                          <menu>
-                            <item>
-                              <attribute name="label">OnActiveSec</attribute>
-                            </item>
-                            <item>
-                              <attribute name="label">OnBootSec</attribute>
-                            </item>
-                            <item>
-                              <attribute name="label">OnStartupSec</attribute>
-                            </item>
-                            <item>
-                              <attribute name="label">OnUnitActiveSec</attribute>
-                            </item>
-                            <item>
-                              <attribute name="label">OnUnitInactiveSec</attribute>
-                            </item>
-                          </menu>
-                        </property>
                         <property name="valign">baseline-center</property>
                       </object>
                     </child>

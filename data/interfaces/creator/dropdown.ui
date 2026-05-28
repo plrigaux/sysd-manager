@@ -17,7 +17,9 @@
                 <property name="spacing">5</property>
                 <property name="width-request">300</property>
                 <child>
-                  <object class="GtkSearchEntry"/>
+                  <object class="GtkSearchEntry" id="search_entry">
+                    <signal name="search-changed" handler="search_entry_changed" swapped="True"/>
+                  </object>
                 </child>
                 <child>
                   <object class="GtkScrolledWindow">

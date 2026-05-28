@@ -29,7 +29,7 @@ use glib::object::{Cast, CastNone, IsA};
 use gtk::{gdk, pango::FontDescription, prelude::*};
 use regex::Regex;
 pub(crate) use std::{rc::Rc, sync::OnceLock};
-use tracing::{debug, error};
+use tracing::debug;
 
 pub enum InterPanelMessage<'a> {
     Font(Option<&'a FontDescription>),
@@ -175,7 +175,6 @@ pub fn clear_on_escape2() -> gtk::EventControllerKey {
     let event_controller = gtk::EventControllerKey::new();
 
     event_controller.connect_key_released(|controller, key, _keycode, _state| {
-        error!("ddddddddddddddddd");
         if key == gdk::Key::Escape {
             if let Some(search_entry) = controller.widget().and_downcast_ref::<adw::EntryRow>() {
                 search_entry.set_text("");

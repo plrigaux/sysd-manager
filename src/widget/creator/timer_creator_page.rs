@@ -1,7 +1,9 @@
 mod imp;
 use crate::widget::creator::{UnitCreatorWindow, unit_file_creator_page::UnitFileCreatorPage};
+use gettextrs::pgettext;
 use glib::{WeakRef, subclass::types::ObjectSubclassIsExt};
 use gtk::glib::{self};
+use strum::{EnumIter, IntoEnumIterator};
 
 glib::wrapper! {
 
@@ -29,5 +31,54 @@ impl TimerCreatorPage {
 
     pub fn update_file_data(&self, content: &str) {
         self.imp().update_file_data(content);
+    }
+}
+
+#[derive(Debug, Copy, Clone, Default, EnumIter)]
+pub enum MonotonicTimer {
+    #[default]
+    Active,
+    Boot,
+    Startup,
+    UnitActive,
+    UnitInactive,
+}
+
+impl MonotonicTimer {
+    fn param(&self) -> &str {
+        match self {
+            MonotonicTimer::Active => "OnActiveSec",
+            MonotonicTimer::Boot => "OnBootSec",
+            MonotonicTimer::Startup => "OnStartupSec",
+            MonotonicTimer::UnitActive => "OnUnitActiveSec",
+            MonotonicTimer::UnitInactive => "OnUnitInactiveSec",
+        }
+    }
+
+    fn label(&self) -> String {
+        match self {
+            MonotonicTimer::Active => pgettext("timer", "OnActiveSec"),
+            MonotonicTimer::Boot => pgettext("timer", "OnBootSec"),
+            MonotonicTimer::Startup => pgettext("timer", "OnStartupSec"),
+            MonotonicTimer::UnitActive => pgettext("timer", "OnUnitActiveSec"),
+            MonotonicTimer::UnitInactive => pgettext("timer", "OnUnitInactiveSec"),
+        }
+    }
+
+    pub fn get(value: &str) -> Option<MonotonicTimer> {
+        MonotonicTimer::iter().find(|t| t.param() == value)
+    }
+}
+
+impl From<Option<&glib::Variant>> for MonotonicTimer {
+    fn from(value: Option<&glib::Variant>) -> Self {
+        match value.and_then(|v| v.get::<String>()).as_deref() {
+            Some("OnActiveSec") => Self::Active,
+            Some("OnBootSec") => Self::Boot,
+            Some("OnStartupSec") => Self::Startup,
+            Some("OnUnitActiveSec") => Self::UnitActive,
+            Some("OnUnitInactiveSec") => Self::UnitInactive,
+            Some(_) | None => Self::default(),
+        }
     }
 }

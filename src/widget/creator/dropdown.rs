@@ -26,14 +26,15 @@ impl Default for SysDDropDown {
 }
 
 mod imp {
-    use std::cell::OnceCell;
+    use std::cell::{OnceCell, RefCell};
 
     use adw::{prelude::ActionRowExt, subclass::prelude::*};
     use glib::{
         object::{Cast, CastNone, IsA},
         subclass::{object::ObjectImpl, types::ObjectSubclass},
     };
-    use gtk::prelude::ListItemExt;
+    use gtk::prelude::*;
+    use tracing::{debug, error};
 
     #[derive(Default, gtk::CompositeTemplate)]
     #[template(resource = "/io/github/plrigaux/sysd-manager/dropdown.ui")]
@@ -42,14 +43,76 @@ mod imp {
         #[template_child]
         drop_list_view: TemplateChild<gtk::ListView>,
 
+        #[template_child]
+        search_entry: TemplateChild<gtk::SearchEntry>,
+
         filter_list_model: OnceCell<gtk::FilterListModel>,
+
+        last_filter_string: RefCell<String>,
+
+        custom_filter: OnceCell<gtk::CustomFilter>,
     }
 
+    #[gtk::template_callbacks]
     impl SysDDropdownImp {
         pub fn set_model(&self, model: Option<&impl IsA<gio::ListModel>>) {
             if let Some(fl) = self.filter_list_model.get() {
                 fl.set_model(model);
             }
+        }
+
+        #[template_callback]
+        fn search_entry_changed(&self, search_entry: &gtk::SearchEntry) {
+            let text: glib::GString = search_entry.text();
+
+            let mut last_filter = self.last_filter_string.borrow_mut();
+
+            let text_is_empty = text.is_empty();
+            if !text_is_empty {
+                // self.toogle_button.set_active(true);
+            }
+
+            let change_type = if text_is_empty {
+                gtk::FilterChange::LessStrict
+            } else if text.len() > last_filter.len() && text.contains(last_filter.as_str()) {
+                gtk::FilterChange::MoreStrict
+            } else if text.len() < last_filter.len() && last_filter.contains(text.as_str()) {
+                gtk::FilterChange::LessStrict
+            } else {
+                gtk::FilterChange::Different
+            };
+
+            debug!("Search text. Current \"{text}\" Prev \"{last_filter}\"");
+            last_filter.replace_range(.., text.as_str());
+
+            if let Some(custom_filter) = self.custom_filter.get() {
+                custom_filter.changed(change_type);
+            }
+        }
+
+        fn create_filter(&self) -> gtk::CustomFilter {
+            let search_entry = self.search_entry.clone();
+
+            gtk::CustomFilter::new(move |object| {
+                let text_gs = search_entry.text();
+                if text_gs.is_empty() {
+                    return true;
+                }
+
+                let Some(list_item) = object.downcast_ref::<gtk::StringObject>() else {
+                    error!("some wrong downcast_ref {object:?}");
+                    return false;
+                };
+
+                let texts = text_gs.as_str();
+
+                //if an upper case --> filter
+                if text_gs.chars().any(|c| c.is_ascii_uppercase()) {
+                    list_item.string().contains(texts)
+                } else {
+                    list_item.string().to_ascii_lowercase().contains(texts)
+                }
+            })
         }
     }
 
@@ -62,7 +125,7 @@ mod imp {
         fn class_init(klass: &mut Self::Class) {
             // The layout manager determines how child widgets are laid out.
             klass.bind_template();
-            // klass.bind_template_callbacks();
+            klass.bind_template_callbacks();
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -75,19 +138,13 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
 
-            // let list_store = gio::ListStore::new::<gtk::StringObject>();
-            // for i in 0..50 {
-            //     vec.push(i.to_string());
-            //     let item = gtk::StringObject::new(&i.to_string());
-            //     list_store.append(&item);
-            // }
+            let filter = self.create_filter();
 
-            //let selection_model = gtk::NoSelection::new(Some(store.clone()));
+            self.custom_filter
+                .set(filter.clone())
+                .expect("custom filter set once");
 
-            // gtk::Filter:: c
-
-            let filter_list_model =
-                gtk::FilterListModel::new(None::<gio::ListStore>, None::<gtk::Filter>);
+            let filter_list_model = gtk::FilterListModel::new(None::<gio::ListStore>, Some(filter));
             let selection_model = gtk::SingleSelection::builder()
                 .can_unselect(true)
                 .autoselect(false)

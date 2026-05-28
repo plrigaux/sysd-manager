@@ -4,7 +4,10 @@ use crate::{
     widget::{
         self,
         creator::{
-            UnitCreateType, UnitCreatorWindow, dropdown::SysDDropDown, unit_file::UnitFileData,
+            UnitCreateType, UnitCreatorWindow,
+            dropdown::SysDDropDown,
+            timer_creator_page::MonotonicTimer,
+            unit_file::{ON_CALENDAR, TIMER, UnitFileData},
             unit_file_creator_page::UnitFileCreatorPage,
         },
     },
@@ -15,7 +18,7 @@ use adw::{
 };
 use gettextrs::pgettext;
 use gio::prelude::*;
-use glib::{VariantTy, WeakRef, clone::Downgrade};
+use glib::{VariantTy, WeakRef};
 use gtk::{
     glib::{self},
     prelude::{ButtonExt, EditableExt, ObjectExt, WidgetExt},
@@ -23,6 +26,7 @@ use gtk::{
 use std::{
     borrow::Cow,
     cell::{Cell, OnceCell, RefCell},
+    collections::HashSet,
 };
 use strum::{EnumIter, IntoEnumIterator};
 const ACTION_CREATOR_MONOTONIC_ADD: &str = "creator.monotonic-add";
@@ -60,8 +64,11 @@ pub struct TimerCreatorPageImp {
 
     pub(super) window: OnceCell<WeakRef<UnitCreatorWindow>>,
 
-    monotonic_type: Cell<MontotonicTimer>,
+    monotonic_type: Cell<MonotonicTimer>,
     realtime_type: Cell<RealTimeTimer>,
+
+    pub monotonic_timers: RefCell<Vec<(String, adw::EntryRow)>>,
+    pub realtime_timers: RefCell<Vec<adw::EntryRow>>,
 }
 
 #[glib::object_subclass]
@@ -93,7 +100,7 @@ impl ObjectImpl for TimerCreatorPageImp {
 
         let menu = gio::Menu::new();
 
-        for timer in MontotonicTimer::iter() {
+        for timer in MonotonicTimer::iter() {
             add_menu_item_param(
                 &menu,
                 &timer.label(),
@@ -114,12 +121,16 @@ impl ObjectImpl for TimerCreatorPageImp {
             );
         }
 
+        let timer_panel = self.obj().clone();
+        self.monotonic_timer_adder.connect_clicked(move |_| {
+            timer_panel.imp().add_monotonic();
+        });
         self.realtime_timer_adder.set_menu_model(Some(&menu));
         let timer_panel = self.obj().clone();
         self.realtime_timer_adder.connect_clicked(move |_| {
             timer_panel.imp().add_realtime();
         });
-        self.select_add_monotonic(MontotonicTimer::default());
+        self.select_add_monotonic(MonotonicTimer::default());
         self.select_add_realtime(RealTimeTimer::default());
     }
 }
@@ -159,7 +170,7 @@ impl TimerCreatorPageImp {
             let timer_page = self.obj().clone();
             gio::ActionEntry::builder(&ACTION_CREATOR_MONOTONIC_ADD[8..])
                 .activate(move |_, _, v| {
-                    let timer: MontotonicTimer = v.into();
+                    let timer: MonotonicTimer = v.into();
                     timer_page.imp().select_add_monotonic(timer);
                     timer_page.imp().add_monotonic();
                 })
@@ -192,9 +203,13 @@ impl TimerCreatorPageImp {
 
     fn add_realtime(&self) {
         let calendar_type = self.realtime_type.get();
+        self.add_realtime2(Some(&calendar_type.text()));
+    }
+
+    fn add_realtime2(&self, calendar_type: Option<&str>) {
         let entry_row = adw::EntryRow::builder()
-            .title("On Calendar")
-            .text(calendar_type.text())
+            .title(ON_CALENDAR)
+            .text(calendar_type.unwrap_or_default())
             .build();
 
         let event_controller = widget::clear_on_escape2();
@@ -207,19 +222,26 @@ impl TimerCreatorPageImp {
             .build();
 
         entry_row.add_suffix(&button);
-        let timers_group = self.timers_group.downgrade();
+        let timers_panel = self.obj().downgrade();
+        self.monotonic_timers
+            .borrow_mut()
+            .push((ON_CALENDAR.to_string(), entry_row.clone()));
         self.timers_group.add(&entry_row);
         button.connect_clicked(move |_| {
-            let timers_group = upgrade!(timers_group);
-            timers_group.remove(&entry_row);
+            let timers_panel = upgrade!(timers_panel);
+            timers_panel.imp().remove_realtime(&entry_row);
         });
     }
 
     fn add_monotonic(&self) {
         let timer = self.monotonic_type.get();
+        self.add_monotonic2(timer, None);
+    }
+
+    fn add_monotonic2(&self, timer: MonotonicTimer, value: Option<&str>) {
         let entry_row = adw::EntryRow::builder()
             .title(timer.label())
-            .text("")
+            .text(value.unwrap_or_default())
             .build();
 
         let event_controller = widget::clear_on_escape2();
@@ -232,15 +254,34 @@ impl TimerCreatorPageImp {
             .build();
 
         entry_row.add_suffix(&button);
-        let timers_group = self.timers_group.downgrade();
+        let timers_group = self.obj().downgrade();
         self.timers_group.add(&entry_row);
+
+        self.monotonic_timers
+            .borrow_mut()
+            .push((timer.param().to_string(), entry_row.clone()));
+
         button.connect_clicked(move |_| {
-            let timers_group = upgrade!(timers_group);
-            timers_group.remove(&entry_row);
+            let timers_panel = upgrade!(timers_group);
+            timers_panel.imp().remove_monotonic(&entry_row);
         });
     }
 
-    fn select_add_monotonic(&self, timer: MontotonicTimer) {
+    fn remove_monotonic(&self, entry_row: &adw::EntryRow) {
+        self.timers_group.remove(entry_row);
+
+        let mut vec = self.monotonic_timers.borrow_mut();
+        vec.retain(|(_, e)| e != entry_row);
+    }
+
+    fn remove_realtime(&self, entry_row: &adw::EntryRow) {
+        self.timers_group.remove(entry_row);
+
+        let mut vec = self.realtime_timers.borrow_mut();
+        vec.retain(|e| e != entry_row);
+    }
+
+    fn select_add_monotonic(&self, timer: MonotonicTimer) {
         self.monotonic_timer_adder
             .set_label(&format!("Add {}", timer.label()));
         self.monotonic_type.set(timer);
@@ -259,6 +300,39 @@ impl TimerCreatorPageImp {
         file_data.set_persistent(self.persistent.is_active());
         file_data.set_trigger_unit(self.trigger_unit2.subtitle());
 
+        let timers = self
+            .monotonic_timers
+            .borrow()
+            .iter()
+            .filter(|(_, e)| !e.text().trim_ascii().is_empty())
+            .map(|(id, entry)| (id.clone(), entry.text().trim_ascii().to_string()))
+            .collect::<Vec<_>>();
+
+        let mut set = HashSet::from([ON_CALENDAR.to_string()]);
+        for s in MonotonicTimer::iter() {
+            set.insert(s.param().to_string());
+        }
+
+        let mut timer_map: indexmap::IndexMap<String, Vec<String>> = indexmap::IndexMap::new();
+
+        for (timer, value) in timers.into_iter() {
+            set.remove(&timer);
+            match timer_map.entry(timer) {
+                indexmap::map::Entry::Occupied(mut occupied_entry) => {
+                    occupied_entry.get_mut().push(value);
+                }
+                indexmap::map::Entry::Vacant(vacant_entry) => {
+                    vacant_entry.insert_entry(vec![value]);
+                }
+            };
+        }
+
+        file_data.add_timers(timer_map);
+
+        for s in set {
+            file_data.remove(TIMER, &s);
+        }
+
         file_data.sort();
     }
 
@@ -270,6 +344,22 @@ impl TimerCreatorPageImp {
         self.description.set_text(data.description());
         self.persistent.set_active(data.persistent());
         self.trigger_unit2.set_subtitle(data.trigger_unit());
+
+        for (_, entry_row) in self.monotonic_timers.borrow_mut().drain(..) {
+            self.timers_group.remove(&entry_row);
+        }
+
+        for (timer, values) in data.timers() {
+            if let Some(m_timer) = MonotonicTimer::get(&timer.attribute) {
+                for value in values {
+                    self.add_monotonic2(m_timer, Some(value.as_str()));
+                }
+            } else {
+                for value in values {
+                    self.add_realtime2(Some(value.as_str()));
+                }
+            }
+        }
 
         self.file_data.replace(data);
     }
@@ -294,50 +384,6 @@ impl WidgetImpl for TimerCreatorPageImp {}
 
 impl NavigationPageImpl for TimerCreatorPageImp {}
 
-#[derive(Debug, Copy, Clone, Default, EnumIter)]
-enum MontotonicTimer {
-    #[default]
-    Active,
-    Boot,
-    Startup,
-    UnitActive,
-    UnitInactive,
-}
-
-impl MontotonicTimer {
-    fn param(&self) -> &str {
-        match self {
-            MontotonicTimer::Active => "OnActiveSec",
-            MontotonicTimer::Boot => "OnBootSec",
-            MontotonicTimer::Startup => "OnStartupSec",
-            MontotonicTimer::UnitActive => "OnUnitActiveSec",
-            MontotonicTimer::UnitInactive => "OnUnitInactiveSec",
-        }
-    }
-
-    fn label(&self) -> String {
-        match self {
-            MontotonicTimer::Active => pgettext("timer", "OnActiveSec "),
-            MontotonicTimer::Boot => pgettext("timer", "OnBootSec "),
-            MontotonicTimer::Startup => pgettext("timer", "OnStartupSec "),
-            MontotonicTimer::UnitActive => pgettext("timer", "OnUnitActiveSec "),
-            MontotonicTimer::UnitInactive => pgettext("timer", "OnUnitInactiveSec "),
-        }
-    }
-}
-
-impl From<Option<&glib::Variant>> for MontotonicTimer {
-    fn from(value: Option<&glib::Variant>) -> Self {
-        match value.and_then(|v| v.get::<String>()).as_deref() {
-            Some("OnActiveSec") => Self::Active,
-            Some("OnBootSec") => Self::Boot,
-            Some("OnStartupSec") => Self::Startup,
-            Some("OnUnitActiveSec") => Self::UnitActive,
-            Some("OnUnitInactiveSec") => Self::UnitInactive,
-            Some(_) | None => Self::default(),
-        }
-    }
-}
 #[derive(Debug, Copy, Clone, Default, EnumIter)]
 enum RealTimeTimer {
     #[default]

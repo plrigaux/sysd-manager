@@ -4,8 +4,10 @@ use std::cmp::Ordering::{Equal, Greater, Less};
 use std::fmt::Write;
 use tracing::warn;
 
+use crate::widget::creator::timer_creator_page::MonotonicTimer;
+
 #[derive(Debug, Eq, PartialEq, Hash)]
-struct FileEntry {
+pub struct FileEntry {
     pub section: String,
     pub attribute: String,
 }
@@ -15,6 +17,12 @@ impl FileEntry {
         FileEntry {
             section: section.to_string(),
             attribute: attribute.to_string(),
+        }
+    }
+    fn new2(section: &str, attribute: String) -> FileEntry {
+        FileEntry {
+            section: section.to_string(),
+            attribute,
         }
     }
 }
@@ -39,9 +47,10 @@ impl Equivalent<FileEntry> for FileEntryRef<'_> {
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 const UNIT: &str = "Unit";
-const TIMER: &str = "Timer";
+pub const TIMER: &str = "Timer";
 const SERVICE: &str = "Service";
 const INSTALL: &str = "Install";
+pub const ON_CALENDAR: &str = "OnCalendar";
 
 #[derive(Debug, Default)]
 pub struct UnitFileData(IndexMap<FileEntry, Vec<String>>);
@@ -87,15 +96,17 @@ impl UnitFileData {
                     Some(param) => param.attr_name,
                     None => attr.name,
                 };
-                map.0
-                    .entry(FileEntry {
-                        section: section_name.to_string(),
-                        attribute: key.to_string(),
-                    })
-                    .and_modify(|attr_list: &mut Vec<String>| {
-                        attr_list.push(attr.value.clone().into())
-                    })
-                    .or_insert(vec![attr.value.into()]);
+                let value = attr.value;
+                if !value.trim_ascii().is_empty() {
+                    match map.0.entry(FileEntry::new(section_name, key)) {
+                        indexmap::map::Entry::Occupied(mut occupied_entry) => {
+                            occupied_entry.get_mut().push(value.into());
+                        }
+                        indexmap::map::Entry::Vacant(vacant_entry) => {
+                            vacant_entry.insert_entry(vec![value.into()]);
+                        }
+                    };
+                }
             }
         }
         Ok(map)
@@ -129,7 +140,7 @@ impl UnitFileData {
         }
     }
 
-    fn remove(&mut self, section: &str, attribute: &str) -> Option<Vec<String>> {
+    pub fn remove(&mut self, section: &str, attribute: &str) -> Option<Vec<String>> {
         self.0.shift_remove(&FileEntryRef::new(section, attribute))
     }
 
@@ -207,6 +218,20 @@ impl UnitFileData {
 
     pub fn set_trigger_unit(&mut self, value: Option<impl AsRef<str>>) {
         self.insert_string(TIMER, "Unit", value.map(|s| s.as_ref().to_string()));
+    }
+
+    pub fn add_timers(&mut self, timers: IndexMap<String, Vec<String>>) {
+        for (timer, value) in timers {
+            self.0.insert(FileEntry::new2(TIMER, timer), value);
+        }
+    }
+
+    pub fn timers(&self) -> impl Iterator<Item = (&FileEntry, &Vec<String>)> {
+        self.0.iter().filter(|(file_entry, _)| {
+            file_entry.section == TIMER
+                && (file_entry.attribute.as_str() == ON_CALENDAR
+                    || MonotonicTimer::get(&file_entry.attribute).is_some())
+        })
     }
 }
 
