@@ -1,14 +1,19 @@
 pub mod dropdown;
+mod first_page;
 mod imp;
 mod launch_creator_page;
+pub mod navigation_row;
 mod service_creator_page;
 mod timer_creator_page;
 mod unit_file;
 mod unit_file_creator_page;
 use crate::widget::app_window::AppWindow;
 use adw::subclass::prelude::ObjectSubclassIsExt;
+use base::enums::UnitDBusLevel;
+use gettextrs::pgettext;
 use gtk::glib::{self};
-use tracing::warn;
+use std::{cell::Ref, collections::HashSet};
+use tracing::{error, warn};
 
 glib::wrapper! {
 
@@ -28,7 +33,35 @@ impl UnitCreatorWindow {
     pub fn action_group(&self) -> gio::SimpleActionGroup {
         self.imp().action_group.borrow().clone()
     }
+
+    pub fn set_creation_unit_type(&self, unit_type: UnitCreateType) {
+        self.imp().set_creation_unit_type(unit_type);
+    }
+
+    pub fn system_file_list(&self) -> Ref<'_, HashSet<String>> {
+        self.imp().system_file_list.borrow()
+    }
+
+    pub fn session_file_list(&self) -> Ref<'_, HashSet<String>> {
+        self.imp().session_file_list.borrow()
+    }
+
+    pub fn set_bus_level(&self, level: UnitDBusLevel) {
+        self.imp().bus_level.set(level);
+    }
 }
+
+pub const VALID_UNIT_NAME: &str = r"^[a-zA-Z0-9._:\-]+@?$";
+pub const ACTION_CREATOR_UNIT_BUS: &str = "creator.unit_bus_selection";
+pub const ACTION_CREATOR_UNIT_TYPE_SELECTION: &str = "creator.unit_type_selection";
+pub const ACTION_CREATOR_NEXT: &str = "creator.next";
+pub const ACTION_CREATOR_FILE: &str = "creator.file";
+pub const ACTION_CREATOR_CREATE: &str = "creator.create";
+pub const ACTION_CREATOR_PREVIOUS: &str = "creator.previous";
+pub const PAGE_FIRST: &str = "first-page";
+pub const PAGE_LAUNCH: &str = "launch-page";
+pub const PAGE_TIMER: &str = "timer-page";
+pub const PAGE_SERVICE: &str = "service-page";
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, glib::Enum, Default, Hash)]
 #[enum_type(name = "UnitCreateType")]
@@ -53,6 +86,14 @@ impl UnitCreateType {
             UnitCreateType::Service => "service",
             UnitCreateType::Timer => "timer",
             UnitCreateType::TimerService => "timer_service",
+        }
+    }
+
+    fn title(&self) -> String {
+        match self {
+            UnitCreateType::Service => pgettext("create", "Service"),
+            UnitCreateType::Timer => pgettext("create", "Timer"),
+            UnitCreateType::TimerService => pgettext("create", "Timer with Service"),
         }
     }
 }
@@ -90,12 +131,75 @@ impl CreateUnitErr {
             CreateUnitErr::WrongChar => format!("{prefix} - Wrong Char"),
             CreateUnitErr::Limit255 => format!("{prefix} - Unit File over 255 characters"),
             CreateUnitErr::FileExits => format!("{prefix} - Unit File already exists"),
-            CreateUnitErr::Empty => format!("{prefix} - Nae Empty"),
+            CreateUnitErr::Empty => format!("{prefix} -  Empty"),
             CreateUnitErr::FileNotExits => format!("{prefix} - File not exists"),
             CreateUnitErr::NotFile => format!("{prefix} - Not a File"),
             CreateUnitErr::NotExecutable => format!("{prefix} - Not Exec"),
             CreateUnitErr::Malformed => format!("{prefix} - Malformed"),
             CreateUnitErr::NoErr => prefix.to_owned(),
+        }
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, Default, glib::Enum)]
+#[enum_type(name = "PageType")]
+pub enum PageType {
+    #[default]
+    Start,
+    Service,
+    ServiceFile,
+    Timer,
+    TimerFile,
+    Launch,
+}
+
+const SERVICE_FILE_PAGE: &str = "service-file-page";
+const TIMER_FILE_PAGE: &str = "timer-file-page";
+
+impl PageType {
+    fn id(&self) -> &str {
+        match self {
+            PageType::Start => PAGE_FIRST,
+            PageType::Service => PAGE_SERVICE,
+            PageType::ServiceFile => SERVICE_FILE_PAGE,
+            PageType::Timer => PAGE_TIMER,
+            PageType::TimerFile => TIMER_FILE_PAGE,
+            PageType::Launch => PAGE_LAUNCH,
+        }
+    }
+
+    fn next(&self, creation_type: UnitCreateType) -> Option<&'static str> {
+        match (self, creation_type) {
+            (PageType::Start, UnitCreateType::Timer) => Some(PAGE_TIMER),
+            (PageType::Start, _) => Some(PAGE_SERVICE),
+            (PageType::Service, UnitCreateType::TimerService) => Some(PAGE_TIMER),
+            (PageType::Service, _) => Some(PageType::Launch.id()),
+            (PageType::ServiceFile, UnitCreateType::TimerService) => Some(PAGE_TIMER),
+            (PageType::ServiceFile, _) => Some(PageType::Launch.id()),
+            (PageType::Timer, _) => Some(PageType::Launch.id()),
+            (PageType::TimerFile, _) => Some(PageType::Launch.id()),
+            (PageType::Launch, _) => None,
+        }
+    }
+}
+
+impl From<Option<&str>> for PageType {
+    fn from(value: Option<&str>) -> Self {
+        match value {
+            Some(PAGE_FIRST) => PageType::Start,
+            Some(PAGE_TIMER) => PageType::Timer,
+            Some(PAGE_SERVICE) => PageType::Service,
+            Some(PAGE_LAUNCH) => PageType::Launch,
+            Some(SERVICE_FILE_PAGE) => PageType::ServiceFile,
+            Some(TIMER_FILE_PAGE) => PageType::TimerFile,
+            Some(tag) => {
+                warn!("Unkown TAG {tag}");
+                PageType::Launch
+            }
+            None => {
+                error!("Missing Tag");
+                PageType::Start
+            }
         }
     }
 }

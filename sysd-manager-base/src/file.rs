@@ -119,6 +119,35 @@ pub fn determine_drop_in_path_dir(
     Ok(path)
 }
 
+pub fn determine_unit_file_path_dir(
+    runtime: bool,
+    user_session: bool,
+) -> Result<String, Box<dyn Error + 'static>> {
+    let path = match (runtime, user_session) {
+        (true, false) => "/run/systemd/system/".to_owned(),
+        (false, false) => "/etc/systemd/system/".to_owned(),
+        (true, true) => {
+            let runtime_dir = std::env::var("XDG_RUNTIME_DIR")
+                .unwrap_or_else(|_| format!("/run/user/{}", getuid()));
+            format!("{runtime_dir}/systemd/user/")
+        }
+        (false, true) => {
+            let config = std::env::var("XDG_CONFIG_HOME").unwrap_or_else(|_| {
+                std::env::home_dir()
+                    .unwrap_or_else(|| {
+                        error!("Nome directory found!");
+                        PathBuf::default()
+                    })
+                    .join(".config")
+                    .display()
+                    .to_string()
+            });
+            format!("{config}/systemd/user/")
+        }
+    };
+    Ok(path)
+}
+
 pub fn create_drop_in_path_file(
     unit_name: &str,
     runtime: bool,

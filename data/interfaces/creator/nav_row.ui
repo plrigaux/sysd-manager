@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 1.0.2 -->
+<interface>
+  <!-- interface-name nav_row.ui -->
+  <requires lib="gtk" version="4.18"/>
+  <template class="NavigationRow" parent="GtkBox">
+    <property name="halign">end</property>
+    <property name="margin-bottom">5</property>
+    <property name="margin-end">5</property>
+    <property name="margin-start">5</property>
+    <property name="margin-top">5</property>
+    <property name="spacing">5</property>
+    <child>
+      <object class="GtkButton" id="prev_button">
+        <property name="action-name">creator.previous</property>
+        <property name="css-classes">pill</property>
+        <property name="halign">end</property>
+        <property name="label">Previous</property>
+        <property name="valign">center</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkBox">
+        <property name="css-classes">linked</property>
+        <child>
+          <object class="GtkButton" id="file_button">
+            <property name="action-name">creator.file</property>
+            <property name="css-classes">pill</property>
+            <property name="halign">end</property>
+            <property name="label">File</property>
+            <property name="valign">center</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton" id="next_button">
+            <property name="action-name">creator.next</property>
+            <property name="css-classes">pill</property>
+            <property name="halign">end</property>
+            <property name="label">Next</property>
+            <property name="valign">center</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkButton" id="create_button">
+        <property name="action-name">creator.create</property>
+        <property name="css-classes">pill
+suggested-action</property>
+        <property name="halign">end</property>
+        <property name="label">Create</property>
+        <property name="valign">center</property>
+        <property name="visible">False</property>
+      </object>
+    </child>
+  </template>
+</interface>

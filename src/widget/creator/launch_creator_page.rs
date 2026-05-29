@@ -1,7 +1,8 @@
+use adw::prelude::NavigationPageExt;
 use glib::{WeakRef, subclass::types::ObjectSubclassIsExt};
 use gtk::glib::{self};
 
-use crate::widget::creator::UnitCreatorWindow;
+use crate::widget::creator::{PageType, UnitCreatorWindow};
 
 glib::wrapper! {
 
@@ -11,9 +12,10 @@ glib::wrapper! {
 }
 
 impl LaunchCreatorPage {
-    pub fn new(window: WeakRef<UnitCreatorWindow>) -> Self {
+    pub fn new(window: WeakRef<UnitCreatorWindow>, page: PageType) -> Self {
         let obj: LaunchCreatorPage = glib::Object::new();
         obj.imp().set_window(window);
+        obj.set_tag(Some(page.id()));
         obj
     }
 }

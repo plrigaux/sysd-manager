@@ -336,6 +336,11 @@ impl TimerCreatorPageImp {
         file_data.sort();
     }
 
+    pub(super) fn file_content(&self) -> String {
+        self.fill_data();
+        self.file_data.borrow().to_file()
+    }
+
     pub fn update_file_data(&self, content: &str) {
         let Some(data) = UnitFileData::from_content(content) else {
             return;

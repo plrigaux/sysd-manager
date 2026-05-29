@@ -1,7 +1,10 @@
+use adw::prelude::NavigationPageExt;
 use glib::{WeakRef, subclass::types::ObjectSubclassIsExt};
 use gtk::glib::{self};
 
-use crate::widget::creator::{UnitCreatorWindow, unit_file_creator_page::UnitFileCreatorPage};
+use crate::widget::creator::{
+    PageType, UnitCreatorWindow, unit_file_creator_page::UnitFileCreatorPage,
+};
 
 glib::wrapper! {
 
@@ -11,8 +14,9 @@ glib::wrapper! {
 }
 
 impl ServiceCreatorPage {
-    pub fn new(window: WeakRef<UnitCreatorWindow>) -> Self {
+    pub fn new(window: WeakRef<UnitCreatorWindow>, page: PageType) -> Self {
         let obj: ServiceCreatorPage = glib::Object::new();
+        obj.set_tag(Some(page.id()));
         let _ = obj.imp().window.set(window);
         // obj.imp().update_from_unit_info();
         obj
@@ -24,6 +28,10 @@ impl ServiceCreatorPage {
 
     pub fn update_file_data(&self, content: &str) {
         self.imp().update_file_data(content);
+    }
+
+    pub fn file_content(&self) -> String {
+        self.imp().file_content()
     }
 }
 
@@ -237,6 +245,11 @@ mod imp {
             self.fill_data();
             let data = self.file_data.borrow();
             page.update_view(&data);
+        }
+
+        pub(super) fn file_content(&self) -> String {
+            self.fill_data();
+            self.file_data.borrow().to_file()
         }
 
         fn fill_data(&self) {

@@ -1286,7 +1286,25 @@ pub async fn save_file(
 
     #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
     if user_session || !proxy_switcher::PROXY_SWITCHER.save_file() {
-        save_text_to_file(file_path, content, user_session).await
+        save_text_to_file(file_path, content, user_session, false).await
+    } else {
+        proxy_call_async!(save_file, file_path, content)
+    }
+
+    #[cfg(any(feature = "flatpak", feature = "appimage"))]
+    save_text_to_file(file_path, content, user_session).await
+}
+
+pub async fn create_file(
+    user_session: bool,
+    file_path: &str,
+    content: &str,
+) -> Result<u64, SystemdErrors> {
+    info!("Saving file {file_path:?}");
+
+    #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
+    if user_session || !proxy_switcher::PROXY_SWITCHER.save_file() {
+        save_text_to_file(file_path, content, user_session, true).await
     } else {
         proxy_call_async!(save_file, file_path, content)
     }

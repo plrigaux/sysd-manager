@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 1.0 -->
+<!-- Created with Cambalache 1.0.2 -->
 <interface>
   <!-- interface-name service_creator_page.ui -->
   <requires lib="gtk" version="4.18"/>
@@ -64,16 +64,7 @@
               <object class="AdwPreferencesGroup"/>
             </child>
             <child>
-              <object class="AdwPreferencesGroup">
-                <child>
-                  <object class="AdwButtonRow">
-                    <property name="action-name">navigation.push</property>
-                    <property name="action-target">'unit_file_page'</property>
-                    <property name="end-icon-name">go-next</property>
-                    <property name="title">Generated File</property>
-                  </object>
-                </child>
-              </object>
+              <object class="AdwPreferencesGroup"/>
             </child>
           </object>
         </property>

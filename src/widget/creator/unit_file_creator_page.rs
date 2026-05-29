@@ -1,7 +1,8 @@
+use adw::prelude::NavigationPageExt;
 use glib::{GString, subclass::types::ObjectSubclassIsExt};
 use gtk::glib::{self};
 
-use crate::widget::creator::unit_file::UnitFileData;
+use crate::widget::creator::{PageType, unit_file::UnitFileData};
 
 glib::wrapper! {
 
@@ -11,8 +12,9 @@ glib::wrapper! {
 }
 
 impl UnitFileCreatorPage {
-    pub fn new() -> Self {
+    pub fn new(page: PageType) -> Self {
         let obj: UnitFileCreatorPage = glib::Object::new();
+        obj.set_tag(Some(page.id()));
         obj
     }
 

@@ -97,16 +97,7 @@
               </object>
             </child>
             <child>
-              <object class="AdwPreferencesGroup">
-                <child>
-                  <object class="AdwButtonRow">
-                    <property name="action-name">navigation.push</property>
-                    <property name="action-target">'unit_file_page'</property>
-                    <property name="end-icon-name">go-next</property>
-                    <property name="title">Generated File</property>
-                  </object>
-                </child>
-              </object>
+              <object class="AdwPreferencesGroup"/>
             </child>
           </object>
         </property>
