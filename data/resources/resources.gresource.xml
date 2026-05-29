@@ -30,7 +30,9 @@
     <file compressed="true" preprocess="xml-stripblanks" alias="shortcuts-dialog.ui">interfaces/shortcuts.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_pop_menu.ui">interfaces/unit_pop_menu.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="text_find.ui">interfaces/text_find.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks" alias="nav_row.ui">interfaces/creator/nav_row.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="creator.ui">interfaces/creator/Creator.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks" alias="create_first.ui">interfaces/creator/create_first.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="timer_creator_page.ui">interfaces/creator/timer_creator_page.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="service_creator_page.ui">interfaces/creator/service_creator_page.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_file_creator_page.ui">interfaces/creator/unit_file_creator_page.ui</file>

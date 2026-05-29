@@ -1,5 +1,6 @@
 mod imp;
 use crate::widget::creator::{UnitCreatorWindow, unit_file_creator_page::UnitFileCreatorPage};
+use adw::prelude::NavigationPageExt;
 use gettextrs::pgettext;
 use glib::{WeakRef, subclass::types::ObjectSubclassIsExt};
 use gtk::glib::{self};
@@ -13,8 +14,9 @@ glib::wrapper! {
 }
 
 impl TimerCreatorPage {
-    pub fn new(window: WeakRef<UnitCreatorWindow>) -> Self {
+    pub fn new(window: WeakRef<UnitCreatorWindow>, tag: &str) -> Self {
         let obj: TimerCreatorPage = glib::Object::new();
+        obj.set_tag(Some(tag));
         let _ = obj.imp().window.set(window);
         obj.imp().update_from_unit_info();
         obj.imp().create_actions();
