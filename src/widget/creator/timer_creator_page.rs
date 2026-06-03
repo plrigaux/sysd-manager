@@ -33,8 +33,8 @@ impl TimerCreatorPage {
         self.imp().update_view(page);
     }
 
-    pub fn update_file_data(&self, content: &str) {
-        self.imp().update_file_data(content);
+    pub fn update_from_file_content(&self, content: &str) {
+        self.imp().update_from_file_content(content);
     }
 
     pub fn file_content(&self) -> String {

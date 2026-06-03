@@ -47,13 +47,13 @@ impl UnitCreatorWindow {
     }
 
     pub fn set_bus_level(&self, level: UnitDBusLevel) {
-        self.imp().bus_level.set(level);
+        self.imp().set_bus_level(level);
     }
 }
 
 pub const VALID_UNIT_NAME: &str = r"^[a-zA-Z0-9._:\-]+@?$";
-pub const ACTION_CREATOR_UNIT_BUS: &str = "creator.unit_bus_selection";
-pub const ACTION_CREATOR_UNIT_TYPE_SELECTION: &str = "creator.unit_type_selection";
+pub const ACTION_CREATOR_UNIT_BUS: &str = "creator.create-unit-bus-selection";
+pub const ACTION_CREATOR_UNIT_TYPE_SELECTION: &str = "creator.create-unit-type-selection";
 pub const ACTION_CREATOR_NEXT: &str = "creator.next";
 pub const ACTION_CREATOR_FILE: &str = "creator.file";
 pub const ACTION_CREATOR_CREATE: &str = "creator.create";
@@ -81,13 +81,13 @@ impl UnitCreateType {
         }
     }
 
-    fn id(&self) -> &str {
-        match self {
-            UnitCreateType::Service => "service",
-            UnitCreateType::Timer => "timer",
-            UnitCreateType::TimerService => "timer_service",
-        }
-    }
+    // fn id(&self) -> &str {
+    //     match self {
+    //         UnitCreateType::Service => "service",
+    //         UnitCreateType::Timer => "timer",
+    //         UnitCreateType::TimerService => "timer_service",
+    //     }
+    // }
 
     fn title(&self) -> String {
         match self {
@@ -100,15 +100,39 @@ impl UnitCreateType {
 
 impl From<&glib::Variant> for UnitCreateType {
     fn from(value: &glib::Variant) -> Self {
-        match value.get::<String>().as_deref() {
-            Some("service") => UnitCreateType::Service,
-            Some("timer") => UnitCreateType::Timer,
-            Some("timer_service") => UnitCreateType::TimerService,
+        match value.get::<String>() {
+            Some(s) => s.into(),
+            None => {
+                warn!("Unkown type None",);
+                UnitCreateType::Service
+            }
+        }
+    }
+}
+
+impl From<glib::GString> for UnitCreateType {
+    fn from(value: glib::GString) -> Self {
+        value.as_str().into()
+    }
+}
+
+impl From<&str> for UnitCreateType {
+    fn from(value: &str) -> Self {
+        match value {
+            "service" => UnitCreateType::Service,
+            "timer" => UnitCreateType::Timer,
+            "timer_service" => UnitCreateType::TimerService,
             other => {
                 warn!("Unkown type {:?}", other);
                 UnitCreateType::Service
             }
         }
+    }
+}
+
+impl From<String> for UnitCreateType {
+    fn from(value: String) -> Self {
+        value.as_str().into()
     }
 }
 

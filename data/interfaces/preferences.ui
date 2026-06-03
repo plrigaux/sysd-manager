@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 1.0.1 -->
+<!-- Created with Cambalache 1.0.2 -->
 <interface>
   <!-- interface-name preferences.ui -->
   <requires lib="gtk" version="4.18"/>
@@ -303,6 +303,12 @@ You can set the application's Dbus level to &lt;u&gt;System&lt;/u&gt; if you wan
               <object class="AdwSwitchRow" id="proxy_save_file_switch">
                 <property name="subtitle" translatable="yes" context="preference">&lt;b&gt;Save file&lt;/b&gt; through the Proxy</property>
                 <property name="title" translatable="yes" context="preference">Save file</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwSwitchRow" id="proxy_create_file_switch">
+                <property name="subtitle" translatable="yes" context="preference">&lt;b&gt;Create file&lt;/b&gt; through the Proxy</property>
+                <property name="title" translatable="yes" context="preference">Create file</property>
               </object>
             </child>
           </object>

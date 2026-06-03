@@ -33,7 +33,7 @@
                     <property name="title" translatable="yes">Service</property>
                     <child type="prefix">
                       <object class="GtkCheckButton">
-                        <property name="action-name">creator.unit_type_selection</property>
+                        <property name="action-name">creator.create-unit-type-selection</property>
                         <property name="action-target">"service"</property>
                         <property name="valign">center</property>
                       </object>
@@ -46,7 +46,7 @@
                     <property name="title" translatable="yes">Timer with Service</property>
                     <child type="prefix">
                       <object class="GtkCheckButton">
-                        <property name="action-name">creator.unit_type_selection</property>
+                        <property name="action-name">creator.create-unit-type-selection</property>
                         <property name="action-target">"timer_service"</property>
                         <property name="valign">center</property>
                       </object>
@@ -60,7 +60,7 @@
                     <property name="title" translatable="yes">Timer</property>
                     <child type="prefix">
                       <object class="GtkCheckButton">
-                        <property name="action-name">creator.unit_type_selection</property>
+                        <property name="action-name">creator.create-unit-type-selection</property>
                         <property name="action-target">"timer"</property>
                         <property name="valign">center</property>
                       </object>
@@ -79,9 +79,8 @@
                     <property name="title" translatable="yes">System</property>
                     <child type="prefix">
                       <object class="GtkCheckButton" id="system_bus">
-                        <property name="action-name">creator.unit_bus_selection</property>
-                        <property name="action-target">"system"</property>
-                        <property name="active">True</property>
+                        <property name="action-name">creator.create-unit-bus-selection</property>
+                        <property name="action-target">'system'</property>
                         <property name="valign">center</property>
                       </object>
                     </child>
@@ -93,7 +92,7 @@
                     <property name="title" translatable="yes">User Session</property>
                     <child type="prefix">
                       <object class="GtkCheckButton" id="session_bus">
-                        <property name="action-name">creator.unit_bus_selection</property>
+                        <property name="action-name">creator.create-unit-bus-selection</property>
                         <property name="action-target">"user"</property>
                         <property name="valign">center</property>
                       </object>

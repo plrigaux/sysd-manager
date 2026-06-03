@@ -1,5 +1,6 @@
 use super::UnitCreatorWindow;
 use crate::{
+    systemd_gui::new_settings,
     upgrade,
     widget::{
         app_window::AppWindow,
@@ -27,6 +28,7 @@ use tracing::{error, warn};
 
 // const PROPERTY_NAME: &str = "creation-type";
 
+const WINDOW_SIZE: &str = "create-unit-window-size";
 #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/creator.ui")]
 #[properties(wrapper_type = super::UnitCreatorWindow)]
@@ -47,6 +49,7 @@ pub struct UnitCreatorWindowImp {
     nav_row: TemplateChild<NavigationRow>,
 
     pub(super) app_window: OnceCell<AppWindow>,
+    start_page: OnceCell<UnitCreatorFirstPage>,
     timer_page: OnceCell<TimerCreatorPage>,
     service_page: OnceCell<ServiceCreatorPage>,
     first_page: OnceCell<UnitCreatorFirstPage>,
@@ -92,7 +95,19 @@ impl UnitCreatorWindowImp {
 
     fn next(&self) -> Option<&'static str> {
         let creation_type = self.creation_type.get();
-        self.page_type.get().next(creation_type)
+
+        let valid = match self.page_type.get() {
+            PageType::Start if let Some(page) = self.start_page.get() => page.validate(),
+            PageType::Service => true,
+            PageType::Timer => true,
+            _ => true,
+        };
+
+        if valid {
+            self.page_type.get().next(creation_type)
+        } else {
+            None
+        }
     }
 
     fn set_page(&self, page: PageType) {
@@ -100,7 +115,15 @@ impl UnitCreatorWindowImp {
         self.nav_row.set_page_type(page, self.creation_type.get());
     }
 
-    pub async fn fill_unit_files(&self) {
+    pub fn set_bus_level(&self, level: UnitDBusLevel) {
+        self.bus_level.set(level);
+        let creation_window = self.obj().clone();
+        glib::spawn_future_local(async move {
+            creation_window.imp().fill_unit_files().await;
+        });
+    }
+
+    async fn fill_unit_files(&self) {
         let level = self.bus_level.get();
         {
             let set = match level {
@@ -256,6 +279,28 @@ impl UnitCreatorWindowImp {
         };
         self.toast_overlay.add_toast(toast);
     }
+
+    pub fn save_window_context(&self) -> Result<(), glib::BoolError> {
+        let size = self.obj().default_size().to_variant();
+
+        let settings = new_settings();
+
+        settings.set_value(WINDOW_SIZE, &size)?;
+
+        Ok(())
+    }
+
+    fn load_window_size(&self) {
+        // Get the window state from `settings`
+        let settings = new_settings();
+
+        let size = settings.value(WINDOW_SIZE);
+
+        let (width, height) = size.get::<(i32, i32)>().unwrap();
+
+        // Set the size of the window
+        self.obj().set_default_size(width, height);
+    }
 }
 
 enum SaveUnit {
@@ -349,6 +394,7 @@ impl ObjectImpl for UnitCreatorWindowImp {
         self.navigation.add(&service_file_page);
         self.navigation.add(&timer_file_page);
 
+        let _ = self.start_page.set(first_page.clone());
         let _ = self.timer_page.set(timer_page.clone());
         let _ = self.service_page.set(service_page.clone());
         let _ = self.first_page.set(first_page.clone());
@@ -357,13 +403,12 @@ impl ObjectImpl for UnitCreatorWindowImp {
         let service_file_page = service_file_page.downgrade();
         let timer_page = timer_page.downgrade();
         let timer_file_page = timer_file_page.downgrade();
+
         self.navigation.connect_visible_page_notify(move |nav| {
             let window = upgrade!(window);
-            let page: PageType = nav.visible_page_tag().as_deref().into();
+            let new_page: PageType = nav.visible_page_tag().as_deref().into();
 
-            window.set_page_type(page);
-
-            match (page, window.page_type()) {
+            match (new_page, window.page_type()) {
                 (PageType::ServiceFile, _) => {
                     let service_file_page = upgrade!(service_file_page);
                     let service_page = upgrade!(service_page);
@@ -374,22 +419,26 @@ impl ObjectImpl for UnitCreatorWindowImp {
                     let timer_page = upgrade!(timer_page);
                     timer_page.update_view(&timer_file_page);
                 }
-                (PageType::Service, PageType::ServiceFile) => {
+                (PageType::Service, PageType::Start | PageType::Launch) => {}
+                (PageType::Service, _) => {
                     let service_file_page = upgrade!(service_file_page);
                     let service_page = upgrade!(service_page);
                     let text = service_file_page.file_text();
-                    service_page.update_file_data(&text);
+                    service_page.update_from_file_content(&text);
                 }
-                (PageType::Timer, PageType::TimerFile) => {
+                (PageType::Timer, PageType::Start | PageType::Launch) => {}
+                (PageType::Timer, _) => {
                     let timer_file_page = upgrade!(timer_file_page);
                     let timer_page = upgrade!(timer_page);
                     let text = timer_file_page.file_text();
-                    timer_page.update_file_data(&text);
+                    timer_page.update_from_file_content(&text);
                 }
                 _ => {}
             }
-            window.set_page_type(page);
+            window.set_page_type(new_page);
         });
+
+        self.load_window_size();
     }
 }
 
@@ -397,6 +446,10 @@ impl WidgetImpl for UnitCreatorWindowImp {}
 
 impl WindowImpl for UnitCreatorWindowImp {
     fn close_request(&self) -> glib::Propagation {
+        if let Err(err) = self.save_window_context() {
+            error!("Failed to save window state {:?}", err);
+        }
+
         self.parent_close_request();
         glib::Propagation::Proceed
     }

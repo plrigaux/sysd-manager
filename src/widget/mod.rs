@@ -176,10 +176,9 @@ pub fn clear_on_escape2() -> gtk::EventControllerKey {
 
     event_controller.connect_key_released(|controller, key, _keycode, _state| {
         if key == gdk::Key::Escape {
+            //TODO
             if let Some(search_entry) = controller.widget().and_downcast_ref::<adw::EntryRow>() {
                 search_entry.set_text("");
-            } else {
-                dbg!(controller.widget());
             }
         }
     });

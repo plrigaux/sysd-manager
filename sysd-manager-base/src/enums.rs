@@ -120,6 +120,12 @@ impl From<String> for UnitDBusLevel {
     }
 }
 
+impl From<glib::GString> for UnitDBusLevel {
+    fn from(level: glib::GString) -> Self {
+        level.as_str().into()
+    }
+}
+
 impl From<&glib::Variant> for UnitDBusLevel {
     fn from(level: &glib::Variant) -> Self {
         level

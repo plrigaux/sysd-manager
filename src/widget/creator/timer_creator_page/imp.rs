@@ -94,8 +94,8 @@ impl ObjectImpl for TimerCreatorPageImp {
     fn constructed(&self) {
         self.parent_constructed();
 
-        self.trigger_unit.connect_selected_item_notify(|a| {
-            dbg!("Connect idx {}", a.selected());
+        self.trigger_unit.connect_selected_item_notify(|_| {
+            // dbg!("Connect idx {}", a.selected());
         });
 
         let menu = gio::Menu::new();
@@ -149,7 +149,6 @@ impl TimerCreatorPageImp {
         // vec.push(""); //for unselect
         vec.sort();
 
-        dbg!("l {}", vec.len());
         let model = gtk::StringList::new(&vec);
         let model2 = gtk::SingleSelection::builder()
             .can_unselect(true)
@@ -288,7 +287,7 @@ impl TimerCreatorPageImp {
     }
 
     pub fn update_view(&self, page: &UnitFileCreatorPage) {
-        self.fill_data();
+        // self.fill_data();
         let data = self.file_data.borrow();
         page.update_view(&data);
     }
@@ -341,7 +340,7 @@ impl TimerCreatorPageImp {
         self.file_data.borrow().to_file()
     }
 
-    pub fn update_file_data(&self, content: &str) {
+    pub fn update_from_file_content(&self, content: &str) {
         let Some(data) = UnitFileData::from_content(content) else {
             return;
         };

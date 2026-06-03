@@ -233,6 +233,14 @@ impl UnitFileData {
                     || MonotonicTimer::get(&file_entry.attribute).is_some())
         })
     }
+
+    pub fn set_restart(&mut self, value: impl AsRef<str>) {
+        self.insert_str(SERVICE, "Restart", Some(value.as_ref()));
+    }
+
+    pub(crate) fn restart(&self) -> &str {
+        self.get_str(SERVICE, "Restart")
+    }
 }
 
 fn write_section_header(out: &mut String, section: &str) {

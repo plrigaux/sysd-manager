@@ -74,7 +74,7 @@ macro_rules! upgrade_opt {
             tracing::warn!("Reference upgrade failed Option None");
             return $ret;
         };
-        upgrade!(weak_ref)
+        upgrade!(weak_ref, $ret)
     }};
 }
 

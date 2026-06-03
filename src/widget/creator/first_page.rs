@@ -25,6 +25,10 @@ impl UnitCreatorFirstPage {
         let prefix = self.imp().unit_name_prefix.text();
         (runtime, prefix)
     }
+
+    pub fn validate(&self) -> bool {
+        self.imp().validate()
+    }
 }
 
 mod imp {
@@ -32,6 +36,7 @@ mod imp {
     use std::cell::OnceCell;
 
     use crate::{
+        systemd_gui::new_settings,
         upgrade, upgrade_opt,
         widget::{
             self,
@@ -49,7 +54,7 @@ mod imp {
     use glib::WeakRef;
     use gtk::{glib, prelude::*};
     use regex::Regex;
-    use tracing::{debug, error, warn};
+    use tracing::{error, warn};
 
     #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
     #[template(resource = "/io/github/plrigaux/sysd-manager/create_first.ui")]
@@ -72,7 +77,7 @@ mod imp {
     }
 
     impl UnitCreatorFirstPageImp {
-        fn validate_entry(&self) {
+        fn validate_entry(&self) -> bool {
             let entry = self.unit_name_prefix.get();
             let text = entry.text();
 
@@ -81,7 +86,7 @@ mod imp {
             let name_err = if text.is_empty() {
                 CreateUnitErr::Empty
             } else {
-                let window = upgrade_opt!(self.window.get());
+                let window = upgrade_opt!(self.window.get(), false);
                 if window.creation_type().max_sufix_len() + text.len() > 255 {
                     CreateUnitErr::Limit255
                 } else if !self
@@ -97,17 +102,24 @@ mod imp {
                 }
             };
 
-            match name_err {
+            let valid = match name_err {
                 CreateUnitErr::NoErr => {
-                    entry.remove_css_class("warning");
+                    entry.remove_css_class("error");
+                    true
                 }
                 _ => {
-                    entry.add_css_class("warning");
+                    entry.add_css_class("error");
+                    false
                 }
-            }
+            };
 
             let prefix = pgettext("creator", "Unit Name Prefix");
             entry.set_title(&name_err.title_err(&prefix));
+            valid
+        }
+
+        pub(crate) fn validate(&self) -> bool {
+            self.validate_entry()
         }
 
         pub(super) fn set_window(&self, window: WeakRef<UnitCreatorWindow>) {
@@ -125,56 +137,42 @@ mod imp {
                 });
             }
 
-            let preferences_action_entry: gio::ActionEntry<_> = {
-                let first_page = self.obj().downgrade();
-                let creation_window = window.downgrade();
-                gio::ActionEntry::builder(&ACTION_CREATOR_UNIT_TYPE_SELECTION[8..])
-                    .activate(move |_, action, param| {
-                        debug!("{} {:?}", ACTION_CREATOR_UNIT_TYPE_SELECTION, param);
-                        if let Some(param) = param {
-                            action.set_state(param);
+            let settings = new_settings();
 
-                            // let creation_window = upgrade!(unit_creator_window);
-                            let creation_window = upgrade!(creation_window);
-                            let first_page = upgrade!(first_page);
-                            // let creation_window = creation_window.imp();
-                            let unit_creation_type: UnitCreateType = param.into();
-                            creation_window.set_creation_type(unit_creation_type);
-                            first_page.imp().validate_entry();
-                        }
-                    })
-                    .parameter_type(Some(glib::VariantTy::STRING))
-                    .state(UnitCreateType::Timer.id().to_variant())
-                    .build()
-            };
+            let creation_type_selection_action =
+                settings.create_action(&ACTION_CREATOR_UNIT_TYPE_SELECTION[8..]);
+            let first_page = self.obj().downgrade();
+            let creation_window = window.downgrade();
+            creation_type_selection_action.connect_state_notify(move |action| {
+                if let Some(state) = action.state().and_then(|state_v| state_v.get::<String>()) {
+                    // let creation_window = upgrade!(unit_creator_window);
+                    let creation_window = upgrade!(creation_window);
+                    let first_page = upgrade!(first_page);
+                    // let creation_window = creation_window.imp();
+                    let unit_creation_type: UnitCreateType = state.into();
+                    creation_window.set_creation_type(unit_creation_type);
+                    first_page.imp().validate_entry();
+                }
+            });
 
-            let action_creator_bus: gio::ActionEntry<_> = {
-                let creation_window = window.downgrade();
-                let first_page = self.obj().downgrade();
+            let creation_unit_bus = settings.create_action(&ACTION_CREATOR_UNIT_BUS[8..]);
+            let first_page = self.obj().downgrade();
+            let creation_window = window.downgrade();
+            creation_unit_bus.connect_state_notify(move |action| {
+                let Some(state) = action.state().and_then(|state_v| state_v.get::<String>()) else {
+                    warn!("No state");
+                    return;
+                };
 
-                gio::ActionEntry::builder(&ACTION_CREATOR_UNIT_BUS[8..])
-                    .activate(move |_, action, param| {
-                        debug!("{} {:?}", ACTION_CREATOR_UNIT_BUS, param);
-                        if let Some(param) = param {
-                            action.set_state(param);
-                            let creation_window = creation_window.clone();
-                            let param = param.clone();
-
-                            let creation_window = upgrade!(creation_window);
-                            let first_page = upgrade!(first_page);
-                            let level: UnitDBusLevel = param.into();
-                            creation_window.set_bus_level(level);
-                            glib::spawn_future_local(async move {
-                                let creation_window = creation_window.imp();
-                                creation_window.fill_unit_files().await;
-                                first_page.imp().validate_entry();
-                            });
-                        }
-                    })
-                    .parameter_type(Some(glib::VariantTy::STRING))
-                    .state("system".to_variant())
-                    .build()
-            };
+                // let creation_window = creation_window.clone();
+                let creation_window = upgrade!(creation_window);
+                let first_page = upgrade!(first_page);
+                let level: UnitDBusLevel = state.into();
+                first_page.imp().set_level(creation_window, level);
+                glib::spawn_future_local(async move {
+                    first_page.imp().validate();
+                });
+            });
 
             let donate: gio::ActionEntry<_> = gio::ActionEntry::builder("donate")
                 .activate(|_, _, _| {
@@ -192,24 +190,21 @@ mod imp {
                 .build();
 
             let action_group = window.imp().action_group.borrow().clone();
-            action_group.add_action_entries([preferences_action_entry, action_creator_bus, donate]);
-            self.obj()
-                .insert_action_group("creator", Some(&action_group));
+            action_group.add_action_entries([donate]);
+            action_group.add_action(&creation_type_selection_action);
+            action_group.add_action(&creation_unit_bus);
+            window.insert_action_group("creator", Some(&action_group));
 
-            if let Some(state) = action_group.action_state(&ACTION_CREATOR_UNIT_BUS[8..]) {
-                let level: UnitDBusLevel = state.into();
-                window.set_bus_level(level);
-            }
+            let type_selection = settings.string(&ACTION_CREATOR_UNIT_TYPE_SELECTION[8..]);
+            let unit_creation_type: UnitCreateType = type_selection.into();
+            window.set_creation_type(unit_creation_type);
 
-            let window = window.clone();
-            glib::spawn_future_local(async move {
-                window.imp().fill_unit_files().await;
-            });
+            let bus_level = settings.string(&ACTION_CREATOR_UNIT_BUS[8..]);
+            self.set_level(window, bus_level.into());
+        }
 
-            action_group.activate_action(
-                &ACTION_CREATOR_UNIT_TYPE_SELECTION[8..],
-                Some(&UnitCreateType::Timer.id().to_variant()),
-            );
+        fn set_level(&self, creation_window: UnitCreatorWindow, level: UnitDBusLevel) {
+            creation_window.set_bus_level(level);
         }
 
         fn is_fill_exist(&self, unit_prefix: &str) -> bool {
@@ -263,6 +258,11 @@ mod imp {
     impl ObjectImpl for UnitCreatorFirstPageImp {
         fn constructed(&self) {
             self.parent_constructed();
+
+            let settings = new_settings();
+            settings
+                .bind("create-unit-runtime", &self.runtime_switch.get(), "active")
+                .build();
         }
     }
 

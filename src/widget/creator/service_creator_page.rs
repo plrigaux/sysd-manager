@@ -26,8 +26,8 @@ impl ServiceCreatorPage {
         self.imp().update_view(page);
     }
 
-    pub fn update_file_data(&self, content: &str) {
-        self.imp().update_file_data(content);
+    pub fn update_from_file_content(&self, content: &str) {
+        self.imp().update_from_file_content(content);
     }
 
     pub fn file_content(&self) -> String {
@@ -39,8 +39,11 @@ mod imp {
 
     use super::*;
     use crate::widget::creator::{CreateUnitErr, UnitCreateType, unit_file::UnitFileData};
-    use adw::{prelude::PreferencesRowExt, subclass::prelude::*};
-    use gtk::{glib, prelude::*};
+    use adw::{
+        prelude::{ComboRowExt, PreferencesRowExt},
+        subclass::prelude::*,
+    };
+    use gtk::{StringObject, glib, prelude::*};
     use std::{
         cell::{Cell, OnceCell, RefCell},
         fs,
@@ -64,6 +67,9 @@ mod imp {
 
         #[template_child]
         working_directory_entry: TemplateChild<adw::EntryRow>,
+
+        #[template_child]
+        restart_policy_combo: TemplateChild<adw::ComboRow>,
 
         pub(super) window: OnceCell<WeakRef<UnitCreatorWindow>>,
 
@@ -100,6 +106,20 @@ mod imp {
                 }
             });
             self.exec_start_entry.add_controller(event_foc);
+
+            let vec = vec![
+                "",
+                "always",
+                "on-success",
+                "on-failure",
+                "on-abnormal",
+                "on-abort",
+                "on-watchdog",
+            ];
+
+            let model = gtk::StringList::new(&vec);
+
+            self.restart_policy_combo.set_model(Some(&model));
         }
     }
 
@@ -259,10 +279,16 @@ mod imp {
             file_data.set_working_directory(self.working_directory_entry.text());
             file_data.set_exec_start(self.exec_start_entry.text());
 
+            let restart = self
+                .restart_policy_combo
+                .selected_item()
+                .and_downcast_ref::<gtk::StringObject>()
+                .map(|s| s.string());
+            file_data.set_restart(restart.unwrap_or_default());
             file_data.sort();
         }
 
-        pub fn update_file_data(&self, content: &str) {
+        pub fn update_from_file_content(&self, content: &str) {
             let Some(data) = UnitFileData::from_content(content) else {
                 return;
             };
@@ -271,6 +297,27 @@ mod imp {
             self.working_directory_entry
                 .set_text(data.working_directory());
             self.exec_start_entry.set_text(data.exec_start());
+
+            let restart = data.restart();
+            let mut position_sel = 0;
+            if !restart.is_empty()
+                && let Some(list_model) = self.restart_policy_combo.model()
+            {
+                //TODO make a map if too slow
+                for position in 0..list_model.n_items() {
+                    if let Some(string_item) = list_model
+                        .item(position)
+                        .and_downcast_ref::<StringObject>()
+                        .map(|s| s.string())
+                        && string_item.as_str() == restart
+                    {
+                        position_sel = position;
+                        break;
+                    }
+                }
+            }
+            self.restart_policy_combo.set_selected(position_sel);
+
             self.file_data.replace(data);
         }
     }
@@ -300,11 +347,11 @@ mod imp {
         let mut end = text.len();
         let mut in_quotes = false;
 
-        for (idx, c) in text.char_indices() {
-            if c.is_whitespace() && !in_quotes {
+        for (idx, char) in text.char_indices() {
+            if char.is_whitespace() && !in_quotes {
                 end = idx;
                 break;
-            } else if c == '"' {
+            } else if char == '"' {
                 if idx == 0 {
                     in_quotes = true;
                     begin = 1;

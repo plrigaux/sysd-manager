@@ -86,6 +86,11 @@ pub async fn save(file_path: &str, content: &str) -> zbus::fdo::Result<u64> {
     transform_error(result)
 }
 
+pub async fn create(file_path: &str, content: &str) -> zbus::fdo::Result<u64> {
+    let result = save_io(file_path, true, content).await;
+    transform_error(result)
+}
+
 #[cfg(test)]
 mod test {
     use std::path::PathBuf;

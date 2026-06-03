@@ -4,10 +4,10 @@
 <cambalache-project version="1.0.0" target_tk="gtk-4.0" depends="libadwaita-1">
   <ui template-class="NavigationRow" filename="nav_row.ui" sha256="100ad6494bbb9c7b41b2449ca25db7dbb4167cd7e50bb52ac3874c71b5c7203c"/>
   <ui template-class="SysDDropDown" filename="dropdown.ui" sha256="2a2c827e522223ae25b865a7410bf1195a5b12590f55f9f967b8eb75ca043812"/>
-  <ui template-class="ServiceCreatorPage" filename="service_creator_page.ui" sha256="52690b9171d0267d6f01f28fbf1e2485236f86a70c03b807ae442c6c6d5eeac2"/>
+  <ui template-class="ServiceCreatorPage" filename="service_creator_page.ui" sha256="396cd627ca9854d1681700fc280dea16b6d35bbee4ed2a0e4bd23322e211a5ef"/>
   <ui template-class="LaunchCreatorPage" filename="creator_end_page.ui" sha256="4fa3606db1c478216a4f40e683478aafa7bc01050c3c26e02862dab828e7984e"/>
   <ui template-class="UnitFileCreatorPage" filename="unit_file_creator_page.ui" sha256="0c20499d7ecb908b18e85b5b32782c4cbccfe5eab05d7dce10bcdbbff8cdc0a5"/>
-  <ui template-class="UnitFileCreatorFirstPage" filename="create_first.ui" sha256="1cd453e55599ec7d763f1839e73ae8c6fd71f35ebee8f509a88d873babb842ab"/>
+  <ui template-class="UnitFileCreatorFirstPage" filename="create_first.ui" sha256="bfed22e9c193306558a22b22681ac69382a9dcd7c692a2268fd6d7566151d3d4"/>
   <ui>
     <content><![CDATA[<interface/>
 ]]></content>

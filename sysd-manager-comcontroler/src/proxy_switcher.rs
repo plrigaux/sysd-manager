@@ -12,6 +12,7 @@ pub const KEY_PREF_USE_PROXY_DISABLE_UNIT_FILE: &str = "pref-use-proxy-disable-u
 pub const KEY_PREF_USE_PROXY_RELOAD_DAEMON: &str = "pref-use-proxy-reload-daemon";
 pub const KEY_PREF_USE_PROXY_CREATE_DROP_IN: &str = "pref-use-proxy-create-drop-in";
 pub const KEY_PREF_USE_PROXY_SAVE_FILE: &str = "pref-use-proxy-save-file";
+pub const KEY_PREF_USE_PROXY_CREATE_FILE: &str = "pref-use-proxy-create-file";
 pub const KEY_PREF_USE_PROXY_REVERT_UNIT_FILE: &str = "pref-use-proxy-revert-unit-file";
 pub const KEY_PREF_PROXY_START_AT_STARTUP: &str = "pref-proxy-start-at-startup";
 pub const KEY_PREF_PROXY_STOP_AT_CLOSE: &str = "pref-proxy-stop-at-close";
@@ -48,6 +49,8 @@ pub static PROXY_SWITCHER: LazyLock<ProxySwitcher> = LazyLock::new(|| {
         ps.set_create_dropin(val);
         let val = settings.boolean(KEY_PREF_USE_PROXY_SAVE_FILE);
         ps.set_save_file(val);
+        let val = settings.boolean(KEY_PREF_USE_PROXY_CREATE_FILE);
+        ps.set_create_file(val);
         let val = settings.boolean(KEY_PREF_USE_PROXY_REVERT_UNIT_FILE);
         ps.set_revert_unit_file(val);
         let val = settings.boolean(KEY_PREF_PROXY_START_AT_STARTUP);
@@ -72,6 +75,7 @@ pub struct ProxySwitcher {
     reload: RwLock<bool>,
     create_dropin: RwLock<bool>,
     save_file: RwLock<bool>,
+    create_file: RwLock<bool>,
     revert_unit_file: RwLock<bool>,
     start_at_start_up: RwLock<bool>,
     stop_at_close: RwLock<bool>,
@@ -158,6 +162,14 @@ impl ProxySwitcher {
         *self.save_file.write().unwrap() = value;
     }
 
+    pub fn create_file(&self) -> bool {
+        *self.create_file.read().unwrap()
+    }
+
+    pub fn set_create_file(&self, value: bool) {
+        *self.create_file.write().unwrap() = value;
+    }
+
     pub fn create_dropin(&self) -> bool {
         *self.create_dropin.read().unwrap()
     }
@@ -210,6 +222,7 @@ impl ProxySwitcher {
             || self.disable_unit_file()
             || self.reload()
             || self.save_file()
+            || self.create_file()
             || self.enable_unit_file()
             || self.revert_unit_file()
     }

@@ -1303,10 +1303,10 @@ pub async fn create_file(
     info!("Saving file {file_path:?}");
 
     #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
-    if user_session || !proxy_switcher::PROXY_SWITCHER.save_file() {
+    if user_session || !proxy_switcher::PROXY_SWITCHER.create_file() {
         save_text_to_file(file_path, content, user_session, true).await
     } else {
-        proxy_call_async!(save_file, file_path, content)
+        proxy_call_async!(create_file, file_path, content)
     }
 
     #[cfg(any(feature = "flatpak", feature = "appimage"))]

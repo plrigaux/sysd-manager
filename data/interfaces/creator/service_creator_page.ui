@@ -2,8 +2,8 @@
 <!-- Created with Cambalache 1.0.2 -->
 <interface>
   <!-- interface-name service_creator_page.ui -->
-  <requires lib="gtk" version="4.18"/>
-  <requires lib="libadwaita" version="1.4"/>
+  <requires lib="gtk" version="4.20"/>
+  <requires lib="libadwaita" version="1.8"/>
   <template class="ServiceCreatorPage" parent="AdwNavigationPage">
     <property name="child">
       <object class="AdwClamp">
@@ -22,6 +22,7 @@
             </child>
             <child>
               <object class="AdwPreferencesGroup">
+                <property name="title">Unit</property>
                 <child>
                   <object class="AdwEntryRow" id="description_entry">
                     <property name="title">Description</property>
@@ -31,6 +32,7 @@
             </child>
             <child>
               <object class="AdwPreferencesGroup">
+                <property name="title">Service</property>
                 <child>
                   <object class="AdwEntryRow" id="exec_start_entry">
                     <property name="show-apply-button">True</property>
@@ -56,6 +58,11 @@
                         <signal name="clicked" handler="working_directory_search_dialog_clicked" swapped="True"/>
                       </object>
                     </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwComboRow" id="restart_policy_combo">
+                    <property name="title">Restart Policy</property>
                   </object>
                 </child>
               </object>
