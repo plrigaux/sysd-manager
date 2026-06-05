@@ -143,10 +143,10 @@ impl TimerCreatorPageImp {
 
         let mut vec = set
             .iter()
-            .filter(|s| !s.ends_with(".timer"))
+            //    .filter(|s| !s.ends_with(".timer"))
             .map(|s| s.as_ref())
             .collect::<Vec<_>>();
-        // vec.push(""); //for unselect
+        vec.push(""); //for unselect
         vec.sort();
 
         let model = gtk::StringList::new(&vec);
@@ -155,11 +155,21 @@ impl TimerCreatorPageImp {
             .autoselect(false)
             .model(&model)
             .build();
-        // self.trigger_unit.set_selected(gtk::INVALID_LIST_POSITION);
-        self.trigger_unit.set_model(Some(&model2));
-        self.trigger_unit.set_selected(gtk::INVALID_LIST_POSITION);
 
-        self.trigger_unit2.set_model(Some(&model));
+        let filter = gtk::CustomFilter::new(|object| {
+            let Some(string_object) = object.downcast_ref::<gtk::StringObject>() else {
+                return false;
+            };
+
+            !string_object.string().ends_with(".timer")
+        });
+
+        let model3 = gtk::FilterListModel::new(Some(model2), Some(filter));
+        // self.trigger_unit.set_selected(gtk::INVALID_LIST_POSITION);
+        self.trigger_unit.set_model(Some(&model3));
+
+        self.trigger_unit.set_selected(gtk::INVALID_LIST_POSITION);
+        self.trigger_unit2.set_model(Some(&model3));
     }
 
     pub(super) fn create_actions(&self) {
@@ -286,8 +296,24 @@ impl TimerCreatorPageImp {
         self.monotonic_type.set(timer);
     }
 
+    pub fn set_view(&self, creation_type: UnitCreateType) {
+        match creation_type {
+            UnitCreateType::Service => {}
+            UnitCreateType::Timer => {
+                self.trigger_unit.set_visible(true);
+                self.trigger_unit2.set_visible(true);
+            }
+            UnitCreateType::TimerService => {
+                self.trigger_unit.set_visible(false);
+                self.trigger_unit.set_subtitle("");
+                self.file_data.borrow_mut().remove_trigger_unit();
+                self.trigger_unit2.set_visible(false);
+            }
+        }
+    }
+
     pub fn update_view(&self, page: &UnitFileCreatorPage) {
-        // self.fill_data();
+        self.fill_data();
         let data = self.file_data.borrow();
         page.update_view(&data);
     }
@@ -297,7 +323,7 @@ impl TimerCreatorPageImp {
 
         file_data.set_description(self.description.text());
         file_data.set_persistent(self.persistent.is_active());
-        file_data.set_trigger_unit(self.trigger_unit2.subtitle());
+        file_data.set_trigger_unit(self.trigger_unit.subtitle());
 
         let timers = self
             .monotonic_timers
@@ -345,9 +371,16 @@ impl TimerCreatorPageImp {
             return;
         };
 
+        let window = upgrade_opt!(self.window.get());
+
         self.description.set_text(data.description());
         self.persistent.set_active(data.persistent());
-        self.trigger_unit2.set_subtitle(data.trigger_unit());
+
+        if matches!(window.creation_type(), UnitCreateType::Timer) {
+            self.trigger_unit.set_subtitle(data.trigger_unit());
+        } else {
+            self.trigger_unit.set_subtitle("");
+        }
 
         for (_, entry_row) in self.monotonic_timers.borrow_mut().drain(..) {
             self.timers_group.remove(&entry_row);

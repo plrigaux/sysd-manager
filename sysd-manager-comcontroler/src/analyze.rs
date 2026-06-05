@@ -1,3 +1,5 @@
+use base::consts::SYSTEMD_ANALYSE;
+
 use super::SystemdErrors;
 
 #[derive(Clone, Debug)]
@@ -8,7 +10,7 @@ pub struct Analyze {
 
 /// Returns the results of `systemd-analyze blame`
 pub async fn blame() -> Result<Vec<Analyze>, SystemdErrors> {
-    let cmd = ["systemd-analyze", "blame"];
+    let cmd = [SYSTEMD_ANALYSE, "blame"];
     let command_output = super::commander_output(&cmd, None)?.stdout;
 
     let collection = String::from_utf8(command_output)

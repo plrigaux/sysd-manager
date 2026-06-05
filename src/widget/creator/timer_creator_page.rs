@@ -1,6 +1,6 @@
 mod imp;
 use crate::widget::creator::{
-    PageType, UnitCreatorWindow, unit_file_creator_page::UnitFileCreatorPage,
+    PageType, UnitCreateType, UnitCreatorWindow, unit_file_creator_page::UnitFileCreatorPage,
 };
 use adw::prelude::NavigationPageExt;
 use gettextrs::pgettext;
@@ -39,6 +39,10 @@ impl TimerCreatorPage {
 
     pub fn file_content(&self) -> String {
         self.imp().file_content()
+    }
+
+    pub fn set_view(&self, creation_type: UnitCreateType) {
+        self.imp().set_view(creation_type)
     }
 }
 

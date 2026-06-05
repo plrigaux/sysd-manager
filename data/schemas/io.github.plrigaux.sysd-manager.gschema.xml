@@ -253,6 +253,18 @@
       <default>false</default>
       <summary>Create Unit in runtime mode</summary>
     </key>
+    <key name="create-daemon-reload-after-creation" type="b">
+      <default>false</default>
+      <summary>Relaod Manager after create the Unit</summary>
+    </key>
+    <key name="create-enable-after-creation" type="b">
+      <default>false</default>
+      <summary>Enable Unit after being created</summary>
+    </key>
+    <key name="create-start-after-creation" type="b">
+      <default>false</default>
+      <summary>Start Unit after being created</summary>
+    </key>
     <key name="unit-property-paned-separator-position" type="i">
       <default>440</default>
       <summary>Unit property selector position</summary>

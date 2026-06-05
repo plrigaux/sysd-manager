@@ -26,8 +26,7 @@ use std::{
     borrow::Cow,
     cell::{Cell, OnceCell, Ref, RefCell},
     collections::HashSet,
-    fs,
-    path::Path,
+    path::PathBuf,
 };
 use systemd::errors::SystemdErrors;
 use tracing::{error, info, warn};
@@ -188,15 +187,15 @@ impl UnitCreatorWindowImp {
         }
     }
 
-    pub fn service_file_path(&self) -> Option<String> {
+    pub fn service_file_path(&self) -> Option<PathBuf> {
         self.file_path("service")
     }
 
-    pub fn timer_file_path(&self) -> Option<String> {
+    pub fn timer_file_path(&self) -> Option<PathBuf> {
         self.file_path("timer")
     }
 
-    fn file_path(&self, suffix: &str) -> Option<String> {
+    fn file_path(&self, suffix: &str) -> Option<PathBuf> {
         let Some(first_page) = self.first_page.get() else {
             error!("first page None");
             return None;
@@ -210,7 +209,26 @@ impl UnitCreatorWindowImp {
             return None;
         };
 
-        Some(format!("{dir}{prefix}.{suffix}"))
+        Some(dir.join(prefix).with_extension(suffix))
+    }
+
+    pub fn service_unit_name(&self) -> Option<String> {
+        self.unit_name("service")
+    }
+
+    pub fn timer_unit_name(&self) -> Option<String> {
+        self.unit_name("timer")
+    }
+
+    fn unit_name(&self, suffix: &str) -> Option<String> {
+        let Some(first_page) = self.first_page.get() else {
+            error!("first page None");
+            return None;
+        };
+
+        let (_, prefix) = first_page.fetch_settings();
+
+        Some(format!("{prefix}.{suffix}"))
     }
 
     fn save_unit_files(&self) {
@@ -270,7 +288,9 @@ impl UnitCreatorWindowImp {
                 let mut response = Err(SystemdErrors::Custom("No file to save".to_string()));
 
                 for (file_path, content) in file_contents {
-                    response = systemd::create_file(user_session, &file_path, &content).await;
+                    response =
+                        systemd::create_file(user_session, &file_path.to_string_lossy(), &content)
+                            .await;
 
                     if response.is_err() {
                         break;
@@ -301,7 +321,7 @@ impl UnitCreatorWindowImp {
     fn handle_create_after(&self, message: SaveUnit) {
         match message {
             SaveUnit::Created => {
-                let unit_name = self.created_unit_name().join(" & ");
+                let unit_name = self.created_unit_name().join(" &amp; ");
                 let msg = pgettext("create", "Unit {} Created!");
                 let msg = format2!(msg, format!("<unit>{unit_name}</unit>"));
                 self.add_toast_message(&msg, true, None);
@@ -511,7 +531,10 @@ impl ObjectImpl for UnitCreatorWindowImp {
                     let text = service_file_page.file_text();
                     service_page.update_from_file_content(&text);
                 }
-                (PageType::Timer, PageType::Start | PageType::Launch) => {}
+                (PageType::Timer, _) => {
+                    let timer_page = upgrade!(timer_page);
+                    timer_page.set_view(window.creation_type());
+                }
                 (_, PageType::TimerFile) => {
                     let timer_file_page = upgrade!(timer_file_page);
                     let timer_page = upgrade!(timer_page);
@@ -528,6 +551,14 @@ impl ObjectImpl for UnitCreatorWindowImp {
         });
 
         self.load_window_size();
+
+        let window = self.obj().clone();
+        glib::spawn_future_local(async move {
+            if let Err(err) = systemd::test_flatpak_spawn() {
+                warn!("Flatpak Spawn fail {err:?}");
+                window.imp().banner.set_revealed(true);
+            }
+        });
     }
 }
 

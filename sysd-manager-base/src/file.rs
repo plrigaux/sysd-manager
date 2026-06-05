@@ -122,28 +122,24 @@ pub fn determine_drop_in_path_dir(
 pub fn determine_unit_file_path_dir(
     runtime: bool,
     user_session: bool,
-) -> Result<String, Box<dyn Error + 'static>> {
+) -> Result<PathBuf, Box<dyn Error + 'static>> {
     let path = match (runtime, user_session) {
-        (true, false) => "/run/systemd/system/".to_owned(),
-        (false, false) => "/etc/systemd/system/".to_owned(),
+        (true, false) => PathBuf::from("/run/systemd/system/"),
+        (false, false) => PathBuf::from("/etc/systemd/system/"),
         (true, true) => {
             let runtime_dir = std::env::var("XDG_RUNTIME_DIR")
                 .unwrap_or_else(|_| format!("/run/user/{}", getuid()));
-            format!("{runtime_dir}/systemd/user/")
+            let path = PathBuf::from(runtime_dir);
+
+            path.join("systemd/user/")
         }
-        (false, true) => {
-            let config = std::env::var("XDG_CONFIG_HOME").unwrap_or_else(|_| {
-                std::env::home_dir()
-                    .unwrap_or_else(|| {
-                        error!("Nome directory found!");
-                        PathBuf::default()
-                    })
-                    .join(".config")
-                    .display()
-                    .to_string()
-            });
-            format!("{config}/systemd/user/")
-        }
+        (false, true) => std::env::home_dir()
+            .unwrap_or_else(|| {
+                error!("Nome directory found!");
+                PathBuf::default()
+            })
+            .join(".config")
+            .join("systemd/user"),
     };
     Ok(path)
 }

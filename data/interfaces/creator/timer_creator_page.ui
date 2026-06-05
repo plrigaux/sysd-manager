@@ -82,7 +82,8 @@
                       <lookup name="string" type="GtkStringObject"/>
                     </property>
                     <property name="search-match-mode">substring</property>
-                    <property name="title">Trigger Unit</property>
+                    <property name="subtitle-selectable">True</property>
+                    <property name="title">Unit</property>
                     <property name="use-subtitle">True</property>
                   </object>
                 </child>

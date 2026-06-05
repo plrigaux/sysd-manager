@@ -30,7 +30,7 @@ use gtk::{
 };
 use std::cell::OnceCell;
 use std::{cell::RefCell, rc::Rc};
-use tracing::{info, warn};
+use tracing::warn;
 use zvariant::Value;
 
 #[derive(Default, glib::Properties, gtk::CompositeTemplate)]
@@ -63,9 +63,7 @@ pub struct UnitInfoPanelImp {
 #[gtk::template_callbacks]
 impl UnitInfoPanelImp {
     #[template_callback]
-    fn refresh_info_clicked(&self, button: &gtk::Button) {
-        info!("button {button:?}");
-
+    fn refresh_info_clicked(&self, _button: &gtk::Button) {
         self.refresh_panels(None);
     }
 }

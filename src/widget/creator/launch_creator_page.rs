@@ -32,14 +32,22 @@ mod imp {
 
     use super::*;
     use crate::{
-        format2, upgrade, upgrade_opt,
+        format2, systemd_gui, upgrade, upgrade_opt,
         widget::creator::{UnitCreateType, imp::UnitCreatorWindowImp},
     };
     use adw::{prelude::ActionRowExt, subclass::prelude::*};
-    use base::enums::UnitDBusLevel;
+    use base::{
+        enums::UnitDBusLevel,
+        file::{self},
+    };
+    use enumflags2::BitFlag;
     use gettextrs::gettext;
     use gtk::{glib, prelude::*};
-    use std::cell::{Cell, OnceCell};
+    use std::{
+        cell::{Cell, OnceCell},
+        path::PathBuf,
+    };
+    use systemd::enums::{DisEnableFlags, StartStopMode};
     use tracing::{error, info, warn};
 
     #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
@@ -64,6 +72,10 @@ mod imp {
         service_file_button: TemplateChild<gtk::Button>,
         #[template_child]
         timer_file_button: TemplateChild<gtk::Button>,
+        #[template_child]
+        service_unit_button: TemplateChild<gtk::Button>,
+        #[template_child]
+        timer_unit_button: TemplateChild<gtk::Button>,
 
         pub(super) window: OnceCell<WeakRef<UnitCreatorWindow>>,
         // #[property(get)]
@@ -114,6 +126,8 @@ mod imp {
 
             self.service_file_button.set_sensitive(true);
             self.timer_file_button.set_sensitive(true);
+            self.service_unit_button.set_sensitive(true);
+            self.timer_unit_button.set_sensitive(true);
 
             if self.daemon_reload_switch.is_active() {
                 let window = upgrade_opt!(self.window.get());
@@ -177,14 +191,74 @@ mod imp {
             });
         }
 
-        fn enable_unit(&self, window: &UnitCreatorWindow, dbus_level: UnitDBusLevel) {
-            info!("enable");
+        fn enable_unit(&self, window: &UnitCreatorWindow, level: UnitDBusLevel) {
+            match window.creation_type() {
+                UnitCreateType::Service => {
+                    self.enable_unit_call(window, level, UnitCreatorWindowImp::service_unit_name);
+                }
+                UnitCreateType::Timer => {
+                    self.enable_unit_call(window, level, UnitCreatorWindowImp::timer_unit_name);
+                }
+                UnitCreateType::TimerService => {
+                    self.enable_unit_call(window, level, UnitCreatorWindowImp::service_unit_name);
+                    self.enable_unit_call(window, level, UnitCreatorWindowImp::timer_unit_name);
+                }
+            }
         }
 
-        fn start_unit(&self, window: &UnitCreatorWindow, dbus_level: UnitDBusLevel) {
-            info!("enable");
+        fn enable_unit_call(
+            &self,
+            window: &UnitCreatorWindow,
+            level: UnitDBusLevel,
+            call: fn(&UnitCreatorWindowImp) -> Option<String>,
+        ) {
+            let unit_name = call(window.imp());
+            info!("enabling unit {:?}", unit_name);
+
+            let flags = DisEnableFlags::empty();
+            glib::spawn_future_local(async move {
+                if let Some(unit_name) = unit_name
+                    && let Err(err) = systemd::enable_unit_file(level, &unit_name, flags)
+                {
+                    warn!("Can't enable unit {:?}, Error {:?}", unit_name, err);
+                }
+            });
+        }
+
+        fn start_unit(&self, window: &UnitCreatorWindow, level: UnitDBusLevel) {
+            match window.creation_type() {
+                UnitCreateType::Service => {
+                    self.start_unit_call(window, level, UnitCreatorWindowImp::service_unit_name);
+                }
+                UnitCreateType::Timer => {
+                    self.start_unit_call(window, level, UnitCreatorWindowImp::timer_unit_name);
+                }
+                UnitCreateType::TimerService => {
+                    self.start_unit_call(window, level, UnitCreatorWindowImp::service_unit_name);
+                    self.start_unit_call(window, level, UnitCreatorWindowImp::timer_unit_name);
+                }
+            }
+        }
+
+        fn start_unit_call(
+            &self,
+            window: &UnitCreatorWindow,
+            level: UnitDBusLevel,
+            call: fn(&UnitCreatorWindowImp) -> Option<String>,
+        ) {
+            let unit_name = call(window.imp());
+            info!("Starting unit {:?}", unit_name);
+
+            glib::spawn_future_local(async move {
+                if let Some(unit_name) = unit_name
+                    && let Err(err) = systemd::start_unit(level, &unit_name, StartStopMode::Fail)
+                {
+                    warn!("Can't start unit {:?}, Error {:?}", unit_name, err);
+                }
+            });
         }
     }
+
     #[gtk::template_callbacks]
     impl LaunchCreatorPageImp {
         pub(crate) fn update_page(&self) {
@@ -195,28 +269,36 @@ mod imp {
                     self.service_file_action.set_visible(true);
                     self.timer_file_action.set_visible(false);
 
-                    if let Some(file_path) = window.imp().service_file_path() {
-                        self.service_file_action.set_subtitle(&file_path);
+                    if let Some(file_path) = window.imp().service_file_path()
+                        && let Some(file_path) = file_path.to_str()
+                    {
+                        self.service_file_action.set_subtitle(file_path);
                     }
                 }
                 UnitCreateType::Timer => {
                     self.service_file_action.set_visible(false);
                     self.timer_file_action.set_visible(true);
 
-                    if let Some(file_path) = window.imp().timer_file_path() {
-                        self.timer_file_action.set_subtitle(&file_path);
+                    if let Some(file_path) = window.imp().timer_file_path()
+                        && let Some(file_path) = file_path.to_str()
+                    {
+                        self.timer_file_action.set_subtitle(file_path);
                     }
                 }
                 UnitCreateType::TimerService => {
                     self.service_file_action.set_visible(true);
                     self.timer_file_action.set_visible(true);
 
-                    if let Some(file_path) = window.imp().service_file_path() {
-                        self.service_file_action.set_subtitle(&file_path);
+                    if let Some(file_path) = window.imp().service_file_path()
+                        && let Some(file_path) = file_path.to_str()
+                    {
+                        self.service_file_action.set_subtitle(file_path);
                     }
 
-                    if let Some(file_path) = window.imp().timer_file_path() {
-                        self.timer_file_action.set_subtitle(&file_path);
+                    if let Some(file_path) = window.imp().timer_file_path()
+                        && let Some(file_path) = file_path.to_str()
+                    {
+                        self.timer_file_action.set_subtitle(file_path);
                     }
                 }
             }
@@ -232,16 +314,53 @@ mod imp {
             self.show_file(UnitCreatorWindowImp::timer_file_path);
         }
 
-        fn show_file(&self, call: fn(&UnitCreatorWindowImp) -> Option<String>) {
+        #[template_callback]
+        fn show_service_unit(&self, _button: &gtk::Button) {
+            self.show_unit(UnitCreatorWindowImp::service_unit_name);
+        }
+
+        #[template_callback]
+        fn show_timer_unit(&self, _button: &gtk::Button) {
+            self.show_unit(UnitCreatorWindowImp::timer_unit_name);
+        }
+
+        fn show_file(&self, call: fn(&UnitCreatorWindowImp) -> Option<PathBuf>) {
             let window = upgrade_opt!(self.window.get());
-            if let Some(file_path) = call(window.imp()) {
-                let uri = gio::File::for_uri(&format!("file://{file_path}"));
+            if let Some(file_path) = call(window.imp())
+                && let Some(file_path) = file_path.to_str()
+            {
+                let file_path = file::flatpak_host_file_path(file_path);
+                let uri = gio::File::for_uri(&format!("file://{}", file_path.display()));
                 let launcher = gtk::FileLauncher::new(Some(&uri));
                 launcher.launch(Some(&window), None::<&gio::Cancellable>, move |result| {
                     if let Err(error) = result {
-                        warn!("File launch Support Error {error:?}")
+                        warn!(
+                            "File {:?} launch Support Error {error:?}",
+                            file_path.display()
+                        )
                     }
                 });
+            }
+        }
+
+        fn show_unit(&self, call: fn(&UnitCreatorWindowImp) -> Option<String>) {
+            let window = upgrade_opt!(self.window.get());
+            let Some(unit_name) = call(window.imp()) else {
+                return;
+            };
+
+            let level = window.level();
+
+            info!("Opening unit {:?} at level {:?}", unit_name, level);
+
+            let unit = systemd::fetch_unit(level, &unit_name)
+                .inspect_err(|e| warn!("Cli unit: {e:?}"))
+                .ok();
+
+            if let Some(app_window) = window.app_window() {
+                app_window.set_unit(unit.as_ref());
+            } else {
+                warn!("app_window missing");
             }
         }
     }
@@ -271,6 +390,29 @@ mod imp {
             let daemon_reload_active = self.daemon_reload_switch.is_active();
             self.enable_switch.set_sensitive(daemon_reload_active);
             self.start_switch.set_sensitive(daemon_reload_active);
+
+            let settings = systemd_gui::new_settings();
+            settings
+                .bind(
+                    "create-daemon-reload-after-creation",
+                    &self.daemon_reload_switch.get(),
+                    "active",
+                )
+                .build();
+            settings
+                .bind(
+                    "create-enable-after-creation",
+                    &self.enable_switch.get(),
+                    "active",
+                )
+                .build();
+            settings
+                .bind(
+                    "create-start-after-creation",
+                    &self.start_switch.get(),
+                    "active",
+                )
+                .build();
         }
     }
 

@@ -182,7 +182,24 @@ mod imp {
                         None::<&gio::Cancellable>,
                         move |result| {
                             if let Err(error) = result {
-                                warn!("Finished launch $upport Error {error:?}")
+                                warn!("Finished launch Error {error:?}")
+                            }
+                        },
+                    );
+                })
+                .build();
+
+            let jailbreak: gio::ActionEntry<_> = gio::ActionEntry::builder("jailbreak-how-to")
+                .activate(|_, _, _| {
+                    let launcher = gtk::UriLauncher::new(
+                        "https://github.com/plrigaux/sysd-manager/wiki/Flatpak",
+                    );
+                    launcher.launch(
+                        None::<&gtk::Window>,
+                        None::<&gio::Cancellable>,
+                        move |result| {
+                            if let Err(error) = result {
+                                warn!("Finished launch Error {error:?}")
                             }
                         },
                     );
@@ -190,7 +207,7 @@ mod imp {
                 .build();
 
             let action_group = window.imp().action_group.borrow().clone();
-            action_group.add_action_entries([donate]);
+            action_group.add_action_entries([donate, jailbreak]);
             action_group.add_action(&creation_type_selection_action);
             action_group.add_action(&creation_unit_bus);
             window.insert_action_group("creator", Some(&action_group));

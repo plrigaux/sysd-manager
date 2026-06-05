@@ -54,6 +54,10 @@ impl UnitCreatorWindow {
     ) {
         self.imp().add_toast_message(message, markup, action);
     }
+
+    pub fn app_window(&self) -> Option<&AppWindow> {
+        self.imp().app_window.get()
+    }
 }
 
 pub const VALID_UNIT_NAME: &str = r"^[a-zA-Z0-9._:\-]+@?$";

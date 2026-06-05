@@ -261,7 +261,7 @@ impl UnitCuratedList {
             UnitCuratedList::Services => ["<Ctrl><Shift>s"],
             UnitCuratedList::Path => ["<Ctrl><Shift>p"],
             UnitCuratedList::Automount => ["<Ctrl><Shift>a"],
-            UnitCuratedList::Custom => ["<Ctrl><Shift>C"],
+            UnitCuratedList::Custom => ["<Ctrl><Shift>m"],
             UnitCuratedList::Favorites => ["<Ctrl><Shift>b"],
         }
     }

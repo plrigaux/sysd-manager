@@ -809,7 +809,7 @@ impl UnitListPanelImp {
         let unit_name = unit.primary();
 
         info!(
-            "Unit List {} list_store {} filter {} sort_model {}",
+            "Unit {:?}, list_store_list {} filter_size {} sort_model_size {}",
             unit_name,
             self.list_store
                 .get()
@@ -826,29 +826,32 @@ impl UnitListPanelImp {
         }
 
         //Don't select and focus if filter out
-        if let Some(filter) = self.filter_list_model.borrow().filter()
-            && !filter.match_(unit)
-        {
-            //Unselect
-            single_selection!(self).set_selected(gtk::INVALID_LIST_POSITION);
-            info!("Unit {unit_name} no Match");
-            return Some(unit.clone());
+        // if let Some(filter) = self.filter_list_model.borrow().filter()
+        //     && !filter.match_(unit)
+        // {
+        //     //Unselect
+        //     single_selection!(self).set_selected(gtk::INVALID_LIST_POSITION);
+        //     info!("Unit {unit_name} no Match");
+        //     return Some(unit.clone());
+        // }
+
+        let single_selection = self.single_selection.get().unwrap();
+        let mut unit_found_position = None;
+        for position in 0..single_selection.n_items() {
+            let object = single_selection.item(position);
+            let Some(unit) = object.and_downcast_ref::<UnitInfo>() else {
+                error!("item None");
+                break;
+            };
+
+            if unit_name == unit.primary() {
+                unit_found_position = Some(position);
+                break;
+            }
         }
 
-        let finding = self
-            .list_store
-            .get()
-            .expect("LIST STORE NOT NONE")
-            .find_with_equal_func(|object| {
-                let Some(unit_item) = object.downcast_ref::<UnitInfo>() else {
-                    error!("item.downcast_ref::<UnitBinding>()");
-                    return false;
-                };
-
-                unit_name == unit_item.primary()
-            });
-
-        if let Some(row) = finding {
+        info!("Sel {:?}", unit_found_position);
+        if let Some(row) = unit_found_position {
             info!("Scroll to row {row}");
 
             units_browser!(self).scroll_to(
@@ -857,6 +860,8 @@ impl UnitListPanelImp {
                 gtk::ListScrollFlags::FOCUS | gtk::ListScrollFlags::SELECT,
                 None,
             );
+        } else {
+            single_selection.set_selected(gtk::INVALID_LIST_POSITION);
         }
 
         Some(unit.clone())

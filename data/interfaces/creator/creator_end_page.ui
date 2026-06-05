@@ -51,6 +51,14 @@
                         <signal name="clicked" handler="show_service_file" swapped="True"/>
                       </object>
                     </child>
+                    <child>
+                      <object class="GtkButton" id="service_unit_button">
+                        <property name="label">Unit</property>
+                        <property name="sensitive">False</property>
+                        <property name="valign">center</property>
+                        <signal name="clicked" handler="show_service_unit" swapped="True"/>
+                      </object>
+                    </child>
                   </object>
                 </child>
                 <child>
@@ -63,6 +71,14 @@
                         <property name="sensitive">False</property>
                         <property name="valign">center</property>
                         <signal name="clicked" handler="show_timer_file" swapped="True"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="timer_unit_button">
+                        <property name="label">Unit</property>
+                        <property name="sensitive">False</property>
+                        <property name="valign">center</property>
+                        <signal name="clicked" handler="show_timer_unit" swapped="True"/>
                       </object>
                     </child>
                   </object>

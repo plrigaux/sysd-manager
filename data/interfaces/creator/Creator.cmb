@@ -5,17 +5,17 @@
   <ui template-class="NavigationRow" filename="nav_row.ui" sha256="100ad6494bbb9c7b41b2449ca25db7dbb4167cd7e50bb52ac3874c71b5c7203c"/>
   <ui template-class="SysDDropDown" filename="dropdown.ui" sha256="2a2c827e522223ae25b865a7410bf1195a5b12590f55f9f967b8eb75ca043812"/>
   <ui template-class="ServiceCreatorPage" filename="service_creator_page.ui" sha256="396cd627ca9854d1681700fc280dea16b6d35bbee4ed2a0e4bd23322e211a5ef"/>
-  <ui template-class="LaunchCreatorPage" filename="creator_end_page.ui" sha256="0ce9148dd96a09b7b9ee280f549752dfeec99426c0751c0cfb96e11fd252151a"/>
+  <ui template-class="LaunchCreatorPage" filename="creator_end_page.ui" sha256="219d4588709c900c292c2ddb0d36b1c6811340155013c7ba1f09f351d14b05c2"/>
   <ui template-class="UnitFileCreatorPage" filename="unit_file_creator_page.ui" sha256="0c20499d7ecb908b18e85b5b32782c4cbccfe5eab05d7dce10bcdbbff8cdc0a5"/>
   <ui template-class="UnitFileCreatorFirstPage" filename="create_first.ui" sha256="387ae8450fdf9e1a7910b9d35bb17dbce1d41bcc400ebc848185125c4a624330"/>
   <ui>
     <content><![CDATA[<interface/>
 ]]></content>
   </ui>
-  <ui template-class="UnitCreatorWindow" filename="Creator.ui" sha256="d237708d29f9820c8c5bab278f79fc6283a90638724fc40b435a673bf0b8c514">
+  <ui template-class="UnitCreatorWindow" filename="Creator.ui" sha256="735558ea96801a1d3dc347a225d656e5d97814f6df10265778cab81212a4d873">
     <requires>NavigationRow</requires>
   </ui>
-  <ui template-class="TimerCreatorPage" filename="timer_creator_page.ui" sha256="9e4cbfa1b3757076a3b1ab8ad6e490ad8b7c154b4b4da9844e8081bca00a141a">
+  <ui template-class="TimerCreatorPage" filename="timer_creator_page.ui" sha256="851b4e2e168af21d1c4538d29fa5eb33edc754321a8f75b7d879da1a814df12d">
     <requires>SysDDropDown</requires>
   </ui>
 </cambalache-project>

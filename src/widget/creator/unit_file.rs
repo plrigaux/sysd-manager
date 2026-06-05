@@ -220,6 +220,10 @@ impl UnitFileData {
         self.insert_string(TIMER, "Unit", value.map(|s| s.as_ref().to_string()));
     }
 
+    pub fn remove_trigger_unit(&mut self) {
+        self.remove(TIMER, "Unit");
+    }
+
     pub fn add_timers(&mut self, timers: IndexMap<String, Vec<String>>) {
         for (timer, value) in timers {
             self.0.insert(FileEntry::new2(TIMER, timer), value);

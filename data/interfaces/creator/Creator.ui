@@ -14,14 +14,13 @@
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="AdwBanner" id="banner">
-                    <property name="action-name">creator.donate</property>
-                    <property name="button-label">Please support 🩷</property>
+                    <property name="action-name">creator.jailbreak-how-to</property>
+                    <property name="button-label">How to jailbreak</property>
                     <property name="css-classes">warning</property>
                     <property name="has-tooltip">True</property>
-                    <property name="revealed">True</property>
-                    <property name="title">The &lt;u&gt;Create Unit&lt;/u&gt; feature is currently under construction 🏗️. 
-It requires significant work to meet quality standards, 
-and my available time is limited.</property>
+                    <property name="title" translatable="yes">The &lt;b&gt;Create Unit&lt;/b&gt; needs to have some access rights to work properly.
+
+You need to &lt;b&gt;jailbreak&lt;/b&gt; your Flatpak application to allow it to run sub-programs or to save files on the host system.</property>
                     <property name="tooltip-markup">🙏🏻 Please donate — every contribution helps me prove to my wife that this project is more than just “another coding hobby.”</property>
                   </object>
                 </child>
