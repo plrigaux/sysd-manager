@@ -1292,7 +1292,7 @@ pub async fn save_file(
     }
 
     #[cfg(any(feature = "flatpak", feature = "appimage"))]
-    save_text_to_file(file_path, content, user_session).await
+    save_text_to_file(file_path, content, user_session, false).await
 }
 
 pub async fn create_file(
@@ -1310,7 +1310,7 @@ pub async fn create_file(
     }
 
     #[cfg(any(feature = "flatpak", feature = "appimage"))]
-    save_text_to_file(file_path, content, user_session).await
+    save_text_to_file(file_path, content, user_session, true).await
 }
 
 pub async fn revert_unit_file_full(

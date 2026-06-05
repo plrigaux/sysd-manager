@@ -9,10 +9,10 @@ mod unit_file;
 mod unit_file_creator_page;
 use crate::widget::app_window::AppWindow;
 use adw::subclass::prelude::ObjectSubclassIsExt;
-use base::enums::UnitDBusLevel;
 use gettextrs::pgettext;
 use gtk::glib::{self};
 use std::{cell::Ref, collections::HashSet};
+use systemd::errors::SystemdErrors;
 use tracing::{error, warn};
 
 glib::wrapper! {
@@ -46,8 +46,13 @@ impl UnitCreatorWindow {
         self.imp().session_file_list.borrow()
     }
 
-    pub fn set_bus_level(&self, level: UnitDBusLevel) {
-        self.imp().set_bus_level(level);
+    pub fn add_toast_message(
+        &self,
+        message: &str,
+        markup: bool,
+        action: Option<(&str, String, bool)>,
+    ) {
+        self.imp().add_toast_message(message, markup, action);
     }
 }
 
@@ -80,14 +85,6 @@ impl UnitCreateType {
             UnitCreateType::TimerService => ".service".len(),
         }
     }
-
-    // fn id(&self) -> &str {
-    //     match self {
-    //         UnitCreateType::Service => "service",
-    //         UnitCreateType::Timer => "timer",
-    //         UnitCreateType::TimerService => "timer_service",
-    //     }
-    // }
 
     fn title(&self) -> String {
         match self {
@@ -134,6 +131,12 @@ impl From<String> for UnitCreateType {
     fn from(value: String) -> Self {
         value.as_str().into()
     }
+}
+
+#[derive(Debug)]
+pub enum SaveUnit {
+    Created,
+    CreateError(SystemdErrors),
 }
 
 #[derive(Debug, PartialEq)]

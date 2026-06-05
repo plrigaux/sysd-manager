@@ -3,7 +3,7 @@ use std::sync::{LazyLock, RwLock};
 pub const KEY_PREF_USE_PROXY_START: &str = "pref-use-proxy-start";
 pub const KEY_PREF_USE_PROXY_STOP: &str = "pref-use-proxy-stop";
 pub const KEY_PREF_USE_PROXY_RESTART: &str = "pref-use-proxy-restart";
-pub const KEY_PREF_USE_PROXY_RELAOD_UNIT: &str = "pref-use-proxy-reload-unit";
+pub const KEY_PREF_USE_PROXY_RELOAD_UNIT: &str = "pref-use-proxy-reload-unit";
 pub const KEY_PREF_USE_PROXY_CLEAN: &str = "pref-use-proxy-clean";
 pub const KEY_PREF_USE_PROXY_FREEZE: &str = "pref-use-proxy-freeze";
 pub const KEY_PREF_USE_PROXY_THAW: &str = "pref-use-proxy-thaw";
@@ -31,7 +31,7 @@ pub static PROXY_SWITCHER: LazyLock<ProxySwitcher> = LazyLock::new(|| {
         ps.set_stop(val);
         let val = settings.boolean(KEY_PREF_USE_PROXY_RESTART);
         ps.set_restart(val);
-        let val = settings.boolean(KEY_PREF_USE_PROXY_RELAOD_UNIT);
+        let val = settings.boolean(KEY_PREF_USE_PROXY_RELOAD_UNIT);
         ps.set_reload_unit(val);
         let val = settings.boolean(KEY_PREF_USE_PROXY_CLEAN);
         ps.set_clean(val);

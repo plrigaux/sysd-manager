@@ -380,6 +380,14 @@ pub async fn save_io(
     create: bool,
     content: &str,
 ) -> Result<u64, std::io::Error> {
+    if create
+        && let Some(dir_path) = file_path.as_ref().parent()
+        && !dir_path.exists()
+        && let Err(err) = fs::create_dir_all(dir_path).await
+    {
+        error!("Can't create path {}, {err:?}", dir_path.display());
+    }
+
     let mut file = fs::OpenOptions::new()
         .write(true)
         .truncate(true)

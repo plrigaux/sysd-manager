@@ -521,7 +521,7 @@ impl ObjectImpl for PreferencesDialogImpl {
                 KEY_PREF_USE_PROXY_CLEAN, KEY_PREF_USE_PROXY_CREATE_DROP_IN,
                 KEY_PREF_USE_PROXY_CREATE_FILE, KEY_PREF_USE_PROXY_DISABLE_UNIT_FILE,
                 KEY_PREF_USE_PROXY_ENABLE_UNIT_FILE, KEY_PREF_USE_PROXY_FREEZE,
-                KEY_PREF_USE_PROXY_RELAOD_UNIT, KEY_PREF_USE_PROXY_RELOAD_DAEMON,
+                KEY_PREF_USE_PROXY_RELOAD_DAEMON, KEY_PREF_USE_PROXY_RELOAD_UNIT,
                 KEY_PREF_USE_PROXY_RESTART, KEY_PREF_USE_PROXY_REVERT_UNIT_FILE,
                 KEY_PREF_USE_PROXY_SAVE_FILE, KEY_PREF_USE_PROXY_START, KEY_PREF_USE_PROXY_STOP,
                 KEY_PREF_USE_PROXY_THAW, PROXY_SWITCHER,
@@ -555,7 +555,7 @@ impl ObjectImpl for PreferencesDialogImpl {
 
             settings
                 .bind::<adw::SwitchRow>(
-                    KEY_PREF_USE_PROXY_RELAOD_UNIT,
+                    KEY_PREF_USE_PROXY_RELOAD_UNIT,
                     self.proxy_reload_unit_switch.as_ref(),
                     "active",
                 )

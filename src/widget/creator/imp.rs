@@ -1,5 +1,6 @@
 use super::UnitCreatorWindow;
 use crate::{
+    format2,
     systemd_gui::new_settings,
     upgrade,
     widget::{
@@ -7,24 +8,29 @@ use crate::{
         close_window_shortcut,
         creator::{
             ACTION_CREATOR_CREATE, ACTION_CREATOR_FILE, ACTION_CREATOR_NEXT,
-            ACTION_CREATOR_PREVIOUS, ACTION_CREATOR_UNIT_BUS, PageType, UnitCreateType,
+            ACTION_CREATOR_PREVIOUS, ACTION_CREATOR_UNIT_BUS, PageType, SaveUnit, UnitCreateType,
             first_page::UnitCreatorFirstPage, launch_creator_page::LaunchCreatorPage,
             navigation_row::NavigationRow, service_creator_page::ServiceCreatorPage,
             timer_creator_page::TimerCreatorPage, unit_file_creator_page::UnitFileCreatorPage,
         },
+        replace_tags,
     },
 };
 use adw::prelude::*;
 use adw::subclass::window::AdwWindowImpl;
 use base::enums::UnitDBusLevel;
+use gettextrs::pgettext;
 use gio::{SimpleActionGroup, prelude::ActionMapExtManual};
 use gtk::{TemplateChild, gio, glib, subclass::prelude::*};
 use std::{
+    borrow::Cow,
     cell::{Cell, OnceCell, Ref, RefCell},
     collections::HashSet,
+    fs,
+    path::Path,
 };
 use systemd::errors::SystemdErrors;
-use tracing::{error, warn};
+use tracing::{error, info, warn};
 
 // const PROPERTY_NAME: &str = "creation-type";
 
@@ -53,14 +59,16 @@ pub struct UnitCreatorWindowImp {
     timer_page: OnceCell<TimerCreatorPage>,
     service_page: OnceCell<ServiceCreatorPage>,
     first_page: OnceCell<UnitCreatorFirstPage>,
+    last_page: OnceCell<LaunchCreatorPage>,
 
     #[property(get, set=Self::set_creation_unit_type, default)]
     pub(super) creation_type: Cell<UnitCreateType>,
 
-    #[property(get, set=Self::set_page, default)]
+    #[property(get, set=Self::set_page_type, default)]
     pub(super) page_type: Cell<PageType>,
 
-    pub(super) bus_level: Cell<UnitDBusLevel>,
+    #[property(get, set=Self::set_bus_level, default)]
+    pub(super) level: Cell<UnitDBusLevel>,
 
     pub(super) system_file_list: RefCell<HashSet<String>>,
     pub(super) session_file_list: RefCell<HashSet<String>>,
@@ -78,7 +86,7 @@ impl ObjectSubclass for UnitCreatorWindowImp {
         // The layout manager determines how child widgets are laid out.
         // let _ = NavigationRow::new();
         klass.bind_template();
-        //klass.bind_template_callbacks();
+        // klass.bind_template_callbacks();
     }
 
     fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -110,13 +118,13 @@ impl UnitCreatorWindowImp {
         }
     }
 
-    fn set_page(&self, page: PageType) {
+    fn set_page_type(&self, page: PageType) {
         self.page_type.set(page);
         self.nav_row.set_page_type(page, self.creation_type.get());
     }
 
     pub fn set_bus_level(&self, level: UnitDBusLevel) {
-        self.bus_level.set(level);
+        self.level.set(level);
         let creation_window = self.obj().clone();
         glib::spawn_future_local(async move {
             creation_window.imp().fill_unit_files().await;
@@ -124,7 +132,7 @@ impl UnitCreatorWindowImp {
     }
 
     async fn fill_unit_files(&self) {
-        let level = self.bus_level.get();
+        let level = self.level.get();
         {
             let set = match level {
                 UnitDBusLevel::System | UnitDBusLevel::Both => self.system_file_list.borrow(),
@@ -172,7 +180,7 @@ impl UnitCreatorWindowImp {
     }
 
     pub fn get_trigger_units(&self) -> Ref<'_, HashSet<String>> {
-        let level = self.bus_level.get();
+        let level = self.level.get();
 
         match level {
             UnitDBusLevel::System | UnitDBusLevel::Both => self.system_file_list.borrow(),
@@ -180,24 +188,39 @@ impl UnitCreatorWindowImp {
         }
     }
 
-    fn save_unit_files(&self) {
+    pub fn service_file_path(&self) -> Option<String> {
+        self.file_path("service")
+    }
+
+    pub fn timer_file_path(&self) -> Option<String> {
+        self.file_path("timer")
+    }
+
+    fn file_path(&self, suffix: &str) -> Option<String> {
         let Some(first_page) = self.first_page.get() else {
             error!("first page None");
-            return;
+            return None;
         };
 
         let (runtime, prefix) = first_page.fetch_settings();
-        let user_session = self.bus_level.get().user_session();
+        let user_session = self.level.get().user_session();
         let Ok(dir) = base::file::determine_unit_file_path_dir(runtime, user_session)
             .inspect_err(|err| error!("path error {err:?}"))
         else {
-            return;
+            return None;
         };
 
+        Some(format!("{dir}{prefix}.{suffix}"))
+    }
+
+    fn save_unit_files(&self) {
         let file_contents = match self.creation_type.get() {
             UnitCreateType::Service => {
                 if let Some(service_page) = self.service_page.get() {
-                    let file_path = format!("{dir}{prefix}.service");
+                    let Some(file_path) = self.service_file_path() else {
+                        error!("No file path");
+                        return;
+                    };
                     let content = service_page.file_content();
                     vec![(file_path, content)]
                 } else {
@@ -206,7 +229,10 @@ impl UnitCreatorWindowImp {
             }
             UnitCreateType::Timer => {
                 if let Some(timer_page) = self.timer_page.get() {
-                    let file_path = format!("{dir}{prefix}.timer");
+                    let Some(file_path) = self.timer_file_path() else {
+                        error!("No file path");
+                        return;
+                    };
                     let content = timer_page.file_content();
                     vec![(file_path, content)]
                 } else {
@@ -217,12 +243,18 @@ impl UnitCreatorWindowImp {
                 if let Some(service_page) = self.service_page.get()
                     && let Some(timer_page) = self.timer_page.get()
                 {
-                    let file_path_s = format!("{dir}{prefix}.service");
+                    let Some(service_file_path) = self.service_file_path() else {
+                        error!("No file path");
+                        return;
+                    };
                     let content_s = service_page.file_content();
 
-                    let file_path = format!("{dir}{prefix}.timer");
+                    let Some(file_path) = self.timer_file_path() else {
+                        error!("No file path");
+                        return;
+                    };
                     let content = timer_page.file_content();
-                    vec![(file_path_s, content_s), (file_path, content)]
+                    vec![(service_file_path, content_s), (file_path, content)]
                 } else {
                     Vec::new()
                 }
@@ -230,6 +262,7 @@ impl UnitCreatorWindowImp {
         };
 
         let window = self.obj().clone();
+        let user_session = self.level.get().user_session();
         glib::spawn_future_local(async move {
             let (sender, receiver) = tokio::sync::oneshot::channel();
 
@@ -265,19 +298,26 @@ impl UnitCreatorWindowImp {
         });
     }
 
-    fn handle_create_after(&self, msg: SaveUnit) {
-        let toast = match msg {
-            SaveUnit::Created => adw::Toast::builder()
-                .use_markup(true)
-                .title("Unit Created")
-                .build(),
+    fn handle_create_after(&self, message: SaveUnit) {
+        match message {
+            SaveUnit::Created => {
+                let unit_name = self.created_unit_name().join(" & ");
+                let msg = pgettext("create", "Unit {} Created!");
+                let msg = format2!(msg, format!("<unit>{unit_name}</unit>"));
+                self.add_toast_message(&msg, true, None);
+            }
 
-            SaveUnit::CreateError(systemd_errors) => adw::Toast::builder()
-                .use_markup(true)
-                .title(systemd_errors.human_error_type())
-                .build(),
-        };
-        self.toast_overlay.add_toast(toast);
+            SaveUnit::CreateError(ref systemd_errors) => {
+                let human_error = systemd_errors.human_error_type();
+                let msg = pgettext("create", "Creation Failed! {}");
+                let msg = format2!(msg, format!("<red>{human_error}</red>"));
+                self.add_toast_message(&msg, true, None);
+            }
+        }
+
+        if let Some(last_page) = self.last_page.get() {
+            last_page.handle_create_after(message);
+        }
     }
 
     pub fn save_window_context(&self) -> Result<(), glib::BoolError> {
@@ -301,11 +341,54 @@ impl UnitCreatorWindowImp {
         // Set the size of the window
         self.obj().set_default_size(width, height);
     }
-}
 
-enum SaveUnit {
-    Created,
-    CreateError(SystemdErrors),
+    pub(super) fn add_toast_message(
+        &self,
+        message: &str,
+        use_markup: bool,
+        action: Option<(&str, String, bool)>,
+    ) {
+        let msg = if use_markup {
+            let out = replace_tags(message);
+            Cow::from(out)
+        } else {
+            Cow::from(message)
+        };
+
+        let toast = adw::Toast::builder()
+            .title(msg)
+            .use_markup(use_markup)
+            .build();
+
+        if let Some((action_name, ref button_label, user_session)) = action {
+            info!("Toast action {:?} user_session {user_session}", action);
+            toast.set_action_name(Some(action_name));
+            toast.set_action_target_value(Some(&user_session.to_variant()));
+            toast.set_button_label(Some(button_label));
+        }
+
+        self.toast_overlay.add_toast(toast)
+    }
+
+    fn created_unit_name(&self) -> Vec<String> {
+        let Some(first_page) = self.first_page.get() else {
+            error!("first page None");
+            return Vec::default();
+        };
+
+        let (_, prefix) = first_page.fetch_settings();
+
+        let suffixes = match self.creation_type.get() {
+            UnitCreateType::Service => vec!["service"],
+            UnitCreateType::Timer => vec!["timer"],
+            UnitCreateType::TimerService => vec!["timer", "service"],
+        };
+
+        suffixes
+            .iter()
+            .map(|suffix| format!("{prefix}.{suffix}"))
+            .collect()
+    }
 }
 
 #[glib::derived_properties]
@@ -313,7 +396,7 @@ impl ObjectImpl for UnitCreatorWindowImp {
     fn constructed(&self) {
         self.parent_constructed();
         close_window_shortcut(self.obj().as_ref());
-        self.set_page(PageType::Start);
+        self.set_page_type(PageType::Start);
 
         self.banner.set_use_markup(true);
         self.banner.set_css_classes(&["warning", "construction"]);
@@ -381,14 +464,14 @@ impl ObjectImpl for UnitCreatorWindowImp {
 
         // let s = SimpleActionGroup::new();
         let first_page = UnitCreatorFirstPage::new(self.obj().downgrade(), PageType::Start);
-        let end_page = LaunchCreatorPage::new(self.obj().downgrade(), PageType::Launch);
+        let last_page = LaunchCreatorPage::new(self.obj().downgrade(), PageType::Launch);
         let timer_page = TimerCreatorPage::new(self.obj().downgrade(), PageType::Timer);
         let service_page = ServiceCreatorPage::new(self.obj().downgrade(), PageType::Service);
         let timer_file_page = UnitFileCreatorPage::new(PageType::TimerFile);
         let service_file_page = UnitFileCreatorPage::new(PageType::ServiceFile);
 
         self.navigation.push(&first_page);
-        self.navigation.add(&end_page);
+        self.navigation.add(&last_page);
         self.navigation.add(&timer_page);
         self.navigation.add(&service_page);
         self.navigation.add(&service_file_page);
@@ -398,11 +481,13 @@ impl ObjectImpl for UnitCreatorWindowImp {
         let _ = self.timer_page.set(timer_page.clone());
         let _ = self.service_page.set(service_page.clone());
         let _ = self.first_page.set(first_page.clone());
+        let _ = self.last_page.set(last_page.clone());
         let window = self.obj().downgrade();
         let service_page = service_page.downgrade();
         let service_file_page = service_file_page.downgrade();
         let timer_page = timer_page.downgrade();
         let timer_file_page = timer_file_page.downgrade();
+        let last_page = last_page.downgrade();
 
         self.navigation.connect_visible_page_notify(move |nav| {
             let window = upgrade!(window);
@@ -420,18 +505,22 @@ impl ObjectImpl for UnitCreatorWindowImp {
                     timer_page.update_view(&timer_file_page);
                 }
                 (PageType::Service, PageType::Start | PageType::Launch) => {}
-                (PageType::Service, _) => {
+                (_, PageType::ServiceFile) => {
                     let service_file_page = upgrade!(service_file_page);
                     let service_page = upgrade!(service_page);
                     let text = service_file_page.file_text();
                     service_page.update_from_file_content(&text);
                 }
                 (PageType::Timer, PageType::Start | PageType::Launch) => {}
-                (PageType::Timer, _) => {
+                (_, PageType::TimerFile) => {
                     let timer_file_page = upgrade!(timer_file_page);
                     let timer_page = upgrade!(timer_page);
                     let text = timer_file_page.file_text();
                     timer_page.update_from_file_content(&text);
+                }
+                (PageType::Launch, _) => {
+                    let last_page = upgrade!(last_page);
+                    last_page.update_page();
                 }
                 _ => {}
             }

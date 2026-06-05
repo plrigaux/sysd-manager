@@ -15,6 +15,7 @@
             <property name="spacing">12</property>
             <child>
               <object class="AdwPreferencesGroup">
+                <property name="title">After creation</property>
                 <child>
                   <object class="AdwSwitchRow" id="daemon_reload_switch">
                     <property name="action-name">creator.daemon-reload</property>
@@ -32,6 +33,38 @@
                   <object class="AdwSwitchRow" id="start_switch">
                     <property name="subtitle">Start Unit after creation</property>
                     <property name="title">Start</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwPreferencesGroup">
+                <child>
+                  <object class="AdwActionRow" id="service_file_action">
+                    <property name="subtitle-selectable">True</property>
+                    <property name="title">Service File</property>
+                    <child>
+                      <object class="GtkButton" id="service_file_button">
+                        <property name="label">File</property>
+                        <property name="sensitive">False</property>
+                        <property name="valign">center</property>
+                        <signal name="clicked" handler="show_service_file" swapped="True"/>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwActionRow" id="timer_file_action">
+                    <property name="subtitle-selectable">True</property>
+                    <property name="title">Timer File</property>
+                    <child>
+                      <object class="GtkButton" id="timer_file_button">
+                        <property name="label">File</property>
+                        <property name="sensitive">False</property>
+                        <property name="valign">center</property>
+                        <signal name="clicked" handler="show_timer_file" swapped="True"/>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>

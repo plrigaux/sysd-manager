@@ -1,4 +1,4 @@
-use gettextrs::pgettext;
+use gettextrs::{gettext, pgettext};
 use glib::value::ToValue;
 use strum::EnumIter;
 use tracing::warn;
@@ -79,6 +79,23 @@ impl UnitDBusLevel {
             UnitDBusLevel::System => 0,
             UnitDBusLevel::UserSession => 1,
             UnitDBusLevel::Both => 2,
+        }
+    }
+
+    pub fn message(&self) -> String {
+        match self {
+            UnitDBusLevel::System => {
+                //instance level system
+                gettext("System")
+            }
+            UnitDBusLevel::UserSession => {
+                //instance level user
+                gettext("User")
+            }
+            UnitDBusLevel::Both => {
+                //instance level user
+                gettext("System & User")
+            }
         }
     }
 }

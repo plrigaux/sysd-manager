@@ -204,7 +204,7 @@ mod imp {
         }
 
         fn set_level(&self, creation_window: UnitCreatorWindow, level: UnitDBusLevel) {
-            creation_window.set_bus_level(level);
+            creation_window.set_level(level);
         }
 
         fn is_fill_exist(&self, unit_prefix: &str) -> bool {
