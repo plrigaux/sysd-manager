@@ -4,12 +4,27 @@
   <!-- interface-name nav_row.ui -->
   <requires lib="gtk" version="4.18"/>
   <template class="NavigationRow" parent="GtkBox">
-    <property name="halign">end</property>
     <property name="margin-bottom">5</property>
     <property name="margin-end">5</property>
     <property name="margin-start">5</property>
     <property name="margin-top">5</property>
     <property name="spacing">5</property>
+    <child>
+      <object class="GtkBox">
+        <property name="halign">baseline-fill</property>
+        <property name="hexpand">True</property>
+        <property name="hexpand-set">True</property>
+        <child>
+          <object class="GtkLinkButton" id="donate_button">
+            <property name="css-classes">circular</property>
+            <property name="label">🧡</property>
+            <property name="tooltip-markup" translatable="yes">🙏🏻 Please donate — every contribution helps me to prove to my wife that this project is more than just “another coding hobby.”</property>
+            <property name="uri">https://github.com/sponsors/plrigaux</property>
+            <property name="valign">center</property>
+          </object>
+        </child>
+      </object>
+    </child>
     <child>
       <object class="GtkButton" id="prev_button">
         <property name="action-name">creator.previous</property>
@@ -22,6 +37,7 @@
     <child>
       <object class="GtkBox">
         <property name="css-classes">linked</property>
+        <property name="halign">end</property>
         <child>
           <object class="GtkButton" id="file_button">
             <property name="action-name">creator.file</property>

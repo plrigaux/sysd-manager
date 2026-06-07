@@ -171,7 +171,7 @@ pub fn clear_on_escape() -> gtk::EventControllerKey {
     event_controller
 }
 
-pub fn clear_on_escape2() -> gtk::EventControllerKey {
+pub fn clear_on_escape_entry_row() -> gtk::EventControllerKey {
     let event_controller = gtk::EventControllerKey::new();
 
     event_controller.connect_key_released(|controller, key, _keycode, _state| {

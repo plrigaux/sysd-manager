@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-23 23:40-0400\n"
+"POT-Creation-Date: 2026-06-06 23:30-0400\n"
 "PO-Revision-Date: 2025-11-27 17:59+0000\n"
 "Last-Translator: Nurlan Musayev <nurlancik1@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/sysd-manager/"
@@ -52,23 +52,23 @@ msgstr ""
 "можете включать, отключать, останавливать и запускать их. Также вы можете "
 "просматривать их конфигурационные файлы и смотреть журналы."
 
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:36
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:41
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:40
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:45
 msgid "Unit Files"
 msgstr "Юнит-файлы"
 
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:46
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:51
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:50
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:55
 msgid "Unit Dependencies"
 msgstr "Зависимости юнита"
 
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:56
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:61
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:60
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:65
 msgid "Unit File"
 msgstr "Юнит-Файл"
 
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:66
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:71
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:70
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:75
 msgid "Unit Journal"
 msgstr "Журнал юнита"
 
@@ -78,75 +78,75 @@ msgid ""
 "Manager Proxy"
 msgstr ""
 
-#: data/interfaces/app_window.ui:12
+#: data/interfaces/app_window.ui:13
 msgctxt "menu"
 msgid "Analyze Blame"
 msgstr "Анализ задержки"
 
-#: data/interfaces/app_window.ui:16
+#: data/interfaces/app_window.ui:17
 #, fuzzy
 msgctxt "menu"
 msgid "Daemon Reload"
 msgstr "Перезагрузить"
 
-#: data/interfaces/app_window.ui:20
+#: data/interfaces/app_window.ui:21
 msgctxt "menu"
 msgid "Systemd Info"
 msgstr "Сведения о systemd"
 
-#: data/interfaces/app_window.ui:24
+#: data/interfaces/app_window.ui:25
 msgctxt "menu"
 msgid "List Boots"
 msgstr "Список загрузок"
 
-#: data/interfaces/app_window.ui:28
+#: data/interfaces/app_window.ui:29
 msgctxt "menu"
 msgid "Watch Signals"
 msgstr "Отслеживать сигналы"
 
-#: data/interfaces/app_window.ui:34
+#: data/interfaces/app_window.ui:39
 msgctxt "menu"
 msgid "Preferences"
 msgstr "Настройки"
 
-#: data/interfaces/app_window.ui:38
+#: data/interfaces/app_window.ui:43
 #, fuzzy
 msgctxt "menu"
 msgid "Proxy Preferences"
 msgstr "Показать настройки"
 
-#: data/interfaces/app_window.ui:42
+#: data/interfaces/app_window.ui:47
 msgctxt "menu"
 msgid "Keyboard Shortcuts"
 msgstr "Комбинации клавиш"
 
-#: data/interfaces/app_window.ui:46
+#: data/interfaces/app_window.ui:51
 msgctxt "menu"
 msgid "About"
 msgstr "О приложении"
 
-#: data/interfaces/app_window.ui:85
+#: data/interfaces/app_window.ui:90
 msgctxt "top button tooltip"
 msgid "Open Search Bar"
 msgstr "Открыть панель поиска"
 
-#: data/interfaces/app_window.ui:97
+#: data/interfaces/app_window.ui:102
 #, fuzzy
 msgid "To select system or session bus"
 msgstr "Системная и пользовательская сессионная шина"
 
 #. selector of differents units list
-#: data/interfaces/app_window.ui:104
+#: data/interfaces/app_window.ui:109
 msgctxt "menu"
 msgid "Curated Lists"
 msgstr ""
 
-#: data/interfaces/app_window.ui:105
+#: data/interfaces/app_window.ui:110
 msgctxt "tooltip"
 msgid "To display different units' presentation and subset"
 msgstr ""
 
-#: data/interfaces/app_window.ui:112
+#: data/interfaces/app_window.ui:117
 msgctxt "top button tooltip"
 msgid "Refresh Unit List"
 msgstr "Обновить список юнитов"
@@ -155,7 +155,7 @@ msgstr "Обновить список юнитов"
 #. title dialog
 #. Message answer
 #: data/interfaces/clean_dialog.ui:28 data/interfaces/clean_dialog.ui:40
-#: src/widget/clean_dialog/imp.rs:93
+#: src/widget/clean_dialog/imp.rs:96
 msgctxt "clean"
 msgid "Clean"
 msgstr "Очистить"
@@ -263,73 +263,111 @@ msgctxt "enable unit file"
 msgid "Enable"
 msgstr "Включить"
 
+#: data/interfaces/creator/Creator.ui:21
+msgid ""
+"The <b>Create Unit</b> needs to have some access rights to work properly.\n"
+"\n"
+"You need to <b>jailbreak</b> your Flatpak application to allow it to run sub-"
+"programs or to save files on the host system."
+msgstr ""
+
+#: data/interfaces/creator/create_first.ui:33
+#, fuzzy
+msgid "Service"
+msgstr "Менеджер служб"
+
+#: data/interfaces/creator/create_first.ui:46
+msgid "Timer with Service"
+msgstr ""
+
+#: data/interfaces/creator/create_first.ui:60
+#, fuzzy
+msgid "Timer"
+msgstr "Время"
+
+#: data/interfaces/creator/create_first.ui:79
+#, fuzzy
+msgid "System"
+msgstr "Система"
+
+#: data/interfaces/creator/create_first.ui:92
+#, fuzzy
+msgid "User Session"
+msgstr "Шина пользовательского сеанса"
+
+#: data/interfaces/creator/nav_row.ui:21
+msgid ""
+"🙏🏻 Please donate — every contribution helps me to prove to my wife that "
+"this project is more than just “another coding hobby.”"
+msgstr ""
+
 #: data/interfaces/ex_menu_button.ui:40
 msgctxt "extented menu button"
 msgid "Clear"
 msgstr "Сброс"
 
 #. button
-#: data/interfaces/journal_panel.ui:27
+#: data/interfaces/journal_panel.ui:29
 msgctxt "journal"
 msgid "Refresh"
 msgstr "Обновить"
 
-#: data/interfaces/journal_panel.ui:32
+#: data/interfaces/journal_panel.ui:34
 msgctxt "journal"
 msgid "Clear journal events and refetch them"
 msgstr "Очистить события журнала и заново их загрузить"
 
 #. tooltip
-#: data/interfaces/journal_panel.ui:43
+#: data/interfaces/journal_panel.ui:45
 msgctxt "journal"
 msgid "Enable new entries continuous print as they are appended to the journal"
 msgstr ""
 "Включить непрерывный вывод новых записей по мере добавления их в журнал"
 
 #. tooltip
-#: data/interfaces/journal_panel.ui:59
+#: data/interfaces/journal_panel.ui:61
 msgctxt "journal"
 msgid "Toggle events display order"
 msgstr "Переключить порядок отображения событий"
 
 #. tooltip
-#: data/interfaces/journal_panel.ui:65
+#: data/interfaces/journal_panel.ui:67
 msgctxt "journal"
 msgid "List the boots of the system"
 msgstr "Список загрузок системы"
 
 #. button
-#: data/interfaces/journal_panel.ui:70
+#: data/interfaces/journal_panel.ui:72
 msgctxt "journal"
 msgid "List Boots"
 msgstr "Список загрузок"
 
 #. button
-#: data/interfaces/journal_panel.ui:90
+#: data/interfaces/journal_panel.ui:92
 msgctxt "journal"
 msgid "Current boot"
 msgstr "Текущая загрузка"
 
 #. button
-#: data/interfaces/journal_panel.ui:96
+#: data/interfaces/journal_panel.ui:98
 msgctxt "journal"
 msgid "All events"
 msgstr "Все события"
 
 #. title
-#: data/interfaces/journal_panel.ui:103
+#: data/interfaces/journal_panel.ui:105
 msgctxt "journal"
 msgid "Boot id"
 msgstr "ID загрузки"
 
 #. wiki link
-#: data/interfaces/journal_panel.ui:151
+#: data/interfaces/journal_panel.ui:152
 msgctxt "journal"
 msgid "For more information"
 msgstr ""
 
 #. description
-#: data/interfaces/journal_panel.ui:155
+#: data/interfaces/journal_panel.ui:156
 msgctxt "journal"
 msgid ""
 "Either there are no log events to display, or you don't have permission to "
@@ -337,7 +375,7 @@ msgid ""
 msgstr ""
 
 #. title
-#: data/interfaces/journal_panel.ui:157
+#: data/interfaces/journal_panel.ui:158
 msgctxt "journal"
 msgid "No journal events"
 msgstr "Событий в журнале нет"
@@ -711,192 +749,203 @@ msgctxt "preference"
 msgid "Journal's event max size"
 msgstr "Максимальный размер события журнала"
 
-#: data/interfaces/preferences.ui:200
+#: data/interfaces/preferences.ui:210
 #, fuzzy
 msgctxt "preference"
 msgid "_Proxy Preferences"
 msgstr "Показать настройки"
 
-#: data/interfaces/preferences.ui:206
+#: data/interfaces/preferences.ui:216
 msgid "Switch that controls other switches"
 msgstr ""
 
 #. group title
-#: data/interfaces/preferences.ui:214
+#: data/interfaces/preferences.ui:224
 msgctxt "preference"
 msgid "Systemd Manager Method Calls"
 msgstr ""
 
-#: data/interfaces/preferences.ui:217
+#: data/interfaces/preferences.ui:227
 msgctxt "preference"
 msgid "<b>Start</b> method call through the Proxy"
 msgstr ""
 
-#: data/interfaces/preferences.ui:218
+#: data/interfaces/preferences.ui:228
 #, fuzzy
 msgctxt "preference"
 msgid "Start"
 msgstr "Запустить"
 
-#: data/interfaces/preferences.ui:223
+#: data/interfaces/preferences.ui:233
 msgctxt "preference"
 msgid "<b>Stop</b> method call through the Proxy"
 msgstr ""
 
-#: data/interfaces/preferences.ui:224
+#: data/interfaces/preferences.ui:234
 #, fuzzy
 msgctxt "preference"
 msgid "Stop"
 msgstr "Остановить"
 
-#: data/interfaces/preferences.ui:229
+#: data/interfaces/preferences.ui:239
 msgctxt "preference"
 msgid "<b>Restart</b> method call through the Proxy"
 msgstr ""
 
-#: data/interfaces/preferences.ui:230
+#: data/interfaces/preferences.ui:240
 #, fuzzy
 msgctxt "preference"
 msgid "Restart"
 msgstr "Перезапустить"
 
-#: data/interfaces/preferences.ui:235
+#: data/interfaces/preferences.ui:245
 msgctxt "preference"
 msgid "<b>Reload Unit</b> method call through the Proxy"
 msgstr ""
 
-#: data/interfaces/preferences.ui:236
+#: data/interfaces/preferences.ui:246
 #, fuzzy
 msgctxt "preference"
 msgid "Reload Unit"
 msgstr "Перезагрузить юнит"
 
-#: data/interfaces/preferences.ui:241
+#: data/interfaces/preferences.ui:251
 msgctxt "preference"
 msgid "<b>Clean</b> method call through the Proxy"
 msgstr ""
 
-#: data/interfaces/preferences.ui:242
+#: data/interfaces/preferences.ui:252
 #, fuzzy
 msgctxt "preference"
 msgid "Clean"
 msgstr "Очистить"
 
-#: data/interfaces/preferences.ui:247
+#: data/interfaces/preferences.ui:257
 msgctxt "preference"
 msgid "<b>Freeze</b> method call through the Proxy"
 msgstr ""
 
-#: data/interfaces/preferences.ui:248
+#: data/interfaces/preferences.ui:258
 #, fuzzy
 msgctxt "preference"
 msgid "Freeze"
 msgstr "Приостановить"
 
-#: data/interfaces/preferences.ui:253
+#: data/interfaces/preferences.ui:263
 msgctxt "preference"
 msgid "<b>Thaw</b> method call through the Proxy"
 msgstr ""
 
-#: data/interfaces/preferences.ui:254
+#: data/interfaces/preferences.ui:264
 #, fuzzy
 msgctxt "preference"
 msgid "Thaw"
 msgstr "Возобновить"
 
-#: data/interfaces/preferences.ui:259
+#: data/interfaces/preferences.ui:269
 msgctxt "preference"
 msgid "<b>Enable Unit File</b> method call through the Proxy"
 msgstr ""
 
-#: data/interfaces/preferences.ui:260
+#: data/interfaces/preferences.ui:270
 #, fuzzy
 msgctxt "preference"
 msgid "Enable Unit File"
 msgstr "Включить юнит-файл"
 
-#: data/interfaces/preferences.ui:265
+#: data/interfaces/preferences.ui:275
 msgctxt "preference"
 msgid "<b>Disable Unit File</b> method call through the Proxy"
 msgstr ""
 
-#: data/interfaces/preferences.ui:266
+#: data/interfaces/preferences.ui:276
 #, fuzzy
 msgctxt "preference"
 msgid "Disable Unit File"
 msgstr "Отключить юнит-файл"
 
-#: data/interfaces/preferences.ui:271
+#: data/interfaces/preferences.ui:281
 msgctxt "preference"
 msgid ""
 "<b>Reload</b> Systemd Manager configuration method call through the Proxy"
 msgstr ""
 
-#: data/interfaces/preferences.ui:272
+#: data/interfaces/preferences.ui:282
 #, fuzzy
 msgctxt "preference"
 msgid "Daemon Reload"
 msgstr "Перезагрузить"
 
-#: data/interfaces/preferences.ui:277
+#: data/interfaces/preferences.ui:287
 msgctxt "preference"
 msgid ""
 "<b>Revert Unit Files</b> to their vendor versions method call through the "
 "Proxy"
 msgstr ""
 
-#: data/interfaces/preferences.ui:278
+#: data/interfaces/preferences.ui:288
 #, fuzzy
 msgctxt "preference"
 msgid "Revert Unit Files"
 msgstr "Применить preset к юнит-файлу"
 
-#: data/interfaces/preferences.ui:285
+#: data/interfaces/preferences.ui:295
 msgctxt "preference"
 msgid "Actions"
 msgstr ""
 
-#: data/interfaces/preferences.ui:288
+#: data/interfaces/preferences.ui:298
 msgctxt "preference"
 msgid "Create a <b>Drop-in</b> file through the Proxy"
 msgstr ""
 
-#: data/interfaces/preferences.ui:289
+#: data/interfaces/preferences.ui:299
 msgctxt "preference"
 msgid "Create Drop-in"
 msgstr ""
 
-#: data/interfaces/preferences.ui:294
+#: data/interfaces/preferences.ui:304
 msgctxt "preference"
 msgid "<b>Save file</b> through the Proxy"
 msgstr ""
 
-#: data/interfaces/preferences.ui:295
+#: data/interfaces/preferences.ui:305
 #, fuzzy
 msgctxt "preference"
 msgid "Save file"
 msgstr "Сохранить"
 
-#: data/interfaces/preferences.ui:303
+#: data/interfaces/preferences.ui:310
+msgctxt "preference"
+msgid "<b>Create file</b> through the Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:311
+#, fuzzy
+msgctxt "preference"
+msgid "Create file"
+msgstr "Сохранить"
+
+#: data/interfaces/preferences.ui:319
 msgctxt "preference"
 msgid "Proxy Behaviors"
 msgstr ""
 
-#: data/interfaces/preferences.ui:306
+#: data/interfaces/preferences.ui:322
 msgid "Start the Proxy when starting SysD Manager"
 msgstr ""
 
-#: data/interfaces/preferences.ui:307
+#: data/interfaces/preferences.ui:323
 msgctxt "preference"
 msgid "Start Proxy at Start up"
 msgstr ""
 
-#: data/interfaces/preferences.ui:312
+#: data/interfaces/preferences.ui:328
 msgctxt "preference"
 msgid "Stop the Proxy when closing SysD Manager"
 msgstr ""
 
-#: data/interfaces/preferences.ui:313
+#: data/interfaces/preferences.ui:329
 msgctxt "preference"
 msgid "Stop Proxy at Close"
 msgstr ""
@@ -909,170 +958,204 @@ msgstr "Общие"
 
 #: data/interfaces/shortcuts.ui:14
 msgctxt "shortcut window"
+msgid "Close the application"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:20
+msgctxt "shortcut window"
+msgid "Close the window"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:26
+msgctxt "shortcut window"
 msgid "Show Preferences"
 msgstr "Показать настройки"
 
+#. Section name
+#: data/interfaces/shortcuts.ui:33
+#, fuzzy
+msgctxt "shortcut window"
+msgid "SysD Manager"
+msgstr "SysD Менеджер"
+
 #. subtitle
-#: data/interfaces/shortcuts.ui:20
+#: data/interfaces/shortcuts.ui:37
 msgctxt "shortcut window"
 msgid "Allow configuring each proxy operation individually"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:21
+#: data/interfaces/shortcuts.ui:38
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Show Proxy Preferences"
 msgstr "Показать настройки"
 
-#: data/interfaces/shortcuts.ui:27
+#: data/interfaces/shortcuts.ui:44
 msgctxt "shortcut window"
 msgid "Open Search Unit"
 msgstr "Открыть поиск юнита"
 
-#: data/interfaces/shortcuts.ui:33
+#: data/interfaces/shortcuts.ui:50
 msgctxt "shortcut window"
 msgid "Open Unit Property Filter"
 msgstr "Открыть фильтр свойств юнита"
 
-#: data/interfaces/shortcuts.ui:39
+#: data/interfaces/shortcuts.ui:56
 msgctxt "shortcut window"
 msgid "Open List Boots"
 msgstr "Открыть список загрузок"
 
-#: data/interfaces/shortcuts.ui:45
+#: data/interfaces/shortcuts.ui:62
 msgctxt "shortcut window"
 msgid "Open columns manager"
 msgstr "Открыть менеджер столбцов"
 
-#: data/interfaces/shortcuts.ui:51
+#: data/interfaces/shortcuts.ui:68
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Deamon Reload"
 msgstr "Перезагрузить"
 
+#: data/interfaces/shortcuts.ui:74
+msgctxt "shortcut window"
+msgid "Open Find in Text"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:80
+#, fuzzy
+msgctxt "shortcut window"
+msgid "Create Unit"
+msgstr "Перезагрузить юнит"
+
+#. subtitle
+#: data/interfaces/shortcuts.ui:81
+msgctxt "shortcut window"
+msgid "Create Timer or Service Unit Type"
+msgstr ""
+
 #. Section name
-#: data/interfaces/shortcuts.ui:58
+#: data/interfaces/shortcuts.ui:88
 msgctxt "shortcut window"
 msgid "Pages"
 msgstr "Страницы"
 
-#: data/interfaces/shortcuts.ui:62
+#: data/interfaces/shortcuts.ui:92
 msgctxt "shortcut window"
 msgid "Display Unit Information"
 msgstr "Показать информацию о юните"
 
-#: data/interfaces/shortcuts.ui:68
+#: data/interfaces/shortcuts.ui:98
 msgctxt "shortcut window"
 msgid "Display Unit Dependencies"
 msgstr "Показать зависимости юнита"
 
-#: data/interfaces/shortcuts.ui:74
+#: data/interfaces/shortcuts.ui:104
 msgctxt "shortcut window"
 msgid "Display Unit Definition File"
 msgstr "Показать файл определения юнита"
 
-#: data/interfaces/shortcuts.ui:80
+#: data/interfaces/shortcuts.ui:110
 msgctxt "shortcut window"
 msgid "Display Unit Journal Events"
 msgstr "Показать события журнала юнита"
 
 #. Section name
-#: data/interfaces/shortcuts.ui:87
+#: data/interfaces/shortcuts.ui:117
 msgctxt "shortcut window"
 msgid "Unit"
 msgstr "Юнит"
 
-#: data/interfaces/shortcuts.ui:91
+#: data/interfaces/shortcuts.ui:121
 msgctxt "shortcut window"
 msgid "Show unit properties"
 msgstr "Показать свойства юнита"
 
 #. In the shortcut Window description
-#: data/interfaces/shortcuts.ui:97
+#: data/interfaces/shortcuts.ui:127
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Save the selected unit file"
 msgstr "Инвертировать выбранные элементы фильтра"
 
 #. Section name
-#: data/interfaces/shortcuts.ui:104
+#: data/interfaces/shortcuts.ui:134
 msgctxt "shortcut window"
 msgid "Curated Lists"
 msgstr ""
 
 #. subtitle
-#: data/interfaces/shortcuts.ui:108
+#: data/interfaces/shortcuts.ui:138
 msgctxt "shortcut window"
 msgid "Merge Loaded Units with Unit Files"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:109
+#: data/interfaces/shortcuts.ui:139
 msgctxt "shortcut window"
 msgid "Display SysD Manager Original List"
 msgstr ""
 
 #. subtitle
-#: data/interfaces/shortcuts.ui:115
+#: data/interfaces/shortcuts.ui:145
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Display only Loaded Units"
 msgstr "Загруженные юниты получены"
 
-#: data/interfaces/shortcuts.ui:116
+#: data/interfaces/shortcuts.ui:146
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Display Loaded Units"
 msgstr "Загруженные юниты получены"
 
 #. subtitle
-#: data/interfaces/shortcuts.ui:122
+#: data/interfaces/shortcuts.ui:152
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Display only Unit Files"
 msgstr "Отключить юнит-файл"
 
-#: data/interfaces/shortcuts.ui:123
+#: data/interfaces/shortcuts.ui:153
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Display Unit Files"
 msgstr "Отключить юнит-файл"
 
-#: data/interfaces/shortcuts.ui:129
+#: data/interfaces/shortcuts.ui:159
 msgctxt "shortcut window"
 msgid "Display User Customised Units list"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:135
+#: data/interfaces/shortcuts.ui:165
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Display Favorite Units"
 msgstr "Загруженные юниты получены"
 
 #. Section name
-#: data/interfaces/shortcuts.ui:142
+#: data/interfaces/shortcuts.ui:172
 msgctxt "shortcut window"
 msgid "Special Lists"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:146
+#: data/interfaces/shortcuts.ui:176
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Display Timers"
 msgstr "Отображать номера строк юнит-файла"
 
-#: data/interfaces/shortcuts.ui:152
+#: data/interfaces/shortcuts.ui:182
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Display Sockets"
 msgstr "Отображать цвета"
 
-#: data/interfaces/shortcuts.ui:158
+#: data/interfaces/shortcuts.ui:188
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Display Paths"
 msgstr "Отображать цвета"
 
-#: data/interfaces/shortcuts.ui:164
+#: data/interfaces/shortcuts.ui:194
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Display Automounts"
@@ -1318,12 +1401,12 @@ msgid "Use Regular Expression"
 msgstr "Пользовательский сеанс"
 
 #. tooltip
-#: data/interfaces/text_find.ui:59
+#: data/interfaces/text_find.ui:51
 msgctxt "find_text"
 msgid "Previous Match"
 msgstr ""
 
-#: data/interfaces/text_find.ui:67
+#: data/interfaces/text_find.ui:59
 msgctxt "find_text"
 msgid "Match Next"
 msgstr ""
@@ -1422,69 +1505,69 @@ msgid "Journal"
 msgstr "Журнал"
 
 #. label
-#: data/interfaces/unit_dependencies_panel.ui:32
+#: data/interfaces/unit_dependencies_panel.ui:34
 msgctxt "dependency"
 msgid "plain"
 msgstr "Без форматирования"
 
 #. label
-#: data/interfaces/unit_dependencies_panel.ui:52
+#: data/interfaces/unit_dependencies_panel.ui:54
 msgctxt "dependency"
 msgid "No dependencies"
 msgstr "Нет зависимостей"
 
 #. button
-#: data/interfaces/unit_file_panel.ui:65
+#: data/interfaces/unit_file_panel.ui:67
 msgctxt "file"
 msgid "Save"
 msgstr "Сохранить"
 
 #. description
-#: data/interfaces/unit_file_panel.ui:95
+#: data/interfaces/unit_file_panel.ui:97
 #, fuzzy
 msgctxt "file"
 msgid "The unit has no file associated"
 msgstr "Юнит не связан с файлом"
 
 #. title
-#: data/interfaces/unit_file_panel.ui:97
+#: data/interfaces/unit_file_panel.ui:99
 msgctxt "file"
 msgid "No Unit File"
 msgstr "Нет юнит-файла"
 
 #. Unit file drop-in operations menu item
-#: data/interfaces/unit_file_panel.ui:109
+#: data/interfaces/unit_file_panel.ui:111
 msgctxt "menu"
 msgid "Revert Drop-in"
 msgstr ""
 
 #. Unit file drop-in operations menu section
-#: data/interfaces/unit_file_panel.ui:112
+#: data/interfaces/unit_file_panel.ui:114
 msgctxt "menu"
 msgid "Create Drop-in"
 msgstr ""
 
 #. Unit file drop-in operations menu item
-#: data/interfaces/unit_file_panel.ui:115
+#: data/interfaces/unit_file_panel.ui:117
 msgctxt "menu"
 msgid "Permanent"
 msgstr ""
 
 #. Unit file drop-in operations menu item
-#: data/interfaces/unit_file_panel.ui:119
+#: data/interfaces/unit_file_panel.ui:121
 #, fuzzy
 msgctxt "menu"
 msgid "Runtime"
 msgstr "Время выполнения"
 
 #. button
-#: data/interfaces/unit_info_panel.ui:27
+#: data/interfaces/unit_info_panel.ui:29
 msgctxt "unit info"
 msgid "_Refresh"
 msgstr "_Обновить"
 
 #. button
-#: data/interfaces/unit_info_panel.ui:40
+#: data/interfaces/unit_info_panel.ui:42
 msgctxt "unit info"
 msgid "Show all _Properties"
 msgstr "Показать все свойства"
@@ -1700,62 +1783,50 @@ msgctxt "unit properties"
 msgid "Copy all properties to clipboard"
 msgstr "Скопировать все свойства в буфер обмена"
 
-#. dialog title
 #: src/analyze/mod.rs:27
 msgctxt "analyse blame"
 msgid "Analyse Blame"
 msgstr "Анализ задержек"
 
 #. label total
-#: src/analyze/mod.rs:49
+#: src/analyze/mod.rs:56
 msgctxt "analyse blame"
 msgid "Total Time:"
 msgstr "Общее время:"
 
 #. place holder, lees likely to be displaied
-#: src/analyze/mod.rs:58
+#: src/analyze/mod.rs:78
 msgctxt "analyse blame"
 msgid "seconds ..."
 msgstr "с..."
 
 #. column header
-#: src/analyze/mod.rs:133
+#: src/analyze/mod.rs:156
 msgctxt "analyse blame"
 msgid "Init time (ms)"
 msgstr "Время инициализации (мс)"
 
 #. column header
-#: src/analyze/mod.rs:138
+#: src/analyze/mod.rs:161
 msgctxt "analyse blame"
 msgid "Running units"
 msgstr "Активные юниты"
 
 #. Just a simple log that it's all ok. Need to set env RUST_LOG="info" to see it
-#: src/main.rs:112
+#: src/main.rs:113
 msgid "Program starting up"
 msgstr "Запуск программы"
 
-#. instance level user
-#: src/widget/app_window/menu.rs:308
-msgid "user"
-msgstr ""
-
-#. instance level system
-#: src/widget/app_window/menu.rs:311
-#, fuzzy
-msgid "system"
-msgstr "Система"
-
-#: src/widget/app_window/menu.rs:322
+#: src/widget/app_window/menu.rs:320
 msgid "Daemon Reload failed!"
 msgstr ""
 
 #. about dialogue
-#: src/widget/app_window/menu.rs:368
+#: src/widget/app_window/menu.rs:369
 msgid "Thank you for your support"
 msgstr "Спасибо за вашу поддержку"
 
-#: src/widget/clean_dialog/imp.rs:108
+#: src/widget/clean_dialog/imp.rs:111
 msgctxt "clean"
 msgid "No Unit Selected"
 msgstr "Юнит не выбран"
@@ -1896,6 +1967,122 @@ msgctxt "action unit file"
 msgid "Stoping mode options"
 msgstr "Параметры режима остановки"
 
+#: src/widget/creator/first_page.rs:116
+msgctxt "creator"
+msgid "Unit Name Prefix"
+msgstr ""
+
+#: src/widget/creator/imp.rs:325
+#, fuzzy, rust-format
+msgctxt "create"
+msgid "Unit {} Created!"
+msgstr "Файл {} успешно сохранён!"
+
+#: src/widget/creator/imp.rs:332
+#, rust-format
+msgctxt "create"
+msgid "Creation Failed! {}"
+msgstr ""
+
+#. Faild to reload manager a System or User level
+#: src/widget/creator/launch_creator_page.rs:184
+#, rust-format
+msgid "Daemon Reload failed at {} level"
+msgstr ""
+
+#: src/widget/creator/mod.rs:95
+#, fuzzy
+msgctxt "create"
+msgid "Service"
+msgstr "Менеджер служб"
+
+#: src/widget/creator/mod.rs:96
+#, fuzzy
+msgctxt "create"
+msgid "Timer"
+msgstr "Время"
+
+#: src/widget/creator/mod.rs:97
+msgctxt "create"
+msgid "Timer with Service"
+msgstr ""
+
+#: src/widget/creator/timer_creator_page/imp.rs:472
+msgctxt "timer"
+msgid "Custom"
+msgstr ""
+
+#: src/widget/creator/timer_creator_page/imp.rs:473
+msgctxt "timer"
+msgid "Minutely"
+msgstr ""
+
+#: src/widget/creator/timer_creator_page/imp.rs:474
+msgctxt "timer"
+msgid "Hourly"
+msgstr ""
+
+#: src/widget/creator/timer_creator_page/imp.rs:475
+msgctxt "timer"
+msgid "Daily"
+msgstr ""
+
+#: src/widget/creator/timer_creator_page/imp.rs:476
+msgctxt "timer"
+msgid "Monthly"
+msgstr ""
+
+#: src/widget/creator/timer_creator_page/imp.rs:477
+msgctxt "timer"
+msgid "Weekly"
+msgstr ""
+
+#: src/widget/creator/timer_creator_page/imp.rs:478
+msgctxt "timer"
+msgid "Yearly"
+msgstr ""
+
+#: src/widget/creator/timer_creator_page/imp.rs:479
+msgctxt "timer"
+msgid "Quarterly"
+msgstr ""
+
+#: src/widget/creator/timer_creator_page/imp.rs:480
+msgctxt "timer"
+msgid "Semiannually"
+msgstr ""
+
+#: src/widget/creator/timer_creator_page.rs:72
+msgctxt "timer"
+msgid "OnActiveSec"
+msgstr ""
+
+#: src/widget/creator/timer_creator_page.rs:73
+msgctxt "timer"
+msgid "OnBootSec"
+msgstr ""
+
+#: src/widget/creator/timer_creator_page.rs:74
+msgctxt "timer"
+msgid "OnStartupSec"
+msgstr ""
+
+#: src/widget/creator/timer_creator_page.rs:75
+msgctxt "timer"
+msgid "OnUnitActiveSec"
+msgstr ""
+
+#: src/widget/creator/timer_creator_page.rs:76
+msgctxt "timer"
+msgid "OnUnitInactiveSec"
+msgstr ""
+
+#. Menu item label
+#: src/widget/journal/imp.rs:737
+msgctxt "journal"
+msgid "Wrap Word"
+msgstr ""
+
 #. Dialog subtitle
 #: src/widget/kill_panel/imp.rs:75
 msgctxt "kill"
@@ -1920,14 +2107,14 @@ msgstr "Отправить реальный сигнал юниту"
 
 #. SIGRTMIN to SIGRTMAX default action
 #. kill signal default action
-#: src/widget/kill_panel/imp.rs:218 src/widget/kill_panel/imp.rs:417
-#: src/widget/kill_panel/imp.rs:425 src/widget/kill_panel/imp.rs:489
-#: src/widget/kill_panel/imp.rs:497 src/widget/kill_panel/imp.rs:513
-#: src/widget/kill_panel/imp.rs:521 src/widget/kill_panel/imp.rs:529
-#: src/widget/kill_panel/imp.rs:537 src/widget/kill_panel/imp.rs:545
-#: src/widget/kill_panel/imp.rs:628 src/widget/kill_panel/imp.rs:636
-#: src/widget/kill_panel/imp.rs:652 src/widget/kill_panel/imp.rs:660
-#: src/widget/kill_panel/imp.rs:668
+#: src/widget/kill_panel/imp.rs:218 src/widget/kill_panel/imp.rs:418
+#: src/widget/kill_panel/imp.rs:426 src/widget/kill_panel/imp.rs:490
+#: src/widget/kill_panel/imp.rs:498 src/widget/kill_panel/imp.rs:514
+#: src/widget/kill_panel/imp.rs:522 src/widget/kill_panel/imp.rs:530
+#: src/widget/kill_panel/imp.rs:538 src/widget/kill_panel/imp.rs:546
+#: src/widget/kill_panel/imp.rs:629 src/widget/kill_panel/imp.rs:637
+#: src/widget/kill_panel/imp.rs:653 src/widget/kill_panel/imp.rs:661
+#: src/widget/kill_panel/imp.rs:669
 msgctxt "kill"
 msgid "Terminate"
 msgstr "Завершить"
@@ -1958,336 +2145,337 @@ msgid "Kill signal {} to"
 msgstr "Сигнал завершения отправлен {}"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:419
+#: src/widget/kill_panel/imp.rs:420
 msgctxt "kill"
 msgid "Hang up controlling terminal or process"
 msgstr "Завершить работу управляющего терминала или процесса"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:427
+#: src/widget/kill_panel/imp.rs:428
 msgctxt "kill"
 msgid "Interrupt from keyboard, Ctrl+C"
 msgstr "Прервать с клавиатуры, Ctrl+C"
 
 #. kill signal default action
-#: src/widget/kill_panel/imp.rs:433 src/widget/kill_panel/imp.rs:441
-#: src/widget/kill_panel/imp.rs:449 src/widget/kill_panel/imp.rs:457
-#: src/widget/kill_panel/imp.rs:465 src/widget/kill_panel/imp.rs:473
-#: src/widget/kill_panel/imp.rs:481 src/widget/kill_panel/imp.rs:505
-#: src/widget/kill_panel/imp.rs:612 src/widget/kill_panel/imp.rs:620
-#: src/widget/kill_panel/imp.rs:676 src/widget/kill_panel/imp.rs:684
+#: src/widget/kill_panel/imp.rs:434 src/widget/kill_panel/imp.rs:442
+#: src/widget/kill_panel/imp.rs:450 src/widget/kill_panel/imp.rs:458
+#: src/widget/kill_panel/imp.rs:466 src/widget/kill_panel/imp.rs:474
+#: src/widget/kill_panel/imp.rs:482 src/widget/kill_panel/imp.rs:506
+#: src/widget/kill_panel/imp.rs:613 src/widget/kill_panel/imp.rs:621
+#: src/widget/kill_panel/imp.rs:677 src/widget/kill_panel/imp.rs:685
 msgctxt "kill"
 msgid "Dump"
 msgstr "Дамп"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:435
+#: src/widget/kill_panel/imp.rs:436
 msgctxt "kill"
 msgid "Quit from keyboard, Ctrl+\\"
 msgstr "Завершить с клавиатуры, Ctrl+\\"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:443
+#: src/widget/kill_panel/imp.rs:444
 msgctxt "kill"
 msgid "Illegal instruction"
 msgstr "Недопустимая инструкция"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:451
+#: src/widget/kill_panel/imp.rs:452
 msgctxt "kill"
 msgid "Breakpoint for debugging"
 msgstr "Точка останова для отладки"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:459
+#: src/widget/kill_panel/imp.rs:460
 msgctxt "kill"
 msgid "Abnormal termination"
 msgstr "Аварийное завершение"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:467
+#: src/widget/kill_panel/imp.rs:468
 msgctxt "kill"
 msgid "Equivalent to SIGABRT"
 msgstr "Эквивалент SIGABRT"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:475
+#: src/widget/kill_panel/imp.rs:476
 msgctxt "kill"
 msgid "Bus error"
 msgstr "Ошибка шины"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:483
+#: src/widget/kill_panel/imp.rs:484
 msgctxt "kill"
 msgid "Floating-point exception"
 msgstr "Исключение с плавающей запятой"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:491
+#: src/widget/kill_panel/imp.rs:492
 msgctxt "kill"
 msgid "Forced-process termination"
 msgstr "Принудительное завершение процесса"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:499 src/widget/kill_panel/imp.rs:515
+#: src/widget/kill_panel/imp.rs:500 src/widget/kill_panel/imp.rs:516
 msgctxt "kill"
 msgid "Available to processes"
 msgstr "Доступно процессам"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:507
+#: src/widget/kill_panel/imp.rs:508
 msgctxt "kill"
 msgid "Invalid memory reference"
 msgstr "Обращение к недопустимой области памяти"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:523
+#: src/widget/kill_panel/imp.rs:524
 msgctxt "kill"
 msgid "Write to pipe with no readers"
 msgstr "Запись в канал без читателей"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:531
+#: src/widget/kill_panel/imp.rs:532
 msgctxt "kill"
 msgid "Real-timer clock"
 msgstr "Часы реального времени"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:539
+#: src/widget/kill_panel/imp.rs:540
 msgctxt "kill"
 msgid "Process termination"
 msgstr "Завершение процесса"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:547
+#: src/widget/kill_panel/imp.rs:548
 msgctxt "kill"
 msgid "Coprocessor stack error"
 msgstr "Ошибка стека сопроцессора"
 
 #. kill signal default action
-#: src/widget/kill_panel/imp.rs:553 src/widget/kill_panel/imp.rs:604
-#: src/widget/kill_panel/imp.rs:644
+#: src/widget/kill_panel/imp.rs:554 src/widget/kill_panel/imp.rs:605
+#: src/widget/kill_panel/imp.rs:645
 msgctxt "kill"
 msgid "Ignore"
 msgstr "Игнорировать"
 
-#: src/widget/kill_panel/imp.rs:557
+#: src/widget/kill_panel/imp.rs:558
 msgctxt "kill"
 msgid "Child process stopped or terminated or got a signal if traced"
 msgstr ""
 "Дочерний процесс остановлен, завершён или получил сигнал (при трассировке)"
 
 #. kill signal default action
-#: src/widget/kill_panel/imp.rs:564
+#: src/widget/kill_panel/imp.rs:565
 msgctxt "kill"
 msgid "Continue"
 msgstr "Продолжить"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:566
+#: src/widget/kill_panel/imp.rs:567
 msgctxt "kill"
 msgid "Resume execution, if stopped"
 msgstr "Продолжить выполнение, если приостановлено"
 
 #. kill signal default action
-#: src/widget/kill_panel/imp.rs:572 src/widget/kill_panel/imp.rs:580
-#: src/widget/kill_panel/imp.rs:588 src/widget/kill_panel/imp.rs:596
+#: src/widget/kill_panel/imp.rs:573 src/widget/kill_panel/imp.rs:581
+#: src/widget/kill_panel/imp.rs:589 src/widget/kill_panel/imp.rs:597
 msgctxt "kill"
 msgid "Stop"
 msgstr "Остановить"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:574
+#: src/widget/kill_panel/imp.rs:575
 msgctxt "kill"
 msgid "Stop process execution, Ctrl+Z"
 msgstr "Остановить выполнение процесса, Ctrl+Z"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:582
+#: src/widget/kill_panel/imp.rs:583
 msgctxt "kill"
 msgid "Stop process issued from tty"
 msgstr "Остановить процесс, отправленный с tty"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:590
+#: src/widget/kill_panel/imp.rs:591
 msgctxt "kill"
 msgid "Background process requires input"
 msgstr "Фоновый процесс требует ввода данных"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:598
+#: src/widget/kill_panel/imp.rs:599
 msgctxt "kill"
 msgid "Background process requires output"
 msgstr "Фоновый процесс требует вывода"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:606
+#: src/widget/kill_panel/imp.rs:607
 msgctxt "kill"
 msgid "Urgent condition on socket"
 msgstr "Критическое состояние сокета"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:614
+#: src/widget/kill_panel/imp.rs:615
 msgctxt "kill"
 msgid "CPU time limit exceeded"
 msgstr "Превышено ограничение времени ЦП"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:622
+#: src/widget/kill_panel/imp.rs:623
 msgctxt "kill"
 msgid "File size limit exceeded"
 msgstr "Превышено ограничение размера файла"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:630
+#: src/widget/kill_panel/imp.rs:631
 msgctxt "kill"
 msgid "Virtual timer clock"
 msgstr "Виртуальный таймер"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:638
+#: src/widget/kill_panel/imp.rs:639
 msgctxt "kill"
 msgid "Profile timer clock"
 msgstr "Профилирующий таймер"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:646
+#: src/widget/kill_panel/imp.rs:647
 msgctxt "kill"
 msgid "Window resizing"
 msgstr "Изменение размера окна"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:654
+#: src/widget/kill_panel/imp.rs:655
 msgctxt "kill"
 msgid "I/O now possible"
 msgstr "Готовность к вводу-выводу"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:662
+#: src/widget/kill_panel/imp.rs:663
 msgctxt "kill"
 msgid "Equivalent to SIGIO"
 msgstr "Эквивалент SIGIO"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:670
+#: src/widget/kill_panel/imp.rs:671
 msgctxt "kill"
 msgid "Power supply failure"
 msgstr "Сбой питания"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:678
+#: src/widget/kill_panel/imp.rs:679
 msgctxt "kill"
 msgid "Bad system call"
 msgstr "Некорректный системный вызов"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:686
+#: src/widget/kill_panel/imp.rs:687
 msgctxt "kill"
 msgid "Equivalent to SIGSYS"
 msgstr "Эквивалент SIGSYS"
 
 #. tooltip for action button
-#: src/widget/mod.rs:55
+#: src/widget/mod.rs:56
 #, rust-format
 msgctxt "controls"
 msgid "Remove {} from Favorites"
 msgstr ""
 
 #. tooltip for action button
-#: src/widget/mod.rs:61
+#: src/widget/mod.rs:62
 #, rust-format
 msgctxt "controls"
 msgid "Add {} to Favorites"
 msgstr ""
 
 #. browser dbus option
-#: src/widget/preferences/data.rs:64
+#: src/widget/preferences/data.rs:67
 msgctxt "dbus"
 msgid "User Session Bus"
 msgstr "Шина пользовательского сеанса"
 
 #. browser dbus option
-#: src/widget/preferences/data.rs:66
+#: src/widget/preferences/data.rs:69
 msgctxt "dbus"
 msgid "System Bus"
 msgstr "Системная шина"
 
 #. browser dbus option
-#: src/widget/preferences/data.rs:68
+#: src/widget/preferences/data.rs:71
 msgctxt "dbus"
 msgid "System & User Session Bus"
 msgstr "Системная и пользовательская сессионная шина"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:161
+#: src/widget/preferences/data.rs:164
 msgctxt "color scheme"
 msgid "No Preference"
 msgstr "Без предпочтений"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:163
+#: src/widget/preferences/data.rs:166
 msgctxt "color scheme"
 msgid "Prefer Dark"
 msgstr "Предпочитать тёмную тему"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:165
+#: src/widget/preferences/data.rs:168
 msgctxt "color scheme"
 msgid "Prefer Light"
 msgstr "Предпочитать светлую тему"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:167
+#: src/widget/preferences/data.rs:170
 msgctxt "color scheme"
 msgid "Force Dark"
 msgstr "Принудительно тёмная тема"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:169
+#: src/widget/preferences/data.rs:172
 msgctxt "color scheme"
 msgid "Force Light"
 msgstr "Принудительно светлая тема"
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:215
+#: src/widget/preferences/data.rs:218
 msgctxt "pref orientation"
 msgid "Automatic"
 msgstr "Автоматически"
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:217
+#: src/widget/preferences/data.rs:220
 msgctxt "pref orientation"
 msgid "Side by Side"
 msgstr "Горизонтальное разделение"
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:219
+#: src/widget/preferences/data.rs:222
 msgctxt "pref orientation"
 msgid "Top Bottom"
 msgstr "Вертикальное разделение"
 
 #. unit file no preference style selected
-#: src/widget/preferences/imp.rs:459
+#: src/widget/preferences/imp.rs:452
 msgctxt "pref file style"
 msgid "None"
 msgstr "Нет"
 
 #. find count
 #. find count initial
-#: src/widget/text_search/imp.rs:157 src/widget/text_search/imp.rs:332
+#: src/widget/text_search/imp.rs:157 src/widget/text_search/imp.rs:328
 #, rust-format
 msgctxt "text_find"
 msgid "{} of {}"
 msgstr ""
 
-#. Find in text Menu item
-#: src/widget/text_search/mod.rs:54
+#. Toggle in text Menu item
+#: src/widget/text_search/mod.rs:57
 msgctxt "text_find"
-msgid "Find in Text"
+msgid "Toggle Find in Text"
 msgstr ""
 
+#. Open in text Menu item
 #. toggle button tooltip text
-#: src/widget/text_search/mod.rs:80
+#: src/widget/text_search/mod.rs:62 src/widget/text_search/mod.rs:87
 msgctxt "text_find"
 msgid "Open Find in Text"
 msgstr ""
@@ -2405,19 +2593,19 @@ msgid "reloaded"
 msgstr "перезагружен"
 
 #. toast message
-#: src/widget/unit_control_panel/imp.rs:463
+#: src/widget/unit_control_panel/imp.rs:498
 msgctxt "toast"
 msgid "Unit {} has been <{0}>{}</{0}> with the mode {}"
 msgstr "Юнит {} <{0}>{}</{0}> в режиме {}"
 
 #. toast message error --  "Can't {ACTION} the unit <unit>{UNITNAME}</unit>, because: {SYSTEMD HUMAN ERROR (english)}"),
-#: src/widget/unit_control_panel/imp.rs:485
+#: src/widget/unit_control_panel/imp.rs:520
 #, rust-format
 msgctxt "toast"
 msgid "Can't {} the unit {}, because: {}"
 msgstr "Невозможно {} юнит {}. Причина: {}"
 
-#: src/widget/unit_control_panel/imp.rs:780
+#: src/widget/unit_control_panel/imp.rs:823
 msgctxt "toast"
 msgid ""
 "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
@@ -2427,13 +2615,13 @@ msgstr ""
 "выполнено успешно"
 
 #. toast message success (no unit) -- "{ACTION} successful."
-#: src/widget/unit_control_panel/imp.rs:788
+#: src/widget/unit_control_panel/imp.rs:831
 #, rust-format
 msgctxt "toast"
 msgid "{} successful."
 msgstr "{} успешно выполнено."
 
-#: src/widget/unit_control_panel/imp.rs:800
+#: src/widget/unit_control_panel/imp.rs:843
 #, rust-format
 msgctxt "toast"
 msgid ""
@@ -2444,7 +2632,7 @@ msgstr ""
 "span>. Причина: <span fgcolor='{}'>{}</span>."
 
 #. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
-#: src/widget/unit_control_panel/imp.rs:811
+#: src/widget/unit_control_panel/imp.rs:854
 #, rust-format
 msgctxt "toast"
 msgid "{} failed. Reason: <span fgcolor='{}'>{}</span>."
@@ -2553,11 +2741,11 @@ msgstr ""
 #: src/widget/unit_file_panel/flatpak.rs:123
 msgctxt "flatpak"
 msgid ""
-"You need to jailbreak your Flatpak application to be able to save files on "
-"the host system.\n"
+"You need to <b>jailbreak</b> your Flatpak application to allow it to run sub-"
+"programs or to save files on the host system.\n"
 "\n"
-"Follow the <a href=\"https://github.com/plrigaux/sysd-manager/wiki/"
-"Flatpak\">link</a> to know how to aquire needed permission."
+"Follow this <a href=\"https://github.com/plrigaux/sysd-manager/wiki/"
+"Flatpak\">link</a> to know how to acquire the required permission."
 msgstr ""
 
 #: src/widget/unit_file_panel/flatpak.rs:127
@@ -2585,13 +2773,13 @@ msgid "File {} saved successfully!"
 msgstr "Файл {} успешно сохранён!"
 
 #. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:272 src/widget/unit_file_panel/imp.rs:1075
+#: src/widget/unit_file_panel/imp.rs:272 src/widget/unit_file_panel/imp.rs:1019
 #, fuzzy
 msgid "Daemon Reload"
 msgstr "Перезагрузить"
 
 #: src/widget/unit_file_panel/imp.rs:287 src/widget/unit_file_panel/imp.rs:304
-#: src/widget/unit_file_panel/imp.rs:1091
+#: src/widget/unit_file_panel/imp.rs:1035
 msgctxt "file"
 msgid "Not able to save file, permission not granted!"
 msgstr ""
@@ -2622,17 +2810,17 @@ msgid "Drop In"
 msgstr "Drop-In"
 
 #. Create Drop in file name
-#: src/widget/unit_file_panel/imp.rs:951
+#: src/widget/unit_file_panel/imp.rs:894
 msgctxt "file"
 msgid "Editing"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:961
+#: src/widget/unit_file_panel/imp.rs:904
 msgctxt "file"
 msgid "Note: you can change the drop-in file name by modifying the above line"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:971
+#: src/widget/unit_file_panel/imp.rs:914
 msgctxt "file"
 msgid ""
 "Anything between here and the comment below will become the contents of the "
@@ -2640,82 +2828,82 @@ msgid ""
 msgstr ""
 
 #. Create Drop in file footer
-#: src/widget/unit_file_panel/imp.rs:980
+#: src/widget/unit_file_panel/imp.rs:923
 msgctxt "file"
 msgid "Edits below this comment will be discarded"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:1067
+#: src/widget/unit_file_panel/imp.rs:1011
 #, fuzzy, rust-format
 msgctxt "file"
 msgid "Unit {} reverted successfully!"
 msgstr "Файл {} успешно сохранён!"
 
-#: src/widget/unit_file_panel/imp.rs:1112
+#: src/widget/unit_file_panel/imp.rs:1056
 msgctxt "file"
 msgid "Not able to revert unit, permission not granted!"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:1120
+#: src/widget/unit_file_panel/imp.rs:1064
 msgctxt "file"
 msgid "Not able to revert unit, an error happened!"
 msgstr ""
 
 #. Show Line Number Menu Item
-#: src/widget/unit_file_panel/imp.rs:1226
+#: src/widget/unit_file_panel/imp.rs:1171
 #, fuzzy
 msgctxt "file"
 msgid "Display Line Numbers"
 msgstr "Отображать номера строк юнит-файла"
 
-#: src/widget/unit_list/filter/imp.rs:371
+#: src/widget/unit_list/filter/imp.rs:370
 msgctxt "filter"
 msgid "Any sub states"
 msgstr "Любые подсостояния"
 
 #. Clear button
-#: src/widget/unit_list/filter/imp.rs:375
-#: src/widget/unit_list/filter/imp.rs:1074
+#: src/widget/unit_list/filter/imp.rs:374
+#: src/widget/unit_list/filter/imp.rs:1073
 #: src/widget/unit_list/filter/substate.rs:142
 msgctxt "filter"
 msgid "Clear"
 msgstr "Сброс"
 
 #. Filter option
-#: src/widget/unit_list/filter/imp.rs:472
+#: src/widget/unit_list/filter/imp.rs:471
 #, fuzzy
 msgctxt "filter"
 msgid "Match Type"
 msgstr "Отслеживать сигналы"
 
 #. Filter option
-#: src/widget/unit_list/filter/imp.rs:490
+#: src/widget/unit_list/filter/imp.rs:489
 msgctxt "filter"
 msgid "Case Insensitive"
 msgstr ""
 
 #. Filter option
-#: src/widget/unit_list/filter/imp.rs:512
+#: src/widget/unit_list/filter/imp.rs:511
 msgctxt "filter"
 msgid "Unset"
 msgstr ""
 
 #. Filter option
 #. Invert filter Button
-#: src/widget/unit_list/filter/imp.rs:528
-#: src/widget/unit_list/filter/imp.rs:1095
+#: src/widget/unit_list/filter/imp.rs:527
+#: src/widget/unit_list/filter/imp.rs:1094
 msgctxt "filter"
 msgid "Invert"
 msgstr "Инвертировать"
 
 #. Clear button tooltip
-#: src/widget/unit_list/filter/imp.rs:1076
+#: src/widget/unit_list/filter/imp.rs:1075
 #: src/widget/unit_list/filter/substate.rs:143
 msgctxt "filter"
 msgid "Clear filter's selected items"
 msgstr "Очистить выбранные элементы фильтра"
 
-#: src/widget/unit_list/filter/imp.rs:1096
+#: src/widget/unit_list/filter/imp.rs:1095
 msgctxt "filter"
 msgid "Invert filter's selected items"
 msgstr "Инвертировать выбранные элементы фильтра"
@@ -2731,135 +2919,135 @@ msgid "Add filter on sub state"
 msgstr "Добавить фильтр по подсостоянию"
 
 #. Automounts list column name
-#: src/widget/unit_list/imp/construct.rs:107
+#: src/widget/unit_list/imp/construct.rs:143
 msgctxt "list column"
 msgid "Where"
 msgstr ""
 
 #. Automounts list column name
-#: src/widget/unit_list/imp/construct.rs:120
+#: src/widget/unit_list/imp/construct.rs:154
 msgctxt "list column"
 msgid "What"
 msgstr ""
 
 #. Automounts list column name
-#: src/widget/unit_list/imp/construct.rs:133
+#: src/widget/unit_list/imp/construct.rs:165
 msgctxt "list column"
 msgid "Mounted"
 msgstr ""
 
 #. Automounts list column name
-#: src/widget/unit_list/imp/construct.rs:146
+#: src/widget/unit_list/imp/construct.rs:175
 msgctxt "list column"
 msgid "Idle Timeout"
 msgstr ""
 
 #. Path list column name
-#: src/widget/unit_list/imp/construct.rs:246
+#: src/widget/unit_list/imp/construct.rs:293
 msgctxt "list column"
 msgid "Condition"
 msgstr ""
 
 #. Path list column name
-#: src/widget/unit_list/imp/construct.rs:257
+#: src/widget/unit_list/imp/construct.rs:304
 msgctxt "list column"
 msgid "Path"
 msgstr ""
 
 #. Path list column name
 #. Unit full name column name
-#: src/widget/unit_list/imp/construct.rs:279
-#: src/widget/unit_list/imp/construct.rs:702
-#: src/widget/unit_list/imp/construct.rs:721
+#: src/widget/unit_list/imp/construct.rs:326
+#: src/widget/unit_list/imp/construct.rs:804
+#: src/widget/unit_list/imp/construct.rs:823
 #, fuzzy
 msgctxt "list column"
 msgid "Unit"
 msgstr "Юнит"
 
-#: src/widget/unit_list/imp/construct.rs:557
+#: src/widget/unit_list/imp/construct.rs:672
 msgctxt "list column"
-msgid "Bus"
+msgid "Sub"
 msgstr ""
 
-#: src/widget/unit_list/imp/construct.rs:580
+#: src/widget/unit_list/imp/construct.rs:690
 #, fuzzy
 msgctxt "list column"
 msgid "Load"
 msgstr "Загруженные"
 
-#: src/widget/unit_list/imp/construct.rs:600
+#: src/widget/unit_list/imp/construct.rs:708
 msgctxt "list column"
-msgid "Sub"
+msgid "Bus"
 msgstr ""
 
-#: src/widget/unit_list/imp/construct.rs:625
+#: src/widget/unit_list/imp/construct.rs:727
 #, fuzzy
 msgctxt "list column"
 msgid "Preset"
 msgstr "Применить preset-правила"
 
-#: src/widget/unit_list/imp/construct.rs:644
+#: src/widget/unit_list/imp/construct.rs:746
 #, fuzzy
 msgctxt "list column"
 msgid "State"
 msgstr "_состояние"
 
-#: src/widget/unit_list/imp/construct.rs:663
+#: src/widget/unit_list/imp/construct.rs:765
 msgctxt "list column"
 msgid "Active"
 msgstr ""
 
-#: src/widget/unit_list/imp/construct.rs:682
+#: src/widget/unit_list/imp/construct.rs:784
 #, fuzzy
 msgctxt "list column"
 msgid "Description"
 msgstr "Описание юнита"
 
-#: src/widget/unit_list/imp/construct.rs:740
+#: src/widget/unit_list/imp/construct.rs:842
 #, fuzzy
 msgctxt "list column"
 msgid "Type"
 msgstr "Тип"
 
 #. Socket list column name
-#: src/widget/unit_list/imp/construct.rs:750
+#: src/widget/unit_list/imp/construct.rs:852
 #, fuzzy
 msgctxt "list column"
 msgid "Listen Type"
 msgstr "Типы юнитов"
 
 #. Socket list column name
-#: src/widget/unit_list/imp/construct.rs:760
+#: src/widget/unit_list/imp/construct.rs:862
 msgctxt "list column"
 msgid "Listen"
 msgstr ""
 
 #. Timer list column name
-#: src/widget/unit_list/imp/construct.rs:771
+#: src/widget/unit_list/imp/construct.rs:873
 msgctxt "list column"
 msgid "Next"
 msgstr ""
 
 #. Timer list column name
-#: src/widget/unit_list/imp/construct.rs:781
+#: src/widget/unit_list/imp/construct.rs:883
 msgctxt "list column"
 msgid "Left"
 msgstr ""
 
 #. Timer list column name
-#: src/widget/unit_list/imp/construct.rs:791
+#: src/widget/unit_list/imp/construct.rs:893
 msgctxt "list column"
 msgid "Last"
 msgstr ""
 
 #. Timer list column name
-#: src/widget/unit_list/imp/construct.rs:800
+#: src/widget/unit_list/imp/construct.rs:902
 msgctxt "list column"
 msgid "Passed"
 msgstr ""
 
 #. Timer list column name
-#: src/widget/unit_list/imp/construct.rs:811
+#: src/widget/unit_list/imp/construct.rs:913
 msgctxt "list column"
 msgid "Activates"
 msgstr ""
@@ -2910,85 +3098,98 @@ msgctxt "menu"
 msgid "Configure columns"
 msgstr "Настроить столбцы"
 
+#: src/widget/unit_list/menus.rs:33
+msgctxt "menu"
+msgid "Reset all columns"
+msgstr ""
+
 #. column header menu
-#: src/widget/unit_list/menus.rs:38
+#: src/widget/unit_list/menus.rs:44
 msgctxt "menu"
 msgid "Configure Filters"
 msgstr "Настроить фильтры"
 
 #. column header menu
-#: src/widget/unit_list/menus.rs:46
+#: src/widget/unit_list/menus.rs:52
 msgctxt "menu"
 msgid "Clear Column Filter"
 msgstr "Очистить фильтр по столбцу"
 
 #. column header menu section
-#: src/widget/unit_list/menus.rs:52
+#: src/widget/unit_list/menus.rs:58
 msgctxt "menu"
 msgid "Filtering"
 msgstr "Фильтрация"
 
-#: src/widget/unit_list/mod.rs:172
+#. Menu Option
+#: src/widget/unit_list/mod.rs:178
 #, fuzzy
 msgctxt "menu"
 msgid "Include Unit Files"
 msgstr "Включить юнит-файл"
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:192
+#: src/widget/unit_list/mod.rs:198
 #, fuzzy
 msgctxt "menu"
 msgid "Default"
 msgstr "По умолчанию"
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:196
+#: src/widget/unit_list/mod.rs:202
 #, fuzzy
 msgctxt "menu"
 msgid "Loaded Units"
 msgstr "Загруженные юниты получены"
 
 #. List view
-#: src/widget/unit_list/mod.rs:200
+#: src/widget/unit_list/mod.rs:206
 #, fuzzy
 msgctxt "menu"
 msgid "Unit Files"
 msgstr "Юнит-файлы"
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:204
+#: src/widget/unit_list/mod.rs:210
 #, fuzzy
 msgctxt "menu"
 msgid "Timers"
 msgstr "Время"
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:208
+#: src/widget/unit_list/mod.rs:214
 msgctxt "menu"
 msgid "Sockets"
 msgstr ""
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:212
+#: src/widget/unit_list/mod.rs:218
+#, fuzzy
+msgctxt "menu"
+msgid "Services"
+msgstr "Менеджер служб"
+
+#. Curated List View
+#: src/widget/unit_list/mod.rs:222
 msgctxt "menu"
 msgid "Path"
 msgstr ""
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:216
+#: src/widget/unit_list/mod.rs:226
 #, fuzzy
 msgctxt "menu"
 msgid "Automounts"
 msgstr "Автоматически"
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:220
+#: src/widget/unit_list/mod.rs:230
 msgctxt "menu"
 msgid "Customized"
 msgstr ""
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:224
+#: src/widget/unit_list/mod.rs:234
 msgctxt "menu"
 msgid "Favorites"
 msgstr ""

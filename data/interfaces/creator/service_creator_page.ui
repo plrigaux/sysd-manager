@@ -17,11 +17,21 @@
               <object class="GtkLabel">
                 <property name="css-classes">title-2
 </property>
+                <property name="hexpand">True</property>
+                <property name="hexpand-set">True</property>
                 <property name="label">Service</property>
               </object>
             </child>
             <child>
               <object class="AdwPreferencesGroup">
+                <property name="header-suffix">
+                  <object class="GtkLinkButton">
+                    <property name="css-classes">flat
+circular</property>
+                    <property name="icon-name">dialog-information-symbolic</property>
+                    <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html</property>
+                  </object>
+                </property>
                 <property name="title">Unit</property>
                 <child>
                   <object class="AdwEntryRow" id="description_entry">
@@ -32,6 +42,14 @@
             </child>
             <child>
               <object class="AdwPreferencesGroup">
+                <property name="header-suffix">
+                  <object class="GtkLinkButton">
+                    <property name="css-classes">circular
+flat</property>
+                    <property name="icon-name">dialog-information-symbolic</property>
+                    <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html</property>
+                  </object>
+                </property>
                 <property name="title">Service</property>
                 <child>
                   <object class="AdwEntryRow" id="exec_start_entry">

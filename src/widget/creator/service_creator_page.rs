@@ -120,6 +120,19 @@ mod imp {
             let model = gtk::StringList::new(&vec);
 
             self.restart_policy_combo.set_model(Some(&model));
+
+            self.description_entry
+                .connect_has_focus_notify(|entry| entry.select_region(0, -1));
+            self.description_entry
+                .connect_focus_on_click_notify(|entry| entry.select_region(0, -1));
+            self.exec_start_entry
+                .connect_has_focus_notify(|entry| entry.select_region(0, -1));
+            self.exec_start_entry
+                .connect_focus_on_click_notify(|entry| entry.select_region(0, -1));
+            self.working_directory_entry
+                .connect_has_focus_notify(|entry| entry.select_region(0, -1));
+            self.working_directory_entry
+                .connect_focus_on_click_notify(|entry| entry.select_region(0, -1));
         }
     }
 

@@ -132,6 +132,11 @@ impl ObjectImpl for TimerCreatorPageImp {
         });
         self.select_add_monotonic(MonotonicTimer::default());
         self.select_add_realtime(RealTimeTimer::default());
+
+        self.description
+            .connect_has_focus_notify(|entry| entry.select_region(0, -1));
+        self.description
+            .connect_focus_on_click_notify(|entry| entry.select_region(0, -1));
     }
 }
 
@@ -221,7 +226,10 @@ impl TimerCreatorPageImp {
             .text(calendar_type.unwrap_or_default())
             .build();
 
-        let event_controller = widget::clear_on_escape2();
+        entry_row.connect_has_focus_notify(|entry| entry.select_region(0, -1));
+        entry_row.connect_focus_on_click_notify(|entry| entry.select_region(0, -1));
+
+        let event_controller = widget::clear_on_escape_entry_row();
         entry_row.add_controller(event_controller);
 
         let button = gtk::Button::builder()
@@ -253,7 +261,10 @@ impl TimerCreatorPageImp {
             .text(value.unwrap_or_default())
             .build();
 
-        let event_controller = widget::clear_on_escape2();
+        entry_row.connect_has_focus_notify(|entry| entry.select_region(0, -1));
+        entry_row.connect_focus_on_click_notify(|entry| entry.select_region(0, -1));
+
+        let event_controller = widget::clear_on_escape_entry_row();
         entry_row.add_controller(event_controller);
 
         let button = gtk::Button::builder()

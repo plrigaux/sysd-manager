@@ -15,26 +15,24 @@
             <property name="orientation">vertical</property>
             <property name="spacing">12</property>
             <child>
-              <object class="GtkBox">
-                <property name="valign">baseline-fill</property>
-                <child>
-                  <object class="GtkLabel">
-                    <property name="css-classes">title-2
+              <object class="GtkLabel">
+                <property name="css-classes">title-2
 </property>
-                    <property name="hexpand">True</property>
-                    <property name="label">Timer</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkLinkButton">
-                    <property name="label">More info</property>
-                    <property name="uri">https://www.freedesktop.org/software/systemd/man/systemd.time.html</property>
-                  </object>
-                </child>
+                <property name="hexpand">True</property>
+                <property name="label">Timer</property>
               </object>
             </child>
             <child>
               <object class="AdwPreferencesGroup">
+                <property name="header-suffix">
+                  <object class="GtkLinkButton">
+                    <property name="css-classes">circular
+flat</property>
+                    <property name="icon-name">dialog-information-symbolic</property>
+                    <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html</property>
+                  </object>
+                </property>
+                <property name="title">Unit</property>
                 <child>
                   <object class="AdwEntryRow" id="description">
                     <property name="title">Description</property>
@@ -70,11 +68,28 @@
             </child>
             <child>
               <object class="AdwPreferencesGroup" id="timers_group">
-                <property name="description">Timers</property>
+                <property name="header-suffix">
+                  <object class="GtkLinkButton">
+                    <property name="css-classes">circular
+flat</property>
+                    <property name="icon-name">dialog-information-symbolic</property>
+                    <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.time.html</property>
+                  </object>
+                </property>
+                <property name="title">Timer Triggers</property>
               </object>
             </child>
             <child>
               <object class="AdwPreferencesGroup">
+                <property name="header-suffix">
+                  <object class="GtkLinkButton">
+                    <property name="css-classes">circular
+flat</property>
+                    <property name="icon-name">dialog-information</property>
+                    <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.timer.html</property>
+                  </object>
+                </property>
+                <property name="title">Timer</property>
                 <child>
                   <object class="AdwComboRow" id="trigger_unit">
                     <property name="enable-search">True</property>

@@ -38,6 +38,8 @@ mod imp {
         next_button: TemplateChild<gtk::Button>,
         #[template_child]
         create_button: TemplateChild<gtk::Button>,
+        #[template_child]
+        donate_button: TemplateChild<gtk::LinkButton>,
     }
 
     impl NavigationRowImp {
@@ -48,36 +50,42 @@ mod imp {
                     self.file_button.set_visible(false);
                     self.next_button.set_visible(true);
                     self.create_button.set_visible(false);
+                    self.donate_button.set_visible(false);
                 }
                 (PageType::Service, _) => {
                     self.prev_button.set_visible(true);
                     self.file_button.set_visible(true);
                     self.next_button.set_visible(true);
                     self.create_button.set_visible(false);
+                    self.donate_button.set_visible(false);
                 }
                 (PageType::Timer, _) => {
                     self.prev_button.set_visible(true);
                     self.file_button.set_visible(true);
                     self.next_button.set_visible(true);
                     self.create_button.set_visible(false);
+                    self.donate_button.set_visible(false);
                 }
                 (PageType::Launch, _) => {
                     self.prev_button.set_visible(true);
                     self.file_button.set_visible(false);
                     self.next_button.set_visible(false);
                     self.create_button.set_visible(true);
+                    self.donate_button.set_visible(true);
                 }
                 (PageType::ServiceFile, _) => {
                     self.prev_button.set_visible(true);
                     self.file_button.set_visible(false);
                     self.next_button.set_visible(true);
                     self.create_button.set_visible(false);
+                    self.donate_button.set_visible(false);
                 }
                 (PageType::TimerFile, _) => {
                     self.prev_button.set_visible(true);
                     self.file_button.set_visible(false);
                     self.next_button.set_visible(true);
                     self.create_button.set_visible(false);
+                    self.donate_button.set_visible(false);
                 }
             }
         }

@@ -45,8 +45,9 @@
                     <property name="title">Service File</property>
                     <child>
                       <object class="GtkButton" id="service_file_button">
-                        <property name="label">File</property>
+                        <property name="icon-name">document-text-symbolic</property>
                         <property name="sensitive">False</property>
+                        <property name="tooltip-text">Show Unit File</property>
                         <property name="valign">center</property>
                         <signal name="clicked" handler="show_service_file" swapped="True"/>
                       </object>
@@ -55,6 +56,7 @@
                       <object class="GtkButton" id="service_unit_button">
                         <property name="label">Unit</property>
                         <property name="sensitive">False</property>
+                        <property name="tooltip-text">Show Unit in Browser</property>
                         <property name="valign">center</property>
                         <signal name="clicked" handler="show_service_unit" swapped="True"/>
                       </object>
@@ -67,7 +69,7 @@
                     <property name="title">Timer File</property>
                     <child>
                       <object class="GtkButton" id="timer_file_button">
-                        <property name="label">File</property>
+                        <property name="icon-name">document-text-symbolic</property>
                         <property name="sensitive">False</property>
                         <property name="valign">center</property>
                         <signal name="clicked" handler="show_timer_file" swapped="True"/>
@@ -77,6 +79,7 @@
                       <object class="GtkButton" id="timer_unit_button">
                         <property name="label">Unit</property>
                         <property name="sensitive">False</property>
+                        <property name="tooltip-text">Show Unit in Browser</property>
                         <property name="valign">center</property>
                         <signal name="clicked" handler="show_timer_unit" swapped="True"/>
                       </object>

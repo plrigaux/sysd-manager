@@ -72,5 +72,6 @@
     <file preprocess="xml-stripblanks">icons/scalable/actions/match-whole-word-symbolic.svg</file>
     <file preprocess="xml-stripblanks">icons/scalable/actions/bookmark-filled-symbolic.svg</file>
     <file preprocess="xml-stripblanks">icons/scalable/actions/bookmark-outline-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">icons/scalable/actions/document-text-symbolic.svg</file>
   </gresource>
 </gresources>
