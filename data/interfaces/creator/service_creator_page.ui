@@ -38,10 +38,34 @@ circular</property>
                     <property name="title">Description</property>
                   </object>
                 </child>
+                <child>
+                  <object class="AdwComboRow" id="unit_after">
+                    <property name="enable-search">True</property>
+                    <property name="expression">
+                      <lookup name="string" type="GtkStringObject"/>
+                    </property>
+                    <property name="search-match-mode">substring</property>
+                    <property name="subtitle-selectable">True</property>
+                    <property name="title">After</property>
+                    <property name="use-subtitle">True</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwComboRow" id="unit_wants">
+                    <property name="enable-search">True</property>
+                    <property name="expression">
+                      <lookup name="string" type="GtkStringObject"/>
+                    </property>
+                    <property name="search-match-mode">substring</property>
+                    <property name="subtitle-selectable">True</property>
+                    <property name="title">Wants</property>
+                    <property name="use-subtitle">True</property>
+                  </object>
+                </child>
               </object>
             </child>
             <child>
-              <object class="AdwPreferencesGroup">
+              <object class="AdwPreferencesGroup" id="service_group">
                 <property name="header-suffix">
                   <object class="GtkLinkButton">
                     <property name="css-classes">circular
@@ -51,6 +75,21 @@ flat</property>
                   </object>
                 </property>
                 <property name="title">Service</property>
+                <child>
+                  <object class="AdwEntryRow" id="environment_entry">
+                    <property name="title">Environment</property>
+                    <property name="title-selectable">True</property>
+                    <property name="use-underline">True</property>
+                    <child>
+                      <object class="GtkButton">
+                        <property name="css-classes">flat
+circular</property>
+                        <property name="icon-name">list-add-symbolic</property>
+                        <signal name="clicked" handler="environment_add_clicked" swapped="True"/>
+                      </object>
+                    </child>
+                  </object>
+                </child>
                 <child>
                   <object class="AdwEntryRow" id="exec_start_entry">
                     <property name="show-apply-button">True</property>
@@ -86,10 +125,27 @@ flat</property>
               </object>
             </child>
             <child>
-              <object class="AdwPreferencesGroup"/>
-            </child>
-            <child>
-              <object class="AdwPreferencesGroup"/>
+              <object class="AdwPreferencesGroup">
+                <property name="header-suffix">
+                  <object class="GtkLinkButton">
+                    <property name="css-classes">circular
+flat</property>
+                    <property name="icon-name">dialog-information-symbolic</property>
+                    <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.resource-control.html</property>
+                  </object>
+                </property>
+                <property name="title">Ressource Control</property>
+                <child>
+                  <object class="AdwEntryRow" id="cpu_quota_entry">
+                    <property name="title">CPUQuota</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwEntryRow" id="memory_high_entry">
+                    <property name="title">MemoryHigh</property>
+                  </object>
+                </child>
+              </object>
             </child>
           </object>
         </property>

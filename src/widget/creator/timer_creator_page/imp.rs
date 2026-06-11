@@ -144,17 +144,8 @@ impl TimerCreatorPageImp {
     pub(super) fn update_from_unit_info(&self) {
         let window = upgrade_opt!(self.window.get());
 
-        let set = window.imp().get_trigger_units();
+        let model = window.imp().get_trigger_units_model();
 
-        let mut vec = set
-            .iter()
-            //    .filter(|s| !s.ends_with(".timer"))
-            .map(|s| s.as_ref())
-            .collect::<Vec<_>>();
-        vec.push(""); //for unselect
-        vec.sort();
-
-        let model = gtk::StringList::new(&vec);
         let model2 = gtk::SingleSelection::builder()
             .can_unselect(true)
             .autoselect(false)
@@ -169,12 +160,12 @@ impl TimerCreatorPageImp {
             !string_object.string().ends_with(".timer")
         });
 
-        let model3 = gtk::FilterListModel::new(Some(model2), Some(filter));
+        let filtered_model = gtk::FilterListModel::new(Some(model2), Some(filter));
         // self.trigger_unit.set_selected(gtk::INVALID_LIST_POSITION);
-        self.trigger_unit.set_model(Some(&model3));
+        self.trigger_unit.set_model(Some(&filtered_model));
 
         self.trigger_unit.set_selected(gtk::INVALID_LIST_POSITION);
-        self.trigger_unit2.set_model(Some(&model3));
+        // self.trigger_unit2.set_model(Some(&model3));
     }
 
     pub(super) fn create_actions(&self) {

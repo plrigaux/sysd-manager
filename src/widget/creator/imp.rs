@@ -72,6 +72,9 @@ pub struct UnitCreatorWindowImp {
     pub(super) system_file_list: RefCell<HashSet<String>>,
     pub(super) session_file_list: RefCell<HashSet<String>>,
 
+    pub(super) system_file_list_model: RefCell<gtk::StringList>,
+    pub(super) session_file_list_model: RefCell<gtk::StringList>,
+
     pub(super) action_group: RefCell<SimpleActionGroup>,
 }
 
@@ -157,15 +160,27 @@ impl UnitCreatorWindowImp {
 
         match response {
             Ok(systemd::ListUnitResponse::File(_, list)) => {
-                let mut set = match level {
-                    UnitDBusLevel::System | UnitDBusLevel::Both => {
-                        self.system_file_list.borrow_mut()
-                    }
-                    UnitDBusLevel::UserSession => self.session_file_list.borrow_mut(),
+                let (mut set, model) = match level {
+                    UnitDBusLevel::System | UnitDBusLevel::Both => (
+                        self.system_file_list.borrow_mut(),
+                        self.system_file_list_model.borrow().clone(),
+                    ),
+                    UnitDBusLevel::UserSession => (
+                        self.session_file_list.borrow_mut(),
+                        self.session_file_list_model.borrow().clone(),
+                    ),
                 };
-                for ufile in list {
-                    set.insert(ufile.unit_primary_name().to_owned());
+
+                for ufile in list.into_iter() {
+                    let value = ufile.unit_primary_name();
+                    set.insert(value.to_owned());
                 }
+
+                let mut vec = set.iter().map(|s| s.as_ref()).collect::<Vec<_>>();
+                vec.push(""); //for unselect
+                vec.sort();
+
+                model.splice(0, model.n_items(), &vec);
             }
             Ok(_) => {
                 warn!("unreachable");
@@ -176,6 +191,10 @@ impl UnitCreatorWindowImp {
         if let Some(timer_page) = self.timer_page.get() {
             timer_page.update_from_unit_info();
         }
+
+        if let Some(service_page) = self.service_page.get() {
+            service_page.update_from_unit_info();
+        }
     }
 
     pub fn get_trigger_units(&self) -> Ref<'_, HashSet<String>> {
@@ -184,6 +203,17 @@ impl UnitCreatorWindowImp {
         match level {
             UnitDBusLevel::System | UnitDBusLevel::Both => self.system_file_list.borrow(),
             UnitDBusLevel::UserSession => self.session_file_list.borrow(),
+        }
+    }
+
+    pub fn get_trigger_units_model(&self) -> gtk::StringList {
+        let level = self.level.get();
+
+        match level {
+            UnitDBusLevel::System | UnitDBusLevel::Both => {
+                self.system_file_list_model.borrow().clone()
+            }
+            UnitDBusLevel::UserSession => self.session_file_list_model.borrow().clone(),
         }
     }
 
