@@ -1,19 +1,20 @@
 use super::TimerCreatorPage;
 use crate::{
+    consts::WARNING_CSS,
     upgrade, upgrade_opt,
     widget::{
         self,
         creator::{
             UnitCreateType, UnitCreatorWindow,
             dropdown::SysDDropDown,
-            timer_creator_page::MonotonicTimer,
+            timer_creator_page::{MonotonicTimer, validator::validate_timespan},
             unit_file::{ON_CALENDAR, TIMER, UnitFileData},
             unit_file_creator_page::UnitFileCreatorPage,
         },
     },
 };
 use adw::{
-    prelude::{ActionRowExt, ComboRowExt, EntryRowExt, PreferencesGroupExt},
+    prelude::{ActionRowExt, ComboRowExt, EntryRowExt, PreferencesGroupExt, PreferencesRowExt},
     subclass::prelude::*,
 };
 use gettextrs::pgettext;
@@ -21,7 +22,7 @@ use gio::prelude::*;
 use glib::{VariantTy, WeakRef};
 use gtk::{
     glib::{self},
-    prelude::{ButtonExt, EditableExt, ObjectExt, WidgetExt},
+    prelude::{BuildableExt, ButtonExt, EditableExt, ObjectExt, WidgetExt},
 };
 use std::{
     borrow::Cow,
@@ -29,6 +30,7 @@ use std::{
     collections::HashSet,
 };
 use strum::{EnumIter, IntoEnumIterator};
+use tracing::error;
 const ACTION_CREATOR_MONOTONIC_ADD: &str = "creator.monotonic-add";
 const ACTION_CREATOR_REALTIME_ADD: &str = "creator.realtime-add";
 
@@ -215,12 +217,24 @@ impl TimerCreatorPageImp {
         let entry_row = adw::EntryRow::builder()
             .title(ON_CALENDAR)
             .text(calendar_type.unwrap_or_default())
+            .title_selectable(true)
+            .show_apply_button(true)
             .build();
 
         entry_row.connect_has_focus_notify(|entry| entry.select_region(0, -1));
         entry_row.connect_focus_on_click_notify(|entry| entry.select_region(0, -1));
+        entry_row.connect_apply(validate_calendar);
 
-        let event_controller = widget::clear_on_escape_entry_row();
+        let event_controller = gtk::EventControllerFocus::new();
+        let entry_row_weak = entry_row.downgrade();
+        event_controller.connect_leave(move |_| {
+            let entry_row = upgrade!(entry_row_weak);
+
+            if let Some(button) = find_child_by_name::<gtk::Button>(&entry_row, "apply_button") {
+                button.emit_clicked();
+            }
+        });
+
         entry_row.add_controller(event_controller);
 
         let button = gtk::Button::builder()
@@ -250,12 +264,36 @@ impl TimerCreatorPageImp {
         let entry_row = adw::EntryRow::builder()
             .title(timer.label())
             .text(value.unwrap_or_default())
+            .can_focus(true)
+            .focusable(true)
+            .title_selectable(true)
+            .show_apply_button(true)
             .build();
 
-        entry_row.connect_has_focus_notify(|entry| entry.select_region(0, -1));
+        entry_row.connect_has_focus_notify(|entry| {
+            dbg!(entry.has_focus());
+            entry.select_region(0, -1)
+        });
         entry_row.connect_focus_on_click_notify(|entry| entry.select_region(0, -1));
+        entry_row.connect_move_focus(|e, a| println!("{:?} {}", a, e.text()));
+        entry_row.connect_focusable_notify(|e| println!("foc {:?} ", e.text()));
+        entry_row.connect_entry_activated(|f| println!("activated {}", f.has_focus()));
+        entry_row.connect_apply(move |a| validate_monotonic(timer, a));
 
-        let event_controller = widget::clear_on_escape_entry_row();
+        // let event_controller = widget::clear_on_escape_entry_row();
+        // entry_row.add_controller(event_controller);
+
+        let event_controller = gtk::EventControllerFocus::new();
+
+        let entry_row_weak = entry_row.downgrade();
+        event_controller.connect_leave(move |_| {
+            let entry_row = upgrade!(entry_row_weak);
+
+            if let Some(button) = find_child_by_name::<gtk::Button>(&entry_row, "apply_button") {
+                button.emit_clicked();
+            }
+        });
+
         entry_row.add_controller(event_controller);
 
         let button = gtk::Button::builder()
@@ -402,6 +440,88 @@ impl TimerCreatorPageImp {
 
         self.file_data.replace(data);
     }
+}
+
+fn validate_monotonic(timer: MonotonicTimer, entry_row: &adw::EntryRow) {
+    let entry_row = entry_row.clone();
+    glib::spawn_future_local(async move {
+        let timespan = entry_row.text();
+
+        let (code, std_out, std_err) = if timespan.is_empty() {
+            (0, String::default(), String::default())
+        } else {
+            let Ok(r) = systemd::runtime()
+                .block_on(async move { validate_timespan(timespan.as_str()).await })
+                .inspect_err(|err| error!("{err:?}"))
+            else {
+                return;
+            };
+            r
+        };
+
+        if code == 0 {
+            entry_row.set_tooltip_text(Some(&format!("{}\n{}", timer.label(), std_out)));
+            entry_row.set_title(&timer.label());
+            entry_row.remove_css_class(WARNING_CSS);
+        } else {
+            entry_row.set_title(&format!("{}\n{}", timer.label(), std_err));
+            entry_row.set_tooltip_text(None);
+            entry_row.add_css_class(WARNING_CSS);
+        }
+    });
+}
+
+fn validate_calendar(entry_row: &adw::EntryRow) {
+    let entry_row = entry_row.clone();
+    glib::spawn_future_local(async move {
+        let calendar = entry_row.text();
+
+        let (code, std_out, std_err) = if calendar.is_empty() {
+            (0, String::default(), String::default())
+        } else {
+            let Ok(r) = systemd::runtime()
+                .block_on(async move {
+                    super::validator::validate_calendar(calendar.trim_ascii()).await
+                })
+                .inspect_err(|err| error!("{err:?}"))
+            else {
+                return;
+            };
+            r
+        };
+
+        if code == 0 {
+            entry_row.set_tooltip_text(Some(&format!("{}\n{}", ON_CALENDAR, std_out)));
+            entry_row.set_title(ON_CALENDAR);
+            entry_row.remove_css_class(WARNING_CSS);
+        } else {
+            entry_row.set_title(&format!("{}\n{}", ON_CALENDAR, std_err));
+            entry_row.set_tooltip_text(None);
+            entry_row.add_css_class(WARNING_CSS);
+        }
+    });
+}
+
+fn find_child_by_name<T: IsA<gtk::Widget>>(
+    parent: &impl IsA<gtk::Widget>,
+    name: &str,
+) -> Option<T> {
+    // Check if the current widget matches the name
+    let widget = parent.as_ref();
+    if widget.buildable_id().as_deref() == Some(name) {
+        return widget.downcast_ref::<T>().cloned();
+    }
+
+    // Iterate through the immediate children
+    let mut child = widget.first_child();
+    while let Some(ref c) = child {
+        if let Some(found) = find_child_by_name::<T>(c, name) {
+            return Some(found);
+        }
+        child = c.next_sibling(); // Move to the next sibling
+    }
+
+    None
 }
 
 fn add_menu_item_param(menu: &gio::Menu, label: &str, action: &str, param: &str) {

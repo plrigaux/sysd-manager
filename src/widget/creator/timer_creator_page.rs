@@ -1,4 +1,5 @@
 mod imp;
+mod validator;
 use crate::widget::creator::{
     PageType, UnitCreateType, UnitCreatorWindow, unit_file_creator_page::UnitFileCreatorPage,
 };
@@ -9,7 +10,6 @@ use gtk::glib::{self};
 use strum::{EnumIter, IntoEnumIterator};
 
 glib::wrapper! {
-
     pub struct TimerCreatorPage(ObjectSubclass<imp::TimerCreatorPageImp>)
     @extends adw::NavigationPage, gtk::Widget,
     @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget ;

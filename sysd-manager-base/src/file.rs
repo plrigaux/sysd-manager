@@ -51,10 +51,11 @@ pub enum SysdBaseError {
     NotAuthorized,
     Tokio(JoinError),
     InvalidPath(String),
+    ErrorExit(i32),
 }
 
 impl SysdBaseError {
-    pub(crate) fn create_command_error(command: &Command, error: std::io::Error) -> Self {
+    pub fn create_command_error(command: &Command, error: std::io::Error) -> Self {
         let std_command = command.as_std();
         let program = std_command.get_program().to_os_string();
         let envs: Vec<(OsString, Option<OsString>)> = std_command

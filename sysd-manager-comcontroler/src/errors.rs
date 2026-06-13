@@ -265,6 +265,9 @@ impl From<SysdBaseError> for SystemdErrors {
             SysdBaseError::NotAuthorized => SystemdErrors::NotAuthorized,
             SysdBaseError::Tokio(_join_error) => SystemdErrors::Tokio,
             SysdBaseError::InvalidPath(msg) => SystemdErrors::InvalidPath(msg),
+            SysdBaseError::ErrorExit(exit_code) => {
+                SystemdErrors::Custom(format!("Program exit code {}", exit_code))
+            }
         }
     }
 }

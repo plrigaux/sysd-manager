@@ -56,6 +56,9 @@ impl From<SysdBaseError> for FdoError {
                 FdoError(zbus::fdo::Error::Failed("Internal issue".to_string()))
             }
             SysdBaseError::InvalidPath(msg) => FdoError(zbus::fdo::Error::AccessDenied(msg)),
+            SysdBaseError::ErrorExit(exit_code) => FdoError(zbus::fdo::Error::SpawnExecFailed(
+                format!("Exit code {}", exit_code),
+            )),
         }
     }
 }

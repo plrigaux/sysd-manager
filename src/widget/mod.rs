@@ -171,20 +171,20 @@ pub fn clear_on_escape() -> gtk::EventControllerKey {
     event_controller
 }
 
-pub fn clear_on_escape_entry_row() -> gtk::EventControllerKey {
-    let event_controller = gtk::EventControllerKey::new();
+// pub fn clear_on_escape_entry_row() -> gtk::EventControllerKey {
+//     let event_controller = gtk::EventControllerKey::new();
 
-    event_controller.connect_key_released(|controller, key, _keycode, _state| {
-        if key == gdk::Key::Escape {
-            //TODO
-            if let Some(search_entry) = controller.widget().and_downcast_ref::<adw::EntryRow>() {
-                search_entry.set_text("");
-            }
-        }
-    });
+//     event_controller.connect_key_released(|controller, key, _keycode, _state| {
+//         if key == gdk::Key::Escape {
+//             //TODO
+//             if let Some(search_entry) = controller.widget().and_downcast_ref::<adw::EntryRow>() {
+//                 search_entry.set_text("");
+//             }
+//         }
+//     });
 
-    event_controller
-}
+//     event_controller
+// }
 
 pub fn grab_focus_on_search_entry(search_entry: &gtk::SearchEntry) {
     search_entry.select_region(0, -1);
