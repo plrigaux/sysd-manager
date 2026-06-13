@@ -86,6 +86,14 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="2.20.2" date="2026-06-13">
+      <description translate="no">
+        <p>Added</p>
+        <ul>
+          <li>Unit Creation Wizard time validators [Issue 44]</li>
+        </ul>
+      </description>
+    </release>
     <release version="2.20.1" date="2026-06-11">
       <description translate="no">
         <p>Added</p>
