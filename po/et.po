@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-06 23:30-0400\n"
+"POT-Creation-Date: 2026-06-13 00:22-0400\n"
 "PO-Revision-Date: 2026-04-10 23:09+0000\n"
 "Last-Translator: Priit Jõerüüt <jrthwlate@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/sysd-manager/"
@@ -1919,13 +1919,13 @@ msgctxt "creator"
 msgid "Unit Name Prefix"
 msgstr ""
 
-#: src/widget/creator/imp.rs:325
+#: src/widget/creator/imp.rs:355
 #, fuzzy, rust-format
 msgctxt "create"
 msgid "Unit {} Created!"
 msgstr "„{}“ ühikufaili varasema oleku taastamine õnnestus!"
 
-#: src/widget/creator/imp.rs:332
+#: src/widget/creator/imp.rs:362
 #, rust-format
 msgctxt "create"
 msgid "Creation Failed! {}"
@@ -1954,48 +1954,48 @@ msgctxt "create"
 msgid "Timer with Service"
 msgstr ""
 
-#: src/widget/creator/timer_creator_page/imp.rs:472
+#: src/widget/creator/timer_creator_page/imp.rs:583
 #, fuzzy
 msgctxt "timer"
 msgid "Custom"
 msgstr "Kohandatud"
 
-#: src/widget/creator/timer_creator_page/imp.rs:473
+#: src/widget/creator/timer_creator_page/imp.rs:584
 msgctxt "timer"
 msgid "Minutely"
 msgstr ""
 
-#: src/widget/creator/timer_creator_page/imp.rs:474
+#: src/widget/creator/timer_creator_page/imp.rs:585
 msgctxt "timer"
 msgid "Hourly"
 msgstr ""
 
-#: src/widget/creator/timer_creator_page/imp.rs:475
+#: src/widget/creator/timer_creator_page/imp.rs:586
 msgctxt "timer"
 msgid "Daily"
 msgstr ""
 
-#: src/widget/creator/timer_creator_page/imp.rs:476
+#: src/widget/creator/timer_creator_page/imp.rs:587
 msgctxt "timer"
 msgid "Monthly"
 msgstr ""
 
-#: src/widget/creator/timer_creator_page/imp.rs:477
+#: src/widget/creator/timer_creator_page/imp.rs:588
 msgctxt "timer"
 msgid "Weekly"
 msgstr ""
 
-#: src/widget/creator/timer_creator_page/imp.rs:478
+#: src/widget/creator/timer_creator_page/imp.rs:589
 msgctxt "timer"
 msgid "Yearly"
 msgstr ""
 
-#: src/widget/creator/timer_creator_page/imp.rs:479
+#: src/widget/creator/timer_creator_page/imp.rs:590
 msgctxt "timer"
 msgid "Quarterly"
 msgstr ""
 
-#: src/widget/creator/timer_creator_page/imp.rs:480
+#: src/widget/creator/timer_creator_page/imp.rs:591
 msgctxt "timer"
 msgid "Semiannually"
 msgstr ""
