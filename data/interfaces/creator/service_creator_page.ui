@@ -106,6 +106,24 @@ circular</property>
                   </object>
                 </child>
                 <child>
+                  <object class="AdwComboRow" id="restart_policy_combo">
+                    <property name="title">Restart Policy</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwPreferencesGroup" id="exec_group">
+                <property name="header-suffix">
+                  <object class="GtkLinkButton">
+                    <property name="css-classes">circular
+flat</property>
+                    <property name="icon-name">dialog-information-symbolic</property>
+                    <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html</property>
+                  </object>
+                </property>
+                <property name="title">Exec</property>
+                <child>
                   <object class="AdwEntryRow" id="working_directory_entry">
                     <property name="title">Working Directory</property>
                     <child>
@@ -118,8 +136,24 @@ circular</property>
                   </object>
                 </child>
                 <child>
-                  <object class="AdwComboRow" id="restart_policy_combo">
-                    <property name="title">Restart Policy</property>
+                  <object class="AdwComboRow" id="user_combo">
+                    <property name="enable-search">True</property>
+                    <property name="expression">
+                      <lookup name="string" type="GtkStringObject"/>
+                    </property>
+                    <property name="title">User</property>
+                    <property name="use-subtitle">True</property>
+                    <property name="use-underline">True</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwComboRow" id="group_combo">
+                    <property name="enable-search">True</property>
+                    <property name="expression">
+                      <lookup name="string" type="GtkStringObject"/>
+                    </property>
+                    <property name="title">Group</property>
+                    <property name="use-subtitle">True</property>
                   </object>
                 </child>
               </object>

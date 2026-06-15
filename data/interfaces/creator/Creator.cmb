@@ -4,7 +4,7 @@
 <cambalache-project version="1.0.0" target_tk="gtk-4.0" depends="libadwaita-1">
   <ui template-class="NavigationRow" filename="nav_row.ui" sha256="9ab47e02cad746c52083790fedcc7a0022680881f98832366e04b433fc4092ff"/>
   <ui template-class="SysDDropDown" filename="dropdown.ui" sha256="2a2c827e522223ae25b865a7410bf1195a5b12590f55f9f967b8eb75ca043812"/>
-  <ui template-class="ServiceCreatorPage" filename="service_creator_page.ui" sha256="04ef4d673a93dcd19728a88fa8e05f996edf65e5315e065f1ab1196631a9d9ce"/>
+  <ui template-class="ServiceCreatorPage" filename="service_creator_page.ui" sha256="687c979e03e9a6a91c88c4035a4f51c25a60e10d28c4bc5706b6f9c24728f9cc"/>
   <ui template-class="LaunchCreatorPage" filename="creator_end_page.ui" sha256="0493ed60d57494331bf956e02caf1d4faa5c5fdef68a8bfb1e9e3066c9a60029"/>
   <ui template-class="UnitFileCreatorPage" filename="unit_file_creator_page.ui" sha256="0c20499d7ecb908b18e85b5b32782c4cbccfe5eab05d7dce10bcdbbff8cdc0a5"/>
   <ui template-class="UnitFileCreatorFirstPage" filename="create_first.ui" sha256="387ae8450fdf9e1a7910b9d35bb17dbce1d41bcc400ebc848185125c4a624330"/>
@@ -15,7 +15,7 @@
   <ui template-class="UnitCreatorWindow" filename="Creator.ui" sha256="c738296704a976b54f8f21eba9e8bc25e870d816467be4c1e2a5806226af7003">
     <requires>NavigationRow</requires>
   </ui>
-  <ui template-class="TimerCreatorPage" filename="timer_creator_page.ui" sha256="71dfafed3ad65e0378b1d856b3980822b05cd34b74a5640ffadf4fa906baf9f6">
+  <ui template-class="TimerCreatorPage" filename="timer_creator_page.ui" sha256="64deb196261c61cd673fec9fc8c5c4cea34f9f250b4fb9955bcea94430d45d12">
     <requires>SysDDropDown</requires>
   </ui>
 </cambalache-project>

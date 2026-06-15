@@ -233,6 +233,30 @@ impl UnitFileData {
         self.set_str(SERVICE, "ExecStart", Some(value.as_ref()));
     }
 
+    pub fn user(&self) -> &str {
+        self.get_str(SERVICE, "User")
+    }
+
+    pub fn set_user(&mut self, value: Option<impl AsRef<str>>) {
+        if let Some(v) = value {
+            self.set_str(SERVICE, "User", Some(v.as_ref()));
+        } else {
+            self.set_str(SERVICE, "User", None);
+        }
+    }
+
+    pub fn group(&self) -> &str {
+        self.get_str(SERVICE, "Group")
+    }
+
+    pub fn set_group(&mut self, value: Option<impl AsRef<str>>) {
+        if let Some(v) = value {
+            self.set_str(SERVICE, "Group", Some(v.as_ref()));
+        } else {
+            self.set_str(SERVICE, "Group", None);
+        }
+    }
+
     pub fn cpu_quota(&self) -> &str {
         self.get_str(SERVICE, "CPUQuota")
     }

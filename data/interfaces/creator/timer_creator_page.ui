@@ -104,6 +104,7 @@ flat</property>
                 </child>
                 <child>
                   <object class="AdwSwitchRow" id="persistent">
+                    <property name="subtitle" translatable="yes">Catch up missed runs after boot </property>
                     <property name="title">Persistant</property>
                   </object>
                 </child>

@@ -98,6 +98,12 @@ mod imp {
         #[template_child]
         cpu_quota_entry: TemplateChild<adw::EntryRow>,
 
+        #[template_child]
+        user_combo: TemplateChild<adw::ComboRow>,
+
+        #[template_child]
+        group_combo: TemplateChild<adw::ComboRow>,
+
         pub(super) window: OnceCell<WeakRef<UnitCreatorWindow>>,
 
         pub(super) file_data: RefCell<UnitFileData>,
@@ -164,6 +170,36 @@ mod imp {
                 .connect_focus_on_click_notify(|entry| entry.select_region(0, -1));
 
             self.add_track(ENVIRONMENT, &self.environment_entry.get());
+
+            let users = unsafe { uzers::all_users() };
+
+            let mut users: Vec<_> = users
+                .map(|u| u.name().to_string_lossy().into_owned())
+                .collect();
+
+            users.push("".into());
+            users.sort();
+
+            let model = gtk::StringList::new(&[]);
+            for user in users {
+                model.append(&user);
+            }
+            self.user_combo.set_model(Some(&model));
+
+            let groups = unsafe { uzers::all_groups() };
+
+            let mut groups: Vec<_> = groups
+                .map(|u| u.name().to_string_lossy().into_owned())
+                .collect();
+
+            groups.push("".into());
+            groups.sort();
+
+            let model = gtk::StringList::new(&[]);
+            for group in groups {
+                model.append(&group);
+            }
+            self.group_combo.set_model(Some(&model));
         }
     }
 
@@ -428,6 +464,8 @@ mod imp {
             });
             file_data.set_environment(environments.as_deref());
             file_data.set_exec_start(self.exec_start_entry.text());
+            file_data.set_user(self.user_combo.subtitle());
+            file_data.set_group(self.group_combo.subtitle());
             file_data.set_working_directory(self.working_directory_entry.text());
             file_data.set_after(self.unit_after.subtitle());
             file_data.set_wants(self.unit_wants.subtitle());
@@ -500,6 +538,9 @@ mod imp {
 
             self.cpu_quota_entry.set_text(data.cpu_quota());
             self.memory_high_entry.set_text(data.memory_high());
+
+            self.user_combo.set_subtitle(data.user());
+            self.group_combo.set_subtitle(data.group());
 
             let restart = data.restart();
             let mut position_sel = 0;
