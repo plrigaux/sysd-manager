@@ -7,7 +7,7 @@ mod service_creator_page;
 mod timer_creator_page;
 mod unit_file;
 mod unit_file_creator_page;
-use crate::widget::app_window::AppWindow;
+use crate::{format2, widget::app_window::AppWindow};
 use adw::subclass::prelude::ObjectSubclassIsExt;
 use gettextrs::pgettext;
 use gtk::glib::{self};
@@ -145,6 +145,7 @@ pub enum SaveUnit {
 
 #[derive(Debug, PartialEq)]
 enum CreateUnitErr {
+    NoErr,
     WrongChar,
     Limit255,
     FileExits,
@@ -152,8 +153,9 @@ enum CreateUnitErr {
     FileNotExits,
     NotFile,
     NotExecutable,
-    NoErr,
     Malformed,
+    NotAbsolute,
+    NotDir,
 }
 
 impl CreateUnitErr {
@@ -165,9 +167,15 @@ impl CreateUnitErr {
             CreateUnitErr::Empty => format!("{prefix} -  Empty"),
             CreateUnitErr::FileNotExits => format!("{prefix} - File not exists"),
             CreateUnitErr::NotFile => format!("{prefix} - Not a File"),
-            CreateUnitErr::NotExecutable => format!("{prefix} - Not Exec"),
+            CreateUnitErr::NotExecutable => format!("{prefix} - Not an executable"),
             CreateUnitErr::Malformed => format!("{prefix} - Malformed"),
             CreateUnitErr::NoErr => prefix.to_owned(),
+            CreateUnitErr::NotAbsolute => {
+                format2!(pgettext("validator", "{} - Not absolute path"), prefix)
+            }
+            CreateUnitErr::NotDir => {
+                format2!(pgettext("validator", "{} - Not a directory"), prefix)
+            }
         }
     }
 }

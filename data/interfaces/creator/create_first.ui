@@ -30,6 +30,7 @@
                 <child>
                   <object class="AdwActionRow" id="radio_button_service">
                     <property name="focusable">False</property>
+                    <property name="subtitle" translatable="yes" context="unit creation" comments="info subtitle">Create a task</property>
                     <property name="title" translatable="yes">Service</property>
                     <child type="prefix">
                       <object class="GtkCheckButton">
@@ -43,6 +44,7 @@
                 <child>
                   <object class="AdwActionRow" id="radio_button_timer_service">
                     <property name="focusable">False</property>
+                    <property name="subtitle" translatable="yes" context="unit creation" comments="info subtitle">Create a scheduled task</property>
                     <property name="title" translatable="yes">Timer with Service</property>
                     <child type="prefix">
                       <object class="GtkCheckButton">
@@ -56,7 +58,7 @@
                 <child>
                   <object class="AdwActionRow" id="radio_button_timer">
                     <property name="focusable">False</property>
-                    <property name="subtitle">triggers existing service</property>
+                    <property name="subtitle" translatable="yes" context="unit creation" comments="info subtitle">Trigger an existing task (service)</property>
                     <property name="title" translatable="yes">Timer</property>
                     <child type="prefix">
                       <object class="GtkCheckButton">
@@ -71,7 +73,7 @@
             </child>
             <child>
               <object class="AdwPreferencesGroup">
-                <property name="title">Scope</property>
+                <property name="title">Process Management Modes</property>
                 <child>
                   <object class="AdwActionRow">
                     <property name="activatable-widget">system_bus</property>
@@ -106,6 +108,7 @@
                 <child>
                   <object class="AdwActionRow">
                     <property name="focusable">False</property>
+                    <property name="subtitle" translatable="yes" context="unit creation" comments="info subtitle">Runtime units are discarded at next reboot</property>
                     <property name="title">Runtime</property>
                     <child type="prefix">
                       <object class="GtkSwitch" id="runtime_switch">

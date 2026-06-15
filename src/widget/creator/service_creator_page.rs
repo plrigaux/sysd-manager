@@ -50,16 +50,21 @@ mod imp {
         prelude::{ActionRowExt, ComboRowExt, PreferencesGroupExt, PreferencesRowExt},
         subclass::prelude::*,
     };
+    use gettextrs::{gettext, pgettext};
     use gtk::{StringObject, glib, prelude::*};
     use indexmap::{IndexMap, map::Entry};
     use itertools::{EitherOrBoth, Itertools};
+    use regex::Regex;
     use std::{
         cell::{Cell, OnceCell, RefCell},
         fs,
         os::unix::fs::PermissionsExt,
         path::Path,
     };
-    use tracing::warn;
+    use tracing::{info, warn};
+
+    const VALIDATE_CPU_QUOTA_REGEX: &str = r"\d+%";
+    const VALIDATE_MEMORY_HIGH_REGEX: &str = r"^[1-9][0-9]*[%KMGT]?$";
 
     #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
     #[template(resource = "/io/github/plrigaux/sysd-manager/service_creator_page.ui")]
@@ -109,6 +114,9 @@ mod imp {
         pub(super) file_data: RefCell<UnitFileData>,
 
         pub(super) widget_track: RefCell<IndexMap<String, Vec<gtk::Widget>>>,
+
+        validate_cpu_quota_regex: OnceCell<Regex>,
+        validate_memory_high_regex: OnceCell<Regex>,
     }
 
     #[glib::object_subclass]
@@ -133,14 +141,13 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
 
-            let event_foc = gtk::EventControllerFocus::new();
-            event_foc.connect_leave(|event| {
+            let event_focus = gtk::EventControllerFocus::new();
+            event_focus.connect_leave(|event| {
                 if let Some(entry) = event.widget().and_downcast_ref::<adw::EntryRow>() {
-                    // let text = entry.text();
                     ServiceCreatorPageImp::validate_entry_strat(entry);
                 }
             });
-            self.exec_start_entry.add_controller(event_foc);
+            self.exec_start_entry.add_controller(event_focus);
 
             let vec = vec![
                 "",
@@ -200,11 +207,65 @@ mod imp {
                 model.append(&group);
             }
             self.group_combo.set_model(Some(&model));
+
+            let this = self.obj().clone();
+            let event_focus = gtk::EventControllerFocus::new();
+            event_focus.connect_leave(move |event| {
+                if let Some(entry) = event.widget().and_downcast_ref::<adw::EntryRow>() {
+                    ServiceCreatorPageImp::validate_cpu_quota(this.imp(), entry);
+                }
+            });
+
+            self.cpu_quota_entry.add_controller(event_focus);
+
+            let this = self.obj().clone();
+            let event_focus = gtk::EventControllerFocus::new();
+            event_focus.connect_leave(move |event| {
+                if let Some(entry) = event.widget().and_downcast_ref::<adw::EntryRow>() {
+                    ServiceCreatorPageImp::validate_memory_high(this.imp(), entry);
+                }
+            });
+
+            self.memory_high_entry.add_controller(event_focus);
+
+            let this = self.obj().clone();
+            let event_focus = gtk::EventControllerFocus::new();
+            event_focus.connect_leave(move |event| {
+                if let Some(entry) = event.widget().and_downcast_ref::<adw::EntryRow>() {
+                    this.imp().validate_working_directory(entry);
+                }
+            });
+
+            self.working_directory_entry.add_controller(event_focus);
         }
     }
 
     impl ServiceCreatorPageImp {
         fn validate_entry_strat(entry: &adw::EntryRow) {
+            let text = entry.text();
+
+            let name_err = if text.is_empty() {
+                CreateUnitErr::NoErr
+            } else {
+                let path = Path::new(&text);
+
+                if !path.exists() {
+                    CreateUnitErr::FileNotExits
+                } else if !path.is_file() {
+                    CreateUnitErr::NotFile
+                } else if !is_executable(path) {
+                    CreateUnitErr::NotExecutable
+                } else if !path.is_absolute() {
+                    CreateUnitErr::NotAbsolute
+                } else {
+                    CreateUnitErr::NoErr
+                }
+            };
+
+            Self::apply_validation_result(entry, name_err, "WorkingDirectory");
+        }
+
+        fn validate_working_directory(&self, entry: &adw::EntryRow) {
             let text = entry.text();
 
             let name_err = match get_file_path(text.as_str()) {
@@ -216,10 +277,12 @@ mod imp {
 
                         if !path.exists() {
                             CreateUnitErr::FileNotExits
-                        } else if !path.is_file() {
-                            CreateUnitErr::NotFile
+                        } else if !path.is_dir() {
+                            CreateUnitErr::NotDir
                         } else if !is_executable(path) {
                             CreateUnitErr::NotExecutable
+                        } else if !path.is_absolute() {
+                            CreateUnitErr::NotAbsolute
                         } else {
                             CreateUnitErr::NoErr
                         }
@@ -229,6 +292,52 @@ mod imp {
                 Err(err) => err,
             };
 
+            Self::apply_validation_result(entry, name_err, "ExecStart");
+        }
+
+        fn cpu_quota_regex(&self) -> &Regex {
+            self.validate_cpu_quota_regex
+                .get_or_init(|| Regex::new(VALIDATE_CPU_QUOTA_REGEX).unwrap())
+        }
+
+        fn validate_cpu_quota(&self, entry: &adw::EntryRow) {
+            let text = entry.text();
+            let cpuquota = "CPUQuota";
+            info!("Validating {:?} {:?}", cpuquota, text);
+
+            let name_err = if text.is_empty() {
+                CreateUnitErr::NoErr
+            } else if !self.cpu_quota_regex().is_match(text.as_str()) {
+                CreateUnitErr::Malformed
+            } else {
+                CreateUnitErr::NoErr
+            };
+
+            Self::apply_validation_result(entry, name_err, cpuquota);
+        }
+
+        fn get_memory_high_regex(&self) -> &Regex {
+            self.validate_memory_high_regex
+                .get_or_init(|| Regex::new(VALIDATE_MEMORY_HIGH_REGEX).unwrap())
+        }
+
+        fn validate_memory_high(&self, entry: &adw::EntryRow) {
+            let text = entry.text();
+            let cpuquota = "MemoryHigh";
+            info!("Validating {:?} {:?}", cpuquota, text);
+
+            let name_err = if text.is_empty() {
+                CreateUnitErr::NoErr
+            } else if !self.get_memory_high_regex().is_match(text.as_str()) {
+                CreateUnitErr::Malformed
+            } else {
+                CreateUnitErr::NoErr
+            };
+
+            Self::apply_validation_result(entry, name_err, cpuquota);
+        }
+
+        fn apply_validation_result(entry: &adw::EntryRow, name_err: CreateUnitErr, prefix: &str) {
             match name_err {
                 CreateUnitErr::NoErr => {
                     entry.remove_css_class("warning");
@@ -237,7 +346,6 @@ mod imp {
                     entry.add_css_class("warning");
                 }
             }
-            let prefix = "ExecStart";
             entry.set_title(&name_err.title_err(prefix));
         }
 
@@ -327,8 +435,8 @@ mod imp {
         #[template_callback]
         fn exec_start_dialog_clicked(&self, _button: gtk::Button) {
             let file_dialog = gtk::FileDialog::builder()
-                .title("Select executable")
-                .accept_label("Select")
+                .title(pgettext("unit creation", "Select executable"))
+                .accept_label(gettext("Select"))
                 .build();
 
             let create_service_page = self.obj().clone();
@@ -614,10 +722,13 @@ mod imp {
 
     #[cfg(test)]
     mod tests {
+        use test_base::init_logs;
+
         use super::*;
 
         #[test]
         fn test_get_file() {
+            init_logs();
             assert_eq!(get_file_path("text"), Ok("text"));
             assert_eq!(get_file_path("  text"), Ok("text"));
             assert_eq!(get_file_path("  text   "), Ok("text"));
@@ -629,6 +740,28 @@ mod imp {
                 get_file_path("/home/plr/bin/AppDir/etc"),
                 Ok("/home/plr/bin/AppDir/etc")
             );
+        }
+
+        #[test]
+        fn test_cpu_quota() {
+            init_logs();
+            let re = Regex::new(VALIDATE_CPU_QUOTA_REGEX).unwrap();
+
+            assert!(re.is_match("50%"));
+            assert!(!re.is_match("50"));
+            assert!(re.is_match("33.33%"));
+        }
+
+        #[test]
+        fn test_memory_hight() {
+            init_logs();
+            let re = Regex::new(VALIDATE_MEMORY_HIGH_REGEX).unwrap();
+
+            assert!(re.is_match("50K"));
+            assert!(!re.is_match("50Kb"));
+            assert!(re.is_match("50%"));
+            assert!(re.is_match("50"));
+            assert!(!re.is_match("33.22"));
         }
     }
 }

@@ -92,7 +92,6 @@ circular</property>
                 </child>
                 <child>
                   <object class="AdwEntryRow" id="exec_start_entry">
-                    <property name="show-apply-button">True</property>
                     <property name="title">ExecStart</property>
                     <property name="title-selectable">True</property>
                     <property name="use-underline">True</property>
