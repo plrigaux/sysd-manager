@@ -23,7 +23,7 @@ use std::{
     os::unix::fs::PermissionsExt,
     path::Path,
 };
-use tracing::{error, info, warn};
+use tracing::{info, warn};
 
 const VALIDATE_CPU_QUOTA_REGEX: &str = r"\d+%";
 const VALIDATE_MEMORY_HIGH_REGEX: &str = r"^[1-9][0-9]*[%KMGT]?$";
