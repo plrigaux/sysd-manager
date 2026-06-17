@@ -1,25 +1,3 @@
-use gettextrs::pgettext;
-use gtk::{
-    TemplateChild, gio, glib,
-    prelude::*,
-    subclass::{
-        box_::BoxImpl,
-        prelude::*,
-        widget::{
-            CompositeTemplateCallbacksClass, CompositeTemplateClass,
-            CompositeTemplateInitializingExt, WidgetClassExt, WidgetImpl,
-        },
-    },
-};
-use systemd::journal_data::BOOT_IDX;
-
-use std::{
-    cell::{Cell, RefCell},
-    thread,
-};
-
-use tracing::{debug, error, info, warn};
-
 use crate::{
     consts::{
         ACTION_WIN_KEY_JOURNAL_WRAP_WORD, APP_ACTION_LIST_BOOT, CLASS_ERROR, CLASS_SUCCESS,
@@ -50,6 +28,25 @@ use crate::{
         text_search::{self, PanelID},
     },
 };
+use gettextrs::pgettext;
+use gtk::{
+    TemplateChild, gio, glib,
+    prelude::*,
+    subclass::{
+        box_::BoxImpl,
+        prelude::*,
+        widget::{
+            CompositeTemplateCallbacksClass, CompositeTemplateClass,
+            CompositeTemplateInitializingExt, WidgetClassExt, WidgetImpl,
+        },
+    },
+};
+use std::{
+    cell::{Cell, RefCell},
+    thread,
+};
+use systemd::journal_data::BOOT_IDX;
+use tracing::{debug, error, info, warn};
 
 const PANEL_EMPTY: &str = "empty";
 const PANEL_JOURNAL: &str = "journal";
@@ -553,11 +550,11 @@ impl JournalPanelImp {
             (WhatGrab::Older, JournalDisplayOrder::Descending) => text_buffer.start_iter(),
         };
 
-        let mark_l = gtk::TextMark::new(None, true);
-        let mark_r = gtk::TextMark::new(None, false);
+        let mark_left = gtk::TextMark::new(None, true);
+        let mark_right = gtk::TextMark::new(None, false);
 
-        text_buffer.add_mark(&mark_l, &text_iter);
-        text_buffer.add_mark(&mark_r, &text_iter);
+        text_buffer.add_mark(&mark_left, &text_iter);
+        text_buffer.add_mark(&mark_right, &text_iter);
 
         let mut writer = UnitInfoWriter::new(text_buffer, text_iter);
         let journal_color = PREFERENCES.journal_colors();
@@ -582,11 +579,26 @@ impl JournalPanelImp {
         //TODO put  a load notification
         //TODO fix PgDown annoying sound
 
-        let start_iter = writer.buffer.iter_at_mark(&mark_l);
-        let end_iter = writer.buffer.iter_at_mark(&mark_r);
+        let start_iter = writer.buffer.iter_at_mark(&mark_left);
+        let end_iter = writer.buffer.iter_at_mark(&mark_right);
         text_search::new_added_text(&self.text_search_bar, &writer.buffer, start_iter, end_iter);
-        writer.buffer.delete_mark(&mark_l);
-        writer.buffer.delete_mark(&mark_r);
+
+        let this = self.obj().clone();
+        glib::spawn_future_local(async move {
+            if this.imp().continuous_switch.is_active() {
+                let text_view = this.imp().journal_text_view.borrow();
+                match display_order {
+                    JournalDisplayOrder::Ascending => {
+                        text_view.scroll_to_mark(&mark_left, 0.0, true, 0.0, 1.0);
+                    }
+                    JournalDisplayOrder::Descending => {
+                        text_view.scroll_to_mark(&mark_right, 0.0, true, 0.0, 1.0);
+                    }
+                }
+            }
+            writer.buffer.delete_mark(&mark_left);
+            writer.buffer.delete_mark(&mark_right);
+        });
     }
 
     fn continuous_entry(&self) {
