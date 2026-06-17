@@ -5,7 +5,7 @@ use crate::{
     upgrade,
     widget::{
         app_window::AppWindow,
-        close_window_shortcut,
+        close_window_shortcut_no_escape,
         creator::{
             ACTION_CREATOR_CREATE, ACTION_CREATOR_FILE, ACTION_CREATOR_NEXT,
             ACTION_CREATOR_PREVIOUS, ACTION_CREATOR_UNIT_BUS, PageType, SaveUnit, UnitCreateType,
@@ -445,7 +445,7 @@ impl UnitCreatorWindowImp {
 impl ObjectImpl for UnitCreatorWindowImp {
     fn constructed(&self) {
         self.parent_constructed();
-        close_window_shortcut(self.obj().as_ref());
+        close_window_shortcut_no_escape(self.obj().as_ref());
         self.set_page_type(PageType::Start);
 
         self.banner.set_use_markup(true);

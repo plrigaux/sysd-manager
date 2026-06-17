@@ -11,6 +11,7 @@ use crate::{
             unit_file::{ON_CALENDAR, TIMER, UnitFileData},
             unit_file_creator_page::UnitFileCreatorPage,
         },
+        find_child_by_name,
     },
 };
 use adw::{
@@ -22,7 +23,7 @@ use gio::prelude::*;
 use glib::{VariantTy, WeakRef};
 use gtk::{
     glib::{self},
-    prelude::{BuildableExt, ButtonExt, EditableExt, ObjectExt, WidgetExt},
+    prelude::{ButtonExt, EditableExt, ObjectExt, WidgetExt},
 };
 use std::{
     borrow::Cow,
@@ -500,28 +501,6 @@ fn validate_calendar(entry_row: &adw::EntryRow) {
             entry_row.add_css_class(WARNING_CSS);
         }
     });
-}
-
-fn find_child_by_name<T: IsA<gtk::Widget>>(
-    parent: &impl IsA<gtk::Widget>,
-    name: &str,
-) -> Option<T> {
-    // Check if the current widget matches the name
-    let widget = parent.as_ref();
-    if widget.buildable_id().as_deref() == Some(name) {
-        return widget.downcast_ref::<T>().cloned();
-    }
-
-    // Iterate through the immediate children
-    let mut child = widget.first_child();
-    while let Some(ref c) = child {
-        if let Some(found) = find_child_by_name::<T>(c, name) {
-            return Some(found);
-        }
-        child = c.next_sibling(); // Move to the next sibling
-    }
-
-    None
 }
 
 fn add_menu_item_param(menu: &gio::Menu, label: &str, action: &str, param: &str) {

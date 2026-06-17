@@ -233,23 +233,21 @@ where
 }
 
 mod imp {
-    use std::{
-        cell::{Cell, OnceCell, RefCell},
-        str::FromStr,
+    use crate::{
+        UpdatedUnitInfo,
+        data::ListedLoadedUnit,
+        enums::{ActiveState, LoadState, Preset, UnitFileStatus, UnitType},
+        sysdbus::ListedUnitFile,
     };
-
     use base::enums::UnitDBusLevel;
     use glib::{
         self,
         object::ObjectExt,
         subclass::{object::*, types::ObjectSubclass},
     };
-
-    use crate::{
-        UpdatedUnitInfo,
-        data::ListedLoadedUnit,
-        enums::{ActiveState, LoadState, Preset, UnitFileStatus, UnitType},
-        sysdbus::ListedUnitFile,
+    use std::{
+        cell::{Cell, OnceCell, RefCell},
+        str::FromStr,
     };
 
     #[derive(Debug, glib::Properties, Default)]

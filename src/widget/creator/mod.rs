@@ -3,10 +3,13 @@ mod first_page;
 mod imp;
 mod launch_creator_page;
 pub mod navigation_row;
-mod service_creator_page;
+pub mod suggestion;
 mod timer_creator_page;
 mod unit_file;
 mod unit_file_creator_page;
+
+mod service_creator_page;
+
 use crate::{format2, widget::app_window::AppWindow};
 use adw::subclass::prelude::ObjectSubclassIsExt;
 use gettextrs::pgettext;
@@ -156,6 +159,7 @@ enum CreateUnitErr {
     Malformed,
     NotAbsolute,
     NotDir,
+    NoPath,
 }
 
 impl CreateUnitErr {
@@ -175,6 +179,9 @@ impl CreateUnitErr {
             }
             CreateUnitErr::NotDir => {
                 format2!(pgettext("validator", "{} - Not a directory"), prefix)
+            }
+            CreateUnitErr::NoPath => {
+                format2!(pgettext("validator", "{} - No path specified"), prefix)
             }
         }
     }

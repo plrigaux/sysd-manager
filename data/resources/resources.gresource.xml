@@ -3,6 +3,7 @@
   <gresource prefix="/io/github/plrigaux/sysd-manager/">
     <file compressed="true" alias="io.github.plrigaux.sysd-manager.svg">icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="dropdown.ui">interfaces/creator/dropdown.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks" alias="suggestion_entry.ui">interfaces/creator/suggestion_entry.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="grid_cell.ui">interfaces/grid_cell.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="ex_menu_button.ui">interfaces/ex_menu_button.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_properties.ui">interfaces/unit_properties.ui</file>

@@ -157,6 +157,23 @@ pub fn close_window_shortcut(window: &impl IsA<gtk::Widget>) {
     window.add_controller(shortcut_controller);
 }
 
+pub fn close_window_shortcut_no_escape(window: &impl IsA<gtk::Widget>) {
+    let shortcut_controller = gtk::ShortcutController::new();
+    let trigger = gtk::ShortcutTrigger::parse_string("<Ctrl>w");
+    let action = gtk::CallbackAction::new(|widget, _| {
+        if let Some(window) = widget.downcast_ref::<adw::Window>() {
+            window.close();
+        } else if let Some(dialog) = widget.downcast_ref::<adw::Dialog>() {
+            dialog.close();
+        }
+        glib::Propagation::Proceed
+    });
+
+    let shortcut = gtk::Shortcut::new(trigger, Some(action.clone()));
+    shortcut_controller.add_shortcut(shortcut);
+    window.add_controller(shortcut_controller);
+}
+
 pub fn clear_on_escape() -> gtk::EventControllerKey {
     let event_controller = gtk::EventControllerKey::new();
 
@@ -189,4 +206,26 @@ pub fn clear_on_escape() -> gtk::EventControllerKey {
 pub fn grab_focus_on_search_entry(search_entry: &gtk::SearchEntry) {
     search_entry.select_region(0, -1);
     search_entry.grab_focus();
+}
+
+fn find_child_by_name<T: IsA<gtk::Widget>>(
+    parent: &impl IsA<gtk::Widget>,
+    name: &str,
+) -> Option<T> {
+    // Check if the current widget matches the name
+    let widget = parent.as_ref();
+    if widget.buildable_id().as_deref() == Some(name) {
+        return widget.downcast_ref::<T>().cloned();
+    }
+
+    // Iterate through the immediate children
+    let mut child = widget.first_child();
+    while let Some(ref c) = child {
+        if let Some(found) = find_child_by_name::<T>(c, name) {
+            return Some(found);
+        }
+        child = c.next_sibling(); // Move to the next sibling
+    }
+
+    None
 }

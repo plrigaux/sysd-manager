@@ -8,6 +8,9 @@ use tracing::warn;
 use crate::widget::creator::service_creator_page::ENVIRONMENT;
 use crate::widget::creator::timer_creator_page::MonotonicTimer;
 
+pub const STANDARD_OUTPUT: &str = "StandardOutput";
+pub const STANDARD_ERROR: &str = "StandardError";
+
 #[derive(Debug, Eq, PartialEq, Hash)]
 pub struct FileEntry {
     pub section: String,
@@ -340,6 +343,22 @@ impl UnitFileData {
 
     pub(crate) fn restart(&self) -> &str {
         self.get_str(SERVICE, "Restart")
+    }
+
+    pub(crate) fn standard_output(&self) -> &str {
+        self.get_str(SERVICE, STANDARD_OUTPUT)
+    }
+
+    pub fn set_standard_output(&mut self, value: glib::GString) {
+        self.set_str(SERVICE, STANDARD_OUTPUT, Some(value.as_str()));
+    }
+
+    pub(crate) fn standard_error(&self) -> &str {
+        self.get_str(SERVICE, STANDARD_ERROR)
+    }
+
+    pub fn set_standard_error(&mut self, value: glib::GString) {
+        self.set_str(SERVICE, STANDARD_ERROR, Some(value.as_str()));
     }
 }
 
