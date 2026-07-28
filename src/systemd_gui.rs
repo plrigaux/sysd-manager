@@ -36,11 +36,11 @@ macro_rules! format2 {
      };
 
      ($template: expr, $($values: tt)*)  => {{
-          let res = formatx::formatx!($template,$($values)*);
+          let res = formatx::formatx!($template, $($values)*);
           match res {
                Ok(s) => s,
                Err(error) => {
-                    let error_str = format!("Translation error: {:?}", error);
+                    let error_str = format!("Format Translation error: {:?}", error);
                     tracing::error!("{}",error_str);
                     error_str
                }

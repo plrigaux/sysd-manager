@@ -495,10 +495,9 @@ impl UnitControlPanelImpl {
 
                 let info = format2!(
                     //toast message
-                    pgettext("toast", "Unit {} has been <{0}>{}</{0}> with the mode {}"),
-                    red_green,
+                    pgettext("toast", "Unit {} has been {} with the mode {}"),
                     format!("<unit>{}</unit>", unit_name),
-                    action.past_participle(),
+                    format!("<{0}>{1}</{0}>", red_green, action.past_participle()),
                     format!("<unit>{}</unit>", mode.as_str())
                 );
 
