@@ -309,7 +309,7 @@ mod tests {
     #[test]
     fn test_id_extracts_correct_substring() {
         assert_eq!(UnitCuratedList::Defaut.id(), "default");
-        assert_eq!(UnitCuratedList::LoadedUnit.id(), "active");
+        assert_eq!(UnitCuratedList::LoadedUnit.id(), "loaded");
         assert_eq!(UnitCuratedList::UnitFiles.id(), "unit_file");
         assert_eq!(UnitCuratedList::Timers.id(), "timers");
         assert_eq!(UnitCuratedList::Sockets.id(), "sockets");

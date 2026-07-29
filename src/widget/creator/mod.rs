@@ -63,7 +63,7 @@ impl UnitCreatorWindow {
     }
 }
 
-pub const VALID_UNIT_NAME: &str = r"^[a-zA-Z0-9._:\-]+@?$";
+pub const VALID_UNIT_NAME: &str = r"^[a-zA-Z0-9._:\-\\]+@?$";
 pub const ACTION_CREATOR_UNIT_BUS: &str = "creator.create-unit-bus-selection";
 pub const ACTION_CREATOR_UNIT_TYPE_SELECTION: &str = "creator.create-unit-type-selection";
 pub const ACTION_CREATOR_NEXT: &str = "creator.next";
