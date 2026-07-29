@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Cambalache 1.0 -->
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 1.0.3 -->
 <interface>
   <!-- interface-name shortcuts.ui -->
   <requires lib="gtk" version="4.0"/>
@@ -77,8 +77,8 @@
         <child>
           <object class="AdwShortcutsItem">
             <property name="action-name">app.create-unit</property>
-            <property name="title" translatable="yes" context="shortcut window">Create Unit</property>
             <property name="subtitle" translatable="yes" context="shortcut window" comments="subtitle">Create Timer or Service Unit Type</property>
+            <property name="title" translatable="yes" context="shortcut window">Create Unit</property>
           </object>
         </child>
       </object>
