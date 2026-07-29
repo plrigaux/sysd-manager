@@ -20,7 +20,7 @@ pub mod unit_properties_selector;
 use crate::{
     format2,
     systemd::{BootFilter, data::UnitInfo},
-    utils::palette::{blue, green, red},
+    utils::palette::{dark_blue, dark_green, dark_red},
 };
 use adw::prelude::AdwDialogExt;
 use base::consts::{FAVORITE_ICON_FILLED, FAVORITE_ICON_OUTLINE};
@@ -99,7 +99,7 @@ pub fn replace_tags(message: &str) -> String {
 
             "red" => {
                 out.push_str("<span fgcolor='");
-                out.push_str(red().get_color());
+                out.push_str(dark_red().get_color());
                 out.push_str("'>");
                 out.push_str(&capture[2]);
                 out.push_str("</span>");
@@ -107,7 +107,7 @@ pub fn replace_tags(message: &str) -> String {
 
             "green" => {
                 out.push_str("<span fgcolor='");
-                out.push_str(green().get_color());
+                out.push_str(dark_green().get_color());
                 out.push_str("'>");
                 out.push_str(&capture[2]);
                 out.push_str("</span>");
@@ -125,7 +125,7 @@ pub fn replace_tags(message: &str) -> String {
 
 fn tag_unit(out: &mut String, unit_name: &str) {
     out.push_str("<span fgcolor='");
-    out.push_str(blue().get_color());
+    out.push_str(dark_blue().get_color());
     out.push_str("' font_family='monospace' size='larger' weight='bold'>");
     out.push_str(unit_name);
     out.push_str("</span>");
