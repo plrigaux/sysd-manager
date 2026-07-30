@@ -261,7 +261,7 @@ impl UnitCuratedList {
             UnitCuratedList::Services => ["<Ctrl><Shift>s"],
             UnitCuratedList::Path => ["<Ctrl><Shift>p"],
             UnitCuratedList::Automount => ["<Ctrl><Shift>a"],
-            UnitCuratedList::Custom => ["<Ctrl><Shift>C"],
+            UnitCuratedList::Custom => ["<Ctrl><Shift>m"],
             UnitCuratedList::Favorites => ["<Ctrl><Shift>b"],
         }
     }
@@ -309,7 +309,7 @@ mod tests {
     #[test]
     fn test_id_extracts_correct_substring() {
         assert_eq!(UnitCuratedList::Defaut.id(), "default");
-        assert_eq!(UnitCuratedList::LoadedUnit.id(), "active");
+        assert_eq!(UnitCuratedList::LoadedUnit.id(), "loaded");
         assert_eq!(UnitCuratedList::UnitFiles.id(), "unit_file");
         assert_eq!(UnitCuratedList::Timers.id(), "timers");
         assert_eq!(UnitCuratedList::Sockets.id(), "sockets");

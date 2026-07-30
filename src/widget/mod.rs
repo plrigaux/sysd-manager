@@ -20,7 +20,7 @@ pub mod unit_properties_selector;
 use crate::{
     format2,
     systemd::{BootFilter, data::UnitInfo},
-    utils::palette::{blue, green, red},
+    utils::palette::{dark_blue, dark_green, dark_red},
 };
 use adw::prelude::AdwDialogExt;
 use base::consts::{FAVORITE_ICON_FILLED, FAVORITE_ICON_OUTLINE};
@@ -99,7 +99,7 @@ pub fn replace_tags(message: &str) -> String {
 
             "red" => {
                 out.push_str("<span fgcolor='");
-                out.push_str(red().get_color());
+                out.push_str(dark_red().get_color());
                 out.push_str("'>");
                 out.push_str(&capture[2]);
                 out.push_str("</span>");
@@ -107,7 +107,7 @@ pub fn replace_tags(message: &str) -> String {
 
             "green" => {
                 out.push_str("<span fgcolor='");
-                out.push_str(green().get_color());
+                out.push_str(dark_green().get_color());
                 out.push_str("'>");
                 out.push_str(&capture[2]);
                 out.push_str("</span>");
@@ -125,7 +125,7 @@ pub fn replace_tags(message: &str) -> String {
 
 fn tag_unit(out: &mut String, unit_name: &str) {
     out.push_str("<span fgcolor='");
-    out.push_str(blue().get_color());
+    out.push_str(dark_blue().get_color());
     out.push_str("' font_family='monospace' size='larger' weight='bold'>");
     out.push_str(unit_name);
     out.push_str("</span>");
@@ -157,6 +157,23 @@ pub fn close_window_shortcut(window: &impl IsA<gtk::Widget>) {
     window.add_controller(shortcut_controller);
 }
 
+pub fn close_window_shortcut_no_escape(window: &impl IsA<gtk::Widget>) {
+    let shortcut_controller = gtk::ShortcutController::new();
+    let trigger = gtk::ShortcutTrigger::parse_string("<Ctrl>w");
+    let action = gtk::CallbackAction::new(|widget, _| {
+        if let Some(window) = widget.downcast_ref::<adw::Window>() {
+            window.close();
+        } else if let Some(dialog) = widget.downcast_ref::<adw::Dialog>() {
+            dialog.close();
+        }
+        glib::Propagation::Proceed
+    });
+
+    let shortcut = gtk::Shortcut::new(trigger, Some(action.clone()));
+    shortcut_controller.add_shortcut(shortcut);
+    window.add_controller(shortcut_controller);
+}
+
 pub fn clear_on_escape() -> gtk::EventControllerKey {
     let event_controller = gtk::EventControllerKey::new();
 
@@ -171,23 +188,44 @@ pub fn clear_on_escape() -> gtk::EventControllerKey {
     event_controller
 }
 
-pub fn clear_on_escape2() -> gtk::EventControllerKey {
-    let event_controller = gtk::EventControllerKey::new();
+// pub fn clear_on_escape_entry_row() -> gtk::EventControllerKey {
+//     let event_controller = gtk::EventControllerKey::new();
 
-    event_controller.connect_key_released(|controller, key, _keycode, _state| {
-        if key == gdk::Key::Escape {
-            if let Some(search_entry) = controller.widget().and_downcast_ref::<adw::EntryRow>() {
-                search_entry.set_text("");
-            } else {
-                dbg!(controller.widget());
-            }
-        }
-    });
+//     event_controller.connect_key_released(|controller, key, _keycode, _state| {
+//         if key == gdk::Key::Escape {
+//             //TODO
+//             if let Some(search_entry) = controller.widget().and_downcast_ref::<adw::EntryRow>() {
+//                 search_entry.set_text("");
+//             }
+//         }
+//     });
 
-    event_controller
-}
+//     event_controller
+// }
 
 pub fn grab_focus_on_search_entry(search_entry: &gtk::SearchEntry) {
     search_entry.select_region(0, -1);
     search_entry.grab_focus();
+}
+
+fn find_child_by_name<T: IsA<gtk::Widget>>(
+    parent: &impl IsA<gtk::Widget>,
+    name: &str,
+) -> Option<T> {
+    // Check if the current widget matches the name
+    let widget = parent.as_ref();
+    if widget.buildable_id().as_deref() == Some(name) {
+        return widget.downcast_ref::<T>().cloned();
+    }
+
+    // Iterate through the immediate children
+    let mut child = widget.first_child();
+    while let Some(ref c) = child {
+        if let Some(found) = find_child_by_name::<T>(c, name) {
+            return Some(found);
+        }
+        child = c.next_sibling(); // Move to the next sibling
+    }
+
+    None
 }

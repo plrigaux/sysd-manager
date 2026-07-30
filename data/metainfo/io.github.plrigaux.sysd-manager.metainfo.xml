@@ -86,6 +86,62 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="2.20.5" date="2026-07-30">
+      <description translate="no">
+        <p>Fixed</p>
+        <ul>
+          <li>PARTIAL FIX Follow does not auto-scroll to new journal entries when Descending is enabled [Issue 67]</li>
+        </ul>
+      </description>
+    </release>
+    <release version="2.20.4" date="2026-06-17">
+      <description translate="no">
+        <p>Changed</p>
+        <ul>
+          <li>Journal's follow switch has been replaced by a checkbox. This fixes [Issue 48]</li>
+          <li>Unit Info tab changed to Status</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>[Issue 71] Application Freeze</li>
+          <li>[Issue 69] Message toast color contrast for better visibility</li>
+          <li>[Issue 67] Journal's follow auto-scroll to new journal entries when Descending is enabled </li>
+        </ul>
+      </description>
+    </release>
+    <release version="2.20.3" date="2026-06-17">
+      <description translate="no">
+        <p>Added</p>
+        <ul>
+          <li>Unit Creation Wizard: Add Standard Output and Error on Service</li>
+          <li>Unit Creation Wizard: Add CPUQuota and MemoryHigh on Service</li>
+        </ul>
+      </description>
+    </release>
+    <release version="2.20.2" date="2026-06-13">
+      <description translate="no">
+        <p>Added</p>
+        <ul>
+          <li>Unit Creation Wizard time validators [Issue 44]</li>
+        </ul>
+      </description>
+    </release>
+    <release version="2.20.1" date="2026-06-11">
+      <description translate="no">
+        <p>Added</p>
+        <ul>
+          <li>Unit Creation Wizard new options [Issue 44]</li>
+        </ul>
+      </description>
+    </release>
+    <release version="2.20.0" date="2026-06-06">
+      <description translate="no">
+        <p>Added</p>
+        <ul>
+          <li>Wizard to create Timer and Service Units [Issue 44]</li>
+        </ul>
+      </description>
+    </release>
     <release version="2.19.6" date="2026-05-20">
       <description translate="no">
         <p>Added</p>

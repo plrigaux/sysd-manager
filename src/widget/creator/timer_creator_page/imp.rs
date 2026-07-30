@@ -1,19 +1,21 @@
 use super::TimerCreatorPage;
 use crate::{
+    consts::WARNING_CSS,
     upgrade, upgrade_opt,
     widget::{
         self,
         creator::{
             UnitCreateType, UnitCreatorWindow,
             dropdown::SysDDropDown,
-            timer_creator_page::MonotonicTimer,
+            timer_creator_page::{MonotonicTimer, validator::validate_timespan},
             unit_file::{ON_CALENDAR, TIMER, UnitFileData},
             unit_file_creator_page::UnitFileCreatorPage,
         },
+        find_child_by_name,
     },
 };
 use adw::{
-    prelude::{ActionRowExt, ComboRowExt, EntryRowExt, PreferencesGroupExt},
+    prelude::{ActionRowExt, ComboRowExt, EntryRowExt, PreferencesGroupExt, PreferencesRowExt},
     subclass::prelude::*,
 };
 use gettextrs::pgettext;
@@ -29,6 +31,7 @@ use std::{
     collections::HashSet,
 };
 use strum::{EnumIter, IntoEnumIterator};
+use tracing::error;
 const ACTION_CREATOR_MONOTONIC_ADD: &str = "creator.monotonic-add";
 const ACTION_CREATOR_REALTIME_ADD: &str = "creator.realtime-add";
 
@@ -94,8 +97,8 @@ impl ObjectImpl for TimerCreatorPageImp {
     fn constructed(&self) {
         self.parent_constructed();
 
-        self.trigger_unit.connect_selected_item_notify(|a| {
-            dbg!("Connect idx {}", a.selected());
+        self.trigger_unit.connect_selected_item_notify(|_| {
+            // dbg!("Connect idx {}", a.selected());
         });
 
         let menu = gio::Menu::new();
@@ -132,6 +135,11 @@ impl ObjectImpl for TimerCreatorPageImp {
         });
         self.select_add_monotonic(MonotonicTimer::default());
         self.select_add_realtime(RealTimeTimer::default());
+
+        self.description
+            .connect_has_focus_notify(|entry| entry.select_region(0, -1));
+        self.description
+            .connect_focus_on_click_notify(|entry| entry.select_region(0, -1));
     }
 }
 
@@ -139,28 +147,28 @@ impl TimerCreatorPageImp {
     pub(super) fn update_from_unit_info(&self) {
         let window = upgrade_opt!(self.window.get());
 
-        let set = window.imp().get_trigger_units();
+        let model = window.imp().get_trigger_units_model();
 
-        let mut vec = set
-            .iter()
-            .filter(|s| !s.ends_with(".timer"))
-            .map(|s| s.as_ref())
-            .collect::<Vec<_>>();
-        // vec.push(""); //for unselect
-        vec.sort();
-
-        dbg!("l {}", vec.len());
-        let model = gtk::StringList::new(&vec);
         let model2 = gtk::SingleSelection::builder()
             .can_unselect(true)
             .autoselect(false)
             .model(&model)
             .build();
-        // self.trigger_unit.set_selected(gtk::INVALID_LIST_POSITION);
-        self.trigger_unit.set_model(Some(&model2));
-        self.trigger_unit.set_selected(gtk::INVALID_LIST_POSITION);
 
-        self.trigger_unit2.set_model(Some(&model));
+        let filter = gtk::CustomFilter::new(|object| {
+            let Some(string_object) = object.downcast_ref::<gtk::StringObject>() else {
+                return false;
+            };
+
+            !string_object.string().ends_with(".timer")
+        });
+
+        let filtered_model = gtk::FilterListModel::new(Some(model2), Some(filter));
+        // self.trigger_unit.set_selected(gtk::INVALID_LIST_POSITION);
+        self.trigger_unit.set_model(Some(&filtered_model));
+
+        self.trigger_unit.set_selected(gtk::INVALID_LIST_POSITION);
+        // self.trigger_unit2.set_model(Some(&model3));
     }
 
     pub(super) fn create_actions(&self) {
@@ -210,9 +218,24 @@ impl TimerCreatorPageImp {
         let entry_row = adw::EntryRow::builder()
             .title(ON_CALENDAR)
             .text(calendar_type.unwrap_or_default())
+            .title_selectable(true)
+            .show_apply_button(true)
             .build();
 
-        let event_controller = widget::clear_on_escape2();
+        entry_row.connect_has_focus_notify(|entry| entry.select_region(0, -1));
+        entry_row.connect_focus_on_click_notify(|entry| entry.select_region(0, -1));
+        entry_row.connect_apply(validate_calendar);
+
+        let event_controller = gtk::EventControllerFocus::new();
+        let entry_row_weak = entry_row.downgrade();
+        event_controller.connect_leave(move |_| {
+            let entry_row = upgrade!(entry_row_weak);
+
+            if let Some(button) = find_child_by_name::<gtk::Button>(&entry_row, "apply_button") {
+                button.emit_clicked();
+            }
+        });
+
         entry_row.add_controller(event_controller);
 
         let button = gtk::Button::builder()
@@ -242,9 +265,36 @@ impl TimerCreatorPageImp {
         let entry_row = adw::EntryRow::builder()
             .title(timer.label())
             .text(value.unwrap_or_default())
+            .can_focus(true)
+            .focusable(true)
+            .title_selectable(true)
+            .show_apply_button(true)
             .build();
 
-        let event_controller = widget::clear_on_escape2();
+        entry_row.connect_has_focus_notify(|entry| {
+            dbg!(entry.has_focus());
+            entry.select_region(0, -1)
+        });
+        entry_row.connect_focus_on_click_notify(|entry| entry.select_region(0, -1));
+        entry_row.connect_move_focus(|e, a| println!("{:?} {}", a, e.text()));
+        entry_row.connect_focusable_notify(|e| println!("foc {:?} ", e.text()));
+        entry_row.connect_entry_activated(|f| println!("activated {}", f.has_focus()));
+        entry_row.connect_apply(move |a| validate_monotonic(timer, a));
+
+        // let event_controller = widget::clear_on_escape_entry_row();
+        // entry_row.add_controller(event_controller);
+
+        let event_controller = gtk::EventControllerFocus::new();
+
+        let entry_row_weak = entry_row.downgrade();
+        event_controller.connect_leave(move |_| {
+            let entry_row = upgrade!(entry_row_weak);
+
+            if let Some(button) = find_child_by_name::<gtk::Button>(&entry_row, "apply_button") {
+                button.emit_clicked();
+            }
+        });
+
         entry_row.add_controller(event_controller);
 
         let button = gtk::Button::builder()
@@ -287,6 +337,22 @@ impl TimerCreatorPageImp {
         self.monotonic_type.set(timer);
     }
 
+    pub fn set_view(&self, creation_type: UnitCreateType) {
+        match creation_type {
+            UnitCreateType::Service => {}
+            UnitCreateType::Timer => {
+                self.trigger_unit.set_visible(true);
+                self.trigger_unit2.set_visible(true);
+            }
+            UnitCreateType::TimerService => {
+                self.trigger_unit.set_visible(false);
+                self.trigger_unit.set_subtitle("");
+                self.file_data.borrow_mut().remove_trigger_unit();
+                self.trigger_unit2.set_visible(false);
+            }
+        }
+    }
+
     pub fn update_view(&self, page: &UnitFileCreatorPage) {
         self.fill_data();
         let data = self.file_data.borrow();
@@ -298,7 +364,7 @@ impl TimerCreatorPageImp {
 
         file_data.set_description(self.description.text());
         file_data.set_persistent(self.persistent.is_active());
-        file_data.set_trigger_unit(self.trigger_unit2.subtitle());
+        file_data.set_trigger_unit(self.trigger_unit.subtitle());
 
         let timers = self
             .monotonic_timers
@@ -336,14 +402,26 @@ impl TimerCreatorPageImp {
         file_data.sort();
     }
 
-    pub fn update_file_data(&self, content: &str) {
+    pub(super) fn file_content(&self) -> String {
+        self.fill_data();
+        self.file_data.borrow().to_file()
+    }
+
+    pub fn update_from_file_content(&self, content: &str) {
         let Some(data) = UnitFileData::from_content(content) else {
             return;
         };
 
+        let window = upgrade_opt!(self.window.get());
+
         self.description.set_text(data.description());
         self.persistent.set_active(data.persistent());
-        self.trigger_unit2.set_subtitle(data.trigger_unit());
+
+        if matches!(window.creation_type(), UnitCreateType::Timer) {
+            self.trigger_unit.set_subtitle(data.trigger_unit());
+        } else {
+            self.trigger_unit.set_subtitle("");
+        }
 
         for (_, entry_row) in self.monotonic_timers.borrow_mut().drain(..) {
             self.timers_group.remove(&entry_row);
@@ -363,6 +441,66 @@ impl TimerCreatorPageImp {
 
         self.file_data.replace(data);
     }
+}
+
+fn validate_monotonic(timer: MonotonicTimer, entry_row: &adw::EntryRow) {
+    let entry_row = entry_row.clone();
+    glib::spawn_future_local(async move {
+        let timespan = entry_row.text();
+
+        let (code, std_out, std_err) = if timespan.is_empty() {
+            (0, String::default(), String::default())
+        } else {
+            let Ok(r) = systemd::runtime()
+                .block_on(async move { validate_timespan(timespan.as_str()).await })
+                .inspect_err(|err| error!("{err:?}"))
+            else {
+                return;
+            };
+            r
+        };
+
+        if code == 0 {
+            entry_row.set_tooltip_text(Some(&format!("{}\n{}", timer.label(), std_out)));
+            entry_row.set_title(&timer.label());
+            entry_row.remove_css_class(WARNING_CSS);
+        } else {
+            entry_row.set_title(&format!("{}\n{}", timer.label(), std_err));
+            entry_row.set_tooltip_text(None);
+            entry_row.add_css_class(WARNING_CSS);
+        }
+    });
+}
+
+fn validate_calendar(entry_row: &adw::EntryRow) {
+    let entry_row = entry_row.clone();
+    glib::spawn_future_local(async move {
+        let calendar = entry_row.text();
+
+        let (code, std_out, std_err) = if calendar.is_empty() {
+            (0, String::default(), String::default())
+        } else {
+            let Ok(r) = systemd::runtime()
+                .block_on(async move {
+                    super::validator::validate_calendar(calendar.trim_ascii()).await
+                })
+                .inspect_err(|err| error!("{err:?}"))
+            else {
+                return;
+            };
+            r
+        };
+
+        if code == 0 {
+            entry_row.set_tooltip_text(Some(&format!("{}\n{}", ON_CALENDAR, std_out)));
+            entry_row.set_title(ON_CALENDAR);
+            entry_row.remove_css_class(WARNING_CSS);
+        } else {
+            entry_row.set_title(&format!("{}\n{}", ON_CALENDAR, std_err));
+            entry_row.set_tooltip_text(None);
+            entry_row.add_css_class(WARNING_CSS);
+        }
+    });
 }
 
 fn add_menu_item_param(menu: &gio::Menu, label: &str, action: &str, param: &str) {

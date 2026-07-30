@@ -51,10 +51,11 @@ pub enum SysdBaseError {
     NotAuthorized,
     Tokio(JoinError),
     InvalidPath(String),
+    ErrorExit(i32),
 }
 
 impl SysdBaseError {
-    pub(crate) fn create_command_error(command: &Command, error: std::io::Error) -> Self {
+    pub fn create_command_error(command: &Command, error: std::io::Error) -> Self {
         let std_command = command.as_std();
         let program = std_command.get_program().to_os_string();
         let envs: Vec<(OsString, Option<OsString>)> = std_command
@@ -115,6 +116,31 @@ pub fn determine_drop_in_path_dir(
                 unit_name
             )
         }
+    };
+    Ok(path)
+}
+
+pub fn determine_unit_file_path_dir(
+    runtime: bool,
+    user_session: bool,
+) -> Result<PathBuf, Box<dyn Error + 'static>> {
+    let path = match (runtime, user_session) {
+        (true, false) => PathBuf::from("/run/systemd/system/"),
+        (false, false) => PathBuf::from("/etc/systemd/system/"),
+        (true, true) => {
+            let runtime_dir = std::env::var("XDG_RUNTIME_DIR")
+                .unwrap_or_else(|_| format!("/run/user/{}", getuid()));
+            let path = PathBuf::from(runtime_dir);
+
+            path.join("systemd/user/")
+        }
+        (false, true) => std::env::home_dir()
+            .unwrap_or_else(|| {
+                error!("Nome directory found!");
+                PathBuf::default()
+            })
+            .join(".config")
+            .join("systemd/user"),
     };
     Ok(path)
 }
@@ -351,6 +377,14 @@ pub async fn save_io(
     create: bool,
     content: &str,
 ) -> Result<u64, std::io::Error> {
+    if create
+        && let Some(dir_path) = file_path.as_ref().parent()
+        && !dir_path.exists()
+        && let Err(err) = fs::create_dir_all(dir_path).await
+    {
+        error!("Can't create path {}, {err:?}", dir_path.display());
+    }
+
     let mut file = fs::OpenOptions::new()
         .write(true)
         .truncate(true)

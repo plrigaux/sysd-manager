@@ -1,4 +1,4 @@
-use gettextrs::pgettext;
+use gettextrs::{gettext, pgettext};
 use glib::value::ToValue;
 use strum::EnumIter;
 use tracing::warn;
@@ -81,6 +81,23 @@ impl UnitDBusLevel {
             UnitDBusLevel::Both => 2,
         }
     }
+
+    pub fn message(&self) -> String {
+        match self {
+            UnitDBusLevel::System => {
+                //instance level system
+                gettext("System")
+            }
+            UnitDBusLevel::UserSession => {
+                //instance level user
+                gettext("User")
+            }
+            UnitDBusLevel::Both => {
+                //instance level user
+                gettext("System & User")
+            }
+        }
+    }
 }
 
 impl From<u8> for UnitDBusLevel {
@@ -116,6 +133,12 @@ impl From<&str> for UnitDBusLevel {
 
 impl From<String> for UnitDBusLevel {
     fn from(level: String) -> Self {
+        level.as_str().into()
+    }
+}
+
+impl From<glib::GString> for UnitDBusLevel {
+    fn from(level: glib::GString) -> Self {
         level.as_str().into()
     }
 }

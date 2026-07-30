@@ -1,10 +1,15 @@
 use freedesktop_entry_parser::{ParseError, low_level};
+use indexmap::map::Entry;
 use indexmap::{Equivalent, IndexMap};
 use std::cmp::Ordering::{Equal, Greater, Less};
 use std::fmt::Write;
 use tracing::warn;
 
+use crate::widget::creator::service_creator_page::ENVIRONMENT;
 use crate::widget::creator::timer_creator_page::MonotonicTimer;
+
+pub const STANDARD_OUTPUT: &str = "StandardOutput";
+pub const STANDARD_ERROR: &str = "StandardError";
 
 #[derive(Debug, Eq, PartialEq, Hash)]
 pub struct FileEntry {
@@ -112,11 +117,11 @@ impl UnitFileData {
         Ok(map)
     }
 
-    fn insert_str(&mut self, section: &str, key: &str, value: Option<&str>) -> Option<Vec<String>> {
-        self.insert_string(section, key, value.map(|s| s.to_owned()))
+    fn set_str(&mut self, section: &str, key: &str, value: Option<&str>) -> Option<Vec<String>> {
+        self.set_string(section, key, value.map(|s| s.to_owned()))
     }
 
-    fn insert_string(
+    fn set_string(
         &mut self,
         section: &str,
         attribute: &str,
@@ -132,9 +137,26 @@ impl UnitFileData {
         }
     }
 
-    fn insert_bool(&mut self, section: &str, attribute: &str, value: bool) -> Option<Vec<String>> {
+    fn insert_str(&mut self, section: &str, key: &str, value: &str) {
+        self.insert_string(section, key, value.to_owned())
+    }
+
+    fn insert_string(&mut self, section: &str, attribute: &str, value: String) {
+        if !value.trim().is_empty() {
+            match self.0.entry(FileEntry::new(section, attribute)) {
+                Entry::Occupied(mut occupied_entry) => {
+                    occupied_entry.get_mut().push(value);
+                }
+                Entry::Vacant(vacant_entry) => {
+                    vacant_entry.insert(vec![value]);
+                }
+            }
+        }
+    }
+
+    fn set_bool(&mut self, section: &str, attribute: &str, value: bool) -> Option<Vec<String>> {
         if value {
-            self.insert_string(section, attribute, Some(value.to_string()))
+            self.set_string(section, attribute, Some(value.to_string()))
         } else {
             self.remove(section, attribute)
         }
@@ -149,7 +171,7 @@ impl UnitFileData {
     }
 
     pub fn set_description(&mut self, description: impl AsRef<str>) {
-        self.insert_str(UNIT, "Description", Some(description.as_ref()));
+        self.set_str(UNIT, "Description", Some(description.as_ref()));
     }
 
     pub(crate) fn description(&self) -> &str {
@@ -175,7 +197,7 @@ impl UnitFileData {
     }
 
     pub fn set_persistent(&mut self, persistent: bool) {
-        self.insert_bool(TIMER, "Persistent", persistent);
+        self.set_bool(TIMER, "Persistent", persistent);
     }
 
     pub fn persistent(&self) -> bool {
@@ -187,7 +209,23 @@ impl UnitFileData {
     }
 
     pub fn set_working_directory(&mut self, value: impl AsRef<str>) {
-        self.insert_str(SERVICE, "WorkingDirectory", Some(value.as_ref()));
+        self.set_str(SERVICE, "WorkingDirectory", Some(value.as_ref()));
+    }
+
+    pub fn after(&self) -> &str {
+        self.get_str(UNIT, "After")
+    }
+
+    pub fn set_after(&mut self, value: Option<glib::GString>) {
+        self.set_str(UNIT, "After", value.as_deref());
+    }
+
+    pub fn wants(&self) -> &str {
+        self.get_str(UNIT, "Wants")
+    }
+
+    pub fn set_wants(&mut self, value: Option<glib::GString>) {
+        self.set_str(UNIT, "Wants", value.as_deref());
     }
 
     pub fn exec_start(&self) -> &str {
@@ -195,7 +233,68 @@ impl UnitFileData {
     }
 
     pub fn set_exec_start(&mut self, value: impl AsRef<str>) {
-        self.insert_str(SERVICE, "ExecStart", Some(value.as_ref()));
+        self.set_str(SERVICE, "ExecStart", Some(value.as_ref()));
+    }
+
+    pub fn user(&self) -> &str {
+        self.get_str(SERVICE, "User")
+    }
+
+    pub fn set_user(&mut self, value: Option<impl AsRef<str>>) {
+        if let Some(v) = value {
+            self.set_str(SERVICE, "User", Some(v.as_ref()));
+        } else {
+            self.set_str(SERVICE, "User", None);
+        }
+    }
+
+    pub fn group(&self) -> &str {
+        self.get_str(SERVICE, "Group")
+    }
+
+    pub fn set_group(&mut self, value: Option<impl AsRef<str>>) {
+        if let Some(v) = value {
+            self.set_str(SERVICE, "Group", Some(v.as_ref()));
+        } else {
+            self.set_str(SERVICE, "Group", None);
+        }
+    }
+
+    pub fn cpu_quota(&self) -> &str {
+        self.get_str(SERVICE, "CPUQuota")
+    }
+
+    pub fn set_cpu_quota(&mut self, value: impl AsRef<str>) {
+        self.set_str(SERVICE, "CPUQuota", Some(value.as_ref()));
+    }
+
+    pub fn memory_high(&self) -> &str {
+        self.get_str(SERVICE, "MemoryHigh")
+    }
+
+    pub fn set_memory_high(&mut self, value: impl AsRef<str>) {
+        self.set_str(SERVICE, "MemoryHigh", Some(value.as_ref()));
+    }
+
+    fn clear(&mut self, section: &str, attribute: &str) {
+        if let Some(v) = self.0.get_mut(&FileEntryRef::new(section, attribute)) {
+            v.clear();
+        }
+    }
+
+    pub fn set_environment(&mut self, value: Option<&[impl AsRef<str>]>) {
+        if let Some(value) = value {
+            self.clear(SERVICE, ENVIRONMENT);
+            for v in value {
+                self.insert_str(SERVICE, ENVIRONMENT, v.as_ref());
+            }
+        } else {
+            self.remove(SERVICE, ENVIRONMENT);
+        }
+    }
+
+    pub fn environment(&self) -> Option<&Vec<String>> {
+        self.0.get(&FileEntryRef::new(SERVICE, ENVIRONMENT))
     }
 
     pub fn sort(&mut self) {
@@ -217,7 +316,11 @@ impl UnitFileData {
     }
 
     pub fn set_trigger_unit(&mut self, value: Option<impl AsRef<str>>) {
-        self.insert_string(TIMER, "Unit", value.map(|s| s.as_ref().to_string()));
+        self.set_string(TIMER, "Unit", value.map(|s| s.as_ref().to_string()));
+    }
+
+    pub fn remove_trigger_unit(&mut self) {
+        self.remove(TIMER, "Unit");
     }
 
     pub fn add_timers(&mut self, timers: IndexMap<String, Vec<String>>) {
@@ -232,6 +335,30 @@ impl UnitFileData {
                 && (file_entry.attribute.as_str() == ON_CALENDAR
                     || MonotonicTimer::get(&file_entry.attribute).is_some())
         })
+    }
+
+    pub fn set_restart(&mut self, value: impl AsRef<str>) {
+        self.set_str(SERVICE, "Restart", Some(value.as_ref()));
+    }
+
+    pub(crate) fn restart(&self) -> &str {
+        self.get_str(SERVICE, "Restart")
+    }
+
+    pub(crate) fn standard_output(&self) -> &str {
+        self.get_str(SERVICE, STANDARD_OUTPUT)
+    }
+
+    pub fn set_standard_output(&mut self, value: glib::GString) {
+        self.set_str(SERVICE, STANDARD_OUTPUT, Some(value.as_str()));
+    }
+
+    pub(crate) fn standard_error(&self) -> &str {
+        self.get_str(SERVICE, STANDARD_ERROR)
+    }
+
+    pub fn set_standard_error(&mut self, value: glib::GString) {
+        self.set_str(SERVICE, STANDARD_ERROR, Some(value.as_str()));
     }
 }
 

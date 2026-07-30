@@ -44,6 +44,7 @@ SysD Manager provides an intuitive graphical interface for managing systemd unit
 | Clean, freeze, and thaw operations | ✅ |
 | Real-time journal monitoring | ✅ |
 | Boot ID retrieval and filtering | ✅ |
+| Service & Timer creation wizard | ✅ |
 
 ### User Experience
 
@@ -59,7 +60,8 @@ SysD Manager provides an intuitive graphical interface for managing systemd unit
 | View for Timers | ✅ |
 | View for Path| ✅ |
 | View for Sockets| ✅ |
-| Include Unit Files to Views| ✅ |
+| View for Services | ✅ |
+| Views' Unit Files visibility option| ✅ |
 ---
 
 ## 📸 Screenshots

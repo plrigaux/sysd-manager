@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-23 23:40-0400\n"
-"PO-Revision-Date: 2026-04-24 03:59+0000\n"
+"POT-Creation-Date: 2026-07-30 17:14-0400\n"
+"PO-Revision-Date: 2026-07-30 23:00+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.17.1-dev\n"
+"X-Generator: Weblate 2026.8.dev0\n"
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -51,23 +51,23 @@ msgstr ""
 "les activer, les désactiver, les arrêter et les démarrer. Vous pouvez "
 "également consulter leur fichier de configuration et leurs journaux."
 
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:36
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:41
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:40
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:45
 msgid "Unit Files"
 msgstr "Fichiers d'unité"
 
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:46
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:51
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:50
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:55
 msgid "Unit Dependencies"
 msgstr "Dépendances des unités"
 
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:56
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:61
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:60
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:65
 msgid "Unit File"
 msgstr "Fichier de l'unité"
 
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:66
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:71
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:70
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:75
 msgid "Unit Journal"
 msgstr "Journal"
 
@@ -79,73 +79,73 @@ msgstr ""
 "L'authentification est requise pour exécuter des appels système privilégiés "
 "via le Proxy de SysD Manager"
 
-#: data/interfaces/app_window.ui:12
+#: data/interfaces/app_window.ui:13
 msgctxt "menu"
 msgid "Analyze Blame"
 msgstr "Analyse blâme"
 
-#: data/interfaces/app_window.ui:16
+#: data/interfaces/app_window.ui:17
 msgctxt "menu"
 msgid "Daemon Reload"
 msgstr "Recharger la configuration"
 
-#: data/interfaces/app_window.ui:20
+#: data/interfaces/app_window.ui:21
 msgctxt "menu"
 msgid "Systemd Info"
 msgstr "Systemd information"
 
-#: data/interfaces/app_window.ui:24
+#: data/interfaces/app_window.ui:25
 msgctxt "menu"
 msgid "List Boots"
 msgstr "Lister les boots"
 
-#: data/interfaces/app_window.ui:28
+#: data/interfaces/app_window.ui:29
 msgctxt "menu"
 msgid "Watch Signals"
 msgstr "Monitorer les signaux"
 
-#: data/interfaces/app_window.ui:34
+#: data/interfaces/app_window.ui:39
 msgctxt "menu"
 msgid "Preferences"
 msgstr "Préférences"
 
-#: data/interfaces/app_window.ui:38
+#: data/interfaces/app_window.ui:43
 msgctxt "menu"
 msgid "Proxy Preferences"
 msgstr "Préférences du Proxy"
 
-#: data/interfaces/app_window.ui:42
+#: data/interfaces/app_window.ui:47
 msgctxt "menu"
 msgid "Keyboard Shortcuts"
 msgstr "Raccourcis clavier"
 
-#: data/interfaces/app_window.ui:46
+#: data/interfaces/app_window.ui:51
 msgctxt "menu"
 msgid "About"
 msgstr "À propos"
 
-#: data/interfaces/app_window.ui:85
+#: data/interfaces/app_window.ui:90
 msgctxt "top button tooltip"
 msgid "Open Search Bar"
 msgstr "Ouvrir la barre de recherche"
 
-#: data/interfaces/app_window.ui:97
+#: data/interfaces/app_window.ui:102
 msgid "To select system or session bus"
 msgstr "Pour sélectionner le bus système ou session"
 
 #. selector of differents units list
-#: data/interfaces/app_window.ui:104
+#: data/interfaces/app_window.ui:109
 msgctxt "menu"
 msgid "Curated Lists"
 msgstr "Listes organisées"
 
-#: data/interfaces/app_window.ui:105
+#: data/interfaces/app_window.ui:110
 msgctxt "tooltip"
 msgid "To display different units' presentation and subset"
 msgstr ""
 "Pour afficher la présentation et le sous-ensemble des différentes unités"
 
-#: data/interfaces/app_window.ui:112
+#: data/interfaces/app_window.ui:117
 msgctxt "top button tooltip"
 msgid "Refresh Unit List"
 msgstr "Rafraîchir la liste des unités"
@@ -154,7 +154,7 @@ msgstr "Rafraîchir la liste des unités"
 #. title dialog
 #. Message answer
 #: data/interfaces/clean_dialog.ui:28 data/interfaces/clean_dialog.ui:40
-#: src/widget/clean_dialog/imp.rs:93
+#: src/widget/clean_dialog/imp.rs:96
 msgctxt "clean"
 msgid "Clean"
 msgstr "Nettoyer"
@@ -264,24 +264,93 @@ msgctxt "enable unit file"
 msgid "Enable"
 msgstr "Activer"
 
+#: data/interfaces/creator/Creator.ui:21
+msgid ""
+"The <b>Create Unit</b> needs to have some access rights to work properly.\n"
+"\n"
+"You need to <b>jailbreak</b> your Flatpak application to allow it to run sub-"
+"programs or to save files on the host system."
+msgstr ""
+"<b>Créer Unité</b> nécessite certains droits d'accès pour fonctionner "
+"correctement.\n"
+"\n"
+"Vous devez <b>débrider</b> votre application Flatpak pour lui permettre "
+"d'exécuter des sous-programmes ou d'enregistrer des fichiers sur le système "
+"hôte."
+
+#. info subtitle
+#: data/interfaces/creator/create_first.ui:33
+msgctxt "unit creation"
+msgid "Create a task"
+msgstr "Créer une tâche"
+
+#: data/interfaces/creator/create_first.ui:34
+msgid "Service"
+msgstr "Service"
+
+#. info subtitle
+#: data/interfaces/creator/create_first.ui:47
+msgctxt "unit creation"
+msgid "Create a scheduled task"
+msgstr "Créer une tâche planifiée"
+
+#: data/interfaces/creator/create_first.ui:48
+msgid "Timer with Service"
+msgstr "Timer avec Service"
+
+#. info subtitle
+#: data/interfaces/creator/create_first.ui:61
+msgctxt "unit creation"
+msgid "Trigger an existing task (service)"
+msgstr "Déclencher une tâche (service) existante"
+
+#: data/interfaces/creator/create_first.ui:62
+msgid "Timer"
+msgstr "Timer"
+
+#: data/interfaces/creator/create_first.ui:81
+msgid "System"
+msgstr "Système"
+
+#: data/interfaces/creator/create_first.ui:94
+msgid "User Session"
+msgstr "Session utilisateur"
+
+#. info subtitle
+#: data/interfaces/creator/create_first.ui:111
+msgctxt "unit creation"
+msgid "Runtime units are discarded at next reboot"
+msgstr "Les unités runtime sont supprimées au prochain redémarrage"
+
+#: data/interfaces/creator/nav_row.ui:21
+msgid ""
+"🙏🏻 Please donate — every contribution helps me to prove to my wife that "
+"this project is more than just “another coding hobby.”"
+msgstr ""
+"🙏🏻 Merci de faire un don — chaque contribution m'aide à prouver à ma femme "
+"que ce projet est bien plus qu'un simple « passe-temps de programmation »."
+
+#: data/interfaces/creator/timer_creator_page.ui:109
+msgid "Catch up missed runs after boot "
+msgstr "Rattraper les courses manquées après le démarrage "
+
 #: data/interfaces/ex_menu_button.ui:40
 msgctxt "extented menu button"
 msgid "Clear"
 msgstr "Effacer"
 
 #. button
-#: data/interfaces/journal_panel.ui:27
+#: data/interfaces/journal_panel.ui:29
 msgctxt "journal"
 msgid "Refresh"
 msgstr "Rafraîchir"
 
-#: data/interfaces/journal_panel.ui:32
+#: data/interfaces/journal_panel.ui:34
 msgctxt "journal"
 msgid "Clear journal events and refetch them"
 msgstr "Effacer les événements du journal et les récupérer à nouveau"
 
-#. tooltip
-#: data/interfaces/journal_panel.ui:43
+#: data/interfaces/journal_panel.ui:45
 msgctxt "journal"
 msgid "Enable new entries continuous print as they are appended to the journal"
 msgstr ""
@@ -325,13 +394,13 @@ msgid "Boot id"
 msgstr "Id du boot"
 
 #. wiki link
-#: data/interfaces/journal_panel.ui:151
+#: data/interfaces/journal_panel.ui:155
 msgctxt "journal"
 msgid "For more information"
 msgstr "lien vers le wiki"
 
 #. description
-#: data/interfaces/journal_panel.ui:155
+#: data/interfaces/journal_panel.ui:159
 msgctxt "journal"
 msgid ""
 "Either there are no log events to display, or you don't have permission to "
@@ -341,7 +410,7 @@ msgstr ""
 "autorisé à y accéder."
 
 #. title
-#: data/interfaces/journal_panel.ui:157
+#: data/interfaces/journal_panel.ui:161
 msgctxt "journal"
 msgid "No journal events"
 msgstr "Aucun événement de journal"
@@ -722,112 +791,112 @@ msgctxt "preference"
 msgid "Journal's event max size"
 msgstr "Taille maximale d'un événement du journal"
 
-#: data/interfaces/preferences.ui:200
+#: data/interfaces/preferences.ui:210
 msgctxt "preference"
 msgid "_Proxy Preferences"
 msgstr "Préférences du _Proxy"
 
-#: data/interfaces/preferences.ui:206
+#: data/interfaces/preferences.ui:216
 msgid "Switch that controls other switches"
 msgstr "Interrupteur qui commande d'autres interrupteurs"
 
 #. group title
-#: data/interfaces/preferences.ui:214
+#: data/interfaces/preferences.ui:224
 msgctxt "preference"
 msgid "Systemd Manager Method Calls"
 msgstr "Appels de méthodes à Systemd Manager"
 
-#: data/interfaces/preferences.ui:217
+#: data/interfaces/preferences.ui:227
 msgctxt "preference"
 msgid "<b>Start</b> method call through the Proxy"
 msgstr "Appel à la méthode <b>Start</b> via le proxy"
 
-#: data/interfaces/preferences.ui:218
+#: data/interfaces/preferences.ui:228
 msgctxt "preference"
 msgid "Start"
 msgstr "Démarrer"
 
-#: data/interfaces/preferences.ui:223
+#: data/interfaces/preferences.ui:233
 msgctxt "preference"
 msgid "<b>Stop</b> method call through the Proxy"
 msgstr "Appel à la méthode <b>Stop</b> via le proxy"
 
-#: data/interfaces/preferences.ui:224
+#: data/interfaces/preferences.ui:234
 msgctxt "preference"
 msgid "Stop"
 msgstr "Arrêter"
 
-#: data/interfaces/preferences.ui:229
+#: data/interfaces/preferences.ui:239
 msgctxt "preference"
 msgid "<b>Restart</b> method call through the Proxy"
 msgstr "Appel à la méthode <b>Restart</b> via le proxy"
 
-#: data/interfaces/preferences.ui:230
+#: data/interfaces/preferences.ui:240
 msgctxt "preference"
 msgid "Restart"
 msgstr "Redémarrer"
 
-#: data/interfaces/preferences.ui:235
+#: data/interfaces/preferences.ui:245
 msgctxt "preference"
 msgid "<b>Reload Unit</b> method call through the Proxy"
 msgstr "Appel à la méthode <b>Reload Unit</b> via le proxy"
 
-#: data/interfaces/preferences.ui:236
+#: data/interfaces/preferences.ui:246
 msgctxt "preference"
 msgid "Reload Unit"
 msgstr "Recharger l'unité"
 
-#: data/interfaces/preferences.ui:241
+#: data/interfaces/preferences.ui:251
 msgctxt "preference"
 msgid "<b>Clean</b> method call through the Proxy"
 msgstr "Appel à la méthode <b>Nettoyer</b> via le proxy"
 
-#: data/interfaces/preferences.ui:242
+#: data/interfaces/preferences.ui:252
 msgctxt "preference"
 msgid "Clean"
 msgstr "Nettoyer"
 
-#: data/interfaces/preferences.ui:247
+#: data/interfaces/preferences.ui:257
 msgctxt "preference"
 msgid "<b>Freeze</b> method call through the Proxy"
 msgstr "Appel à la méthode <b>Geler</b> via le proxy"
 
-#: data/interfaces/preferences.ui:248
+#: data/interfaces/preferences.ui:258
 msgctxt "preference"
 msgid "Freeze"
 msgstr "Geler"
 
-#: data/interfaces/preferences.ui:253
+#: data/interfaces/preferences.ui:263
 msgctxt "preference"
 msgid "<b>Thaw</b> method call through the Proxy"
 msgstr "Appel à la méthode <b>Décongeler</b> via le proxy"
 
-#: data/interfaces/preferences.ui:254
+#: data/interfaces/preferences.ui:264
 msgctxt "preference"
 msgid "Thaw"
 msgstr "Décongeler"
 
-#: data/interfaces/preferences.ui:259
+#: data/interfaces/preferences.ui:269
 msgctxt "preference"
 msgid "<b>Enable Unit File</b> method call through the Proxy"
 msgstr "Appel à la méthode <b>Activer le fichier d'unité</b> via le proxy"
 
-#: data/interfaces/preferences.ui:260
+#: data/interfaces/preferences.ui:270
 msgctxt "preference"
 msgid "Enable Unit File"
 msgstr "Activer le fichier d'unité"
 
-#: data/interfaces/preferences.ui:265
+#: data/interfaces/preferences.ui:275
 msgctxt "preference"
 msgid "<b>Disable Unit File</b> method call through the Proxy"
 msgstr "Appel à la méthode <b>Désactiver le fichier d'unité</b> via le proxy"
 
-#: data/interfaces/preferences.ui:266
+#: data/interfaces/preferences.ui:276
 msgctxt "preference"
 msgid "Disable Unit File"
 msgstr "Désactiver le fichier de l'unité"
 
-#: data/interfaces/preferences.ui:271
+#: data/interfaces/preferences.ui:281
 msgctxt "preference"
 msgid ""
 "<b>Reload</b> Systemd Manager configuration method call through the Proxy"
@@ -835,12 +904,12 @@ msgstr ""
 "Appel à la méthode <b>Recharger</b> via le proxy pour recharger la "
 "configuration du Systemd Manager"
 
-#: data/interfaces/preferences.ui:272
+#: data/interfaces/preferences.ui:282
 msgctxt "preference"
 msgid "Daemon Reload"
 msgstr "Recharger la configuration"
 
-#: data/interfaces/preferences.ui:277
+#: data/interfaces/preferences.ui:287
 msgctxt "preference"
 msgid ""
 "<b>Revert Unit Files</b> to their vendor versions method call through the "
@@ -849,56 +918,66 @@ msgstr ""
 "Appel à la méthode <b>Rétablir les fichiers unitaires</b> à leurs versions "
 "fournisseur via le proxy"
 
-#: data/interfaces/preferences.ui:278
+#: data/interfaces/preferences.ui:288
 msgctxt "preference"
 msgid "Revert Unit Files"
 msgstr "Rétablir les fichiers de l'unité"
 
-#: data/interfaces/preferences.ui:285
+#: data/interfaces/preferences.ui:295
 msgctxt "preference"
 msgid "Actions"
 msgstr "Actions"
 
-#: data/interfaces/preferences.ui:288
+#: data/interfaces/preferences.ui:298
 msgctxt "preference"
 msgid "Create a <b>Drop-in</b> file through the Proxy"
 msgstr "Créez un fichier <b>Drop-in</b> via le proxy"
 
-#: data/interfaces/preferences.ui:289
+#: data/interfaces/preferences.ui:299
 msgctxt "preference"
 msgid "Create Drop-in"
 msgstr "Créer un Drop-in"
 
-#: data/interfaces/preferences.ui:294
+#: data/interfaces/preferences.ui:304
 msgctxt "preference"
 msgid "<b>Save file</b> through the Proxy"
 msgstr "<b>Enregistrer le fichier</b> via le proxy"
 
-#: data/interfaces/preferences.ui:295
+#: data/interfaces/preferences.ui:305
 msgctxt "preference"
 msgid "Save file"
 msgstr "Enregistrer"
 
-#: data/interfaces/preferences.ui:303
+#: data/interfaces/preferences.ui:310
+msgctxt "preference"
+msgid "<b>Create file</b> through the Proxy"
+msgstr "<b>Enregistrer le fichier</b> via le Proxy"
+
+#: data/interfaces/preferences.ui:311
+msgctxt "preference"
+msgid "Create file"
+msgstr "Créer fichier"
+
+#: data/interfaces/preferences.ui:319
 msgctxt "preference"
 msgid "Proxy Behaviors"
 msgstr "Comportements du Proxy"
 
-#: data/interfaces/preferences.ui:306
+#: data/interfaces/preferences.ui:322
 msgid "Start the Proxy when starting SysD Manager"
 msgstr "Démarrez le Proxy au démarrage de SysD Manager"
 
-#: data/interfaces/preferences.ui:307
+#: data/interfaces/preferences.ui:323
 msgctxt "preference"
 msgid "Start Proxy at Start up"
 msgstr "Démarrer le Proxy au démarrage"
 
-#: data/interfaces/preferences.ui:312
+#: data/interfaces/preferences.ui:328
 msgctxt "preference"
 msgid "Stop the Proxy when closing SysD Manager"
 msgstr "Arrêtez le Proxy lors de la fermeture de SysD Manager"
 
-#: data/interfaces/preferences.ui:313
+#: data/interfaces/preferences.ui:329
 msgctxt "preference"
 msgid "Stop Proxy at Close"
 msgstr "Arrêter le proxy à la fermeture"
@@ -911,160 +990,192 @@ msgstr "Général"
 
 #: data/interfaces/shortcuts.ui:14
 msgctxt "shortcut window"
+msgid "Close the application"
+msgstr "Fermez l'application"
+
+#: data/interfaces/shortcuts.ui:20
+msgctxt "shortcut window"
+msgid "Close the window"
+msgstr "Fermez la fenêtre"
+
+#: data/interfaces/shortcuts.ui:26
+msgctxt "shortcut window"
 msgid "Show Preferences"
 msgstr "Afficher les préférences"
 
+#. Section name
+#: data/interfaces/shortcuts.ui:33
+msgctxt "shortcut window"
+msgid "SysD Manager"
+msgstr "SysD Manager"
+
 #. subtitle
-#: data/interfaces/shortcuts.ui:20
+#: data/interfaces/shortcuts.ui:37
 msgctxt "shortcut window"
 msgid "Allow configuring each proxy operation individually"
 msgstr ""
 "Permettre la configuration de chaque opération du proxy individuellement"
 
-#: data/interfaces/shortcuts.ui:21
+#: data/interfaces/shortcuts.ui:38
 msgctxt "shortcut window"
 msgid "Show Proxy Preferences"
 msgstr "Afficher les préférences du proxy"
 
-#: data/interfaces/shortcuts.ui:27
+#: data/interfaces/shortcuts.ui:44
 msgctxt "shortcut window"
 msgid "Open Search Unit"
 msgstr "Ouvrir la recherche d'une unité"
 
-#: data/interfaces/shortcuts.ui:33
+#: data/interfaces/shortcuts.ui:50
 msgctxt "shortcut window"
 msgid "Open Unit Property Filter"
 msgstr "Ouvrir le filtre sur les propriétés de l'unité"
 
-#: data/interfaces/shortcuts.ui:39
+#: data/interfaces/shortcuts.ui:56
 msgctxt "shortcut window"
 msgid "Open List Boots"
 msgstr "Ouvrir la liste des boots"
 
-#: data/interfaces/shortcuts.ui:45
+#: data/interfaces/shortcuts.ui:62
 msgctxt "shortcut window"
 msgid "Open columns manager"
 msgstr "Ouvrir le gestionnaire de colonnes"
 
-#: data/interfaces/shortcuts.ui:51
+#: data/interfaces/shortcuts.ui:68
 msgctxt "shortcut window"
 msgid "Deamon Reload"
 msgstr "Recharger la configuration"
 
+#: data/interfaces/shortcuts.ui:74
+msgctxt "shortcut window"
+msgid "Open Find in Text"
+msgstr "Ouvrir Rechercher dans le texte"
+
+#. subtitle
+#: data/interfaces/shortcuts.ui:80
+msgctxt "shortcut window"
+msgid "Create Timer or Service Unit Type"
+msgstr "Créer une unité de type timer ou service"
+
+#: data/interfaces/shortcuts.ui:81
+msgctxt "shortcut window"
+msgid "Create Unit"
+msgstr "Créer une Unité"
+
 #. Section name
-#: data/interfaces/shortcuts.ui:58
+#: data/interfaces/shortcuts.ui:88
 msgctxt "shortcut window"
 msgid "Pages"
 msgstr "Pages"
 
-#: data/interfaces/shortcuts.ui:62
+#: data/interfaces/shortcuts.ui:92
 msgctxt "shortcut window"
-msgid "Display Unit Information"
-msgstr "Afficher les informations sur l'unité"
+msgid "Display Unit Status"
+msgstr "Afficher le statut de l'unité"
 
-#: data/interfaces/shortcuts.ui:68
+#: data/interfaces/shortcuts.ui:98
 msgctxt "shortcut window"
 msgid "Display Unit Dependencies"
 msgstr "Afficher les dépendances de l'unité"
 
-#: data/interfaces/shortcuts.ui:74
+#: data/interfaces/shortcuts.ui:104
 msgctxt "shortcut window"
 msgid "Display Unit Definition File"
 msgstr "Afficher le fichier de définition de l'unité"
 
-#: data/interfaces/shortcuts.ui:80
+#: data/interfaces/shortcuts.ui:110
 msgctxt "shortcut window"
 msgid "Display Unit Journal Events"
 msgstr "Afficher le Journal Événements de l'unité"
 
 #. Section name
-#: data/interfaces/shortcuts.ui:87
+#: data/interfaces/shortcuts.ui:117
 msgctxt "shortcut window"
 msgid "Unit"
 msgstr "Unité"
 
-#: data/interfaces/shortcuts.ui:91
+#: data/interfaces/shortcuts.ui:121
 msgctxt "shortcut window"
 msgid "Show unit properties"
 msgstr "Afficher les propriétés de l'unité"
 
 #. In the shortcut Window description
-#: data/interfaces/shortcuts.ui:97
+#: data/interfaces/shortcuts.ui:127
 msgctxt "shortcut window"
 msgid "Save the selected unit file"
 msgstr "Enregistrer le fichier d'unité sélectionné"
 
 #. Section name
-#: data/interfaces/shortcuts.ui:104
+#: data/interfaces/shortcuts.ui:134
 msgctxt "shortcut window"
 msgid "Curated Lists"
 msgstr "Listes organisées"
 
 #. subtitle
-#: data/interfaces/shortcuts.ui:108
+#: data/interfaces/shortcuts.ui:138
 msgctxt "shortcut window"
 msgid "Merge Loaded Units with Unit Files"
 msgstr "Fusionner les unités chargées avec les fichiers d'unités"
 
-#: data/interfaces/shortcuts.ui:109
+#: data/interfaces/shortcuts.ui:139
 msgctxt "shortcut window"
 msgid "Display SysD Manager Original List"
 msgstr "Afficher la liste originale de SysD Manager"
 
 #. subtitle
-#: data/interfaces/shortcuts.ui:115
+#: data/interfaces/shortcuts.ui:145
 msgctxt "shortcut window"
 msgid "Display only Loaded Units"
 msgstr "Afficher les unités chargées"
 
-#: data/interfaces/shortcuts.ui:116
+#: data/interfaces/shortcuts.ui:146
 msgctxt "shortcut window"
 msgid "Display Loaded Units"
 msgstr "Afficher les unités chargées"
 
 #. subtitle
-#: data/interfaces/shortcuts.ui:122
+#: data/interfaces/shortcuts.ui:152
 msgctxt "shortcut window"
 msgid "Display only Unit Files"
 msgstr "Afficher seulement les fichiers d'unité"
 
-#: data/interfaces/shortcuts.ui:123
+#: data/interfaces/shortcuts.ui:153
 msgctxt "shortcut window"
 msgid "Display Unit Files"
 msgstr "Afficher les fichiers d'unité"
 
-#: data/interfaces/shortcuts.ui:129
+#: data/interfaces/shortcuts.ui:159
 msgctxt "shortcut window"
 msgid "Display User Customised Units list"
 msgstr "Afficher la liste personnalisé par l'utilisateur"
 
-#: data/interfaces/shortcuts.ui:135
+#: data/interfaces/shortcuts.ui:165
 msgctxt "shortcut window"
 msgid "Display Favorite Units"
 msgstr "Afficher les unités favorites"
 
 #. Section name
-#: data/interfaces/shortcuts.ui:142
+#: data/interfaces/shortcuts.ui:172
 msgctxt "shortcut window"
 msgid "Special Lists"
 msgstr "Listes spéciales"
 
-#: data/interfaces/shortcuts.ui:146
+#: data/interfaces/shortcuts.ui:176
 msgctxt "shortcut window"
 msgid "Display Timers"
 msgstr "Afficher les Chronos"
 
-#: data/interfaces/shortcuts.ui:152
+#: data/interfaces/shortcuts.ui:182
 msgctxt "shortcut window"
 msgid "Display Sockets"
 msgstr "Afficher les sockets"
 
-#: data/interfaces/shortcuts.ui:158
+#: data/interfaces/shortcuts.ui:188
 msgctxt "shortcut window"
 msgid "Display Paths"
 msgstr "Afficher les paths"
 
-#: data/interfaces/shortcuts.ui:164
+#: data/interfaces/shortcuts.ui:194
 msgctxt "shortcut window"
 msgid "Display Automounts"
 msgstr "Afficher les Automounts"
@@ -1312,12 +1423,12 @@ msgid "Use Regular Expression"
 msgstr "Utilisez une expression régulière"
 
 #. tooltip
-#: data/interfaces/text_find.ui:59
+#: data/interfaces/text_find.ui:51
 msgctxt "find_text"
 msgid "Previous Match"
 msgstr "Match précédent"
 
-#: data/interfaces/text_find.ui:67
+#: data/interfaces/text_find.ui:59
 msgctxt "find_text"
 msgid "Match Next"
 msgstr "Match suivant"
@@ -1393,10 +1504,11 @@ msgctxt "controls menu"
 msgid "_More ..."
 msgstr "_Plus ..."
 
+#. aka Unit Info
 #: data/interfaces/unit_control_panel.ui:187
 msgctxt "controls tab"
-msgid "Unit Info"
-msgstr "Information"
+msgid "Status"
+msgstr "Statut"
 
 #: data/interfaces/unit_control_panel.ui:197
 msgctxt "controls tab"
@@ -1414,67 +1526,67 @@ msgid "Journal"
 msgstr "Journal"
 
 #. label
-#: data/interfaces/unit_dependencies_panel.ui:32
+#: data/interfaces/unit_dependencies_panel.ui:34
 msgctxt "dependency"
 msgid "plain"
 msgstr "plat"
 
 #. label
-#: data/interfaces/unit_dependencies_panel.ui:52
+#: data/interfaces/unit_dependencies_panel.ui:54
 msgctxt "dependency"
 msgid "No dependencies"
 msgstr "Aucune dépendances"
 
 #. button
-#: data/interfaces/unit_file_panel.ui:65
+#: data/interfaces/unit_file_panel.ui:67
 msgctxt "file"
 msgid "Save"
 msgstr "Enregister"
 
 #. description
-#: data/interfaces/unit_file_panel.ui:95
+#: data/interfaces/unit_file_panel.ui:97
 msgctxt "file"
 msgid "The unit has no file associated"
 msgstr "L'unité n'a aucun fichier associé"
 
 #. title
-#: data/interfaces/unit_file_panel.ui:97
+#: data/interfaces/unit_file_panel.ui:99
 msgctxt "file"
 msgid "No Unit File"
 msgstr "Pas de fichier pour l'unité"
 
 #. Unit file drop-in operations menu item
-#: data/interfaces/unit_file_panel.ui:109
+#: data/interfaces/unit_file_panel.ui:111
 msgctxt "menu"
 msgid "Revert Drop-in"
 msgstr "Annuler le Drop-in"
 
 #. Unit file drop-in operations menu section
-#: data/interfaces/unit_file_panel.ui:112
+#: data/interfaces/unit_file_panel.ui:114
 msgctxt "menu"
 msgid "Create Drop-in"
 msgstr "Créer un drop-in"
 
 #. Unit file drop-in operations menu item
-#: data/interfaces/unit_file_panel.ui:115
+#: data/interfaces/unit_file_panel.ui:117
 msgctxt "menu"
 msgid "Permanent"
 msgstr "Permanent"
 
 #. Unit file drop-in operations menu item
-#: data/interfaces/unit_file_panel.ui:119
+#: data/interfaces/unit_file_panel.ui:121
 msgctxt "menu"
 msgid "Runtime"
 msgstr "Durée d'exécution"
 
 #. button
-#: data/interfaces/unit_info_panel.ui:27
+#: data/interfaces/unit_info_panel.ui:29
 msgctxt "unit info"
 msgid "_Refresh"
 msgstr "_Rafraîchir"
 
 #. button
-#: data/interfaces/unit_info_panel.ui:40
+#: data/interfaces/unit_info_panel.ui:42
 msgctxt "unit info"
 msgid "Show all _Properties"
 msgstr "Afficher tout les propriétés"
@@ -1683,61 +1795,50 @@ msgctxt "unit properties"
 msgid "Copy all properties to clipboard"
 msgstr "Copier toutes les propriétés dans le presse-papiers"
 
-#. dialog title
 #: src/analyze/mod.rs:27
 msgctxt "analyse blame"
 msgid "Analyse Blame"
 msgstr "Temps d'initialisation des unité"
 
 #. label total
-#: src/analyze/mod.rs:49
+#: src/analyze/mod.rs:56
 msgctxt "analyse blame"
 msgid "Total Time:"
 msgstr "Temps total :"
 
 #. place holder, lees likely to be displaied
-#: src/analyze/mod.rs:58
+#: src/analyze/mod.rs:78
 msgctxt "analyse blame"
 msgid "seconds ..."
 msgstr "seconds ..."
 
 #. column header
-#: src/analyze/mod.rs:133
+#: src/analyze/mod.rs:156
 msgctxt "analyse blame"
 msgid "Init time (ms)"
 msgstr "Temps (ms)"
 
 #. column header
-#: src/analyze/mod.rs:138
+#: src/analyze/mod.rs:161
 msgctxt "analyse blame"
 msgid "Running units"
 msgstr "Unités en service"
 
 #. Just a simple log that it's all ok. Need to set env RUST_LOG="info" to see it
-#: src/main.rs:112
+#: src/main.rs:113
 msgid "Program starting up"
 msgstr "Le Programme démarre"
 
-#. instance level user
-#: src/widget/app_window/menu.rs:308
-msgid "user"
-msgstr "utilisateur"
-
-#. instance level system
-#: src/widget/app_window/menu.rs:311
-msgid "system"
-msgstr "système"
-
-#: src/widget/app_window/menu.rs:322
+#: src/widget/app_window/menu.rs:320
 msgid "Daemon Reload failed!"
 msgstr "Recharge la configuration a échouée !"
 
 #. about dialogue
-#: src/widget/app_window/menu.rs:368
+#: src/widget/app_window/menu.rs:369
 msgid "Thank you for your support"
 msgstr "Merci pour votre soutien"
 
-#: src/widget/clean_dialog/imp.rs:108
+#: src/widget/clean_dialog/imp.rs:111
 msgctxt "clean"
 msgid "No Unit Selected"
 msgstr "Pas d'unité sélectionnée"
@@ -1878,6 +1979,147 @@ msgctxt "action unit file"
 msgid "Stoping mode options"
 msgstr "Options d'arrêt"
 
+#: src/widget/creator/first_page.rs:116
+msgctxt "creator"
+msgid "Unit Name Prefix"
+msgstr "Préfixe du nom de l'unité"
+
+#: src/widget/creator/imp.rs:355
+#, rust-format
+msgctxt "create"
+msgid "Unit {} Created!"
+msgstr "Unité {} créée!"
+
+#: src/widget/creator/imp.rs:362
+#, rust-format
+msgctxt "create"
+msgid "Creation Failed! {}"
+msgstr "Création a échouée ! {}"
+
+#. Faild to reload manager a System or User level
+#: src/widget/creator/launch_creator_page.rs:184
+#, rust-format
+msgid "Daemon Reload failed at {} level"
+msgstr "Échec du rechargement du démon au niveau {}"
+
+#: src/widget/creator/mod.rs:98
+msgctxt "create"
+msgid "Service"
+msgstr "Service"
+
+#: src/widget/creator/mod.rs:99
+msgctxt "create"
+msgid "Timer"
+msgstr "Timer"
+
+#: src/widget/creator/mod.rs:100
+msgctxt "create"
+msgid "Timer with Service"
+msgstr "Timer avec Service"
+
+#: src/widget/creator/mod.rs:178
+#, rust-format
+msgctxt "validator"
+msgid "{} - Not absolute path"
+msgstr "{} - Chemin non absolu"
+
+#: src/widget/creator/mod.rs:181
+#, rust-format
+msgctxt "validator"
+msgid "{} - Not a directory"
+msgstr "{} - Pas un répertoire"
+
+#: src/widget/creator/mod.rs:184
+#, rust-format
+msgctxt "validator"
+msgid "{} - No path specified"
+msgstr "{} - Aucun chemin spécifié"
+
+#: src/widget/creator/service_creator_page/imp.rs:519
+msgctxt "unit creation"
+msgid "Select executable"
+msgstr "Sélectionner l'exécutable"
+
+#: src/widget/creator/service_creator_page/imp.rs:520
+msgid "Select"
+msgstr "Sélectionner"
+
+#: src/widget/creator/timer_creator_page/imp.rs:562
+msgctxt "timer"
+msgid "Custom"
+msgstr "Personnel"
+
+#: src/widget/creator/timer_creator_page/imp.rs:563
+msgctxt "timer"
+msgid "Minutely"
+msgstr "Par minute"
+
+#: src/widget/creator/timer_creator_page/imp.rs:564
+msgctxt "timer"
+msgid "Hourly"
+msgstr "Par heure"
+
+#: src/widget/creator/timer_creator_page/imp.rs:565
+msgctxt "timer"
+msgid "Daily"
+msgstr "Par jour"
+
+#: src/widget/creator/timer_creator_page/imp.rs:566
+msgctxt "timer"
+msgid "Monthly"
+msgstr "Par mois"
+
+#: src/widget/creator/timer_creator_page/imp.rs:567
+msgctxt "timer"
+msgid "Weekly"
+msgstr "Par semaine"
+
+#: src/widget/creator/timer_creator_page/imp.rs:568
+msgctxt "timer"
+msgid "Yearly"
+msgstr "Par année"
+
+#: src/widget/creator/timer_creator_page/imp.rs:569
+msgctxt "timer"
+msgid "Quarterly"
+msgstr "Par trimestre"
+
+#: src/widget/creator/timer_creator_page/imp.rs:570
+msgctxt "timer"
+msgid "Semiannually"
+msgstr "Par demi année"
+
+#: src/widget/creator/timer_creator_page.rs:72
+msgctxt "timer"
+msgid "OnActiveSec"
+msgstr "OnActiveSec"
+
+#: src/widget/creator/timer_creator_page.rs:73
+msgctxt "timer"
+msgid "OnBootSec"
+msgstr "OnBootSec"
+
+#: src/widget/creator/timer_creator_page.rs:74
+msgctxt "timer"
+msgid "OnStartupSec"
+msgstr "OnStartupSec"
+
+#: src/widget/creator/timer_creator_page.rs:75
+msgctxt "timer"
+msgid "OnUnitActiveSec"
+msgstr "OnUnitActiveSec"
+
+#: src/widget/creator/timer_creator_page.rs:76
+msgctxt "timer"
+msgid "OnUnitInactiveSec"
+msgstr "OnUnitInactiveSec"
+
+#. Menu item label
+#: src/widget/journal/imp.rs:876
+msgctxt "journal"
+msgid "Wrap Word"
+msgstr "Retour à la ligne"
+
 #. Dialog subtitle
 #: src/widget/kill_panel/imp.rs:75
 msgctxt "kill"
@@ -1902,14 +2144,14 @@ msgstr "Mettre en file d'attente un signal en temps réel vers l'unité"
 
 #. SIGRTMIN to SIGRTMAX default action
 #. kill signal default action
-#: src/widget/kill_panel/imp.rs:218 src/widget/kill_panel/imp.rs:417
-#: src/widget/kill_panel/imp.rs:425 src/widget/kill_panel/imp.rs:489
-#: src/widget/kill_panel/imp.rs:497 src/widget/kill_panel/imp.rs:513
-#: src/widget/kill_panel/imp.rs:521 src/widget/kill_panel/imp.rs:529
-#: src/widget/kill_panel/imp.rs:537 src/widget/kill_panel/imp.rs:545
-#: src/widget/kill_panel/imp.rs:628 src/widget/kill_panel/imp.rs:636
-#: src/widget/kill_panel/imp.rs:652 src/widget/kill_panel/imp.rs:660
-#: src/widget/kill_panel/imp.rs:668
+#: src/widget/kill_panel/imp.rs:218 src/widget/kill_panel/imp.rs:418
+#: src/widget/kill_panel/imp.rs:426 src/widget/kill_panel/imp.rs:490
+#: src/widget/kill_panel/imp.rs:498 src/widget/kill_panel/imp.rs:514
+#: src/widget/kill_panel/imp.rs:522 src/widget/kill_panel/imp.rs:530
+#: src/widget/kill_panel/imp.rs:538 src/widget/kill_panel/imp.rs:546
+#: src/widget/kill_panel/imp.rs:629 src/widget/kill_panel/imp.rs:637
+#: src/widget/kill_panel/imp.rs:653 src/widget/kill_panel/imp.rs:661
+#: src/widget/kill_panel/imp.rs:669
 msgctxt "kill"
 msgid "Terminate"
 msgstr "Terminer"
@@ -1940,121 +2182,121 @@ msgid "Kill signal {} to"
 msgstr "Signal Kill {} vers"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:419
+#: src/widget/kill_panel/imp.rs:420
 msgctxt "kill"
 msgid "Hang up controlling terminal or process"
 msgstr ""
 "Rupture détectée sur le terminal contrôleur ou mort du processus parent"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:427
+#: src/widget/kill_panel/imp.rs:428
 msgctxt "kill"
 msgid "Interrupt from keyboard, Ctrl+C"
 msgstr "Interruption du clavier (Ctrl-C dans un terminal)"
 
 #. kill signal default action
-#: src/widget/kill_panel/imp.rs:433 src/widget/kill_panel/imp.rs:441
-#: src/widget/kill_panel/imp.rs:449 src/widget/kill_panel/imp.rs:457
-#: src/widget/kill_panel/imp.rs:465 src/widget/kill_panel/imp.rs:473
-#: src/widget/kill_panel/imp.rs:481 src/widget/kill_panel/imp.rs:505
-#: src/widget/kill_panel/imp.rs:612 src/widget/kill_panel/imp.rs:620
-#: src/widget/kill_panel/imp.rs:676 src/widget/kill_panel/imp.rs:684
+#: src/widget/kill_panel/imp.rs:434 src/widget/kill_panel/imp.rs:442
+#: src/widget/kill_panel/imp.rs:450 src/widget/kill_panel/imp.rs:458
+#: src/widget/kill_panel/imp.rs:466 src/widget/kill_panel/imp.rs:474
+#: src/widget/kill_panel/imp.rs:482 src/widget/kill_panel/imp.rs:506
+#: src/widget/kill_panel/imp.rs:613 src/widget/kill_panel/imp.rs:621
+#: src/widget/kill_panel/imp.rs:677 src/widget/kill_panel/imp.rs:685
 msgctxt "kill"
 msgid "Dump"
 msgstr "Décharger"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:435
+#: src/widget/kill_panel/imp.rs:436
 msgctxt "kill"
 msgid "Quit from keyboard, Ctrl+\\"
 msgstr "Quitter à partir du clavier, Ctrl+\\"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:443
+#: src/widget/kill_panel/imp.rs:444
 msgctxt "kill"
 msgid "Illegal instruction"
 msgstr "Instruction illégale"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:451
+#: src/widget/kill_panel/imp.rs:452
 msgctxt "kill"
 msgid "Breakpoint for debugging"
 msgstr "Point d'arrêt pour le débogage"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:459
+#: src/widget/kill_panel/imp.rs:460
 msgctxt "kill"
 msgid "Abnormal termination"
 msgstr "Arrêt anormal du processus"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:467
+#: src/widget/kill_panel/imp.rs:468
 msgctxt "kill"
 msgid "Equivalent to SIGABRT"
 msgstr "Équivalent à SIGABRT"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:475
+#: src/widget/kill_panel/imp.rs:476
 msgctxt "kill"
 msgid "Bus error"
 msgstr "Erreur de bus"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:483
+#: src/widget/kill_panel/imp.rs:484
 msgctxt "kill"
 msgid "Floating-point exception"
 msgstr "Erreur sur un nombre flottant"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:491
+#: src/widget/kill_panel/imp.rs:492
 msgctxt "kill"
 msgid "Forced-process termination"
 msgstr "Tue immédiatement le processus"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:499 src/widget/kill_panel/imp.rs:515
+#: src/widget/kill_panel/imp.rs:500 src/widget/kill_panel/imp.rs:516
 msgctxt "kill"
 msgid "Available to processes"
 msgstr "Disponible pour les processus"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:507
+#: src/widget/kill_panel/imp.rs:508
 msgctxt "kill"
 msgid "Invalid memory reference"
 msgstr "Erreur de segmentation"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:523
+#: src/widget/kill_panel/imp.rs:524
 msgctxt "kill"
 msgid "Write to pipe with no readers"
 msgstr "Erreur de tube (écriture dans un tube sans lecteur)"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:531
+#: src/widget/kill_panel/imp.rs:532
 msgctxt "kill"
 msgid "Real-timer clock"
 msgstr "Horloge en temps réel"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:539
+#: src/widget/kill_panel/imp.rs:540
 msgctxt "kill"
 msgid "Process termination"
 msgstr "Termine le processus"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:547
+#: src/widget/kill_panel/imp.rs:548
 msgctxt "kill"
 msgid "Coprocessor stack error"
 msgstr "Erreur de pile du coprocesseur"
 
 #. kill signal default action
-#: src/widget/kill_panel/imp.rs:553 src/widget/kill_panel/imp.rs:604
-#: src/widget/kill_panel/imp.rs:644
+#: src/widget/kill_panel/imp.rs:554 src/widget/kill_panel/imp.rs:605
+#: src/widget/kill_panel/imp.rs:645
 msgctxt "kill"
 msgid "Ignore"
 msgstr "Ignorer"
 
-#: src/widget/kill_panel/imp.rs:557
+#: src/widget/kill_panel/imp.rs:558
 msgctxt "kill"
 msgid "Child process stopped or terminated or got a signal if traced"
 msgstr ""
@@ -2062,216 +2304,217 @@ msgstr ""
 "tracé"
 
 #. kill signal default action
-#: src/widget/kill_panel/imp.rs:564
+#: src/widget/kill_panel/imp.rs:565
 msgctxt "kill"
 msgid "Continue"
 msgstr "Continuer"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:566
+#: src/widget/kill_panel/imp.rs:567
 msgctxt "kill"
 msgid "Resume execution, if stopped"
 msgstr "Reprendre l'exécution, si arrêtée"
 
 #. kill signal default action
-#: src/widget/kill_panel/imp.rs:572 src/widget/kill_panel/imp.rs:580
-#: src/widget/kill_panel/imp.rs:588 src/widget/kill_panel/imp.rs:596
+#: src/widget/kill_panel/imp.rs:573 src/widget/kill_panel/imp.rs:581
+#: src/widget/kill_panel/imp.rs:589 src/widget/kill_panel/imp.rs:597
 msgctxt "kill"
 msgid "Stop"
 msgstr "Arrêter"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:574
+#: src/widget/kill_panel/imp.rs:575
 msgctxt "kill"
 msgid "Stop process execution, Ctrl+Z"
 msgstr "Interromps le processus (Ctrl+Z dans un terminal)"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:582
+#: src/widget/kill_panel/imp.rs:583
 msgctxt "kill"
 msgid "Stop process issued from tty"
 msgstr "Processus d'arrêt émis depuis le tty"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:590
+#: src/widget/kill_panel/imp.rs:591
 msgctxt "kill"
 msgid "Background process requires input"
 msgstr "Entrée de terminal pour un processus en arrière plan"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:598
+#: src/widget/kill_panel/imp.rs:599
 msgctxt "kill"
 msgid "Background process requires output"
 msgstr "Sortie de terminal pour un processus en arrière plan"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:606
+#: src/widget/kill_panel/imp.rs:607
 msgctxt "kill"
 msgid "Urgent condition on socket"
 msgstr "État urgent sur du socket"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:614
+#: src/widget/kill_panel/imp.rs:615
 msgctxt "kill"
 msgid "CPU time limit exceeded"
 msgstr "Limite de temps CPU dépassée"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:622
+#: src/widget/kill_panel/imp.rs:623
 msgctxt "kill"
 msgid "File size limit exceeded"
 msgstr "Limite de taille de fichier dépassée"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:630
+#: src/widget/kill_panel/imp.rs:631
 msgctxt "kill"
 msgid "Virtual timer clock"
 msgstr "Chronomètre virtuel (Virtual Timer) expiré"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:638
+#: src/widget/kill_panel/imp.rs:639
 msgctxt "kill"
 msgid "Profile timer clock"
 msgstr "Horloge de minuterie de profil"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:646
+#: src/widget/kill_panel/imp.rs:647
 msgctxt "kill"
 msgid "Window resizing"
 msgstr "Redimensionnement de la fenêtre"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:654
+#: src/widget/kill_panel/imp.rs:655
 msgctxt "kill"
 msgid "I/O now possible"
 msgstr "I/O désormais possibles"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:662
+#: src/widget/kill_panel/imp.rs:663
 msgctxt "kill"
 msgid "Equivalent to SIGIO"
 msgstr "Équivalent à SIGIO"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:670
+#: src/widget/kill_panel/imp.rs:671
 msgctxt "kill"
 msgid "Power supply failure"
 msgstr "Panne d'alimentation"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:678
+#: src/widget/kill_panel/imp.rs:679
 msgctxt "kill"
 msgid "Bad system call"
 msgstr "Mauvais appel système"
 
 #. kill signal description
-#: src/widget/kill_panel/imp.rs:686
+#: src/widget/kill_panel/imp.rs:687
 msgctxt "kill"
 msgid "Equivalent to SIGSYS"
 msgstr "Équivalent à SIGSYS"
 
 #. tooltip for action button
-#: src/widget/mod.rs:55
+#: src/widget/mod.rs:56
 #, rust-format
 msgctxt "controls"
 msgid "Remove {} from Favorites"
 msgstr "Enlever {} des Favoris"
 
 #. tooltip for action button
-#: src/widget/mod.rs:61
+#: src/widget/mod.rs:62
 #, rust-format
 msgctxt "controls"
 msgid "Add {} to Favorites"
 msgstr "Ajouter {} aux Favoris"
 
 #. browser dbus option
-#: src/widget/preferences/data.rs:64
+#: src/widget/preferences/data.rs:67
 msgctxt "dbus"
 msgid "User Session Bus"
 msgstr "Bus session utilisateur"
 
 #. browser dbus option
-#: src/widget/preferences/data.rs:66
+#: src/widget/preferences/data.rs:69
 msgctxt "dbus"
 msgid "System Bus"
 msgstr "Bus système"
 
 #. browser dbus option
-#: src/widget/preferences/data.rs:68
+#: src/widget/preferences/data.rs:71
 msgctxt "dbus"
 msgid "System & User Session Bus"
 msgstr "Bus système et Bus session utilisateur"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:161
+#: src/widget/preferences/data.rs:164
 msgctxt "color scheme"
 msgid "No Preference"
 msgstr "Sans préférences"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:163
+#: src/widget/preferences/data.rs:166
 msgctxt "color scheme"
 msgid "Prefer Dark"
 msgstr "Préfère sombre"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:165
+#: src/widget/preferences/data.rs:168
 msgctxt "color scheme"
 msgid "Prefer Light"
 msgstr "Préfère claire"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:167
+#: src/widget/preferences/data.rs:170
 msgctxt "color scheme"
 msgid "Force Dark"
 msgstr "Force sombre"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:169
+#: src/widget/preferences/data.rs:172
 msgctxt "color scheme"
 msgid "Force Light"
 msgstr "Force claire"
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:215
+#: src/widget/preferences/data.rs:218
 msgctxt "pref orientation"
 msgid "Automatic"
 msgstr "Automatique"
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:217
+#: src/widget/preferences/data.rs:220
 msgctxt "pref orientation"
 msgid "Side by Side"
 msgstr "Cote à cote"
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:219
+#: src/widget/preferences/data.rs:222
 msgctxt "pref orientation"
 msgid "Top Bottom"
 msgstr "Dessus dessous"
 
 #. unit file no preference style selected
-#: src/widget/preferences/imp.rs:459
+#: src/widget/preferences/imp.rs:452
 msgctxt "pref file style"
 msgid "None"
 msgstr "Aucun"
 
 #. find count
 #. find count initial
-#: src/widget/text_search/imp.rs:157 src/widget/text_search/imp.rs:332
+#: src/widget/text_search/imp.rs:157 src/widget/text_search/imp.rs:328
 #, rust-format
 msgctxt "text_find"
 msgid "{} of {}"
 msgstr "{} de {}"
 
-#. Find in text Menu item
-#: src/widget/text_search/mod.rs:54
+#. Toggle in text Menu item
+#: src/widget/text_search/mod.rs:57
 msgctxt "text_find"
-msgid "Find in Text"
-msgstr "Rechercher dans le texte"
+msgid "Toggle Find in Text"
+msgstr "Activer/désactiver la recherche dans le texte"
 
+#. Open in text Menu item
 #. toggle button tooltip text
-#: src/widget/text_search/mod.rs:80
+#: src/widget/text_search/mod.rs:62 src/widget/text_search/mod.rs:87
 msgctxt "text_find"
 msgid "Open Find in Text"
 msgstr "Ouvrir rechercher dans le texte"
@@ -2389,50 +2632,44 @@ msgid "reloaded"
 msgstr "rechargé"
 
 #. toast message
-#: src/widget/unit_control_panel/imp.rs:463
+#: src/widget/unit_control_panel/imp.rs:495
+#, rust-format
 msgctxt "toast"
-msgid "Unit {} has been <{0}>{}</{0}> with the mode {}"
-msgstr "L'unité {} a été <{0}>{}</{0}> avec le mode {}"
+msgid "Unit {} has been {} with the mode {}"
+msgstr "L'unité {} a été {} avec le mode {}"
 
 #. toast message error --  "Can't {ACTION} the unit <unit>{UNITNAME}</unit>, because: {SYSTEMD HUMAN ERROR (english)}"),
-#: src/widget/unit_control_panel/imp.rs:485
+#: src/widget/unit_control_panel/imp.rs:516
 #, rust-format
 msgctxt "toast"
 msgid "Can't {} the unit {}, because: {}"
 msgstr "Ne peut {} l'unité {}, à cause : {}"
 
-#: src/widget/unit_control_panel/imp.rs:780
+#: src/widget/unit_control_panel/imp.rs:818
+#, rust-format
 msgctxt "toast"
-msgid ""
-"{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
-"successful"
-msgstr ""
-"{} l'unité <span fgcolor='{0}' font_family='monospace' size='larger'>{}</"
-"span> réussie"
+msgid "{} unit <unit>{}</unit> is <green>successful</green>"
+msgstr "{} unité <unit>{}</unit> est <green>réussi</green>"
 
 #. toast message success (no unit) -- "{ACTION} successful."
-#: src/widget/unit_control_panel/imp.rs:788
+#: src/widget/unit_control_panel/imp.rs:825
 #, rust-format
 msgctxt "toast"
 msgid "{} successful."
 msgstr "{} réussi."
 
-#: src/widget/unit_control_panel/imp.rs:800
+#: src/widget/unit_control_panel/imp.rs:835
 #, rust-format
 msgctxt "toast"
-msgid ""
-"{} unit <span fgcolor='{}' font_family='monospace' size='larger'>{}</span> "
-"failed. Reason: <span fgcolor='{}'>{}</span>."
-msgstr ""
-"{} l'unité <span fgcolor = '{}' font_family = 'monospace' size = 'larger'> "
-"{} </span> a échoué. Raison : <span fgcolor = '{}'> {} </span>."
+msgid "{} unit <unit>{}</unit> failed. Reason: <red>{}</red>."
+msgstr "{} unité <unit>{}</unit> à échoué. Raison: <red>{}</red>."
 
 #. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
-#: src/widget/unit_control_panel/imp.rs:811
+#: src/widget/unit_control_panel/imp.rs:846
 #, rust-format
 msgctxt "toast"
-msgid "{} failed. Reason: <span fgcolor='{}'>{}</span>."
-msgstr "{} a échoué. Raison : <span fgcolor='{}'>{}</span>."
+msgid "{} failed. Reason: <red>{}</red>."
+msgstr "{} a échoué. Raison : <red>{}</red>."
 
 #: src/widget/unit_control_panel/mod.rs:119
 #, rust-format
@@ -2540,17 +2777,17 @@ msgstr "_Procéder"
 #: src/widget/unit_file_panel/flatpak.rs:123
 msgctxt "flatpak"
 msgid ""
-"You need to jailbreak your Flatpak application to be able to save files on "
-"the host system.\n"
+"You need to <b>jailbreak</b> your Flatpak application to allow it to run sub-"
+"programs or to save files on the host system.\n"
 "\n"
-"Follow the <a href=\"https://github.com/plrigaux/sysd-manager/wiki/"
-"Flatpak\">link</a> to know how to aquire needed permission."
+"Follow this <a href=\"https://github.com/plrigaux/sysd-manager/wiki/"
+"Flatpak\">link</a> to know how to acquire the required permission."
 msgstr ""
-"Vous devez jailbreaker votre application Flatpak pour pouvoir enregistrer "
-"des fichiers sur le système hôte.\n"
+"Vous devez <b>jailbreaker</b> votre application Flatpak pour pouvoir "
+"enregistrer des fichiers sur le système hôte.\n"
 "\n"
-"Suivez le <a href=\"https://github.com/plrigaux/sysd-manager/wiki/"
-"Flatpak\">lien</a> pour savoir comment obtenir l'autorisation nécessaire."
+"Suivez le <a href=\"https://github.com/plrigaux/sysd-manager/wiki/Flatpak\">"
+"lien</a> pour savoir comment obtenir l'autorisation nécessaire."
 
 #: src/widget/unit_file_panel/flatpak.rs:127
 msgctxt "flatpak"
@@ -2576,12 +2813,12 @@ msgid "File {} saved successfully!"
 msgstr "Fichier {} enregistré avec succès !"
 
 #. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:272 src/widget/unit_file_panel/imp.rs:1075
+#: src/widget/unit_file_panel/imp.rs:272 src/widget/unit_file_panel/imp.rs:1019
 msgid "Daemon Reload"
 msgstr "Recharger la configuration"
 
 #: src/widget/unit_file_panel/imp.rs:287 src/widget/unit_file_panel/imp.rs:304
-#: src/widget/unit_file_panel/imp.rs:1091
+#: src/widget/unit_file_panel/imp.rs:1035
 msgctxt "file"
 msgid "Not able to save file, permission not granted!"
 msgstr "Impossible d'enregistrer le fichier, autorisation refusée !"
@@ -2615,19 +2852,19 @@ msgid "Drop In"
 msgstr "Drop In"
 
 #. Create Drop in file name
-#: src/widget/unit_file_panel/imp.rs:951
+#: src/widget/unit_file_panel/imp.rs:894
 msgctxt "file"
 msgid "Editing"
 msgstr "Nom du fichier Drop-in créé"
 
-#: src/widget/unit_file_panel/imp.rs:961
+#: src/widget/unit_file_panel/imp.rs:904
 msgctxt "file"
 msgid "Note: you can change the drop-in file name by modifying the above line"
 msgstr ""
 "Remarque : vous pouvez modifier le nom du fichier du drop-in en changeant la "
 "ligne du dessus"
 
-#: src/widget/unit_file_panel/imp.rs:971
+#: src/widget/unit_file_panel/imp.rs:914
 msgctxt "file"
 msgid ""
 "Anything between here and the comment below will become the contents of the "
@@ -2637,80 +2874,80 @@ msgstr ""
 "contenu du fichier de remplacement"
 
 #. Create Drop in file footer
-#: src/widget/unit_file_panel/imp.rs:980
+#: src/widget/unit_file_panel/imp.rs:923
 msgctxt "file"
 msgid "Edits below this comment will be discarded"
 msgstr "Les modifications apportées après ce commentaire seront ignorées"
 
-#: src/widget/unit_file_panel/imp.rs:1067
+#: src/widget/unit_file_panel/imp.rs:1011
 #, rust-format
 msgctxt "file"
 msgid "Unit {} reverted successfully!"
 msgstr "Fichier {} restaurée avec succès !"
 
-#: src/widget/unit_file_panel/imp.rs:1112
+#: src/widget/unit_file_panel/imp.rs:1056
 msgctxt "file"
 msgid "Not able to revert unit, permission not granted!"
 msgstr "Impossible de revenir en arrière, autorisation non accordée!"
 
-#: src/widget/unit_file_panel/imp.rs:1120
+#: src/widget/unit_file_panel/imp.rs:1064
 msgctxt "file"
 msgid "Not able to revert unit, an error happened!"
 msgstr "Impossible de revenir en arrière, une erreur s'est produite!"
 
 #. Show Line Number Menu Item
-#: src/widget/unit_file_panel/imp.rs:1226
+#: src/widget/unit_file_panel/imp.rs:1171
 msgctxt "file"
 msgid "Display Line Numbers"
 msgstr "Afficher les numéros de ligne"
 
-#: src/widget/unit_list/filter/imp.rs:371
+#: src/widget/unit_list/filter/imp.rs:370
 msgctxt "filter"
 msgid "Any sub states"
 msgstr "Tous les sous-états"
 
 #. Clear button
-#: src/widget/unit_list/filter/imp.rs:375
-#: src/widget/unit_list/filter/imp.rs:1074
+#: src/widget/unit_list/filter/imp.rs:374
+#: src/widget/unit_list/filter/imp.rs:1073
 #: src/widget/unit_list/filter/substate.rs:142
 msgctxt "filter"
 msgid "Clear"
 msgstr "Réinitialiser"
 
 #. Filter option
-#: src/widget/unit_list/filter/imp.rs:472
+#: src/widget/unit_list/filter/imp.rs:471
 msgctxt "filter"
 msgid "Match Type"
 msgstr "Type de correspondance"
 
 #. Filter option
-#: src/widget/unit_list/filter/imp.rs:490
+#: src/widget/unit_list/filter/imp.rs:489
 msgctxt "filter"
 msgid "Case Insensitive"
 msgstr "Insensible à la casse"
 
 #. Filter option
-#: src/widget/unit_list/filter/imp.rs:512
+#: src/widget/unit_list/filter/imp.rs:511
 msgctxt "filter"
 msgid "Unset"
 msgstr "Désactivé"
 
 #. Filter option
 #. Invert filter Button
-#: src/widget/unit_list/filter/imp.rs:528
-#: src/widget/unit_list/filter/imp.rs:1095
+#: src/widget/unit_list/filter/imp.rs:527
+#: src/widget/unit_list/filter/imp.rs:1094
 msgctxt "filter"
 msgid "Invert"
 msgstr "Inverser"
 
 #. Clear button tooltip
-#: src/widget/unit_list/filter/imp.rs:1076
+#: src/widget/unit_list/filter/imp.rs:1075
 #: src/widget/unit_list/filter/substate.rs:143
 msgctxt "filter"
 msgid "Clear filter's selected items"
 msgstr "Effacer les éléments sélectionnés du filtre"
 
-#: src/widget/unit_list/filter/imp.rs:1096
+#: src/widget/unit_list/filter/imp.rs:1095
 msgctxt "filter"
 msgid "Invert filter's selected items"
 msgstr "Inverser les éléments sélectionnés du filtre"
@@ -2726,128 +2963,128 @@ msgid "Add filter on sub state"
 msgstr "Ajouter un filtre au sous-état"
 
 #. Automounts list column name
-#: src/widget/unit_list/imp/construct.rs:107
+#: src/widget/unit_list/imp/construct.rs:143
 msgctxt "list column"
 msgid "Where"
 msgstr "Où"
 
 #. Automounts list column name
-#: src/widget/unit_list/imp/construct.rs:120
+#: src/widget/unit_list/imp/construct.rs:154
 msgctxt "list column"
 msgid "What"
 msgstr "Quoi"
 
 #. Automounts list column name
-#: src/widget/unit_list/imp/construct.rs:133
+#: src/widget/unit_list/imp/construct.rs:165
 msgctxt "list column"
 msgid "Mounted"
 msgstr "Monté"
 
 #. Automounts list column name
-#: src/widget/unit_list/imp/construct.rs:146
+#: src/widget/unit_list/imp/construct.rs:175
 msgctxt "list column"
 msgid "Idle Timeout"
 msgstr "Délai d'inactivité"
 
 #. Path list column name
-#: src/widget/unit_list/imp/construct.rs:246
+#: src/widget/unit_list/imp/construct.rs:293
 msgctxt "list column"
 msgid "Condition"
 msgstr "Condition"
 
 #. Path list column name
-#: src/widget/unit_list/imp/construct.rs:257
+#: src/widget/unit_list/imp/construct.rs:304
 msgctxt "list column"
 msgid "Path"
 msgstr "Path"
 
 #. Path list column name
 #. Unit full name column name
-#: src/widget/unit_list/imp/construct.rs:279
-#: src/widget/unit_list/imp/construct.rs:702
-#: src/widget/unit_list/imp/construct.rs:721
+#: src/widget/unit_list/imp/construct.rs:326
+#: src/widget/unit_list/imp/construct.rs:804
+#: src/widget/unit_list/imp/construct.rs:823
 msgctxt "list column"
 msgid "Unit"
 msgstr "Unité"
 
-#: src/widget/unit_list/imp/construct.rs:557
-msgctxt "list column"
-msgid "Bus"
-msgstr "Bus"
-
-#: src/widget/unit_list/imp/construct.rs:580
-msgctxt "list column"
-msgid "Load"
-msgstr "Chargement"
-
-#: src/widget/unit_list/imp/construct.rs:600
+#: src/widget/unit_list/imp/construct.rs:672
 msgctxt "list column"
 msgid "Sub"
 msgstr "Sous Activation"
 
-#: src/widget/unit_list/imp/construct.rs:625
+#: src/widget/unit_list/imp/construct.rs:690
+msgctxt "list column"
+msgid "Load"
+msgstr "Chargement"
+
+#: src/widget/unit_list/imp/construct.rs:708
+msgctxt "list column"
+msgid "Bus"
+msgstr "Bus"
+
+#: src/widget/unit_list/imp/construct.rs:727
 msgctxt "list column"
 msgid "Preset"
 msgstr "Prérégler"
 
-#: src/widget/unit_list/imp/construct.rs:644
+#: src/widget/unit_list/imp/construct.rs:746
 msgctxt "list column"
 msgid "State"
 msgstr "État"
 
-#: src/widget/unit_list/imp/construct.rs:663
+#: src/widget/unit_list/imp/construct.rs:765
 msgctxt "list column"
 msgid "Active"
 msgstr "Activation"
 
-#: src/widget/unit_list/imp/construct.rs:682
+#: src/widget/unit_list/imp/construct.rs:784
 msgctxt "list column"
 msgid "Description"
 msgstr "Description"
 
-#: src/widget/unit_list/imp/construct.rs:740
+#: src/widget/unit_list/imp/construct.rs:842
 msgctxt "list column"
 msgid "Type"
 msgstr "Type"
 
 #. Socket list column name
-#: src/widget/unit_list/imp/construct.rs:750
+#: src/widget/unit_list/imp/construct.rs:852
 msgctxt "list column"
 msgid "Listen Type"
 msgstr "Types d'écoute"
 
 #. Socket list column name
-#: src/widget/unit_list/imp/construct.rs:760
+#: src/widget/unit_list/imp/construct.rs:862
 msgctxt "list column"
 msgid "Listen"
 msgstr "Écoute"
 
 #. Timer list column name
-#: src/widget/unit_list/imp/construct.rs:771
+#: src/widget/unit_list/imp/construct.rs:873
 msgctxt "list column"
 msgid "Next"
 msgstr "Suivant"
 
 #. Timer list column name
-#: src/widget/unit_list/imp/construct.rs:781
+#: src/widget/unit_list/imp/construct.rs:883
 msgctxt "list column"
 msgid "Left"
 msgstr "Restant"
 
 #. Timer list column name
-#: src/widget/unit_list/imp/construct.rs:791
+#: src/widget/unit_list/imp/construct.rs:893
 msgctxt "list column"
 msgid "Last"
 msgstr "Dernier"
 
 #. Timer list column name
-#: src/widget/unit_list/imp/construct.rs:800
+#: src/widget/unit_list/imp/construct.rs:902
 msgctxt "list column"
 msgid "Passed"
 msgstr "Passé"
 
 #. Timer list column name
-#: src/widget/unit_list/imp/construct.rs:811
+#: src/widget/unit_list/imp/construct.rs:913
 msgctxt "list column"
 msgid "Activates"
 msgstr "Active"
@@ -2898,82 +3135,126 @@ msgctxt "menu"
 msgid "Configure columns"
 msgstr "Configurer les colonnes"
 
+#: src/widget/unit_list/menus.rs:33
+msgctxt "menu"
+msgid "Reset all columns"
+msgstr "Réinitialiser toutes les colonnes"
+
 #. column header menu
-#: src/widget/unit_list/menus.rs:38
+#: src/widget/unit_list/menus.rs:44
 msgctxt "menu"
 msgid "Configure Filters"
 msgstr "Configurer les filtres"
 
 #. column header menu
-#: src/widget/unit_list/menus.rs:46
+#: src/widget/unit_list/menus.rs:52
 msgctxt "menu"
 msgid "Clear Column Filter"
 msgstr "Supprimer les filtres de cette colonne"
 
 #. column header menu section
-#: src/widget/unit_list/menus.rs:52
+#: src/widget/unit_list/menus.rs:58
 msgctxt "menu"
 msgid "Filtering"
 msgstr "Filtrage"
 
-#: src/widget/unit_list/mod.rs:172
+#. Menu Option
+#: src/widget/unit_list/mod.rs:178
 msgctxt "menu"
 msgid "Include Unit Files"
 msgstr "Inclure les fichiers d'unité"
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:192
+#: src/widget/unit_list/mod.rs:198
 msgctxt "menu"
 msgid "Default"
 msgstr "Défaut"
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:196
+#: src/widget/unit_list/mod.rs:202
 msgctxt "menu"
 msgid "Loaded Units"
 msgstr "Unités chargées"
 
 #. List view
-#: src/widget/unit_list/mod.rs:200
+#: src/widget/unit_list/mod.rs:206
 msgctxt "menu"
 msgid "Unit Files"
 msgstr "Fichiers"
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:204
+#: src/widget/unit_list/mod.rs:210
 msgctxt "menu"
 msgid "Timers"
 msgstr "Chronos"
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:208
+#: src/widget/unit_list/mod.rs:214
 msgctxt "menu"
 msgid "Sockets"
 msgstr "Sockets"
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:212
+#: src/widget/unit_list/mod.rs:218
+msgctxt "menu"
+msgid "Services"
+msgstr "Services"
+
+#. Curated List View
+#: src/widget/unit_list/mod.rs:222
 msgctxt "menu"
 msgid "Path"
 msgstr "Path"
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:216
+#: src/widget/unit_list/mod.rs:226
 msgctxt "menu"
 msgid "Automounts"
 msgstr "Automounts"
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:220
+#: src/widget/unit_list/mod.rs:230
 msgctxt "menu"
 msgid "Customized"
 msgstr "Personnalisé"
 
 #. Curated List View
-#: src/widget/unit_list/mod.rs:224
+#: src/widget/unit_list/mod.rs:234
 msgctxt "menu"
 msgid "Favorites"
 msgstr "Favoris"
+
+#~ msgctxt "shortcut window"
+#~ msgid "Display Unit Information"
+#~ msgstr "Afficher les informations sur l'unité"
+
+#~ msgctxt "controls tab"
+#~ msgid "Unit Info"
+#~ msgstr "Information"
+
+#~ msgctxt "toast"
+#~ msgid ""
+#~ "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</"
+#~ "span> successful"
+#~ msgstr ""
+#~ "{} l'unité <span fgcolor='{0}' font_family='monospace' size='larger'>{}</"
+#~ "span> réussie"
+
+#, rust-format
+#~ msgctxt "toast"
+#~ msgid ""
+#~ "{} unit <span fgcolor='{}' font_family='monospace' size='larger'>{}</"
+#~ "span> failed. Reason: <span fgcolor='{}'>{}</span>."
+#~ msgstr ""
+#~ "{} l'unité <span fgcolor = '{}' font_family = 'monospace' size = "
+#~ "'larger'> {} </span> a échoué. Raison : <span fgcolor = '{}'> {} </span>."
+
+#~ msgid "user"
+#~ msgstr "utilisateur"
+
+#~ msgctxt "text_find"
+#~ msgid "Find in Text"
+#~ msgstr "Rechercher dans le texte"
 
 #~ msgctxt "controls"
 #~ msgid "Add Favorite"

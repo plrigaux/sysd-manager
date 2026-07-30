@@ -228,6 +228,43 @@
       <default>(1100,875)</default>
       <summary>Unit property selector window Width and Height</summary>
     </key>
+    <key name="create-unit-window-size" type="(ii)">
+      <default>(600,-1)</default>
+      <summary>The Create Unit Window</summary>
+    </key>
+    <key name="create-unit-type-selection" type="s">
+      <choices>
+        <choice value="service"/>
+        <choice value="timer"/>
+        <choice value="timer_service"/>
+      </choices>
+      <default>'service'</default>
+      <summary>The type of unit to create</summary>
+    </key>
+    <key name="create-unit-bus-selection" type="s">
+      <choices>
+        <choice value="system"/>
+        <choice value="user"/>
+      </choices>
+      <default>'user'</default>
+      <summary>The bus that you want to create unit</summary>
+    </key>
+    <key name="create-unit-runtime" type="b">
+      <default>false</default>
+      <summary>Create Unit in runtime mode</summary>
+    </key>
+    <key name="create-daemon-reload-after-creation" type="b">
+      <default>false</default>
+      <summary>Relaod Manager after create the Unit</summary>
+    </key>
+    <key name="create-enable-after-creation" type="b">
+      <default>false</default>
+      <summary>Enable Unit after being created</summary>
+    </key>
+    <key name="create-start-after-creation" type="b">
+      <default>false</default>
+      <summary>Start Unit after being created</summary>
+    </key>
     <key name="unit-property-paned-separator-position" type="i">
       <default>440</default>
       <summary>Unit property selector position</summary>
@@ -278,7 +315,11 @@
     </key>
     <key name="pref-use-proxy-save-file" type="b">
       <default>true</default>
-      <summary>Use the proxy for the Save_file actions</summary>
+      <summary>Use the proxy for the Save file actions</summary>
+    </key>
+    <key name="pref-use-proxy-create-file" type="b">
+      <default>true</default>
+      <summary>Use the proxy for the Create file actions</summary>
     </key>
     <key name="pref-use-proxy-revert-unit-file" type="b">
       <default>true</default>

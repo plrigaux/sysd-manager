@@ -145,7 +145,7 @@ pub fn red() -> Palette<'static> {
     }
 }
 pub fn dark_red() -> Palette<'static> {
-    Palette::Blue2
+    Palette::Custom("#ff938c")
 }
 
 pub fn yellow() -> Palette<'static> {
@@ -158,10 +158,14 @@ pub fn yellow() -> Palette<'static> {
 
 pub fn green() -> Palette<'static> {
     if is_dark() {
-        Palette::Custom("#78e9ab")
+        dark_green()
     } else {
         Palette::Custom("#007c3d")
     }
+}
+
+pub fn dark_green() -> Palette<'static> {
+    Palette::Custom("#78e9ab")
 }
 
 pub fn blue() -> Palette<'static> {

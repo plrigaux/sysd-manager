@@ -21,6 +21,8 @@ use crate::{
     sysdbus::{get_blocking_connection, get_connection, run_context},
 };
 
+static HEART_BEAT_HANDLE: OnceLock<JoinHandle<Result<(), SystemdErrors>>> = OnceLock::new();
+
 #[proxy(
     interface = "io.github.plrigaux.SysDManager",
     default_service = "io.github.plrigaux.SysDManager",
@@ -44,6 +46,7 @@ pub trait SysDManagerComLink {
         content: &str,
     ) -> zbus::fdo::Result<()>;
     fn save_file(&mut self, file_name: &str, content: &str) -> zbus::fdo::Result<u64>;
+    fn create_file(&mut self, file_name: &str, content: &str) -> zbus::fdo::Result<u64>;
 
     fn revert_unit_files(&self, file_names: &[&str]) -> zbus::fdo::Result<Vec<DisEnAbleUnitFiles>>;
 
@@ -176,7 +179,6 @@ pub fn lazy_start_proxy_block() -> Result<(), SystemdErrors> {
     Ok(())
 }
 
-static HEART_BEAT_HANDLE: OnceLock<JoinHandle<Result<(), SystemdErrors>>> = OnceLock::new();
 pub(crate) fn start_heart_beat() {
     if let Some(join_handle) = HEART_BEAT_HANDLE.get()
         && !join_handle.is_finished()
@@ -257,6 +259,14 @@ pub async fn save_file(file_path: &str, content: &str) -> Result<u64, SystemdErr
     let mut proxy = get_proxy_async().await?;
     proxy
         .save_file(file_path, content)
+        .await
+        .map_err(|e| e.into())
+}
+
+pub async fn create_file(file_path: &str, content: &str) -> Result<u64, SystemdErrors> {
+    let mut proxy = get_proxy_async().await?;
+    proxy
+        .create_file(file_path, content)
         .await
         .map_err(|e| e.into())
 }

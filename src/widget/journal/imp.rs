@@ -1,25 +1,3 @@
-use gettextrs::pgettext;
-use gtk::{
-    TemplateChild, gio, glib,
-    prelude::*,
-    subclass::{
-        box_::BoxImpl,
-        prelude::*,
-        widget::{
-            CompositeTemplateCallbacksClass, CompositeTemplateClass,
-            CompositeTemplateInitializingExt, WidgetClassExt, WidgetImpl,
-        },
-    },
-};
-use systemd::journal_data::BOOT_IDX;
-
-use std::{
-    cell::{Cell, RefCell},
-    thread,
-};
-
-use tracing::{debug, error, info, warn};
-
 use crate::{
     consts::{
         ACTION_WIN_KEY_JOURNAL_WRAP_WORD, APP_ACTION_LIST_BOOT, CLASS_ERROR, CLASS_SUCCESS,
@@ -50,6 +28,25 @@ use crate::{
         text_search::{self, PanelID},
     },
 };
+use gettextrs::pgettext;
+use gtk::{
+    TemplateChild, gio, glib,
+    prelude::*,
+    subclass::{
+        box_::BoxImpl,
+        prelude::*,
+        widget::{
+            CompositeTemplateCallbacksClass, CompositeTemplateClass,
+            CompositeTemplateInitializingExt, WidgetClassExt, WidgetImpl,
+        },
+    },
+};
+use std::{
+    cell::{Cell, RefCell},
+    thread,
+};
+use systemd::journal_data::BOOT_IDX;
+use tracing::{debug, error, info, warn};
 
 const PANEL_EMPTY: &str = "empty";
 const PANEL_JOURNAL: &str = "journal";
@@ -98,8 +95,9 @@ impl JournalDisplayOrder {
     }
 }
 
-#[derive(Default, gtk::CompositeTemplate)]
+#[derive(Default, gtk::CompositeTemplate, glib::Properties)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/journal_panel.ui")]
+#[properties(wrapper_type = super::JournalPanel)]
 pub struct JournalPanelImp {
     #[template_child]
     journal_refresh_button: TemplateChild<gtk::Button>,
@@ -123,7 +121,7 @@ pub struct JournalPanelImp {
     journal_boot_id_entry: TemplateChild<adw::EntryRow>,
 
     #[template_child]
-    continuous_switch: TemplateChild<gtk::Switch>,
+    follow_check: TemplateChild<gtk::CheckButton>,
 
     #[template_child]
     text_search_bar: TemplateChild<gtk::SearchBar>,
@@ -131,9 +129,10 @@ pub struct JournalPanelImp {
     #[template_child]
     find_text_button: TemplateChild<gtk::ToggleButton>,
 
-    visible_on_page: Cell<bool>,
+    #[template_child]
+    journal_text_view: TemplateChild<gtk::TextView>,
 
-    //unit_journal_loaded: Cell<bool>,
+    visible_on_page: Cell<bool>,
 
     //list_store: RefCell<Option<gio::ListStore>>,
     unit: RefCell<Option<UnitInfo>>,
@@ -142,12 +141,12 @@ pub struct JournalPanelImp {
 
     time_old_new: Cell<Option<(u64, u64)>>,
 
-    journal_text_view: RefCell<gtk::TextView>,
-
     //old_to_recent_order: Cell<bool>,
     display_order: Cell<JournalDisplayOrder>,
     cancel_continuous_sender: RefCell<Option<std::sync::mpsc::Sender<()>>>,
     // settings: OnceCell<gio::Settings>,
+    #[property(get, set= Self::set_wrap_word)]
+    wrap_word: Cell<bool>,
 }
 
 #[gtk::template_callbacks]
@@ -243,21 +242,6 @@ impl JournalPanelImp {
     }
 
     #[template_callback]
-    fn continuous_switch_state_set(&self, active: bool, continuous_switch: &gtk::Switch) -> bool {
-        info!("continuous switch state {active}");
-
-        if active {
-            if continuous_switch.state() {
-                self.continuous_entry()
-            }
-        } else {
-            JournalPanelImp::set_or_send_cancelling(self, None);
-        }
-
-        true //TRUE to stop the signal emission.
-    }
-
-    #[template_callback]
     fn on_journal_hide(&self) {
         error!("journal hide");
     }
@@ -305,7 +289,7 @@ impl JournalPanelImp {
 
     fn on_position(&self, position: gtk::PositionType) {
         let display_order = self.display_order.get();
-        info!("call for new {position:?}, display order {display_order:?}");
+        info!("Call for new position: {position:?}, display order: {display_order:?}");
 
         match (position, display_order) {
             (gtk::PositionType::Bottom, JournalDisplayOrder::Descending) => {
@@ -357,18 +341,10 @@ impl JournalPanelImp {
         let settings = systemd_gui::new_settings();
         let action = settings.create_action(&ACTION_WIN_KEY_JOURNAL_WRAP_WORD[4..]);
 
-        let journal_panel = self.obj().clone();
-        action.connect_state_notify(move |action| {
-            let text_view = journal_panel.imp().journal_text_view.borrow();
-
-            let state = action
-                .state()
-                .and_then(|v| v.get::<bool>())
-                .unwrap_or_default();
-
-            set_wrap_mode(&text_view, state);
-        });
         app_window.add_action(&action);
+
+        let wrap = settings.boolean(&ACTION_WIN_KEY_JOURNAL_WRAP_WORD[4..]);
+        self.set_wrap_word(wrap);
     }
 
     fn set_visible_on_page(&self, value: bool) {
@@ -454,7 +430,7 @@ impl JournalPanelImp {
         );
 
         info!(
-            "journal unit {:?} boot filter {boot_filter:?} Range {range:?}",
+            "Journal unit {:?} boot filter \"{boot_filter:?}\" Range {range:#?}",
             unit.primary()
         );
 
@@ -512,14 +488,13 @@ impl JournalPanelImp {
                 JournalEventChunkInfo::Error => {
                     warn!("Journal Events Chunk {:?}", journal_events.what_grab)
                 }
-                _ => journal_panel_imp.continuous_switch.set_state(false),
+                _ => {}
             };
         });
     }
 
     fn set_continuous_marker(&self) {
-        self.continuous_switch.set_state(true);
-        if self.continuous_switch.is_active() {
+        if self.follow_check.is_active() {
             // call thread
             self.continuous_entry();
         }
@@ -530,43 +505,76 @@ impl JournalPanelImp {
     }
 
     fn handle_journal_events(&self, journal_events: &JournalEventChunk) {
-        let size = journal_events.len();
-
-        let text_buffer = {
-            let text_view = self.journal_text_view.borrow();
-            text_view.buffer()
-        };
-
-        if self.time_old_new.get().is_none() {
-            text_buffer.set_text("");
-        }
+        let text_buffer = self.journal_text_view.buffer();
 
         let display_order = self.display_order.get();
 
         let times = journal_events.times();
         self.set_times(times);
 
-        let text_iter = match (journal_events.what_grab, display_order) {
-            (WhatGrab::Newer, JournalDisplayOrder::Ascending) => text_buffer.start_iter(),
-            (WhatGrab::Newer, JournalDisplayOrder::Descending) => text_buffer.end_iter(),
-            (WhatGrab::Older, JournalDisplayOrder::Ascending) => text_buffer.end_iter(),
-            (WhatGrab::Older, JournalDisplayOrder::Descending) => text_buffer.start_iter(),
+        let what_grab = journal_events.what_grab;
+
+        let (text_iter, journal_events_iter): (
+            gtk::TextIter,
+            Box<dyn Iterator<Item = &JournalEvent>>,
+        ) = match (what_grab, display_order) {
+            (WhatGrab::Newer, JournalDisplayOrder::Ascending) => {
+                (text_buffer.start_iter(), Box::new(journal_events.iter()))
+            }
+            (WhatGrab::Newer, JournalDisplayOrder::Descending) => {
+                (text_buffer.end_iter(), Box::new(journal_events.iter()))
+            }
+            (WhatGrab::Older, JournalDisplayOrder::Ascending) => {
+                (text_buffer.end_iter(), Box::new(journal_events.iter()))
+            }
+            (WhatGrab::Older, JournalDisplayOrder::Descending) => (
+                text_buffer.start_iter(),
+                Box::new(journal_events.iter().rev()),
+            ),
         };
 
-        let mark_l = gtk::TextMark::new(None, true);
-        let mark_r = gtk::TextMark::new(None, false);
-
-        text_buffer.add_mark(&mark_l, &text_iter);
-        text_buffer.add_mark(&mark_r, &text_iter);
+        // dbg!(
+        //     self.follow_check.is_active(),
+        //     display_order,
+        //     journal_events.what_grab
+        // );
 
         let mut writer = UnitInfoWriter::new(text_buffer, text_iter);
+        const LEFT: &str = "left";
+        const RIGHT: &str = "right";
+
+        let left_mark = match writer.buffer.mark(LEFT) {
+            Some(mark) => {
+                writer.buffer.move_mark(&mark, &text_iter);
+                mark
+            }
+            None => {
+                let mark = gtk::TextMark::new(Some(LEFT), true);
+                writer.buffer.add_mark(&mark, &text_iter);
+                mark
+            }
+        };
+
+        let right_mark = match writer.buffer.mark(RIGHT) {
+            Some(mark) => {
+                writer.buffer.move_mark(&mark, &text_iter);
+                mark
+            }
+            None => {
+                let mark = gtk::TextMark::new(Some(RIGHT), false);
+                writer.buffer.add_mark(&mark, &text_iter);
+                mark
+            }
+        };
+
         let journal_color = PREFERENCES.journal_colors();
         let mut journal_filler = JournalFiller::new(journal_color);
-        for journal_event in journal_events.iter() {
+
+        for journal_event in journal_events_iter {
             journal_filler.fill_journal_event(journal_event, &mut writer);
         }
 
-        info!("Finish added {size} journal events!");
+        info!("Finish adding {} journal events!", journal_events.len());
 
         if writer.char_count() <= 0 {
             self.panel_stack.set_visible_child_name(PANEL_EMPTY);
@@ -582,11 +590,43 @@ impl JournalPanelImp {
         //TODO put  a load notification
         //TODO fix PgDown annoying sound
 
-        let start_iter = writer.buffer.iter_at_mark(&mark_l);
-        let end_iter = writer.buffer.iter_at_mark(&mark_r);
+        let start_iter = writer.buffer.iter_at_mark(&left_mark);
+        let end_iter = writer.buffer.iter_at_mark(&right_mark);
         text_search::new_added_text(&self.text_search_bar, &writer.buffer, start_iter, end_iter);
-        writer.buffer.delete_mark(&mark_l);
-        writer.buffer.delete_mark(&mark_r);
+
+        if what_grab == WhatGrab::Newer && self.follow_check.is_active() {
+            let mut end_iter = writer.buffer.end_iter();
+            //go to the beging of the line
+            end_iter.set_line_offset(0);
+
+            const SCROLL: &str = "scroll";
+            let scroll = match writer.buffer.mark(SCROLL) {
+                Some(mark) => {
+                    writer.buffer.move_mark(&mark, &end_iter);
+                    mark
+                }
+                None => {
+                    let mark = gtk::TextMark::new(Some(SCROLL), true);
+                    writer.buffer.add_mark(&mark, &end_iter);
+                    mark
+                }
+            };
+
+            let this = self.obj().clone();
+            glib::spawn_future_local(async move {
+                let text_view = this.imp().journal_text_view.get();
+                info!("scroll to {:?}", display_order);
+                match display_order {
+                    JournalDisplayOrder::Ascending => {
+                        // text_view.scroll_to_mark(&left_mark, 0.0, true, 0.0, 1.0);
+                        text_view.scroll_mark_onscreen(&left_mark);
+                    }
+                    JournalDisplayOrder::Descending => {
+                        text_view.scroll_mark_onscreen(&scroll);
+                    }
+                }
+            });
+        }
     }
 
     fn continuous_entry(&self) {
@@ -649,7 +689,7 @@ impl JournalPanelImp {
         if let Some(cancel_continuous_sender) = sender_op {
             let res = cancel_continuous_sender.send(());
             if res.is_err() {
-                warn!("Error close thtread sender")
+                warn!("Error close thread sender")
             }
             info!("Cancel journal trail")
         }
@@ -686,7 +726,7 @@ impl JournalPanelImp {
     pub(super) fn set_inter_message(&self, action: &InterPanelMessage) {
         match action {
             InterPanelMessage::FontProvider(old, new) => {
-                let text_view = self.journal_text_view.borrow();
+                let text_view = self.journal_text_view.get();
                 set_text_view_font(*old, *new, &text_view);
             }
             InterPanelMessage::PanelVisible(visible) => self.set_visible_on_page(*visible),
@@ -720,32 +760,14 @@ impl JournalPanelImp {
 
     fn new_text_view(&self) {
         debug!("new_text_view");
-        let text_view = gtk::TextView::builder()
-            .editable(false)
-            .wrap_mode(gtk::WrapMode::Word)
-            .build();
-        self.scrolled_window.set_child(Some(&text_view));
         self.time_old_new.set(None);
-        self.continuous_switch.set_state(false);
 
-        let settings = systemd_gui::new_settings();
-        let wrap_word = settings.boolean(&ACTION_WIN_KEY_JOURNAL_WRAP_WORD[4..]);
-        set_wrap_mode(&text_view, wrap_word);
+        let buffer = self.journal_text_view.buffer();
 
-        let menu_wrap_word = gio::Menu::new();
-        //Menu item label
-        let menu_label = pgettext("journal", "Wrap Word");
-        let wrap_word_toggle_menu = gio::MenuItem::new(Some(&menu_label), None);
-        wrap_word_toggle_menu
-            .set_action_and_target_value(Some(ACTION_WIN_KEY_JOURNAL_WRAP_WORD), None);
-        menu_wrap_word.append_item(&wrap_word_toggle_menu);
+        //remove any marks
 
-        text_search::update_text_view(&self.text_search_bar, &text_view, true, PanelID::Journal);
-
-        if let Some(extra) = text_view.extra_menu().and_downcast_ref::<gio::Menu>() {
-            extra.append_section(None, &menu_wrap_word);
-        }
-        self.journal_text_view.replace(text_view);
+        //clear logs
+        buffer.set_text("");
     }
 
     fn clean_refresh(&self) {
@@ -766,13 +788,14 @@ impl JournalPanelImp {
     pub(crate) fn focus_text_search(&self) {
         text_search::focus_on_text_entry(&self.text_search_bar)
     }
-}
 
-fn set_wrap_mode(text_view: &gtk::TextView, state: bool) {
-    if state {
-        text_view.set_wrap_mode(gtk::WrapMode::WordChar)
-    } else {
-        text_view.set_wrap_mode(gtk::WrapMode::None)
+    fn set_wrap_word(&self, wrap: bool) {
+        if wrap {
+            self.journal_text_view
+                .set_wrap_mode(gtk::WrapMode::WordChar)
+        } else {
+            self.journal_text_view.set_wrap_mode(gtk::WrapMode::None)
+        }
     }
 }
 
@@ -794,6 +817,7 @@ impl ObjectSubclass for JournalPanelImp {
     }
 }
 
+#[glib::derived_properties]
 impl ObjectImpl for JournalPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
@@ -804,8 +828,16 @@ impl ObjectImpl for JournalPanelImp {
         settings
             .bind(
                 KEY_PREF_JOURNAL_DISPLAY_FOLLOW,
-                &self.continuous_switch.clone(),
+                &self.follow_check.clone(),
                 "active",
+            )
+            .build();
+
+        settings
+            .bind(
+                &ACTION_WIN_KEY_JOURNAL_WRAP_WORD[4..],
+                &self.obj().clone(),
+                "wrap-word",
             )
             .build();
 
@@ -823,9 +855,8 @@ impl ObjectImpl for JournalPanelImp {
         sort_toggle_button_content.set_icon_name(icon);
         sort_toggle_button_content.set_label(label);
 
-        let text_view = self.journal_text_view.borrow();
         text_search::text_search_construct(
-            &text_view,
+            &self.journal_text_view,
             &self.text_search_bar,
             &self.find_text_button,
             false,
@@ -839,6 +870,41 @@ impl ObjectImpl for JournalPanelImp {
                 "search-mode-enabled",
             )
             .build();
+
+        let menu_wrap_word = gio::Menu::new();
+        //Menu item label
+        let menu_label = pgettext("journal", "Wrap Word");
+        let wrap_word_toggle_menu = gio::MenuItem::new(Some(&menu_label), None);
+        wrap_word_toggle_menu
+            .set_action_and_target_value(Some(ACTION_WIN_KEY_JOURNAL_WRAP_WORD), None);
+        menu_wrap_word.append_item(&wrap_word_toggle_menu);
+
+        text_search::update_text_view(
+            &self.text_search_bar,
+            &self.journal_text_view,
+            true,
+            PanelID::Journal,
+        );
+
+        if let Some(extra) = self
+            .journal_text_view
+            .extra_menu()
+            .and_downcast_ref::<gio::Menu>()
+        {
+            extra.append_section(None, &menu_wrap_word);
+        }
+
+        let journal_panel = self.obj().clone();
+        self.follow_check.connect_active_notify(move |button| {
+            let active = button.is_active();
+            info!("Follow: {active}");
+
+            if active {
+                journal_panel.imp().continuous_entry();
+            } else {
+                journal_panel.imp().set_or_send_cancelling(None);
+            }
+        });
     }
 }
 impl WidgetImpl for JournalPanelImp {}

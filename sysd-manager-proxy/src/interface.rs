@@ -36,6 +36,17 @@ impl SysDManagerProxy {
         file::save(file_path, content).await
     }
 
+    pub async fn create_file(
+        &mut self,
+        #[zbus(header)] header: Header<'_>,
+
+        file_path: &str,
+        content: &str,
+    ) -> zbus::fdo::Result<u64> {
+        self.check_autorisation(header).await?;
+        file::create(file_path, content).await
+    }
+
     pub async fn my_user_id(
         &mut self,
         #[zbus(header)] header: Header<'_>,

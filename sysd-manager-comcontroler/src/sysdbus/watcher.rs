@@ -92,7 +92,7 @@ impl SystemdSignal {
         }
     }
 
-    pub fn create_unit(&self) -> Option<UnitInfo> {
+    pub fn extract_unit_from_signal(&self) -> Option<UnitInfo> {
         match self {
             SystemdSignal::UnitNew(unit_dbus_level, unit_name) => {
                 Some(UnitInfo::from_unit_key(unit_name, *unit_dbus_level))

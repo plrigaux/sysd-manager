@@ -16,8 +16,8 @@ use crate::{
 };
 use base::enums::UnitDBusLevel;
 use chrono::{Local, Utc};
-use tracing::{debug, info, trace, warn};
 use sysd::{Journal, id128::Id128, journal::OpenOptions};
+use tracing::{debug, info, trace, warn};
 
 use super::BootFilter;
 
@@ -52,8 +52,8 @@ pub(super) fn get_unit_journal_events(
     info!("Get journal Event {primary_name:?}");
     let mut journal_reader = create_journal_reader(&primary_name, level, boot_filter)?;
 
-    let default = "NONE".to_string();
-    let default_priority = "7".to_string();
+    let default = "NONE";
+    let default_priority = "7";
 
     //let mut index = 0;
     let mut last_boot_id = String::new();
@@ -86,19 +86,19 @@ pub(super) fn get_unit_journal_events(
             }
         }
 
-        let mut message = get_data(&mut journal_reader, KEY_MESSAGE, &default);
+        let mut message = get_data(&mut journal_reader, KEY_MESSAGE, default);
 
         if message_max_char > 0 {
             message = truncate(message, message_max_char);
         }
 
-        let pid = get_data(&mut journal_reader, KEY_PID, &default);
-        let priority_str = get_data(&mut journal_reader, KEY_PRIORITY, &default_priority);
+        let pid = get_data(&mut journal_reader, KEY_PID, default);
+        let priority_str = get_data(&mut journal_reader, KEY_PRIORITY, default_priority);
         let priority = priority_str.parse::<u8>().map_or(7, |u| u);
 
-        let name = get_data(&mut journal_reader, KEY_COMM, &default);
+        let name = get_data(&mut journal_reader, KEY_COMM, default);
 
-        let boot_id = get_data(&mut journal_reader, KEY_BOOT_ID, &default);
+        let boot_id = get_data(&mut journal_reader, KEY_BOOT_ID, default);
 
         let prefix = make_prefix(time_in_usec, name, pid, timestamp_style);
 
@@ -132,7 +132,10 @@ fn position_crawler(journal_reader: &mut Journal, range: &EventRange) -> Result<
             if let Some(newest_events_time) = range.newest_events_time {
                 journal_reader.seek_realtime_usec(newest_events_time + 1)?;
             } else {
-                //start from head (default)
+                //Go to the end
+                journal_reader.seek_tail()?;
+                //Go back to batch size
+                journal_reader.previous_skip(range.batch_size as u64)?;
             }
         }
         WhatGrab::Older => {
@@ -142,7 +145,7 @@ fn position_crawler(journal_reader: &mut Journal, range: &EventRange) -> Result<
                 journal_reader.seek_tail()?;
             }
         }
-    };
+    }
     Ok(())
 }
 
@@ -428,7 +431,7 @@ fn truncate(message: String, max_chars: usize) -> String {
     message
 }
 
-fn get_data(reader: &mut Journal, field: &str, default: &String) -> String {
+fn get_data(reader: &mut Journal, field: &str, default: &str) -> String {
     match reader.get_data(field) {
         Ok(journal_entry_op) => match journal_entry_op {
             Some(journal_entry_field) => journal_entry_field

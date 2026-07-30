@@ -21,6 +21,7 @@ pub async fn save_text_to_file(
     file_path: &str,
     content: &str,
     user_session: bool,
+    create_file: bool,
 ) -> Result<u64, SystemdErrors> {
     path_safe_guard(user_session, file_path)?;
     let host_file_path = if user_session {
@@ -36,7 +37,7 @@ pub async fn save_text_to_file(
     );
 
     Ok(if user_session {
-        write_on_disk(&host_file_path, false, content).await?
+        write_on_disk(&host_file_path, create_file, content).await?
     //TODO ask if want to force with  priviledge
     } else {
         write_with_priviledge(&host_file_path, content).await?

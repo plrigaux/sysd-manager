@@ -6,7 +6,7 @@
   <requires lib="libadwaita" version="1.6"/>
   <template class="LaunchCreatorPage" parent="AdwNavigationPage">
     <property name="child">
-      <object class="AdwClamp">
+      <object class="AdwClamp" id="ewqr">
         <property name="child">
           <object class="GtkBox">
             <property name="margin-bottom">12</property>
@@ -15,22 +15,7 @@
             <property name="spacing">12</property>
             <child>
               <object class="AdwPreferencesGroup">
-                <child>
-                  <object class="AdwButtonRow">
-                    <property name="end-icon-name">go-next-symbolic</property>
-                    <property name="title">See Generated Service</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="AdwButtonRow">
-                    <property name="end-icon-name">go-next-symbolic-rtl</property>
-                    <property name="title">See Generated Timer</property>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="AdwPreferencesGroup">
+                <property name="title">After creation</property>
                 <child>
                   <object class="AdwSwitchRow" id="daemon_reload_switch">
                     <property name="action-name">creator.daemon-reload</property>
@@ -53,11 +38,54 @@
               </object>
             </child>
             <child>
-              <object class="GtkButton">
-                <property name="css-classes">suggested-action
-pill</property>
-                <property name="halign">end</property>
-                <property name="label">Create</property>
+              <object class="AdwPreferencesGroup">
+                <child>
+                  <object class="AdwActionRow" id="service_file_action">
+                    <property name="subtitle-selectable">True</property>
+                    <property name="title">Service File</property>
+                    <child>
+                      <object class="GtkButton" id="service_file_button">
+                        <property name="icon-name">document-text-symbolic</property>
+                        <property name="sensitive">False</property>
+                        <property name="tooltip-text">Show Unit File</property>
+                        <property name="valign">center</property>
+                        <signal name="clicked" handler="show_service_file" swapped="True"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="service_unit_button">
+                        <property name="label">Unit</property>
+                        <property name="sensitive">False</property>
+                        <property name="tooltip-text">Show Unit in Browser</property>
+                        <property name="valign">center</property>
+                        <signal name="clicked" handler="show_service_unit" swapped="True"/>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwActionRow" id="timer_file_action">
+                    <property name="subtitle-selectable">True</property>
+                    <property name="title">Timer File</property>
+                    <child>
+                      <object class="GtkButton" id="timer_file_button">
+                        <property name="icon-name">document-text-symbolic</property>
+                        <property name="sensitive">False</property>
+                        <property name="valign">center</property>
+                        <signal name="clicked" handler="show_timer_file" swapped="True"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="timer_unit_button">
+                        <property name="label">Unit</property>
+                        <property name="sensitive">False</property>
+                        <property name="tooltip-text">Show Unit in Browser</property>
+                        <property name="valign">center</property>
+                        <signal name="clicked" handler="show_timer_unit" swapped="True"/>
+                      </object>
+                    </child>
+                  </object>
+                </child>
               </object>
             </child>
           </object>

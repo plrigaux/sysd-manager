@@ -7,16 +7,15 @@
   <requires lib="libadwaita" version="1.8"/>
   <template class="TimerCreatorPage" parent="AdwNavigationPage">
     <property name="child">
-      <object class="AdwClamp">
+      <object class="GtkScrolledWindow">
         <property name="child">
-          <object class="GtkBox">
-            <property name="margin-bottom">6</property>
-            <property name="margin-top">6</property>
-            <property name="orientation">vertical</property>
-            <property name="spacing">12</property>
-            <child>
+          <object class="AdwClamp">
+            <property name="child">
               <object class="GtkBox">
-                <property name="valign">baseline-fill</property>
+                <property name="margin-bottom">6</property>
+                <property name="margin-top">6</property>
+                <property name="orientation">vertical</property>
+                <property name="spacing">12</property>
                 <child>
                   <object class="GtkLabel">
                     <property name="css-classes">title-2
@@ -26,88 +25,98 @@
                   </object>
                 </child>
                 <child>
-                  <object class="GtkLinkButton">
-                    <property name="label">More info</property>
-                    <property name="uri">https://www.freedesktop.org/software/systemd/man/systemd.time.html</property>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="AdwPreferencesGroup">
-                <child>
-                  <object class="AdwEntryRow" id="description">
-                    <property name="title">Description</property>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="AdwPreferencesGroup">
-                <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Monotonic Timer</property>
-                    <child>
-                      <object class="AdwSplitButton" id="monotonic_timer_adder">
-                        <property name="label">Add</property>
-                        <property name="valign">baseline-center</property>
+                  <object class="AdwPreferencesGroup">
+                    <property name="header-suffix">
+                      <object class="GtkLinkButton">
+                        <property name="css-classes">circular
+flat</property>
+                        <property name="icon-name">dialog-information-symbolic</property>
+                        <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html</property>
                       </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="AdwActionRow">
-                    <property name="title">Real-time Timer</property>
-                    <child>
-                      <object class="AdwSplitButton" id="realtime_timer_adder">
-                        <property name="label">Add</property>
-                        <property name="valign">baseline-center</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="AdwPreferencesGroup" id="timers_group">
-                <property name="description">Timers</property>
-              </object>
-            </child>
-            <child>
-              <object class="AdwPreferencesGroup">
-                <child>
-                  <object class="AdwComboRow" id="trigger_unit">
-                    <property name="enable-search">True</property>
-                    <property name="expression">
-                      <lookup name="string" type="GtkStringObject"/>
                     </property>
-                    <property name="search-match-mode">substring</property>
-                    <property name="title">Trigger Unit</property>
-                    <property name="use-subtitle">True</property>
+                    <property name="title">Unit</property>
+                    <child>
+                      <object class="AdwEntryRow" id="description">
+                        <property name="title">Description</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
                 <child>
-                  <object class="AdwSwitchRow" id="persistent">
-                    <property name="title">Persistant</property>
+                  <object class="AdwPreferencesGroup">
+                    <child>
+                      <object class="AdwActionRow">
+                        <property name="title">Monotonic Timer</property>
+                        <child>
+                          <object class="AdwSplitButton" id="monotonic_timer_adder">
+                            <property name="label">Add</property>
+                            <property name="valign">baseline-center</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwActionRow">
+                        <property name="title">Real-time Timer</property>
+                        <child>
+                          <object class="AdwSplitButton" id="realtime_timer_adder">
+                            <property name="label">Add</property>
+                            <property name="valign">baseline-center</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
                   </object>
                 </child>
                 <child>
-                  <object class="SysDDropDown" id="trigger_unit2"/>
+                  <object class="AdwPreferencesGroup" id="timers_group">
+                    <property name="header-suffix">
+                      <object class="GtkLinkButton">
+                        <property name="css-classes">circular
+flat</property>
+                        <property name="icon-name">dialog-information-symbolic</property>
+                        <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.time.html</property>
+                      </object>
+                    </property>
+                    <property name="title">Timer Triggers</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwPreferencesGroup">
+                    <property name="header-suffix">
+                      <object class="GtkLinkButton">
+                        <property name="css-classes">circular
+flat</property>
+                        <property name="icon-name">dialog-information</property>
+                        <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.timer.html</property>
+                      </object>
+                    </property>
+                    <property name="title">Timer</property>
+                    <child>
+                      <object class="AdwComboRow" id="trigger_unit">
+                        <property name="enable-search">True</property>
+                        <property name="expression">
+                          <lookup name="string" type="GtkStringObject"/>
+                        </property>
+                        <property name="search-match-mode">substring</property>
+                        <property name="subtitle-selectable">True</property>
+                        <property name="title">Unit</property>
+                        <property name="use-subtitle">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwSwitchRow" id="persistent">
+                        <property name="subtitle" translatable="yes">Catch up missed runs after boot </property>
+                        <property name="title">Persistant</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="SysDDropDown" id="trigger_unit2"/>
+                    </child>
+                  </object>
                 </child>
               </object>
-            </child>
-            <child>
-              <object class="AdwPreferencesGroup">
-                <child>
-                  <object class="AdwButtonRow">
-                    <property name="action-name">navigation.push</property>
-                    <property name="action-target">'unit_file_page'</property>
-                    <property name="end-icon-name">go-next</property>
-                    <property name="title">Generated File</property>
-                  </object>
-                </child>
-              </object>
-            </child>
+            </property>
           </object>
         </property>
       </object>

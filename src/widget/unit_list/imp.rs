@@ -22,7 +22,6 @@ use crate::{
     widget::{
         InterPanelMessage,
         app_window::AppWindow,
-        control_action_dialog::imp::complete_unit_information,
         preferences::data::{
             DbusLevel, KEY_PREF_CASE_INSENSITIVE_DEFAULT, KEY_PREF_UNIT_LIST_DISPLAY_COLORS,
             PREFERENCES,
@@ -809,7 +808,7 @@ impl UnitListPanelImp {
         let unit_name = unit.primary();
 
         info!(
-            "Unit List {} list_store {} filter {} sort_model {}",
+            "Unit {:?}, list_store_list {} filter_size {} sort_model_size {}",
             unit_name,
             self.list_store
                 .get()
@@ -826,29 +825,32 @@ impl UnitListPanelImp {
         }
 
         //Don't select and focus if filter out
-        if let Some(filter) = self.filter_list_model.borrow().filter()
-            && !filter.match_(unit)
-        {
-            //Unselect
-            single_selection!(self).set_selected(gtk::INVALID_LIST_POSITION);
-            info!("Unit {unit_name} no Match");
-            return Some(unit.clone());
+        // if let Some(filter) = self.filter_list_model.borrow().filter()
+        //     && !filter.match_(unit)
+        // {
+        //     //Unselect
+        //     single_selection!(self).set_selected(gtk::INVALID_LIST_POSITION);
+        //     info!("Unit {unit_name} no Match");
+        //     return Some(unit.clone());
+        // }
+
+        let single_selection = self.single_selection.get().unwrap();
+        let mut unit_found_position = None;
+        for position in 0..single_selection.n_items() {
+            let object = single_selection.item(position);
+            let Some(unit) = object.and_downcast_ref::<UnitInfo>() else {
+                error!("item None");
+                break;
+            };
+
+            if unit_name == unit.primary() {
+                unit_found_position = Some(position);
+                break;
+            }
         }
 
-        let finding = self
-            .list_store
-            .get()
-            .expect("LIST STORE NOT NONE")
-            .find_with_equal_func(|object| {
-                let Some(unit_item) = object.downcast_ref::<UnitInfo>() else {
-                    error!("item.downcast_ref::<UnitBinding>()");
-                    return false;
-                };
-
-                unit_name == unit_item.primary()
-            });
-
-        if let Some(row) = finding {
+        info!("Sel {:?}", unit_found_position);
+        if let Some(row) = unit_found_position {
             info!("Scroll to row {row}");
 
             units_browser!(self).scroll_to(
@@ -857,6 +859,8 @@ impl UnitListPanelImp {
                 gtk::ListScrollFlags::FOCUS | gtk::ListScrollFlags::SELECT,
                 None,
             );
+        } else {
+            single_selection.set_selected(gtk::INVALID_LIST_POSITION);
         }
 
         Some(unit.clone())
@@ -914,12 +918,19 @@ impl UnitListPanelImp {
     }
 
     fn manage_unit_new_remove(&self, signal: SystemdSignal) {
-        let Some(unit) = signal.create_unit() else {
-            return;
-        };
+        match signal {
+            SystemdSignal::UnitNew(unit_dbus_level, unit_name) => {
+                let unit = UnitInfo::from_unit_key(&unit_name, unit_dbus_level);
+                self.add_one_unit(&unit, true);
+            }
 
-        //TODO update unit info if add
-        self.add_one_unit(&unit, matches!(signal, SystemdSignal::UnitNew(_, _)));
+            SystemdSignal::UnitRemoved(unit_dbus_level, unit_name) => {
+                let unit = UnitInfo::from_unit_key(&unit_name, unit_dbus_level);
+                self.add_one_unit(&unit, false);
+            }
+
+            _ => {}
+        }
     }
 
     fn can_add_unit_to_view(&self, view: UnitCuratedList, unit: &UnitInfo) -> bool {
@@ -957,7 +968,7 @@ impl UnitListPanelImp {
         }
     }
 
-    fn add_one_unit(&self, unit: &UnitInfo, add_or_remove: bool) {
+    fn add_one_unit(&self, unit: &UnitInfo, add_unit: bool) {
         let view = self.selected_list_view.get();
 
         if !self.can_add_unit_to_view(view, unit) {
@@ -969,9 +980,12 @@ impl UnitListPanelImp {
 
         //TODO need set of use cases to test
         glib::spawn_future_local(async move {
-            if add_or_remove {
+            if add_unit {
+                info!("Adding unit {:?}", unit.primary());
+
                 //FIXME not complete to the view (could miss some params)
-                let _result = complete_unit_information(&unit).await;
+                //FIXME calling bellow migth freeze the app because it continiouly make receive add unit or remove unit signals
+                // let _result = complete_unit_information(&unit).await; //FIXME commented for now
 
                 let key = UnitKey::new(&unit);
                 let mut unit_map = panel.imp().units_map.borrow_mut();
@@ -999,6 +1013,8 @@ impl UnitListPanelImp {
                     }
                 }
             } else {
+                info!("Removing unit {:?}", unit.primary());
+
                 match systemd::get_unit_file_state(unit.dbus_level(), &unit.primary()) {
                     Ok(state) => unit.set_enable_status(state),
                     Err(SystemdErrors::ZFileNotFound(_)) => {
@@ -1864,10 +1880,12 @@ impl UnitListPanelImp {
     fn process_signals(&self) {
         let list_panel = self.obj().clone();
         glib::spawn_future_local(async move {
+            info!("Start processing signals");
             let (sender, mut receiver) = mpsc::channel(100);
             let _handle = runtime().spawn(async { unit_load_batch(sender).await });
+
             while let Some(signal) = receiver.recv().await {
-                info!("{:?}", signal);
+                info!("Received Signal {:?}", signal);
                 list_panel.imp().manage_unit_new_remove(signal);
             }
         });
@@ -1902,6 +1920,7 @@ async fn unit_load_batch(sender: mpsc::Sender<SystemdSignal>) {
         .chunks_timeout(100, Duration::from_millis(500));
 
     tokio::pin!(batch_stream);
+
     while let Some(signals) = batch_stream.next().await {
         let mut set = HashSet::with_capacity(signals.len());
 
@@ -1921,7 +1940,7 @@ async fn unit_load_batch(sender: mpsc::Sender<SystemdSignal>) {
         }
     }
 
-    info!("Signal Browser End receiving signals")
+    warn!("Signal Browser End receiving signals")
 }
 
 macro_rules! dbus_call {

@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 1.0.1 -->
+<!-- Created with Cambalache 1.0.3 -->
 <interface>
   <!-- interface-name journal_panel.ui -->
   <!-- interface-description Unit journal panel -->
@@ -41,10 +41,8 @@
           </object>
         </child>
         <child>
-          <object class="GtkSwitch" id="continuous_switch">
-            <property name="tooltip-text" translatable="yes" context="journal" comments="tooltip">Enable new entries continuous print as they are appended to the journal</property>
-            <property name="valign">baseline-center</property>
-            <signal name="state-set" handler="continuous_switch_state_set" swapped="True"/>
+          <object class="GtkCheckButton" id="follow_check">
+            <property name="tooltip-text" translatable="yes" context="journal">Enable new entries continuous print as they are appended to the journal</property>
           </object>
         </child>
         <child>
@@ -125,6 +123,11 @@
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkScrolledWindow" id="scrolled_window">
+                    <property name="child">
+                      <object class="GtkTextView" id="journal_text_view">
+                        <property name="editable">False</property>
+                      </object>
+                    </property>
                     <property name="overlay-scrolling">False</property>
                     <property name="vexpand">True</property>
                     <property name="vexpand-set">True</property>

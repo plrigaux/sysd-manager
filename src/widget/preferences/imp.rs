@@ -117,6 +117,9 @@ pub struct PreferencesDialogImpl {
     proxy_save_file_switch: TemplateChild<adw::SwitchRow>,
 
     #[template_child]
+    proxy_create_file_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
     proxy_revert_unit_file_switch: TemplateChild<adw::SwitchRow>,
 
     #[template_child]
@@ -516,12 +519,12 @@ impl ObjectImpl for PreferencesDialogImpl {
             use systemd::proxy_switcher::{
                 KEY_PREF_PROXY_START_AT_STARTUP, KEY_PREF_PROXY_STOP_AT_CLOSE,
                 KEY_PREF_USE_PROXY_CLEAN, KEY_PREF_USE_PROXY_CREATE_DROP_IN,
-                KEY_PREF_USE_PROXY_DISABLE_UNIT_FILE, KEY_PREF_USE_PROXY_ENABLE_UNIT_FILE,
-                KEY_PREF_USE_PROXY_FREEZE, KEY_PREF_USE_PROXY_RELAOD_UNIT,
-                KEY_PREF_USE_PROXY_RELOAD_DAEMON, KEY_PREF_USE_PROXY_RESTART,
-                KEY_PREF_USE_PROXY_REVERT_UNIT_FILE, KEY_PREF_USE_PROXY_SAVE_FILE,
-                KEY_PREF_USE_PROXY_START, KEY_PREF_USE_PROXY_STOP, KEY_PREF_USE_PROXY_THAW,
-                PROXY_SWITCHER,
+                KEY_PREF_USE_PROXY_CREATE_FILE, KEY_PREF_USE_PROXY_DISABLE_UNIT_FILE,
+                KEY_PREF_USE_PROXY_ENABLE_UNIT_FILE, KEY_PREF_USE_PROXY_FREEZE,
+                KEY_PREF_USE_PROXY_RELOAD_DAEMON, KEY_PREF_USE_PROXY_RELOAD_UNIT,
+                KEY_PREF_USE_PROXY_RESTART, KEY_PREF_USE_PROXY_REVERT_UNIT_FILE,
+                KEY_PREF_USE_PROXY_SAVE_FILE, KEY_PREF_USE_PROXY_START, KEY_PREF_USE_PROXY_STOP,
+                KEY_PREF_USE_PROXY_THAW, PROXY_SWITCHER,
             };
 
             use crate::format2;
@@ -552,7 +555,7 @@ impl ObjectImpl for PreferencesDialogImpl {
 
             settings
                 .bind::<adw::SwitchRow>(
-                    KEY_PREF_USE_PROXY_RELAOD_UNIT,
+                    KEY_PREF_USE_PROXY_RELOAD_UNIT,
                     self.proxy_reload_unit_switch.as_ref(),
                     "active",
                 )
@@ -618,6 +621,14 @@ impl ObjectImpl for PreferencesDialogImpl {
                 .bind::<adw::SwitchRow>(
                     KEY_PREF_USE_PROXY_SAVE_FILE,
                     self.proxy_save_file_switch.as_ref(),
+                    "active",
+                )
+                .build();
+
+            settings
+                .bind::<adw::SwitchRow>(
+                    KEY_PREF_USE_PROXY_CREATE_FILE,
+                    self.proxy_create_file_switch.as_ref(),
                     "active",
                 )
                 .build();

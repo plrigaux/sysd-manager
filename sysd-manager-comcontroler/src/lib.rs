@@ -28,9 +28,7 @@ use crate::{
 };
 use base::{
     enums::UnitDBusLevel,
-    file::{
-        commander_blocking, create_drop_in_path_file, flatpak_host_file_path, test_flatpak_spawn,
-    },
+    file::{commander_blocking, create_drop_in_path_file, flatpak_host_file_path},
     proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse},
 };
 use enumflags2::{BitFlag, BitFlags};
@@ -811,7 +809,7 @@ pub fn commander_output(
         Err(err) => {
             error!("commander_output {err}");
 
-            match test_flatpak_spawn() {
+            match base::file::test_flatpak_spawn() {
                 Ok(()) => Err(SystemdErrors::IoError(err)),
                 Err(e1) => {
                     error!("commander_output e1 {e1}");
@@ -820,6 +818,52 @@ pub fn commander_output(
             }
         }
     }
+}
+
+pub fn test_flatpak_spawn() -> Result<(), SystemdErrors> {
+    #[cfg(feature = "flatpak")]
+    {
+        let prog_n_args = [base::consts::SYSTEMD_ANALYSE];
+        info!("test_flatpak_spawn {:?}", prog_n_args);
+        match commander_blocking(prog_n_args, None).output() {
+            Ok(output) => {
+                info!("Command Exit status: {}", output.status);
+
+                if !output.status.success() {
+                    warn!("Flatpak mode, command line did not succeed, please investigate.");
+                    error!("Command exit status: {}", output.status);
+                    info!(
+                        "{}",
+                        String::from_utf8(output.stdout).expect("from_utf8 failed")
+                    );
+                    error!(
+                        "{}",
+                        String::from_utf8(output.stderr).expect("from_utf8 failed")
+                    );
+                    let vec = prog_n_args.iter().map(|s| s.to_string()).collect();
+                    return Err(SystemdErrors::CmdNoFreedesktopFlatpakPermission(
+                        Some(vec),
+                        None,
+                    ));
+                }
+                Ok(())
+            }
+            Err(err) => {
+                error!("commander_output {err}");
+
+                match base::file::test_flatpak_spawn() {
+                    Ok(()) => Err(SystemdErrors::IoError(err)),
+                    Err(e1) => {
+                        error!("commander_output e1 {e1}");
+                        Err(SystemdErrors::CmdNoFlatpakSpawn)
+                    }
+                }
+            }
+        }
+    }
+
+    #[cfg(not(feature = "flatpak"))]
+    Ok(())
 }
 
 pub fn generate_file_uri(file_path: &str) -> String {
@@ -1286,13 +1330,31 @@ pub async fn save_file(
 
     #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
     if user_session || !proxy_switcher::PROXY_SWITCHER.save_file() {
-        save_text_to_file(file_path, content, user_session).await
+        save_text_to_file(file_path, content, user_session, false).await
     } else {
         proxy_call_async!(save_file, file_path, content)
     }
 
     #[cfg(any(feature = "flatpak", feature = "appimage"))]
-    save_text_to_file(file_path, content, user_session).await
+    save_text_to_file(file_path, content, user_session, false).await
+}
+
+pub async fn create_file(
+    user_session: bool,
+    file_path: &str,
+    content: &str,
+) -> Result<u64, SystemdErrors> {
+    info!("Creating file {file_path:?}");
+
+    #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
+    if user_session || !proxy_switcher::PROXY_SWITCHER.create_file() {
+        save_text_to_file(file_path, content, user_session, true).await
+    } else {
+        proxy_call_async!(create_file, file_path, content)
+    }
+
+    #[cfg(any(feature = "flatpak", feature = "appimage"))]
+    save_text_to_file(file_path, content, user_session, true).await
 }
 
 pub async fn revert_unit_file_full(

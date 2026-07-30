@@ -56,6 +56,9 @@ impl From<SysdBaseError> for FdoError {
                 FdoError(zbus::fdo::Error::Failed("Internal issue".to_string()))
             }
             SysdBaseError::InvalidPath(msg) => FdoError(zbus::fdo::Error::AccessDenied(msg)),
+            SysdBaseError::ErrorExit(exit_code) => FdoError(zbus::fdo::Error::SpawnExecFailed(
+                format!("Exit code {}", exit_code),
+            )),
         }
     }
 }
@@ -83,6 +86,11 @@ fn transform_error<T>(result: Result<T, std::io::Error>) -> Result<T, zbus::fdo:
 
 pub async fn save(file_path: &str, content: &str) -> zbus::fdo::Result<u64> {
     let result = save_io(file_path, false, content).await;
+    transform_error(result)
+}
+
+pub async fn create(file_path: &str, content: &str) -> zbus::fdo::Result<u64> {
+    let result = save_io(file_path, true, content).await;
     transform_error(result)
 }
 

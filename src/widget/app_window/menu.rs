@@ -227,9 +227,9 @@ fn daemon_reload_with_dialog(
 ) {
     match dbus_level {
         DbusLevel::UserSession => {
-            daemon_relaod(simple_action, app_win_op, UnitDBusLevel::UserSession)
+            daemon_reload(simple_action, app_win_op, UnitDBusLevel::UserSession)
         }
-        DbusLevel::System => daemon_relaod(simple_action, app_win_op, UnitDBusLevel::System),
+        DbusLevel::System => daemon_reload(simple_action, app_win_op, UnitDBusLevel::System),
         DbusLevel::SystemAndSession => {
             const SYSTEM: &str = "system";
             const USER: &str = "user";
@@ -262,9 +262,9 @@ fn daemon_reload_with_dialog(
 
                     match response {
                         SYSTEM => {
-                            daemon_relaod(simple_action.clone(), win.clone(), UnitDBusLevel::System)
+                            daemon_reload(simple_action.clone(), win.clone(), UnitDBusLevel::System)
                         }
-                        USER => daemon_relaod(
+                        USER => daemon_reload(
                             simple_action.clone(),
                             win.clone(),
                             UnitDBusLevel::UserSession,
@@ -280,7 +280,7 @@ fn daemon_reload_with_dialog(
     }
 }
 
-fn daemon_relaod(
+fn daemon_reload(
     simple_action: gio::SimpleAction,
     app_win_op: AppWindow,
     dbus_level: UnitDBusLevel,
@@ -303,21 +303,14 @@ fn daemon_relaod(
             return;
         };
 
-        let user_session = dbus_level.user_session();
-
         match response {
             Ok(_) => {
-                info!("All units reloaded! User session {}", user_session);
-                let instance_level = if user_session {
-                    //instance level user
-                    gettext("user")
-                } else {
-                    //instance level system
-                    gettext("system")
-                };
+                info!("All units reloaded! {:?}", dbus_level);
+                let instance_level = dbus_level.message();
 
+                let instance_level = format!("<b>{}</b>", instance_level);
                 let msg = format2!(
-                    "Systemd manager configuration reloaded at <b>{}</b> level!",
+                    "Systemd manager configuration reloaded at {} level!",
                     instance_level
                 );
                 add_toast(&app_win_op, &msg);
@@ -325,7 +318,8 @@ fn daemon_relaod(
             Err(e) => {
                 error!("Daemon Reload failed {e:?}");
                 let msg = gettext("Daemon Reload failed!");
-                add_toast(&app_win_op, &msg); //TODO make red
+                let msg = format!("<red>{msg}</red>");
+                add_toast(&app_win_op, &msg);
             }
         }
         simple_action.set_enabled(true);

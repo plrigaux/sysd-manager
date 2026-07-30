@@ -769,25 +769,18 @@ pub fn after_unit_file_action(
 }
 
 pub async fn complete_unit_information(unit: &UnitInfo) -> Result<(), SystemdErrors> {
-    let (sender, receiver) = tokio::sync::oneshot::channel();
     let primary_name = unit.primary();
     let level = unit.dbus_level();
     let object_path = unit.object_path();
     let status = unit.enable_status();
-    crate::systemd::runtime().spawn(async move {
-        let response =
-            systemd::complete_single_unit_information(primary_name, level, object_path, status)
-                .await;
-
-        if let Err(e) = sender.send(response) {
-            error!("Channel closed unexpectedly: {e:?}");
-        }
+    let receiver_result = crate::systemd::runtime().block_on(async move {
+        systemd::complete_single_unit_information(primary_name, level, object_path, status).await
     });
 
-    let Ok(receiver_result) = receiver.await else {
-        error!("Tokio channel dropped");
-        return Err(SystemdErrors::Custom("Channel dropped".to_string()));
-    };
+    // let Ok(receiver_result) = receiver.await else {
+    //     error!("Tokio channel dropped");
+    //     return Err(SystemdErrors::Custom("Channel dropped".to_string()));
+    // };
 
     let vec_unit_info =
         receiver_result.inspect_err(|err| warn!("Fail to update Unit info {err:?}"))?;

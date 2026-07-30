@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [2.20.5] - 2026-07-30
+
+### Changed
+- Journal's follow switch has been replaced by a checkbox. This fixes [Issue 48](https://github.com/plrigaux/sysd-manager/issues/48)
+- Unit Info tab changed to Status
+
+### Fixed
+- [Issue 71](https://github.com/plrigaux/sysd-manager/issues/71) Application Freeze
+- [Issue 69](https://github.com/plrigaux/sysd-manager/issues/69) Message toast color contrast for better visibility
+- [Issue 67](https://github.com/plrigaux/sysd-manager/issues/67) Journal's follow auto-scroll to new journal entries when Descending is enabled 
+
+## [2.20.4] - 2026-06-17
+
+### Fixed
+- PARTIAL FIX Follow does not auto-scroll to new journal entries when Descending is enabled [Issue 67](https://github.com/plrigaux/sysd-manager/issues/67)
+
+## [2.20.3] - 2026-06-17
+
+### Added
+- Unit Creation Wizard: Add Standard Output and Error on Service
+- Unit Creation Wizard: Add CPUQuota and MemoryHigh on Service
+
+## [2.20.2] - 2026-06-13
+
+### Added
+- Unit Creation Wizard: Add time validators [Issue 44](https://github.com/plrigaux/sysd-manager/issues/44)
+          
+## [2.20.1] - 2026-06-11
+
+### Added
+- Create Unit Wizard new options [Issue 44](https://github.com/plrigaux/sysd-manager/issues/44)
+
+## [2.20.0] - 2026-06-06
+
+### Added
+- Wizard to create Timer and Service Units as requested by [Issue 44](https://github.com/plrigaux/sysd-manager/issues/44)
+
+### Fixed
+- [Issue 56](https://github.com/plrigaux/sysd-manager/issues/55) Laggy filtering, delay set at 350ms
+
 ## [2.19.6] - 2026-05-20
 
 ### Fixed
