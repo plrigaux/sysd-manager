@@ -12,10 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Journal's follow switch has been replaced by a checkbox. This fixes [Issue 48](https://github.com/plrigaux/sysd-manager/issues/48)
+- Unit Info tab changed to Status
 
 ### Fixed
 - [Issue 71](https://github.com/plrigaux/sysd-manager/issues/71) Application Freeze
 - [Issue 69](https://github.com/plrigaux/sysd-manager/issues/69) Message toast color contrast for better visibility
+- [Issue 67](https://github.com/plrigaux/sysd-manager/issues/67) Journal's follow auto-scroll to new journal entries when Descending is enabled 
 
 ## [2.20.4] - 2026-06-17
 
