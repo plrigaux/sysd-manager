@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-07-30 17:14-0400\n"
-"PO-Revision-Date: 2026-04-24 03:59+0000\n"
+"PO-Revision-Date: 2026-07-30 23:00+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.17.1-dev\n"
+"X-Generator: Weblate 2026.8.dev0\n"
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -271,65 +271,68 @@ msgid ""
 "You need to <b>jailbreak</b> your Flatpak application to allow it to run sub-"
 "programs or to save files on the host system."
 msgstr ""
+"<b>Créer Unité</b> nécessite certains droits d'accès pour fonctionner "
+"correctement.\n"
+"\n"
+"Vous devez <b>débrider</b> votre application Flatpak pour lui permettre "
+"d'exécuter des sous-programmes ou d'enregistrer des fichiers sur le système "
+"hôte."
 
 #. info subtitle
 #: data/interfaces/creator/create_first.ui:33
-#, fuzzy
 msgctxt "unit creation"
 msgid "Create a task"
-msgstr "Créer un Drop-in"
+msgstr "Créer une tâche"
 
 #: data/interfaces/creator/create_first.ui:34
-#, fuzzy
 msgid "Service"
-msgstr "Gestionnaire de services"
+msgstr "Service"
 
 #. info subtitle
 #: data/interfaces/creator/create_first.ui:47
 msgctxt "unit creation"
 msgid "Create a scheduled task"
-msgstr ""
+msgstr "Créer une tâche planifiée"
 
 #: data/interfaces/creator/create_first.ui:48
 msgid "Timer with Service"
-msgstr ""
+msgstr "Timer avec Service"
 
 #. info subtitle
 #: data/interfaces/creator/create_first.ui:61
 msgctxt "unit creation"
 msgid "Trigger an existing task (service)"
-msgstr ""
+msgstr "Déclencher une tâche (service) existante"
 
 #: data/interfaces/creator/create_first.ui:62
-#, fuzzy
 msgid "Timer"
-msgstr "Chronos"
+msgstr "Timer"
 
 #: data/interfaces/creator/create_first.ui:81
-#, fuzzy
 msgid "System"
-msgstr "système"
+msgstr "Système"
 
 #: data/interfaces/creator/create_first.ui:94
-#, fuzzy
 msgid "User Session"
-msgstr "Bus session utilisateur"
+msgstr "Session utilisateur"
 
 #. info subtitle
 #: data/interfaces/creator/create_first.ui:111
 msgctxt "unit creation"
 msgid "Runtime units are discarded at next reboot"
-msgstr ""
+msgstr "Les unités runtime sont supprimées au prochain redémarrage"
 
 #: data/interfaces/creator/nav_row.ui:21
 msgid ""
 "🙏🏻 Please donate — every contribution helps me to prove to my wife that "
 "this project is more than just “another coding hobby.”"
 msgstr ""
+"🙏🏻 Merci de faire un don — chaque contribution m'aide à prouver à ma femme "
+"que ce projet est bien plus qu'un simple « passe-temps de programmation »."
 
 #: data/interfaces/creator/timer_creator_page.ui:109
 msgid "Catch up missed runs after boot "
-msgstr ""
+msgstr "Rattraper les courses manquées après le démarrage "
 
 #: data/interfaces/ex_menu_button.ui:40
 msgctxt "extented menu button"
@@ -946,16 +949,14 @@ msgid "Save file"
 msgstr "Enregistrer"
 
 #: data/interfaces/preferences.ui:310
-#, fuzzy
 msgctxt "preference"
 msgid "<b>Create file</b> through the Proxy"
-msgstr "<b>Enregistrer le fichier</b> via le proxy"
+msgstr "<b>Enregistrer le fichier</b> via le Proxy"
 
 #: data/interfaces/preferences.ui:311
-#, fuzzy
 msgctxt "preference"
 msgid "Create file"
-msgstr "Enregistrer"
+msgstr "Créer fichier"
 
 #: data/interfaces/preferences.ui:319
 msgctxt "preference"
@@ -990,12 +991,12 @@ msgstr "Général"
 #: data/interfaces/shortcuts.ui:14
 msgctxt "shortcut window"
 msgid "Close the application"
-msgstr ""
+msgstr "Fermez l'application"
 
 #: data/interfaces/shortcuts.ui:20
 msgctxt "shortcut window"
 msgid "Close the window"
-msgstr ""
+msgstr "Fermez la fenêtre"
 
 #: data/interfaces/shortcuts.ui:26
 msgctxt "shortcut window"
@@ -1004,7 +1005,6 @@ msgstr "Afficher les préférences"
 
 #. Section name
 #: data/interfaces/shortcuts.ui:33
-#, fuzzy
 msgctxt "shortcut window"
 msgid "SysD Manager"
 msgstr "SysD Manager"
@@ -1047,22 +1047,20 @@ msgid "Deamon Reload"
 msgstr "Recharger la configuration"
 
 #: data/interfaces/shortcuts.ui:74
-#, fuzzy
 msgctxt "shortcut window"
 msgid "Open Find in Text"
-msgstr "Ouvrir rechercher dans le texte"
+msgstr "Ouvrir Rechercher dans le texte"
 
 #. subtitle
 #: data/interfaces/shortcuts.ui:80
 msgctxt "shortcut window"
 msgid "Create Timer or Service Unit Type"
-msgstr ""
+msgstr "Créer une unité de type timer ou service"
 
 #: data/interfaces/shortcuts.ui:81
-#, fuzzy
 msgctxt "shortcut window"
 msgid "Create Unit"
-msgstr "Créer un Drop-in"
+msgstr "Créer une Unité"
 
 #. Section name
 #: data/interfaces/shortcuts.ui:88
@@ -1071,10 +1069,9 @@ msgid "Pages"
 msgstr "Pages"
 
 #: data/interfaces/shortcuts.ui:92
-#, fuzzy
 msgctxt "shortcut window"
 msgid "Display Unit Status"
-msgstr "Afficher les fichiers d'unité"
+msgstr "Afficher le statut de l'unité"
 
 #: data/interfaces/shortcuts.ui:98
 msgctxt "shortcut window"
@@ -1509,10 +1506,9 @@ msgstr "_Plus ..."
 
 #. aka Unit Info
 #: data/interfaces/unit_control_panel.ui:187
-#, fuzzy
 msgctxt "controls tab"
 msgid "Status"
-msgstr "État"
+msgstr "Statut"
 
 #: data/interfaces/unit_control_panel.ui:197
 msgctxt "controls tab"
@@ -1986,148 +1982,143 @@ msgstr "Options d'arrêt"
 #: src/widget/creator/first_page.rs:116
 msgctxt "creator"
 msgid "Unit Name Prefix"
-msgstr ""
+msgstr "Préfixe du nom de l'unité"
 
 #: src/widget/creator/imp.rs:355
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "create"
 msgid "Unit {} Created!"
-msgstr "Fichier {} restaurée avec succès !"
+msgstr "Unité {} créée!"
 
 #: src/widget/creator/imp.rs:362
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "create"
 msgid "Creation Failed! {}"
-msgstr "L'opération a échouée"
+msgstr "Création a échouée ! {}"
 
 #. Faild to reload manager a System or User level
 #: src/widget/creator/launch_creator_page.rs:184
-#, fuzzy, rust-format
+#, rust-format
 msgid "Daemon Reload failed at {} level"
-msgstr "Recharge la configuration a échouée !"
+msgstr "Échec du rechargement du démon au niveau {}"
 
 #: src/widget/creator/mod.rs:98
-#, fuzzy
 msgctxt "create"
 msgid "Service"
-msgstr "Gestionnaire de services"
+msgstr "Service"
 
 #: src/widget/creator/mod.rs:99
-#, fuzzy
 msgctxt "create"
 msgid "Timer"
-msgstr "Chronos"
+msgstr "Timer"
 
 #: src/widget/creator/mod.rs:100
 msgctxt "create"
 msgid "Timer with Service"
-msgstr ""
+msgstr "Timer avec Service"
 
 #: src/widget/creator/mod.rs:178
 #, rust-format
 msgctxt "validator"
 msgid "{} - Not absolute path"
-msgstr ""
+msgstr "{} - Chemin non absolu"
 
 #: src/widget/creator/mod.rs:181
 #, rust-format
 msgctxt "validator"
 msgid "{} - Not a directory"
-msgstr ""
+msgstr "{} - Pas un répertoire"
 
 #: src/widget/creator/mod.rs:184
 #, rust-format
 msgctxt "validator"
 msgid "{} - No path specified"
-msgstr ""
+msgstr "{} - Aucun chemin spécifié"
 
 #: src/widget/creator/service_creator_page/imp.rs:519
 msgctxt "unit creation"
 msgid "Select executable"
-msgstr ""
+msgstr "Sélectionner l'exécutable"
 
 #: src/widget/creator/service_creator_page/imp.rs:520
-#, fuzzy
 msgid "Select"
-msgstr "Choisir la police"
+msgstr "Sélectionner"
 
 #: src/widget/creator/timer_creator_page/imp.rs:562
-#, fuzzy
 msgctxt "timer"
 msgid "Custom"
-msgstr "Personnalisé"
+msgstr "Personnel"
 
 #: src/widget/creator/timer_creator_page/imp.rs:563
 msgctxt "timer"
 msgid "Minutely"
-msgstr ""
+msgstr "Par minute"
 
 #: src/widget/creator/timer_creator_page/imp.rs:564
 msgctxt "timer"
 msgid "Hourly"
-msgstr ""
+msgstr "Par heure"
 
 #: src/widget/creator/timer_creator_page/imp.rs:565
 msgctxt "timer"
 msgid "Daily"
-msgstr ""
+msgstr "Par jour"
 
 #: src/widget/creator/timer_creator_page/imp.rs:566
 msgctxt "timer"
 msgid "Monthly"
-msgstr ""
+msgstr "Par mois"
 
 #: src/widget/creator/timer_creator_page/imp.rs:567
 msgctxt "timer"
 msgid "Weekly"
-msgstr ""
+msgstr "Par semaine"
 
 #: src/widget/creator/timer_creator_page/imp.rs:568
 msgctxt "timer"
 msgid "Yearly"
-msgstr ""
+msgstr "Par année"
 
 #: src/widget/creator/timer_creator_page/imp.rs:569
 msgctxt "timer"
 msgid "Quarterly"
-msgstr ""
+msgstr "Par trimestre"
 
 #: src/widget/creator/timer_creator_page/imp.rs:570
 msgctxt "timer"
 msgid "Semiannually"
-msgstr ""
+msgstr "Par demi année"
 
 #: src/widget/creator/timer_creator_page.rs:72
-#, fuzzy
 msgctxt "timer"
 msgid "OnActiveSec"
-msgstr "Activation"
+msgstr "OnActiveSec"
 
 #: src/widget/creator/timer_creator_page.rs:73
 msgctxt "timer"
 msgid "OnBootSec"
-msgstr ""
+msgstr "OnBootSec"
 
 #: src/widget/creator/timer_creator_page.rs:74
 msgctxt "timer"
 msgid "OnStartupSec"
-msgstr ""
+msgstr "OnStartupSec"
 
 #: src/widget/creator/timer_creator_page.rs:75
 msgctxt "timer"
 msgid "OnUnitActiveSec"
-msgstr ""
+msgstr "OnUnitActiveSec"
 
 #: src/widget/creator/timer_creator_page.rs:76
 msgctxt "timer"
 msgid "OnUnitInactiveSec"
-msgstr ""
+msgstr "OnUnitInactiveSec"
 
 #. Menu item label
 #: src/widget/journal/imp.rs:876
 msgctxt "journal"
 msgid "Wrap Word"
-msgstr ""
+msgstr "Retour à la ligne"
 
 #. Dialog subtitle
 #: src/widget/kill_panel/imp.rs:75
@@ -2517,10 +2508,9 @@ msgstr "{} de {}"
 
 #. Toggle in text Menu item
 #: src/widget/text_search/mod.rs:57
-#, fuzzy
 msgctxt "text_find"
 msgid "Toggle Find in Text"
-msgstr "Ouvrir rechercher dans le texte"
+msgstr "Activer/désactiver la recherche dans le texte"
 
 #. Open in text Menu item
 #. toggle button tooltip text
@@ -2643,10 +2633,10 @@ msgstr "rechargé"
 
 #. toast message
 #: src/widget/unit_control_panel/imp.rs:495
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "toast"
 msgid "Unit {} has been {} with the mode {}"
-msgstr "L'unité {} a été <{0}>{}</{0}> avec le mode {}"
+msgstr "L'unité {} a été {} avec le mode {}"
 
 #. toast message error --  "Can't {ACTION} the unit <unit>{UNITNAME}</unit>, because: {SYSTEMD HUMAN ERROR (english)}"),
 #: src/widget/unit_control_panel/imp.rs:516
@@ -2659,7 +2649,7 @@ msgstr "Ne peut {} l'unité {}, à cause : {}"
 #, rust-format
 msgctxt "toast"
 msgid "{} unit <unit>{}</unit> is <green>successful</green>"
-msgstr ""
+msgstr "{} unité <unit>{}</unit> est <green>réussi</green>"
 
 #. toast message success (no unit) -- "{ACTION} successful."
 #: src/widget/unit_control_panel/imp.rs:825
@@ -2672,14 +2662,14 @@ msgstr "{} réussi."
 #, rust-format
 msgctxt "toast"
 msgid "{} unit <unit>{}</unit> failed. Reason: <red>{}</red>."
-msgstr ""
+msgstr "{} unité <unit>{}</unit> à échoué. Raison: <red>{}</red>."
 
 #. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
 #: src/widget/unit_control_panel/imp.rs:846
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "toast"
 msgid "{} failed. Reason: <red>{}</red>."
-msgstr "{} a échoué. Raison : <span fgcolor='{}'>{}</span>."
+msgstr "{} a échoué. Raison : <red>{}</red>."
 
 #: src/widget/unit_control_panel/mod.rs:119
 #, rust-format
@@ -2785,7 +2775,6 @@ msgid "_Proceed"
 msgstr "_Procéder"
 
 #: src/widget/unit_file_panel/flatpak.rs:123
-#, fuzzy
 msgctxt "flatpak"
 msgid ""
 "You need to <b>jailbreak</b> your Flatpak application to allow it to run sub-"
@@ -2794,11 +2783,11 @@ msgid ""
 "Follow this <a href=\"https://github.com/plrigaux/sysd-manager/wiki/"
 "Flatpak\">link</a> to know how to acquire the required permission."
 msgstr ""
-"Vous devez jailbreaker votre application Flatpak pour pouvoir enregistrer "
-"des fichiers sur le système hôte.\n"
+"Vous devez <b>jailbreaker</b> votre application Flatpak pour pouvoir "
+"enregistrer des fichiers sur le système hôte.\n"
 "\n"
-"Suivez le <a href=\"https://github.com/plrigaux/sysd-manager/wiki/"
-"Flatpak\">lien</a> pour savoir comment obtenir l'autorisation nécessaire."
+"Suivez le <a href=\"https://github.com/plrigaux/sysd-manager/wiki/Flatpak\">"
+"lien</a> pour savoir comment obtenir l'autorisation nécessaire."
 
 #: src/widget/unit_file_panel/flatpak.rs:127
 msgctxt "flatpak"
@@ -3149,7 +3138,7 @@ msgstr "Configurer les colonnes"
 #: src/widget/unit_list/menus.rs:33
 msgctxt "menu"
 msgid "Reset all columns"
-msgstr ""
+msgstr "Réinitialiser toutes les colonnes"
 
 #. column header menu
 #: src/widget/unit_list/menus.rs:44
@@ -3207,10 +3196,9 @@ msgstr "Sockets"
 
 #. Curated List View
 #: src/widget/unit_list/mod.rs:218
-#, fuzzy
 msgctxt "menu"
 msgid "Services"
-msgstr "Gestionnaire de services"
+msgstr "Services"
 
 #. Curated List View
 #: src/widget/unit_list/mod.rs:222
