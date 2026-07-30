@@ -8,7 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [2.20.5] - 2026-07-30
 
+### Changed
+- Journal's follow switch has been replaced by a checkbox. This fixes [Issue 48](https://github.com/plrigaux/sysd-manager/issues/48)
+
+### Fixed
+- [Issue 71](https://github.com/plrigaux/sysd-manager/issues/71) Application Freeze
+- [Issue 69](https://github.com/plrigaux/sysd-manager/issues/69) Message toast color contrast for better visibility
 
 ## [2.20.4] - 2026-06-17
 
