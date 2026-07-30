@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-13 00:22-0400\n"
+"POT-Creation-Date: 2026-07-30 17:14-0400\n"
 "PO-Revision-Date: 2026-05-01 02:09+0000\n"
 "Last-Translator: John Peter Sa <johnppetersa@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/sysd-"
@@ -271,34 +271,63 @@ msgid ""
 "programs or to save files on the host system."
 msgstr ""
 
+#. info subtitle
 #: data/interfaces/creator/create_first.ui:33
+#, fuzzy
+msgctxt "unit creation"
+msgid "Create a task"
+msgstr "Criar Drop-in"
+
+#: data/interfaces/creator/create_first.ui:34
 #, fuzzy
 msgid "Service"
 msgstr "Gerente de serviço"
 
-#: data/interfaces/creator/create_first.ui:46
+#. info subtitle
+#: data/interfaces/creator/create_first.ui:47
+msgctxt "unit creation"
+msgid "Create a scheduled task"
+msgstr ""
+
+#: data/interfaces/creator/create_first.ui:48
 msgid "Timer with Service"
 msgstr ""
 
-#: data/interfaces/creator/create_first.ui:60
+#. info subtitle
+#: data/interfaces/creator/create_first.ui:61
+msgctxt "unit creation"
+msgid "Trigger an existing task (service)"
+msgstr ""
+
+#: data/interfaces/creator/create_first.ui:62
 #, fuzzy
 msgid "Timer"
 msgstr "Tempo"
 
-#: data/interfaces/creator/create_first.ui:79
+#: data/interfaces/creator/create_first.ui:81
 #, fuzzy
 msgid "System"
 msgstr "Sistema"
 
-#: data/interfaces/creator/create_first.ui:92
+#: data/interfaces/creator/create_first.ui:94
 #, fuzzy
 msgid "User Session"
 msgstr "Barramento de Sessão do Usuário"
+
+#. info subtitle
+#: data/interfaces/creator/create_first.ui:111
+msgctxt "unit creation"
+msgid "Runtime units are discarded at next reboot"
+msgstr ""
 
 #: data/interfaces/creator/nav_row.ui:21
 msgid ""
 "🙏🏻 Please donate — every contribution helps me to prove to my wife that "
 "this project is more than just “another coding hobby.”"
+msgstr ""
+
+#: data/interfaces/creator/timer_creator_page.ui:109
+msgid "Catch up missed runs after boot "
 msgstr ""
 
 #: data/interfaces/ex_menu_button.ui:40
@@ -317,7 +346,6 @@ msgctxt "journal"
 msgid "Clear journal events and refetch them"
 msgstr "Limpar eventos do diário e buscá-los novamente"
 
-#. tooltip
 #: data/interfaces/journal_panel.ui:45
 msgctxt "journal"
 msgid "Enable new entries continuous print as they are appended to the journal"
@@ -326,49 +354,49 @@ msgstr ""
 "diário"
 
 #. tooltip
-#: data/interfaces/journal_panel.ui:61
+#: data/interfaces/journal_panel.ui:59
 msgctxt "journal"
 msgid "Toggle events display order"
 msgstr "Alternar a ordem de exibição dos eventos"
 
 #. tooltip
-#: data/interfaces/journal_panel.ui:67
+#: data/interfaces/journal_panel.ui:65
 msgctxt "journal"
 msgid "List the boots of the system"
 msgstr "Listar as inicializações do sistema"
 
 #. button
-#: data/interfaces/journal_panel.ui:72
+#: data/interfaces/journal_panel.ui:70
 msgctxt "journal"
 msgid "List Boots"
 msgstr "Lista de botas"
 
 #. button
-#: data/interfaces/journal_panel.ui:92
+#: data/interfaces/journal_panel.ui:90
 msgctxt "journal"
 msgid "Current boot"
 msgstr "Inicialização atual"
 
 #. button
-#: data/interfaces/journal_panel.ui:98
+#: data/interfaces/journal_panel.ui:96
 msgctxt "journal"
 msgid "All events"
 msgstr "Todos os eventos"
 
 #. title
-#: data/interfaces/journal_panel.ui:105
+#: data/interfaces/journal_panel.ui:103
 msgctxt "journal"
 msgid "Boot id"
 msgstr "ID da inicialização"
 
 #. wiki link
-#: data/interfaces/journal_panel.ui:152
+#: data/interfaces/journal_panel.ui:155
 msgctxt "journal"
 msgid "For more information"
 msgstr "Para obter mais informações"
 
 #. description
-#: data/interfaces/journal_panel.ui:156
+#: data/interfaces/journal_panel.ui:159
 msgctxt "journal"
 msgid ""
 "Either there are no log events to display, or you don't have permission to "
@@ -378,7 +406,7 @@ msgstr ""
 "acessá-los."
 
 #. title
-#: data/interfaces/journal_panel.ui:158
+#: data/interfaces/journal_panel.ui:161
 msgctxt "journal"
 msgid "No journal events"
 msgstr "Nenhum evento da revista"
@@ -1031,17 +1059,17 @@ msgctxt "shortcut window"
 msgid "Open Find in Text"
 msgstr "Abrir Localizar no texto"
 
+#. subtitle
 #: data/interfaces/shortcuts.ui:80
+msgctxt "shortcut window"
+msgid "Create Timer or Service Unit Type"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:81
 #, fuzzy
 msgctxt "shortcut window"
 msgid "Create Unit"
 msgstr "Criar Drop-in"
-
-#. subtitle
-#: data/interfaces/shortcuts.ui:81
-msgctxt "shortcut window"
-msgid "Create Timer or Service Unit Type"
-msgstr ""
 
 #. Section name
 #: data/interfaces/shortcuts.ui:88
@@ -1050,9 +1078,10 @@ msgid "Pages"
 msgstr "Páginas"
 
 #: data/interfaces/shortcuts.ui:92
+#, fuzzy
 msgctxt "shortcut window"
-msgid "Display Unit Information"
-msgstr "Exibir informações da unidade"
+msgid "Display Unit Status"
+msgstr "Desativar arquivo de unidade"
 
 #: data/interfaces/shortcuts.ui:98
 msgctxt "shortcut window"
@@ -1494,10 +1523,12 @@ msgctxt "controls menu"
 msgid "_More ..."
 msgstr "_Mais ..."
 
+#. aka Unit Info
 #: data/interfaces/unit_control_panel.ui:187
+#, fuzzy
 msgctxt "controls tab"
-msgid "Unit Info"
-msgstr "Informações da unidade"
+msgid "Status"
+msgstr "Estado"
 
 #: data/interfaces/unit_control_panel.ui:197
 msgctxt "controls tab"
@@ -1998,64 +2029,92 @@ msgstr ""
 msgid "Daemon Reload failed at {} level"
 msgstr "Falha ao recarregar o daemon!"
 
-#: src/widget/creator/mod.rs:95
+#: src/widget/creator/mod.rs:98
 #, fuzzy
 msgctxt "create"
 msgid "Service"
 msgstr "Gerente de serviço"
 
-#: src/widget/creator/mod.rs:96
+#: src/widget/creator/mod.rs:99
 #, fuzzy
 msgctxt "create"
 msgid "Timer"
 msgstr "Tempo"
 
-#: src/widget/creator/mod.rs:97
+#: src/widget/creator/mod.rs:100
 msgctxt "create"
 msgid "Timer with Service"
 msgstr ""
 
-#: src/widget/creator/timer_creator_page/imp.rs:583
+#: src/widget/creator/mod.rs:178
+#, rust-format
+msgctxt "validator"
+msgid "{} - Not absolute path"
+msgstr ""
+
+#: src/widget/creator/mod.rs:181
+#, rust-format
+msgctxt "validator"
+msgid "{} - Not a directory"
+msgstr ""
+
+#: src/widget/creator/mod.rs:184
+#, rust-format
+msgctxt "validator"
+msgid "{} - No path specified"
+msgstr ""
+
+#: src/widget/creator/service_creator_page/imp.rs:519
+msgctxt "unit creation"
+msgid "Select executable"
+msgstr ""
+
+#: src/widget/creator/service_creator_page/imp.rs:520
+#, fuzzy
+msgid "Select"
+msgstr "Selecionar fonte"
+
+#: src/widget/creator/timer_creator_page/imp.rs:562
 msgctxt "timer"
 msgid "Custom"
 msgstr ""
 
-#: src/widget/creator/timer_creator_page/imp.rs:584
+#: src/widget/creator/timer_creator_page/imp.rs:563
 msgctxt "timer"
 msgid "Minutely"
 msgstr ""
 
-#: src/widget/creator/timer_creator_page/imp.rs:585
+#: src/widget/creator/timer_creator_page/imp.rs:564
 msgctxt "timer"
 msgid "Hourly"
 msgstr ""
 
-#: src/widget/creator/timer_creator_page/imp.rs:586
+#: src/widget/creator/timer_creator_page/imp.rs:565
 msgctxt "timer"
 msgid "Daily"
 msgstr ""
 
-#: src/widget/creator/timer_creator_page/imp.rs:587
+#: src/widget/creator/timer_creator_page/imp.rs:566
 msgctxt "timer"
 msgid "Monthly"
 msgstr ""
 
-#: src/widget/creator/timer_creator_page/imp.rs:588
+#: src/widget/creator/timer_creator_page/imp.rs:567
 msgctxt "timer"
 msgid "Weekly"
 msgstr ""
 
-#: src/widget/creator/timer_creator_page/imp.rs:589
+#: src/widget/creator/timer_creator_page/imp.rs:568
 msgctxt "timer"
 msgid "Yearly"
 msgstr ""
 
-#: src/widget/creator/timer_creator_page/imp.rs:590
+#: src/widget/creator/timer_creator_page/imp.rs:569
 msgctxt "timer"
 msgid "Quarterly"
 msgstr ""
 
-#: src/widget/creator/timer_creator_page/imp.rs:591
+#: src/widget/creator/timer_creator_page/imp.rs:570
 msgctxt "timer"
 msgid "Semiannually"
 msgstr ""
@@ -2087,7 +2146,7 @@ msgid "OnUnitInactiveSec"
 msgstr ""
 
 #. Menu item label
-#: src/widget/journal/imp.rs:737
+#: src/widget/journal/imp.rs:876
 msgctxt "journal"
 msgid "Wrap Word"
 msgstr ""
@@ -2604,49 +2663,43 @@ msgid "reloaded"
 msgstr "recarregado"
 
 #. toast message
-#: src/widget/unit_control_panel/imp.rs:498
+#: src/widget/unit_control_panel/imp.rs:495
+#, fuzzy, rust-format
 msgctxt "toast"
-msgid "Unit {} has been <{0}>{}</{0}> with the mode {}"
+msgid "Unit {} has been {} with the mode {}"
 msgstr "A unidade {} foi <{0}>{}</{0}> com o modo {}"
 
 #. toast message error --  "Can't {ACTION} the unit <unit>{UNITNAME}</unit>, because: {SYSTEMD HUMAN ERROR (english)}"),
-#: src/widget/unit_control_panel/imp.rs:520
+#: src/widget/unit_control_panel/imp.rs:516
 #, rust-format
 msgctxt "toast"
 msgid "Can't {} the unit {}, because: {}"
 msgstr "Não é possível {} a unidade <unidade>{}</unidade>, porque: {}"
 
-#: src/widget/unit_control_panel/imp.rs:823
+#: src/widget/unit_control_panel/imp.rs:818
+#, rust-format
 msgctxt "toast"
-msgid ""
-"{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
-"successful"
+msgid "{} unit <unit>{}</unit> is <green>successful</green>"
 msgstr ""
-"{} unidade <span fgcolor='{0}' font_family='monospace' size='larger'>{}</"
-"span> bem-sucedida"
 
 #. toast message success (no unit) -- "{ACTION} successful."
-#: src/widget/unit_control_panel/imp.rs:831
+#: src/widget/unit_control_panel/imp.rs:825
 #, rust-format
 msgctxt "toast"
 msgid "{} successful."
 msgstr "{} bem-sucedido."
 
-#: src/widget/unit_control_panel/imp.rs:843
+#: src/widget/unit_control_panel/imp.rs:835
 #, rust-format
 msgctxt "toast"
-msgid ""
-"{} unit <span fgcolor='{}' font_family='monospace' size='larger'>{}</span> "
-"failed. Reason: <span fgcolor='{}'>{}</span>."
+msgid "{} unit <unit>{}</unit> failed. Reason: <red>{}</red>."
 msgstr ""
-"{} unidade <span fgcolor='{}' font_family='monospace' size='larger'>{}</"
-"span> falhou. Motivo: <span fgcolor='{}'>{}</span>."
 
 #. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
-#: src/widget/unit_control_panel/imp.rs:854
-#, rust-format
+#: src/widget/unit_control_panel/imp.rs:846
+#, fuzzy, rust-format
 msgctxt "toast"
-msgid "{} failed. Reason: <span fgcolor='{}'>{}</span>."
+msgid "{} failed. Reason: <red>{}</red>."
 msgstr "{} falhou. Motivo: <span fgcolor='{}'>{}</span>."
 
 #: src/widget/unit_control_panel/mod.rs:119
@@ -3210,6 +3263,31 @@ msgstr ""
 msgctxt "menu"
 msgid "Favorites"
 msgstr ""
+
+#~ msgctxt "shortcut window"
+#~ msgid "Display Unit Information"
+#~ msgstr "Exibir informações da unidade"
+
+#~ msgctxt "controls tab"
+#~ msgid "Unit Info"
+#~ msgstr "Informações da unidade"
+
+#~ msgctxt "toast"
+#~ msgid ""
+#~ "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</"
+#~ "span> successful"
+#~ msgstr ""
+#~ "{} unidade <span fgcolor='{0}' font_family='monospace' size='larger'>{}</"
+#~ "span> bem-sucedida"
+
+#, rust-format
+#~ msgctxt "toast"
+#~ msgid ""
+#~ "{} unit <span fgcolor='{}' font_family='monospace' size='larger'>{}</"
+#~ "span> failed. Reason: <span fgcolor='{}'>{}</span>."
+#~ msgstr ""
+#~ "{} unidade <span fgcolor='{}' font_family='monospace' size='larger'>{}</"
+#~ "span> falhou. Motivo: <span fgcolor='{}'>{}</span>."
 
 #~ msgid "user"
 #~ msgstr "usuário"
