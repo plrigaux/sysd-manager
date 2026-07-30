@@ -605,7 +605,7 @@ impl AppWindowImpl {
         ]);
 
         application.set_accels_for_action(APP_ACTION_SEARCH_UNITS, &["<Ctrl>f"]);
-        application.set_accels_for_action("app.open_info", &["<Ctrl>i"]);
+        application.set_accels_for_action("app.open_info", &["<Ctrl>t"]);
         application.set_accels_for_action("app.open_dependencies", &["<Ctrl>d"]);
         application.set_accels_for_action("app.open_journal", &["<Ctrl>j"]);
         application.set_accels_for_action("app.open_file", &["<Ctrl>u"]);
