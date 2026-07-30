@@ -10,10 +10,7 @@ use crate::{
         SUGGESTED_ACTION,
     },
     format2, systemd_gui,
-    utils::{
-        font_management::{self, create_provider},
-        palette::{dark_blue, dark_red},
-    },
+    utils::font_management::{self, create_provider},
     widget::{
         InterPanelMessage, app_window::AppWindow, journal::JournalPanel,
         preferences::data::KEY_PREF_CONTROLS_ALWAYS_SHOWS_START_STOP, set_favorite_info,
@@ -787,7 +784,6 @@ impl UnitControlPanelImpl {
         };
 
         //TODO investigate
-        let blue = dark_blue().get_color();
 
         let control_panel: UnitControlPanel = self.obj().clone();
         let button = button.clone();
@@ -819,9 +815,8 @@ impl UnitControlPanelImpl {
                         format2!(
                             pgettext(
                                 "toast",
-                                "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> successful"
+                                "{} unit <unit>{}</unit> is <green>successful</green>"
                             ),
-                            blue,
                             &method_name,
                             unit.primary(),
                         )
@@ -832,27 +827,24 @@ impl UnitControlPanelImpl {
                     control_panel.add_toast_message(&msg, true)
                 }
                 Err(ref error) => {
-                    let red = dark_red().get_color();
-
                     let msg = if let Some(ref unit) = unit_option {
                         format2!(
                             // toast message failed
                             pgettext(
                                 "toast",
-                                "{} unit <span fgcolor='{}' font_family='monospace' size='larger'>{}</span> failed. Reason: <span fgcolor='{}'>{}</span>."
+                                "{} unit <unit>{}</unit> failed. Reason: <red>{}</red>."
                             ),
                             &method_name,
-                            blue,
+                            // blue,
                             unit.primary(),
-                            red,
+                            // red,
                             error.human_error_type()
                         )
                     } else {
                         format2!(
                             // toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
-                            pgettext("toast", "{} failed. Reason: <span fgcolor='{}'>{}</span>."),
+                            pgettext("toast", "{} failed. Reason: <red>{}</red>."),
                             &method_name,
-                            red,
                             error.human_error_type()
                         )
                     };
