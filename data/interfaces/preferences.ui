@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 1.0.2 -->
+<!-- Created with Cambalache 1.0.3 -->
 <interface>
   <!-- interface-name preferences.ui -->
   <requires lib="gtk" version="4.18"/>
@@ -105,11 +105,11 @@ You can set the application's Dbus level to &lt;u&gt;System&lt;/u&gt; if you wan
         </child>
         <child>
           <object class="AdwPreferencesGroup">
-            <property name="title" translatable="yes" context="preference" comments="group">Unit Description</property>
+            <property name="title" translatable="yes" context="preference" comments="group">Unit Status</property>
             <child>
               <object class="AdwSwitchRow" id="unit_description_wrap">
-                <property name="subtitle" translatable="yes" context="preference" comments="subtitle">Wrap the unit description long text lines</property>
-                <property name="title" translatable="yes" context="preference" comments="title">Wrap unit description text</property>
+                <property name="subtitle" translatable="yes" context="preference" comments="subtitle">Wrap the unit status long text lines</property>
+                <property name="title" translatable="yes" context="preference" comments="title">Wrap unit status text</property>
               </object>
             </child>
             <child>

@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-30 17:14-0400\n"
-"PO-Revision-Date: 2026-07-30 23:00+0000\n"
+"POT-Creation-Date: 2026-07-31 04:48-0400\n"
+"PO-Revision-Date: 2026-07-31 08:56+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -700,19 +700,19 @@ msgstr "Insensible à la casse"
 #. group
 #: data/interfaces/preferences.ui:108
 msgctxt "preference"
-msgid "Unit Description"
-msgstr "Description de l'unité"
+msgid "Unit Status"
+msgstr "Statut de l'unité"
 
 #. subtitle
 #: data/interfaces/preferences.ui:111
 msgctxt "preference"
-msgid "Wrap the unit description long text lines"
-msgstr "Renvoie automatique des lignes de text de la description de l'unité"
+msgid "Wrap the unit status long text lines"
+msgstr "Renvoie automatique des lignes de text du statut de l'unité"
 
 #. title
 #: data/interfaces/preferences.ui:112
 msgctxt "preference"
-msgid "Wrap unit description text"
+msgid "Wrap unit status text"
 msgstr "Renvoie automatique du text"
 
 #. subtitle
@@ -1579,18 +1579,6 @@ msgctxt "menu"
 msgid "Runtime"
 msgstr "Durée d'exécution"
 
-#. button
-#: data/interfaces/unit_info_panel.ui:29
-msgctxt "unit info"
-msgid "_Refresh"
-msgstr "_Rafraîchir"
-
-#. button
-#: data/interfaces/unit_info_panel.ui:42
-msgctxt "unit info"
-msgid "Show all _Properties"
-msgstr "Afficher tout les propriétés"
-
 #. Unit property filter button
 #: data/interfaces/unit_list_filter.ui:51
 #: data/interfaces/unit_list_panel.ui:166
@@ -1795,6 +1783,18 @@ msgctxt "unit properties"
 msgid "Copy all properties to clipboard"
 msgstr "Copier toutes les propriétés dans le presse-papiers"
 
+#. button
+#: data/interfaces/unit_status_panel.ui:29
+msgctxt "unit info"
+msgid "_Refresh"
+msgstr "_Rafraîchir"
+
+#. button
+#: data/interfaces/unit_status_panel.ui:42
+msgctxt "unit info"
+msgid "Show all _Properties"
+msgstr "Afficher tout les propriétés"
+
 #: src/analyze/mod.rs:27
 msgctxt "analyse blame"
 msgid "Analyse Blame"
@@ -1988,7 +1988,7 @@ msgstr "Préfixe du nom de l'unité"
 #, rust-format
 msgctxt "create"
 msgid "Unit {} Created!"
-msgstr "Unité {} créée!"
+msgstr "Unité {} créée !"
 
 #: src/widget/creator/imp.rs:362
 #, rust-format
@@ -2115,8 +2115,9 @@ msgid "OnUnitInactiveSec"
 msgstr "OnUnitInactiveSec"
 
 #. Menu item label
-#: src/widget/journal/imp.rs:876
-msgctxt "journal"
+#. Menu item label for status menu
+#: src/widget/journal/imp.rs:876 src/widget/unit_status/imp.rs:252
+msgctxt "menu"
 msgid "Wrap Word"
 msgstr "Retour à la ligne"
 
@@ -2632,40 +2633,40 @@ msgid "reloaded"
 msgstr "rechargé"
 
 #. toast message
-#: src/widget/unit_control_panel/imp.rs:495
+#: src/widget/unit_control_panel/imp.rs:497
 #, rust-format
 msgctxt "toast"
 msgid "Unit {} has been {} with the mode {}"
 msgstr "L'unité {} a été {} avec le mode {}"
 
 #. toast message error --  "Can't {ACTION} the unit <unit>{UNITNAME}</unit>, because: {SYSTEMD HUMAN ERROR (english)}"),
-#: src/widget/unit_control_panel/imp.rs:516
+#: src/widget/unit_control_panel/imp.rs:518
 #, rust-format
 msgctxt "toast"
 msgid "Can't {} the unit {}, because: {}"
 msgstr "Ne peut {} l'unité {}, à cause : {}"
 
-#: src/widget/unit_control_panel/imp.rs:818
+#: src/widget/unit_control_panel/imp.rs:820
 #, rust-format
 msgctxt "toast"
 msgid "{} unit <unit>{}</unit> is <green>successful</green>"
 msgstr "{} unité <unit>{}</unit> est <green>réussi</green>"
 
 #. toast message success (no unit) -- "{ACTION} successful."
-#: src/widget/unit_control_panel/imp.rs:825
+#: src/widget/unit_control_panel/imp.rs:827
 #, rust-format
 msgctxt "toast"
 msgid "{} successful."
 msgstr "{} réussi."
 
-#: src/widget/unit_control_panel/imp.rs:835
+#: src/widget/unit_control_panel/imp.rs:837
 #, rust-format
 msgctxt "toast"
 msgid "{} unit <unit>{}</unit> failed. Reason: <red>{}</red>."
 msgstr "{} unité <unit>{}</unit> à échoué. Raison: <red>{}</red>."
 
 #. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
-#: src/widget/unit_control_panel/imp.rs:846
+#: src/widget/unit_control_panel/imp.rs:848
 #, rust-format
 msgctxt "toast"
 msgid "{} failed. Reason: <red>{}</red>."
@@ -2786,8 +2787,8 @@ msgstr ""
 "Vous devez <b>jailbreaker</b> votre application Flatpak pour pouvoir "
 "enregistrer des fichiers sur le système hôte.\n"
 "\n"
-"Suivez le <a href=\"https://github.com/plrigaux/sysd-manager/wiki/Flatpak\">"
-"lien</a> pour savoir comment obtenir l'autorisation nécessaire."
+"Suivez le <a href=\"https://github.com/plrigaux/sysd-manager/wiki/"
+"Flatpak\">lien</a> pour savoir comment obtenir l'autorisation nécessaire."
 
 #: src/widget/unit_file_panel/flatpak.rs:127
 msgctxt "flatpak"
@@ -3223,6 +3224,10 @@ msgstr "Personnalisé"
 msgctxt "menu"
 msgid "Favorites"
 msgstr "Favoris"
+
+#~ msgctxt "preference"
+#~ msgid "Unit Description"
+#~ msgstr "Description de l'unité"
 
 #~ msgctxt "shortcut window"
 #~ msgid "Display Unit Information"

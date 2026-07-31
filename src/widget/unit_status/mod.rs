@@ -5,15 +5,15 @@ use super::{InterPanelMessage, app_window::AppWindow};
 use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
 
 glib::wrapper! {
-    pub struct UnitInfoPanel(ObjectSubclass<imp::UnitInfoPanelImp>)
+    pub struct UnitStatusPanel(ObjectSubclass<imp::UnitStatusPanelImp>)
         @extends gtk::Box, gtk::Widget,
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::Orientable;
 }
 
-impl UnitInfoPanel {
+impl UnitStatusPanel {
     pub fn new() -> Self {
         // Create new window
-        let obj: UnitInfoPanel = glib::Object::new();
+        let obj: UnitStatusPanel = glib::Object::new();
 
         obj
     }
@@ -31,11 +31,11 @@ impl UnitInfoPanel {
     }
 
     pub fn main_text_view(&self) -> gtk::TextView {
-        self.imp().unit_info_textview.get()
+        self.imp().unit_status_textview.get()
     }
 }
 
-impl Default for UnitInfoPanel {
+impl Default for UnitStatusPanel {
     fn default() -> Self {
         Self::new()
     }

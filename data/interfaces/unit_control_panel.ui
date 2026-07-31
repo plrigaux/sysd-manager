@@ -180,7 +180,7 @@
             <child>
               <object class="AdwViewStackPage">
                 <property name="child">
-                  <object class="UnitInfoPanel" id="unit_info_panel"/>
+                  <object class="UnitStatusPanel" id="unit_status_panel"/>
                 </property>
                 <property name="icon-name">emblem-documents-symbolic</property>
                 <property name="name">info_page</property>

@@ -13,9 +13,9 @@ pub mod text_search;
 pub mod unit_control_panel;
 pub mod unit_dependencies_panel;
 pub mod unit_file_panel;
-pub mod unit_info;
 pub mod unit_list;
 pub mod unit_properties_selector;
+pub mod unit_status;
 
 use crate::{
     format2,
