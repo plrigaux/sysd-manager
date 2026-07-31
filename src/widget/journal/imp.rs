@@ -836,7 +836,7 @@ impl ObjectImpl for JournalPanelImp {
         settings
             .bind(
                 &ACTION_WIN_KEY_JOURNAL_WRAP_WORD[4..],
-                &self.obj().clone(),
+                self.obj().as_ref(),
                 "wrap-word",
             )
             .build();
@@ -873,7 +873,7 @@ impl ObjectImpl for JournalPanelImp {
 
         let menu_wrap_word = gio::Menu::new();
         //Menu item label
-        let menu_label = pgettext("journal", "Wrap Word");
+        let menu_label = pgettext("menu", "Wrap Word");
         let wrap_word_toggle_menu = gio::MenuItem::new(Some(&menu_label), None);
         wrap_word_toggle_menu
             .set_action_and_target_value(Some(ACTION_WIN_KEY_JOURNAL_WRAP_WORD), None);

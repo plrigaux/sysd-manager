@@ -2,7 +2,7 @@ use super::construct_info::fill_all_info;
 use crate::{
     consts::{ACTION_WIN_UNIT_HAS_RELOAD_UNIT_CAPABILITY, SETTING_FIND_IN_TEXT_OPEN, *},
     systemd::data::UnitInfo,
-    systemd_gui::new_settings,
+    systemd_gui::{self, new_settings},
     utils::{
         font_management::set_text_view_font,
         text_view_hyperlink::{self, LinkActivator},
@@ -15,6 +15,7 @@ use crate::{
         text_search::{self, on_new_text, text_search_construct},
     },
 };
+use gettextrs::pgettext;
 use gtk::{
     TemplateChild,
     glib::{self},
@@ -44,7 +45,7 @@ pub struct UnitStatusPanelImp {
     refresh_button: TemplateChild<gtk::Button>,
 
     #[template_child]
-    pub(super) unit_info_textview: TemplateChild<gtk::TextView>,
+    pub(super) unit_status_textview: TemplateChild<gtk::TextView>,
 
     #[template_child]
     text_search_bar: TemplateChild<gtk::SearchBar>,
@@ -54,7 +55,7 @@ pub struct UnitStatusPanelImp {
 
     unit: RefCell<Option<UnitInfo>>,
 
-    #[property(name="wrap", get=Self::get_wrap,set=Self::set_wrap, type = bool)]
+    #[property(name="wrap-word", get=Self::get_wrap_word,set=Self::set_wrap_word, type = bool)]
     hovering_over_link_tag: Rc<RefCell<Option<gtk::TextTag>>>,
 
     app_window: OnceCell<AppWindow>,
@@ -75,7 +76,7 @@ impl UnitStatusPanelImp {
             Some(unit) => {
                 let old_unit = self.unit.replace(Some(unit.clone()));
                 if !unit.equals_op(old_unit.as_ref()) {
-                    self.update_unit_info(unit)
+                    self.update_unit_status_panel(unit)
                 }
             }
             None => {
@@ -98,7 +99,7 @@ impl UnitStatusPanelImp {
     }
 
     /// Updates the associated journal `TextView` with the contents of the unit's journal log.
-    fn update_unit_info(&self, unit: &UnitInfo) {
+    fn update_unit_status_panel(&self, unit: &UnitInfo) {
         let buf = self.clear();
         let start_iter = buf.start_iter();
 
@@ -117,7 +118,7 @@ impl UnitStatusPanelImp {
             false
         };
 
-        if let Err(err) = self.unit_info_textview.activate_action(
+        if let Err(err) = self.unit_status_textview.activate_action(
             ACTION_WIN_UNIT_HAS_RELOAD_UNIT_CAPABILITY,
             Some(&has_reload_unit_capabilities.to_variant()),
         ) {
@@ -136,7 +137,7 @@ impl UnitStatusPanelImp {
     }
 
     fn clear(&self) -> gtk::TextBuffer {
-        let unit_info_text_view: &gtk::TextView = self.unit_info_textview.as_ref();
+        let unit_info_text_view: &gtk::TextView = self.unit_status_textview.as_ref();
 
         let buf = unit_info_text_view.buffer();
 
@@ -148,7 +149,7 @@ impl UnitStatusPanelImp {
         let activator = LinkActivator::new(Some(app_window.clone()));
 
         text_view_hyperlink::build_textview_link_platform(
-            &self.unit_info_textview,
+            &self.unit_status_textview,
             self.hovering_over_link_tag.clone(),
             activator,
         );
@@ -156,6 +157,15 @@ impl UnitStatusPanelImp {
         if self.app_window.set(app_window.clone()).is_err() {
             warn!("Set only once");
         }
+
+        let settings = systemd_gui::new_settings();
+
+        let action = settings.create_action(KEY_PREF_UNIT_DESCRIPTION_WRAP);
+
+        app_window.add_action(&action);
+
+        let wrap = settings.boolean(KEY_PREF_UNIT_DESCRIPTION_WRAP);
+        self.set_wrap_word(wrap);
     }
 
     pub(super) fn refresh_panels(&self, unit: Option<&UnitInfo>) {
@@ -169,13 +179,13 @@ impl UnitStatusPanelImp {
             return;
         };
 
-        self.update_unit_info(unit)
+        self.update_unit_status_panel(unit)
     }
 
     pub(super) fn set_inter_message(&self, action: &InterPanelMessage) {
         match *action {
             InterPanelMessage::FontProvider(old, new) => {
-                set_text_view_font(old, new, &self.unit_info_textview);
+                set_text_view_font(old, new, &self.unit_status_textview);
             }
             InterPanelMessage::UnitChange(unit) => self.set_unit(unit),
             InterPanelMessage::Refresh(unit) => self.refresh_panels(unit),
@@ -184,17 +194,17 @@ impl UnitStatusPanelImp {
         }
     }
 
-    fn get_wrap(&self) -> bool {
-        self.unit_info_textview.wrap_mode() != gtk::WrapMode::None
+    fn get_wrap_word(&self) -> bool {
+        self.unit_status_textview.wrap_mode() != gtk::WrapMode::None
     }
 
-    fn set_wrap(&self, wrap: bool) {
+    fn set_wrap_word(&self, wrap: bool) {
         let wrap_mode = if wrap {
             gtk::WrapMode::Word
         } else {
             gtk::WrapMode::None
         };
-        self.unit_info_textview.set_wrap_mode(wrap_mode);
+        self.unit_status_textview.set_wrap_mode(wrap_mode);
     }
 
     pub(crate) fn focus_text_search(&self) {
@@ -230,16 +240,36 @@ impl ObjectImpl for UnitStatusPanelImp {
         let settings = new_settings();
 
         settings
-            .bind(KEY_PREF_UNIT_DESCRIPTION_WRAP, self.obj().as_ref(), "wrap")
+            .bind(
+                KEY_PREF_UNIT_DESCRIPTION_WRAP,
+                self.obj().as_ref(),
+                "wrap-word",
+            )
             .build();
 
+        let menu_wrap_word = gio::Menu::new();
+        //Menu item label for status menu
+        let menu_label = pgettext("menu", "Wrap Word");
+        let wrap_word_toggle_menu = gio::MenuItem::new(Some(&menu_label), None);
+        let action_name = String::from("win.") + KEY_PREF_UNIT_DESCRIPTION_WRAP;
+        wrap_word_toggle_menu.set_action_and_target_value(Some(&action_name), None);
+        menu_wrap_word.append_item(&wrap_word_toggle_menu);
+
         text_search_construct(
-            &self.unit_info_textview,
+            &self.unit_status_textview,
             &self.text_search_bar,
             &self.find_text_button,
             true,
             text_search::PanelID::Info,
         );
+
+        if let Some(extra) = self
+            .unit_status_textview
+            .extra_menu()
+            .and_downcast_ref::<gio::Menu>()
+        {
+            extra.append_section(None, &menu_wrap_word);
+        }
 
         settings
             .bind::<gtk::SearchBar>(

@@ -52,7 +52,7 @@
         <property name="vexpand">True</property>
         <property name="vexpand-set">True</property>
         <child>
-          <object class="GtkTextView" id="unit_info_textview">
+          <object class="GtkTextView" id="unit_status_textview">
             <property name="editable">False</property>
             <property name="monospace">True</property>
             <property name="vexpand">True</property>

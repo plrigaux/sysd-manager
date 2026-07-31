@@ -31,7 +31,7 @@ impl UnitStatusPanel {
     }
 
     pub fn main_text_view(&self) -> gtk::TextView {
-        self.imp().unit_info_textview.get()
+        self.imp().unit_status_textview.get()
     }
 }
 

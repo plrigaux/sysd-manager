@@ -86,8 +86,12 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1"/>
   <releases>
-    <release version="2.20.5" date="2026-07-30">
+    <release version="2.20.6" date="2026-07-31">
       <description translate="no">
+        <p>Added</p>
+        <ul>
+          <li>Unit Status context menu option wrap word</li>
+        </ul>
         <p>Fixed</p>
         <ul>
           <li>PARTIAL FIX Follow does not auto-scroll to new journal entries when Descending is enabled [Issue 67]</li>
