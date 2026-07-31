@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-07-31 04:48-0400\n"
-"PO-Revision-Date: 2026-07-30 23:00+0000\n"
+"PO-Revision-Date: 2026-07-31 09:06+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -323,13 +323,12 @@ msgid "Runtime units are discarded at next reboot"
 msgstr "Les unités runtime sont supprimées au prochain redémarrage"
 
 #: data/interfaces/creator/nav_row.ui:21
-#, fuzzy
 msgid ""
 "🙏🏻 Please donate — every contribution helps me to prove to my wife that "
 "this project is more than just “another coding hobby”"
 msgstr ""
 "🙏🏻 Merci de faire un don — chaque contribution m'aide à prouver à ma femme "
-"que ce projet est bien plus qu'un simple « passe-temps de programmation »."
+"que ce projet est bien plus qu'un simple « passe-temps de programmation »"
 
 #: data/interfaces/creator/timer_creator_page.ui:109
 msgid "Catch up missed runs after boot "
