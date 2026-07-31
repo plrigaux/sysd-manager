@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Cambalache 1.0.2 -->
 <interface>
   <!-- interface-name nav_row.ui -->
@@ -18,7 +18,7 @@
           <object class="GtkLinkButton" id="donate_button">
             <property name="css-classes">circular</property>
             <property name="label">🧡</property>
-            <property name="tooltip-markup" translatable="yes">🙏🏻 Please donate — every contribution helps me to prove to my wife that this project is more than just “another coding hobby.”</property>
+            <property name="tooltip-markup" translatable="yes">🙏🏻 Please donate — every contribution helps me to prove to my wife that this project is more than just “another coding hobby”</property>
             <property name="uri">https://github.com/sponsors/plrigaux</property>
             <property name="valign">center</property>
           </object>

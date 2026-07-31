@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-31 04:48-0400\n"
+"POT-Creation-Date: 2026-07-31 04:55-0400\n"
 "PO-Revision-Date: 2025-08-14 23:57+0000\n"
 "Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/sysd-manager/"
@@ -322,7 +322,7 @@ msgstr ""
 #: data/interfaces/creator/nav_row.ui:21
 msgid ""
 "🙏🏻 Please donate — every contribution helps me to prove to my wife that "
-"this project is more than just “another coding hobby.”"
+"this project is more than just “another coding hobby”"
 msgstr ""
 
 #: data/interfaces/creator/timer_creator_page.ui:109
