@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-31 04:55-0400\n"
+"POT-Creation-Date: 2026-07-31 04:48-0400\n"
 "PO-Revision-Date: 2026-07-30 23:00+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
@@ -700,21 +700,18 @@ msgstr "Insensible à la casse"
 
 #. group
 #: data/interfaces/preferences.ui:108
-#, fuzzy
 msgctxt "preference"
 msgid "Unit Status"
-msgstr "Afficher le statut de l'unité"
+msgstr "Statut de l'unité"
 
 #. subtitle
 #: data/interfaces/preferences.ui:111
-#, fuzzy
 msgctxt "preference"
 msgid "Wrap the unit status long text lines"
-msgstr "Renvoie automatique des lignes de text de la description de l'unité"
+msgstr "Renvoie automatique des lignes de text du statut de l'unité"
 
 #. title
 #: data/interfaces/preferences.ui:112
-#, fuzzy
 msgctxt "preference"
 msgid "Wrap unit status text"
 msgstr "Renvoie automatique du text"
@@ -1992,7 +1989,7 @@ msgstr "Préfixe du nom de l'unité"
 #, rust-format
 msgctxt "create"
 msgid "Unit {} Created!"
-msgstr "Unité {} créée!"
+msgstr "Unité {} créée !"
 
 #: src/widget/creator/imp.rs:362
 #, rust-format
@@ -2121,7 +2118,6 @@ msgstr "OnUnitInactiveSec"
 #. Menu item label
 #. Menu item label for status menu
 #: src/widget/journal/imp.rs:876 src/widget/unit_status/imp.rs:252
-#, fuzzy
 msgctxt "menu"
 msgid "Wrap Word"
 msgstr "Retour à la ligne"
