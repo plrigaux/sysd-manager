@@ -31,7 +31,6 @@ data/interfaces/unit_control_panel.ui
 data/interfaces/unit_dependencies_panel.ui
 data/interfaces/unit_file_panel.ui
 data/interfaces/unit_info.ui
-data/interfaces/unit_info_panel.ui
 data/interfaces/unit_list_filter.ui
 data/interfaces/unit_list_panel.ui
 data/interfaces/unit_list_search.ui
@@ -40,6 +39,7 @@ data/interfaces/unit_properties.ui
 data/interfaces/unit_properties_selection.ui
 data/interfaces/unit_properties_selection_row.ui
 data/interfaces/unit_properties_selector.ui
+data/interfaces/unit_status_panel.ui
 src/analyze/mod.rs
 src/consts.rs
 src/errors.rs
@@ -107,9 +107,6 @@ src/widget/unit_dependencies_panel/mod.rs
 src/widget/unit_file_panel/flatpak.rs
 src/widget/unit_file_panel/imp.rs
 src/widget/unit_file_panel/mod.rs
-src/widget/unit_info/construct_info.rs
-src/widget/unit_info/imp.rs
-src/widget/unit_info/mod.rs
 src/widget/unit_list/column.rs
 src/widget/unit_list/filter/dropdown.rs
 src/widget/unit_list/filter/imp.rs
@@ -132,3 +129,6 @@ src/widget/unit_properties_selector/save.rs
 src/widget/unit_properties_selector/unit_properties_selection/imp.rs
 src/widget/unit_properties_selector/unit_properties_selection/mod.rs
 src/widget/unit_properties_selector/unit_properties_selection/row.rs
+src/widget/unit_status/construct_info.rs
+src/widget/unit_status/imp.rs
+src/widget/unit_status/mod.rs
