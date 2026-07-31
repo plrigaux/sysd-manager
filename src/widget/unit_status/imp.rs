@@ -34,9 +34,9 @@ use tracing::warn;
 use zvariant::Value;
 
 #[derive(Default, glib::Properties, gtk::CompositeTemplate)]
-#[template(resource = "/io/github/plrigaux/sysd-manager/unit_info_panel.ui")]
-#[properties(wrapper_type = super::UnitInfoPanel)]
-pub struct UnitInfoPanelImp {
+#[template(resource = "/io/github/plrigaux/sysd-manager/unit_status_panel.ui")]
+#[properties(wrapper_type = super::UnitStatusPanel)]
+pub struct UnitStatusPanelImp {
     #[template_child]
     show_all_button: TemplateChild<gtk::Button>,
 
@@ -61,14 +61,14 @@ pub struct UnitInfoPanelImp {
 }
 
 #[gtk::template_callbacks]
-impl UnitInfoPanelImp {
+impl UnitStatusPanelImp {
     #[template_callback]
     fn refresh_info_clicked(&self, _button: &gtk::Button) {
         self.refresh_panels(None);
     }
 }
 
-impl UnitInfoPanelImp {
+impl UnitStatusPanelImp {
     //FIXME It's been called twice
     fn set_unit(&self, unit: Option<&UnitInfo>) {
         match unit {
@@ -204,9 +204,9 @@ impl UnitInfoPanelImp {
 
 // The central trait for subclassing a GObject
 #[glib::object_subclass]
-impl ObjectSubclass for UnitInfoPanelImp {
-    const NAME: &'static str = "UnitInfoPanel";
-    type Type = super::UnitInfoPanel;
+impl ObjectSubclass for UnitStatusPanelImp {
+    const NAME: &'static str = "UnitStatusPanel";
+    type Type = super::UnitStatusPanel;
     type ParentType = gtk::Box;
 
     fn class_init(klass: &mut Self::Class) {
@@ -221,7 +221,7 @@ impl ObjectSubclass for UnitInfoPanelImp {
 }
 
 #[glib::derived_properties]
-impl ObjectImpl for UnitInfoPanelImp {
+impl ObjectImpl for UnitStatusPanelImp {
     fn constructed(&self) {
         self.parent_constructed();
 
@@ -251,5 +251,5 @@ impl ObjectImpl for UnitInfoPanelImp {
     }
 }
 
-impl WidgetImpl for UnitInfoPanelImp {}
-impl BoxImpl for UnitInfoPanelImp {}
+impl WidgetImpl for UnitStatusPanelImp {}
+impl BoxImpl for UnitStatusPanelImp {}

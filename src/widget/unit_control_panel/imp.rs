@@ -15,7 +15,7 @@ use crate::{
         InterPanelMessage, app_window::AppWindow, journal::JournalPanel,
         preferences::data::KEY_PREF_CONTROLS_ALWAYS_SHOWS_START_STOP, set_favorite_info,
         text_search::PanelID, unit_dependencies_panel::UnitDependenciesPanel,
-        unit_file_panel::UnitFilePanel, unit_info::UnitInfoPanel,
+        unit_file_panel::UnitFilePanel, unit_status::UnitStatusPanel,
     },
 };
 use adw::{prelude::*, subclass::prelude::*};
@@ -48,7 +48,7 @@ const DEFINITION_FILE_PAGE: &str = "definition_file_page";
 #[properties(wrapper_type = super::UnitControlPanel)]
 pub struct UnitControlPanelImpl {
     #[template_child]
-    unit_info_panel: TemplateChild<UnitInfoPanel>,
+    unit_status_panel: TemplateChild<UnitStatusPanel>,
 
     #[template_child]
     unit_dependencies_panel: TemplateChild<UnitDependenciesPanel>,
@@ -156,7 +156,7 @@ impl UnitControlPanelImpl {
         //self.kill_panel.register(&self.side_overlay, toast_overlay);
         self.unit_file_panel.register(app_window);
         self.unit_dependencies_panel.register(app_window);
-        self.unit_info_panel.register(app_window);
+        self.unit_status_panel.register(app_window);
         self.unit_journal_panel.register(app_window);
 
         self.app_window
@@ -267,7 +267,7 @@ impl UnitControlPanelImpl {
 
                         match panel {
                             PanelID::Info => {
-                                control_panel.imp().unit_info_panel.focus_text_search()
+                                control_panel.imp().unit_status_panel.focus_text_search()
                             }
                             PanelID::Dependencies => control_panel
                                 .imp()
@@ -301,7 +301,9 @@ impl UnitControlPanelImpl {
                         .visible_child_name()
                         .as_deref()
                     {
-                        Some(INFO_PAGE) => control_panel.imp().unit_info_panel.focus_text_search(),
+                        Some(INFO_PAGE) => {
+                            control_panel.imp().unit_status_panel.focus_text_search()
+                        }
                         Some(DEPENDENCIES_PAGE) => control_panel
                             .imp()
                             .unit_dependencies_panel
@@ -339,7 +341,7 @@ impl UnitControlPanelImpl {
             app_window.action_set_enabled(ACTION_WIN_FAVORITE_TOGGLE, false);
         });
 
-        let text_view = self.unit_info_panel.get().main_text_view();
+        let text_view = self.unit_status_panel.get().main_text_view();
         font_management::set_font_default_context(&text_view);
         if let Some(font_description) = font_management::has_custom_font() {
             let action = InterPanelMessage::Font(Some(&font_description));
@@ -379,7 +381,7 @@ impl UnitControlPanelImpl {
             Rc::new(Box::new(|| {})),
         );
 
-        self.unit_info_panel
+        self.unit_status_panel
             .set_inter_message(&InterPanelMessage::UnitChange(Some(&unit)));
         true // to stop the signal emission
     }
@@ -505,7 +507,7 @@ impl UnitControlPanelImpl {
                     self.highlight_controls(unit);
                 }
 
-                self.unit_info_panel
+                self.unit_status_panel
                     .set_inter_message(&InterPanelMessage::Refresh(unit_op));
             }
             Err(err) => {
@@ -527,7 +529,7 @@ impl UnitControlPanelImpl {
     pub(super) fn selection_change(&self, unit: Option<&UnitInfo>) {
         let action = InterPanelMessage::UnitChange(unit);
         self.set_inter_message(&action);
-        self.unit_info_panel
+        self.unit_status_panel
             .set_inter_message(&InterPanelMessage::UnitChange(unit));
         self.unit_file_panel
             .set_inter_message(&InterPanelMessage::UnitChange(unit));
@@ -646,7 +648,7 @@ impl UnitControlPanelImpl {
     }
 
     fn forward_inter_actions(&self, action: &InterPanelMessage) {
-        self.unit_info_panel.set_inter_message(action);
+        self.unit_status_panel.set_inter_message(action);
         self.unit_dependencies_panel.set_inter_message(action);
         self.unit_file_panel.set_inter_message(action);
         self.unit_journal_panel.set_inter_message(action);

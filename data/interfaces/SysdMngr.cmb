@@ -2,8 +2,7 @@
 <!DOCTYPE cambalache-project SYSTEM "cambalache-project.dtd">
 <!-- Created with Cambalache 1.0.3 -->
 <cambalache-project version="1.0.0" target_tk="gtk-4.0" depends="libadwaita-1,webkitgtk-6.0">
-  <ui template-class="PreferencesWindow" filename="preferences.ui" sha256="8868fbee6ed51c49329f0a07d8bfa25dfc1675ce68b2e7fd47ed770ea21cb716"/>
-  <ui template-class="UnitInfoPanel" filename="unit_info_panel.ui" sha256="644bb4e1d9d44f6ec46817a58bc2314c7d0f26843189c7f6ba22dd08fb8e886f"/>
+  <ui template-class="PreferencesWindow" filename="preferences.ui" sha256="a397f070cb1ee37a8b69cd54f9bdda77d0fe1ba53cd6df32710c30fb66e37b98"/>
   <ui template-class="JournalPanel" filename="journal_panel.ui" sha256="d71a31d18ed116cd09493ccdfaf67085589bf4820a548e715fd3a93334321b6a"/>
   <ui template-class="UnitFilePanel" filename="unit_file_panel.ui" sha256="84abf874b3acc27886a4e7b5bc85ce1d7fe71d901a35c1595113a1a9be5bb020"/>
   <ui template-class="UnitDependenciesPanel" filename="unit_dependencies_panel.ui" sha256="3b4fc29c7c8d73dda55c9e143bd8b0f1e82851cd44088c888283d857bb497fde"/>
@@ -25,8 +24,9 @@
   <ui template-class="UnitPropertiesSelectorRow" filename="unit_properties_selection_row.ui" sha256="5e4b623bcc4ae44d681a338d49f85cd2a8d088c349e57650769ec4c50e603be5"/>
   <ui template-class="UnitPopMenu" filename="unit_pop_menu.ui" sha256="9e887a54bc541f83f447a59bc0b7a7df96ef9749d6f590d83f8bfdb106b47e29"/>
   <ui template-class="TextFind" filename="text_find.ui" sha256="133b60df34d664c99f522e81c06758a2ad3330cce604c721df368842fe8b56ac"/>
-  <ui template-class="UnitControlPanel" filename="unit_control_panel.ui" sha256="2754ccc81a3f25b3eb1f39cc775f205bacbd7efe046ee5662a53bc37d6af3553">
-    <requires>UnitInfoPanel</requires>
+  <ui template-class="UnitStatusPanel" filename="unit_status_panel.ui" sha256="f04cd56c809c47f7b8eab86591713dc565dfa7111dc5cd801a85939acd3ef59c"/>
+  <ui template-class="UnitControlPanel" filename="unit_control_panel.ui" sha256="64569954186670b495e210518e573ee3bdf09712836daa84a0d1a332e1faedf3">
+    <requires>UnitStatusPanel</requires>
     <requires>UnitDependenciesPanel</requires>
     <requires>UnitFilePanel</requires>
     <requires>JournalPanel</requires>

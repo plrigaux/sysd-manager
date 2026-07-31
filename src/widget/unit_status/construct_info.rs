@@ -12,7 +12,7 @@ use crate::utils::writer::{
     SPECIAL_GLYPH_TREE_VERTICAL, UnitInfoWriter,
 };
 use crate::widget::{
-    preferences::data::PREFERENCES, unit_info::construct_info::systemd::timestamp_is_set,
+    preferences::data::PREFERENCES, unit_status::construct_info::systemd::timestamp_is_set,
 };
 use base::enums::UnitDBusLevel;
 use systemd::time_handling::calc_next_elapse;
