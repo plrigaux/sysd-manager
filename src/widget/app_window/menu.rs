@@ -50,7 +50,7 @@ pub fn on_startup(app: &adw::Application) {
                 Ok(analyze_blame_window) => {
                     if let Some(first_window) = wins.first() {
                         analyze_blame_window.set_transient_for(Some(first_window));
-                        analyze_blame_window.set_modal(true);
+                        analyze_blame_window.set_modal(false);
                     }
 
                     analyze_blame_window.present();

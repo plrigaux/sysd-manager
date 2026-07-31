@@ -823,7 +823,7 @@ pub fn commander_output(
 pub fn test_flatpak_spawn() -> Result<(), SystemdErrors> {
     #[cfg(feature = "flatpak")]
     {
-        let prog_n_args = [base::consts::SYSTEMD_ANALYSE];
+        let prog_n_args = [base::consts::SYSTEMD_ANALYZE];
         info!("test_flatpak_spawn {:?}", prog_n_args);
         match commander_blocking(prog_n_args, None).output() {
             Ok(output) => {

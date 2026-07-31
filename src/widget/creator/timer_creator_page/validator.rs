@@ -1,6 +1,6 @@
 use base::{
     args,
-    consts::SYSTEMD_ANALYSE,
+    consts::SYSTEMD_ANALYZE,
     file::{SysdBaseError, commander},
 };
 use std::{ffi::OsStr, process::Stdio};
@@ -8,12 +8,12 @@ use tokio::io::{AsyncBufReadExt, BufReader};
 use tracing::{debug, info, warn};
 
 pub async fn validate_calendar(calendar: &str) -> Result<(i32, String, String), SysdBaseError> {
-    let cmd = args![SYSTEMD_ANALYSE, "calendar", calendar];
+    let cmd = args![SYSTEMD_ANALYZE, "calendar", calendar];
     execute_command(&cmd).await
 }
 
 pub async fn validate_timespan(timespan: &str) -> Result<(i32, String, String), SysdBaseError> {
-    let cmd = args![SYSTEMD_ANALYSE, "timespan", timespan];
+    let cmd = args![SYSTEMD_ANALYZE, "timespan", timespan];
     execute_command(&cmd).await
 }
 

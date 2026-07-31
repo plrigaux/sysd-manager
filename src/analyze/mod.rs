@@ -5,9 +5,6 @@ use crate::{
     },
     widget::{close_window_shortcut, unit_file_panel::flatpak},
 };
-
-use std::cell::Ref;
-
 use adw::prelude::AdwDialogExt;
 use gettextrs::pgettext;
 use gtk::{
@@ -16,20 +13,21 @@ use gtk::{
     pango::{AttrInt, AttrList, Weight},
     prelude::*,
 };
+use std::cell::Ref;
 use tracing::{error, info};
 
 const PAGE_BLAME: &str = "blame";
 
 pub fn build_analyze_window() -> Result<adw::Window, SystemdErrors> {
-    let (analyse_box, store, total_time_label, stack) = build_analyze()?;
+    let (analyze_box, store, total_time_label, stack) = build_analyze()?;
     let header = adw::HeaderBar::builder()
         .title_widget(&adw::WindowTitle::new(
-            &pgettext("analyse blame", "Analyse Blame"),
+            &pgettext("analyze blame", "Analyze Blame"),
             "",
         ))
         .css_classes(["raised"])
         .build();
-    let toolbar = adw::ToolbarView::builder().content(&analyse_box).build();
+    let toolbar = adw::ToolbarView::builder().content(&analyze_box).build();
     toolbar.add_top_bar(&header);
     let window = adw::Window::builder()
         .default_height(600)
@@ -47,13 +45,13 @@ pub fn build_analyze_window() -> Result<adw::Window, SystemdErrors> {
 
 fn build_analyze() -> Result<(gtk::Box, gio::ListStore, gtk::Label, adw::ViewStack), SystemdErrors>
 {
-    // Analyse
-    let unit_analyse_box = gtk::Box::builder()
+    // Analyze
+    let unit_analyze_box = gtk::Box::builder()
         .orientation(gtk::Orientation::Vertical)
         .build();
 
     //label total
-    let label_str = pgettext("analyse blame", "Total Time:");
+    let label_str = pgettext("analyze blame", "Total Time:");
 
     let total_time_box = gtk::Box::builder()
         .spacing(5)
@@ -69,13 +67,13 @@ fn build_analyze() -> Result<(gtk::Box, gio::ListStore, gtk::Label, adw::ViewSta
             .build()
     });
 
-    unit_analyse_box.append(&total_time_box);
+    unit_analyze_box.append(&total_time_box);
 
     let attribute_list = AttrList::new();
     attribute_list.insert(AttrInt::new_weight(Weight::Medium));
     let total_time_label = gtk::Label::builder()
         //place holder, lees likely to be displaied
-        .label(pgettext("analyse blame", "seconds ..."))
+        .label(pgettext("analyze blame", "seconds ..."))
         .attributes(&attribute_list)
         .selectable(true)
         .focusable(false)
@@ -85,7 +83,7 @@ fn build_analyze() -> Result<(gtk::Box, gio::ListStore, gtk::Label, adw::ViewSta
     // Setup the Analyze stack
     let (analyze_tree, store) = setup_systemd_analyze_tree()?;
 
-    let unit_analyse_scrolled_window = gtk::ScrolledWindow::builder()
+    let unit_analyze_scrolled_window = gtk::ScrolledWindow::builder()
         .vexpand(true)
         .focusable(true)
         .child(&analyze_tree)
@@ -95,12 +93,11 @@ fn build_analyze() -> Result<(gtk::Box, gio::ListStore, gtk::Label, adw::ViewSta
     let spinner = adw::Spinner::new();
 
     stack.add_named(&spinner, Some("spinner"));
-    stack.add_named(&unit_analyse_scrolled_window, Some(PAGE_BLAME));
+    stack.add_named(&unit_analyze_scrolled_window, Some(PAGE_BLAME));
 
-    // unit_analyse_box.append(&total_time_label);
-    unit_analyse_box.append(&stack);
+    unit_analyze_box.append(&stack);
 
-    Ok((unit_analyse_box, store, total_time_label, stack))
+    Ok((unit_analyze_box, store, total_time_label, stack))
 }
 
 /// Use `systemd-analyze blame` to fill out the information for the Analyze `adw::ViewStack`.
@@ -153,12 +150,12 @@ fn setup_systemd_analyze_tree() -> Result<(gtk::ColumnView, gio::ListStore), Sys
 
     let col1_time = gtk::ColumnViewColumn::new(
         //column header
-        Some(&pgettext("analyse blame", "Init time (ms)")),
+        Some(&pgettext("analyze blame", "Init time (ms)")),
         Some(col1factory),
     );
     let col2_unit = gtk::ColumnViewColumn::new(
         //column header
-        Some(&pgettext("analyse blame", "Running units")),
+        Some(&pgettext("analyze blame", "Running units")),
         Some(col2factory),
     );
     col2_unit.set_expand(true);
@@ -215,7 +212,7 @@ fn fill_store(
 
                     //total time
                     let total_time_label_str =
-                        crate::format2!(pgettext("analyse blame", "{} seconds"), time);
+                        crate::format2!(pgettext("analyze blame", "{} seconds"), time);
 
                     total_time_label.set_label(&total_time_label_str);
 
