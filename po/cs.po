@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-07-31 04:55-0400\n"
-"PO-Revision-Date: 2026-03-28 20:09+0000\n"
+"PO-Revision-Date: 2026-08-01 20:01+0000\n"
 "Last-Translator: Pavel Borecki <pavel.borecki@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/cs/>\n"
@@ -17,13 +17,13 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
-"X-Generator: Weblate 5.17-dev\n"
+"X-Generator: Weblate 2026.8.dev0\n"
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:9
 msgid "SysD Manager"
-msgstr ""
+msgstr "SysD Manager"
 
 #. Desktop File GenericName
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:6
@@ -522,7 +522,7 @@ msgstr ""
 #: data/interfaces/mask_unit_dialog.ui:34
 msgctxt "mask"
 msgid "Force"
-msgstr ""
+msgstr "Vynutit"
 
 #. subtitle
 #: data/interfaces/mask_unit_dialog.ui:48
@@ -572,7 +572,7 @@ msgstr ""
 #: data/interfaces/preferences.ui:19
 msgctxt "preference"
 msgid "_Main"
-msgstr ""
+msgstr "_Hlavní"
 
 #. group
 #: data/interfaces/preferences.ui:23
@@ -596,7 +596,7 @@ msgstr ""
 #: data/interfaces/preferences.ui:32
 msgctxt "preference"
 msgid "Orientation"
-msgstr ""
+msgstr "Orientace"
 
 #. row
 #: data/interfaces/preferences.ui:37
@@ -1354,7 +1354,7 @@ msgstr ""
 #: data/interfaces/signals_window.ui:69
 msgctxt "signals"
 msgid "Type"
-msgstr ""
+msgstr "Typ"
 
 #. column title
 #: data/interfaces/signals_window.ui:76
@@ -1596,13 +1596,13 @@ msgstr ""
 #: data/interfaces/unit_list_panel.ui:99
 msgctxt "list info"
 msgid "Loaded"
-msgstr ""
+msgstr "Načteno"
 
 #. short version
 #: data/interfaces/unit_list_panel.ui:100
 msgctxt "list info"
 msgid "Files"
-msgstr ""
+msgstr "Soubory"
 
 #. short version
 #: data/interfaces/unit_list_panel.ui:101
@@ -2024,37 +2024,37 @@ msgstr ""
 #: src/widget/creator/timer_creator_page/imp.rs:563
 msgctxt "timer"
 msgid "Minutely"
-msgstr ""
+msgstr "Minutově"
 
 #: src/widget/creator/timer_creator_page/imp.rs:564
 msgctxt "timer"
 msgid "Hourly"
-msgstr ""
+msgstr "Hodinově"
 
 #: src/widget/creator/timer_creator_page/imp.rs:565
 msgctxt "timer"
 msgid "Daily"
-msgstr ""
+msgstr "Denně"
 
 #: src/widget/creator/timer_creator_page/imp.rs:566
 msgctxt "timer"
 msgid "Monthly"
-msgstr ""
+msgstr "Měsíčně"
 
 #: src/widget/creator/timer_creator_page/imp.rs:567
 msgctxt "timer"
 msgid "Weekly"
-msgstr ""
+msgstr "Týdně"
 
 #: src/widget/creator/timer_creator_page/imp.rs:568
 msgctxt "timer"
 msgid "Yearly"
-msgstr ""
+msgstr "Ročně"
 
 #: src/widget/creator/timer_creator_page/imp.rs:569
 msgctxt "timer"
 msgid "Quarterly"
-msgstr ""
+msgstr "Čtvrtletně"
 
 #: src/widget/creator/timer_creator_page/imp.rs:570
 msgctxt "timer"
@@ -2275,7 +2275,7 @@ msgstr ""
 #: src/widget/kill_panel/imp.rs:565
 msgctxt "kill"
 msgid "Continue"
-msgstr ""
+msgstr "Pokračovat"
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:567
@@ -2664,7 +2664,7 @@ msgstr ""
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:134
 msgctxt "action"
 msgid "Freeze"
-msgstr ""
+msgstr "Zamrznout"
 
 #. action name
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:148
@@ -2755,7 +2755,7 @@ msgstr ""
 #: src/widget/unit_file_panel/flatpak.rs:139
 msgctxt "warning"
 msgid "_Close"
-msgstr ""
+msgstr "_Zavřít"
 
 #: src/widget/unit_file_panel/imp.rs:261
 #, rust-format
@@ -3155,7 +3155,7 @@ msgstr "Správce služeb"
 #: src/widget/unit_list/mod.rs:222
 msgctxt "menu"
 msgid "Path"
-msgstr ""
+msgstr "Popis umístění"
 
 #. Curated List View
 #: src/widget/unit_list/mod.rs:226
