@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-31 04:48-0400\n"
+"POT-Creation-Date: 2026-08-01 18:45-0400\n"
 "PO-Revision-Date: 2026-07-31 09:06+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
@@ -339,18 +339,27 @@ msgctxt "extented menu button"
 msgid "Clear"
 msgstr "Effacer"
 
+#. toggle button tooltip text
+#: data/interfaces/journal_panel.ui:19
+#: data/interfaces/unit_dependencies_panel.ui:17
+#: data/interfaces/unit_file_panel.ui:29
+#: data/interfaces/unit_status_panel.ui:21 src/widget/text_search/mod.rs:60
+msgctxt "text_find"
+msgid "Find in Text"
+msgstr "Rechercher dans le texte"
+
 #. button
-#: data/interfaces/journal_panel.ui:29
+#: data/interfaces/journal_panel.ui:28
 msgctxt "journal"
 msgid "Refresh"
 msgstr "Rafraîchir"
 
-#: data/interfaces/journal_panel.ui:34
+#: data/interfaces/journal_panel.ui:33
 msgctxt "journal"
 msgid "Clear journal events and refetch them"
 msgstr "Effacer les événements du journal et les récupérer à nouveau"
 
-#: data/interfaces/journal_panel.ui:45
+#: data/interfaces/journal_panel.ui:44
 msgctxt "journal"
 msgid "Enable new entries continuous print as they are appended to the journal"
 msgstr ""
@@ -358,49 +367,49 @@ msgstr ""
 "qu'elles sont ajoutées au journal"
 
 #. tooltip
-#: data/interfaces/journal_panel.ui:59
+#: data/interfaces/journal_panel.ui:58
 msgctxt "journal"
 msgid "Toggle events display order"
 msgstr "Basculer l'ordre d'affichage des événements"
 
 #. tooltip
-#: data/interfaces/journal_panel.ui:65
+#: data/interfaces/journal_panel.ui:64
 msgctxt "journal"
 msgid "List the boots of the system"
 msgstr "Lister les démarrages du système"
 
 #. button
-#: data/interfaces/journal_panel.ui:70
+#: data/interfaces/journal_panel.ui:69
 msgctxt "journal"
 msgid "List Boots"
 msgstr "Lister les démarrage"
 
 #. button
-#: data/interfaces/journal_panel.ui:90
+#: data/interfaces/journal_panel.ui:89
 msgctxt "journal"
 msgid "Current boot"
 msgstr "Démarrage actuel"
 
 #. button
-#: data/interfaces/journal_panel.ui:96
+#: data/interfaces/journal_panel.ui:95
 msgctxt "journal"
 msgid "All events"
 msgstr "Tous les évènements"
 
 #. title
-#: data/interfaces/journal_panel.ui:103
+#: data/interfaces/journal_panel.ui:102
 msgctxt "journal"
 msgid "Boot id"
 msgstr "Id du boot"
 
 #. wiki link
-#: data/interfaces/journal_panel.ui:155
+#: data/interfaces/journal_panel.ui:149
 msgctxt "journal"
 msgid "For more information"
 msgstr "lien vers le wiki"
 
 #. description
-#: data/interfaces/journal_panel.ui:159
+#: data/interfaces/journal_panel.ui:153
 msgctxt "journal"
 msgid ""
 "Either there are no log events to display, or you don't have permission to "
@@ -410,7 +419,7 @@ msgstr ""
 "autorisé à y accéder."
 
 #. title
-#: data/interfaces/journal_panel.ui:161
+#: data/interfaces/journal_panel.ui:155
 msgctxt "journal"
 msgid "No journal events"
 msgstr "Aucun événement de journal"
@@ -1399,36 +1408,36 @@ msgid "Watch Signals"
 msgstr "Monitorer les signaux"
 
 #. place holder text
-#: data/interfaces/text_find.ui:11
+#: data/interfaces/text_search_entry.ui:11
 msgctxt "find_text"
 msgid "Find in Text"
 msgstr "Rechercher dans le texte"
 
 #. tooltip
-#: data/interfaces/text_find.ui:25
+#: data/interfaces/text_search_entry.ui:25
 msgctxt "find_text"
 msgid "Match Case"
 msgstr "Respecte la casse"
 
 #. tooltip
-#: data/interfaces/text_find.ui:32
+#: data/interfaces/text_search_entry.ui:32
 msgctxt "find_text"
 msgid "Match Whole Word"
 msgstr "Faire correspondre au mot entier"
 
 #. tooltip
-#: data/interfaces/text_find.ui:39
+#: data/interfaces/text_search_entry.ui:39
 msgctxt "find_text"
 msgid "Use Regular Expression"
 msgstr "Utilisez une expression régulière"
 
 #. tooltip
-#: data/interfaces/text_find.ui:51
+#: data/interfaces/text_search_entry.ui:51
 msgctxt "find_text"
 msgid "Previous Match"
 msgstr "Match précédent"
 
-#: data/interfaces/text_find.ui:59
+#: data/interfaces/text_search_entry.ui:59
 msgctxt "find_text"
 msgid "Match Next"
 msgstr "Match suivant"
@@ -1526,55 +1535,55 @@ msgid "Journal"
 msgstr "Journal"
 
 #. label
-#: data/interfaces/unit_dependencies_panel.ui:34
+#: data/interfaces/unit_dependencies_panel.ui:33
 msgctxt "dependency"
 msgid "plain"
 msgstr "plat"
 
 #. label
-#: data/interfaces/unit_dependencies_panel.ui:54
+#: data/interfaces/unit_dependencies_panel.ui:53
 msgctxt "dependency"
 msgid "No dependencies"
 msgstr "Aucune dépendances"
 
 #. button
-#: data/interfaces/unit_file_panel.ui:67
+#: data/interfaces/unit_file_panel.ui:66
 msgctxt "file"
 msgid "Save"
 msgstr "Enregister"
 
 #. description
-#: data/interfaces/unit_file_panel.ui:97
+#: data/interfaces/unit_file_panel.ui:96
 msgctxt "file"
 msgid "The unit has no file associated"
 msgstr "L'unité n'a aucun fichier associé"
 
 #. title
-#: data/interfaces/unit_file_panel.ui:99
+#: data/interfaces/unit_file_panel.ui:98
 msgctxt "file"
 msgid "No Unit File"
 msgstr "Pas de fichier pour l'unité"
 
 #. Unit file drop-in operations menu item
-#: data/interfaces/unit_file_panel.ui:111
+#: data/interfaces/unit_file_panel.ui:110
 msgctxt "menu"
 msgid "Revert Drop-in"
 msgstr "Annuler le Drop-in"
 
 #. Unit file drop-in operations menu section
-#: data/interfaces/unit_file_panel.ui:114
+#: data/interfaces/unit_file_panel.ui:113
 msgctxt "menu"
 msgid "Create Drop-in"
 msgstr "Créer un drop-in"
 
 #. Unit file drop-in operations menu item
-#: data/interfaces/unit_file_panel.ui:117
+#: data/interfaces/unit_file_panel.ui:116
 msgctxt "menu"
 msgid "Permanent"
 msgstr "Permanent"
 
 #. Unit file drop-in operations menu item
-#: data/interfaces/unit_file_panel.ui:121
+#: data/interfaces/unit_file_panel.ui:120
 msgctxt "menu"
 msgid "Runtime"
 msgstr "Durée d'exécution"
@@ -1795,32 +1804,37 @@ msgctxt "unit info"
 msgid "Show all _Properties"
 msgstr "Afficher tout les propriétés"
 
-#: src/analyze/mod.rs:27
-msgctxt "analyse blame"
-msgid "Analyse Blame"
-msgstr "Temps d'initialisation des unité"
+#: src/analyze/mod.rs:25
+#, fuzzy
+msgctxt "analyze blame"
+msgid "Analyze Blame"
+msgstr "Analyse blâme"
 
 #. label total
-#: src/analyze/mod.rs:56
-msgctxt "analyse blame"
+#: src/analyze/mod.rs:54
+#, fuzzy
+msgctxt "analyze blame"
 msgid "Total Time:"
 msgstr "Temps total :"
 
 #. place holder, lees likely to be displaied
-#: src/analyze/mod.rs:78
-msgctxt "analyse blame"
+#: src/analyze/mod.rs:76
+#, fuzzy
+msgctxt "analyze blame"
 msgid "seconds ..."
 msgstr "seconds ..."
 
 #. column header
-#: src/analyze/mod.rs:156
-msgctxt "analyse blame"
+#: src/analyze/mod.rs:153
+#, fuzzy
+msgctxt "analyze blame"
 msgid "Init time (ms)"
 msgstr "Temps (ms)"
 
 #. column header
-#: src/analyze/mod.rs:161
-msgctxt "analyse blame"
+#: src/analyze/mod.rs:158
+#, fuzzy
+msgctxt "analyze blame"
 msgid "Running units"
 msgstr "Unités en service"
 
@@ -2114,9 +2128,8 @@ msgctxt "timer"
 msgid "OnUnitInactiveSec"
 msgstr "OnUnitInactiveSec"
 
-#. Menu item label
 #. Menu item label for status menu
-#: src/widget/journal/imp.rs:876 src/widget/unit_status/imp.rs:252
+#: src/widget/journal/imp.rs:881 src/widget/unit_status/imp.rs:276
 msgctxt "menu"
 msgid "Wrap Word"
 msgstr "Retour à la ligne"
@@ -2501,24 +2514,17 @@ msgstr "Aucun"
 
 #. find count
 #. find count initial
-#: src/widget/text_search/imp.rs:157 src/widget/text_search/imp.rs:328
+#: src/widget/text_search/imp.rs:169 src/widget/text_search/imp.rs:344
 #, rust-format
 msgctxt "text_find"
 msgid "{} of {}"
 msgstr "{} de {}"
 
-#. Toggle in text Menu item
-#: src/widget/text_search/mod.rs:57
+#. Open in text Menu item
+#: src/widget/text_search/mod.rs:55
 msgctxt "text_find"
 msgid "Toggle Find in Text"
 msgstr "Activer/désactiver la recherche dans le texte"
-
-#. Open in text Menu item
-#. toggle button tooltip text
-#: src/widget/text_search/mod.rs:62 src/widget/text_search/mod.rs:87
-msgctxt "text_find"
-msgid "Open Find in Text"
-msgstr "Ouvrir rechercher dans le texte"
 
 #: src/widget/unit_control_panel/controls.rs:63
 #: src/widget/unit_control_panel/controls.rs:183
@@ -2633,40 +2639,40 @@ msgid "reloaded"
 msgstr "rechargé"
 
 #. toast message
-#: src/widget/unit_control_panel/imp.rs:497
+#: src/widget/unit_control_panel/imp.rs:463
 #, rust-format
 msgctxt "toast"
 msgid "Unit {} has been {} with the mode {}"
 msgstr "L'unité {} a été {} avec le mode {}"
 
 #. toast message error --  "Can't {ACTION} the unit <unit>{UNITNAME}</unit>, because: {SYSTEMD HUMAN ERROR (english)}"),
-#: src/widget/unit_control_panel/imp.rs:518
+#: src/widget/unit_control_panel/imp.rs:484
 #, rust-format
 msgctxt "toast"
 msgid "Can't {} the unit {}, because: {}"
 msgstr "Ne peut {} l'unité {}, à cause : {}"
 
-#: src/widget/unit_control_panel/imp.rs:820
+#: src/widget/unit_control_panel/imp.rs:786
 #, rust-format
 msgctxt "toast"
 msgid "{} unit <unit>{}</unit> is <green>successful</green>"
 msgstr "{} unité <unit>{}</unit> est <green>réussi</green>"
 
 #. toast message success (no unit) -- "{ACTION} successful."
-#: src/widget/unit_control_panel/imp.rs:827
+#: src/widget/unit_control_panel/imp.rs:793
 #, rust-format
 msgctxt "toast"
 msgid "{} successful."
 msgstr "{} réussi."
 
-#: src/widget/unit_control_panel/imp.rs:837
+#: src/widget/unit_control_panel/imp.rs:803
 #, rust-format
 msgctxt "toast"
 msgid "{} unit <unit>{}</unit> failed. Reason: <red>{}</red>."
 msgstr "{} unité <unit>{}</unit> à échoué. Raison: <red>{}</red>."
 
 #. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
-#: src/widget/unit_control_panel/imp.rs:848
+#: src/widget/unit_control_panel/imp.rs:814
 #, rust-format
 msgctxt "toast"
 msgid "{} failed. Reason: <red>{}</red>."
@@ -2723,13 +2729,13 @@ msgid "Unmask"
 msgstr "Démasquer"
 
 #. Filter title
-#: src/widget/unit_dependencies_panel/imp.rs:363
+#: src/widget/unit_dependencies_panel/imp.rs:371
 msgctxt "dependency"
 msgid "Unit Types"
 msgstr "Types d'unité"
 
 #. tooltip on filter
-#: src/widget/unit_dependencies_panel/imp.rs:368
+#: src/widget/unit_dependencies_panel/imp.rs:376
 msgctxt "dependency"
 msgid "Filter dependencies by types"
 msgstr "Filtrer les dépendances par types"
@@ -2801,71 +2807,71 @@ msgctxt "warning"
 msgid "_Close"
 msgstr "_Fermer"
 
-#: src/widget/unit_file_panel/imp.rs:261
+#: src/widget/unit_file_panel/imp.rs:269
 #, rust-format
 msgctxt "file"
 msgid "File {} created successfully!"
 msgstr "Fichier {} créé avec succès !"
 
-#: src/widget/unit_file_panel/imp.rs:262
+#: src/widget/unit_file_panel/imp.rs:270
 #, rust-format
 msgctxt "file"
 msgid "File {} saved successfully!"
 msgstr "Fichier {} enregistré avec succès !"
 
 #. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:272 src/widget/unit_file_panel/imp.rs:1019
+#: src/widget/unit_file_panel/imp.rs:280 src/widget/unit_file_panel/imp.rs:1036
 msgid "Daemon Reload"
 msgstr "Recharger la configuration"
 
-#: src/widget/unit_file_panel/imp.rs:287 src/widget/unit_file_panel/imp.rs:304
-#: src/widget/unit_file_panel/imp.rs:1035
+#: src/widget/unit_file_panel/imp.rs:295 src/widget/unit_file_panel/imp.rs:312
+#: src/widget/unit_file_panel/imp.rs:1052
 msgctxt "file"
 msgid "Not able to save file, permission not granted!"
 msgstr "Impossible d'enregistrer le fichier, autorisation refusée !"
 
-#: src/widget/unit_file_panel/imp.rs:316
+#: src/widget/unit_file_panel/imp.rs:324
 msgctxt "file"
 msgid "Not able to save file, Flatpak permission not granted!"
 msgstr ""
 "Impossible d'enregistrer le fichier, autorisation Flatpak non accordée !"
 
-#: src/widget/unit_file_panel/imp.rs:324
+#: src/widget/unit_file_panel/imp.rs:332
 msgctxt "file"
 msgid "Not able to save file, an error happened!"
 msgstr "Impossible d'enregistrer le fichier, une erreur s'est produite !"
 
-#: src/widget/unit_file_panel/imp.rs:489
+#: src/widget/unit_file_panel/imp.rs:506
 msgctxt "file"
 msgid "File not found! You may need to perform \"Daemon Reload\""
 msgstr ""
 "Fichier introuvable ! Vous devrez peut-être effectuer \"Recharger la "
 "configuration\""
 
-#: src/widget/unit_file_panel/imp.rs:581
+#: src/widget/unit_file_panel/imp.rs:598
 msgctxt "file"
 msgid "Unit File"
 msgstr "Fichier de l'unité"
 
-#: src/widget/unit_file_panel/imp.rs:583
+#: src/widget/unit_file_panel/imp.rs:600
 msgctxt "file"
 msgid "Drop In"
 msgstr "Drop In"
 
 #. Create Drop in file name
-#: src/widget/unit_file_panel/imp.rs:894
+#: src/widget/unit_file_panel/imp.rs:911
 msgctxt "file"
 msgid "Editing"
 msgstr "Nom du fichier Drop-in créé"
 
-#: src/widget/unit_file_panel/imp.rs:904
+#: src/widget/unit_file_panel/imp.rs:921
 msgctxt "file"
 msgid "Note: you can change the drop-in file name by modifying the above line"
 msgstr ""
 "Remarque : vous pouvez modifier le nom du fichier du drop-in en changeant la "
 "ligne du dessus"
 
-#: src/widget/unit_file_panel/imp.rs:914
+#: src/widget/unit_file_panel/imp.rs:931
 msgctxt "file"
 msgid ""
 "Anything between here and the comment below will become the contents of the "
@@ -2875,29 +2881,30 @@ msgstr ""
 "contenu du fichier de remplacement"
 
 #. Create Drop in file footer
-#: src/widget/unit_file_panel/imp.rs:923
+#: src/widget/unit_file_panel/imp.rs:940
 msgctxt "file"
 msgid "Edits below this comment will be discarded"
 msgstr "Les modifications apportées après ce commentaire seront ignorées"
 
-#: src/widget/unit_file_panel/imp.rs:1011
+#: src/widget/unit_file_panel/imp.rs:1028
 #, rust-format
 msgctxt "file"
 msgid "Unit {} reverted successfully!"
 msgstr "Fichier {} restaurée avec succès !"
 
-#: src/widget/unit_file_panel/imp.rs:1056
+#: src/widget/unit_file_panel/imp.rs:1073
 msgctxt "file"
 msgid "Not able to revert unit, permission not granted!"
 msgstr "Impossible de revenir en arrière, autorisation non accordée!"
 
-#: src/widget/unit_file_panel/imp.rs:1064
+#: src/widget/unit_file_panel/imp.rs:1081
 msgctxt "file"
 msgid "Not able to revert unit, an error happened!"
 msgstr "Impossible de revenir en arrière, une erreur s'est produite!"
 
+#. Menu item label for status menu
 #. Show Line Number Menu Item
-#: src/widget/unit_file_panel/imp.rs:1171
+#: src/widget/unit_file_panel/imp.rs:1189
 msgctxt "file"
 msgid "Display Line Numbers"
 msgstr "Afficher les numéros de ligne"
@@ -3225,6 +3232,14 @@ msgctxt "menu"
 msgid "Favorites"
 msgstr "Favoris"
 
+#~ msgctxt "analyse blame"
+#~ msgid "Analyse Blame"
+#~ msgstr "Temps d'initialisation des unité"
+
+#~ msgctxt "text_find"
+#~ msgid "Open Find in Text"
+#~ msgstr "Ouvrir rechercher dans le texte"
+
 #~ msgctxt "preference"
 #~ msgid "Unit Description"
 #~ msgstr "Description de l'unité"
@@ -3256,10 +3271,6 @@ msgstr "Favoris"
 
 #~ msgid "user"
 #~ msgstr "utilisateur"
-
-#~ msgctxt "text_find"
-#~ msgid "Find in Text"
-#~ msgstr "Rechercher dans le texte"
 
 #~ msgctxt "controls"
 #~ msgid "Add Favorite"
