@@ -270,8 +270,7 @@ impl ObjectImpl for UnitStatusPanelImp {
 
         let menu = gio::Menu::new();
         let section_menu = gio::Menu::new();
-        let mi = text_search::create_menu_item();
-        section_menu.append_item(&mi);
+        text_search::create_menu_item(&section_menu);
 
         //Menu item label for status menu
         let menu_label = pgettext("menu", "Wrap Word");

@@ -1161,15 +1161,6 @@ impl ObjectImpl for UnitFilePanelImp {
             });
         }
 
-        // let file_text_view = view.upcast_ref::<gtk::TextView>();
-        // text_search::text_search_construct(
-        //     file_text_view,
-        //     &self.text_search_bar,
-        //     &self.find_text_button,
-        //     false,
-        //     text_search::PanelID::File,
-        // );
-
         let settings = systemd_gui::new_settings();
 
         settings
@@ -1190,8 +1181,7 @@ impl ObjectImpl for UnitFilePanelImp {
 
         let menu = gio::Menu::new();
         let section_menu = gio::Menu::new();
-        let find_text_mi = text_search::create_menu_item();
-        section_menu.append_item(&find_text_mi);
+        text_search::create_menu_item(&section_menu);
 
         //Menu item label for status menu
 

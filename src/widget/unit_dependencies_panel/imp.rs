@@ -386,14 +386,6 @@ impl ObjectImpl for UnitDependenciesPanelImp {
         let on_close = OnClose::new_dep(&dep);
         filter_button_unit_type.set_on_close(on_close);
 
-        // text_search::text_search_construct(
-        //     &self.unit_dependencies_textview,
-        //     &self.text_search_bar,
-        //     &self.find_text_button,
-        //     true,
-        //     text_search::PanelID::Dependencies,
-        // );
-
         let settings = systemd_gui::new_settings();
 
         settings
@@ -406,8 +398,7 @@ impl ObjectImpl for UnitDependenciesPanelImp {
 
         let menu = gio::Menu::new();
         let section_menu = gio::Menu::new();
-        let find_text_mi = text_search::create_menu_item();
-        section_menu.append_item(&find_text_mi);
+        text_search::create_menu_item(&section_menu);
         menu.append_section(None, &section_menu);
         self.unit_dependencies_textview.set_extra_menu(Some(&menu));
     }

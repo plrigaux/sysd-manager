@@ -3,10 +3,10 @@ use super::{
 };
 use crate::{
     consts::{
-        ACTION_WIN_FAVORITE_SET, ACTION_WIN_FAVORITE_TOGGLE, ACTION_WIN_REFRESH_POP_MENU,
-        ACTION_WIN_RELOAD_UNIT, ACTION_WIN_RESTART_UNIT, ACTION_WIN_START_UNIT,
-        ACTION_WIN_STOP_UNIT, ACTION_WIN_UNIT_HAS_RELOAD_UNIT_CAPABILITY, DESTRUCTIVE_ACTION,
-        SETTING_FIND_IN_TEXT_OPEN, SUGGESTED_ACTION,
+        ACTION_FIND_IN_TEXT_TOGGLE, ACTION_WIN_FAVORITE_SET, ACTION_WIN_FAVORITE_TOGGLE,
+        ACTION_WIN_REFRESH_POP_MENU, ACTION_WIN_RELOAD_UNIT, ACTION_WIN_RESTART_UNIT,
+        ACTION_WIN_START_UNIT, ACTION_WIN_STOP_UNIT, ACTION_WIN_UNIT_HAS_RELOAD_UNIT_CAPABILITY,
+        DESTRUCTIVE_ACTION, SETTING_FIND_IN_TEXT_OPEN, SUGGESTED_ACTION,
     },
     format2, systemd_gui,
     utils::font_management::{self, create_provider},
@@ -257,83 +257,6 @@ impl UnitControlPanelImpl {
                 .build()
         };
 
-        // let find_in_text_toogle = {
-        //     let control_panel = self.obj().clone();
-        //     gio::ActionEntry::builder(&ACTION_FIND_IN_TEXT_TOGGLE[4..])
-        //         .activate(move |_application: &AppWindow, _, target_value| {
-        //             let settings = systemd_gui::new_settings();
-        //             let value = settings.boolean(SETTING_FIND_IN_TEXT_OPEN);
-        //             if let Err(err) = settings.set_boolean(SETTING_FIND_IN_TEXT_OPEN, !value) {
-        //                 warn!("{SETTING_FIND_IN_TEXT_OPEN} {err}")
-        //             }
-
-        //             if !value {
-        //                 let panel: PanelID = target_value.into();
-
-        //                 match panel {
-        //                     PanelID::Info => {
-        //                         control_panel.imp().unit_status_panel.focus_text_search()
-        //                     }
-        //                     PanelID::Dependencies => control_panel
-        //                         .imp()
-        //                         .unit_dependencies_panel
-        //                         .focus_text_search(),
-        //                     PanelID::File => {
-        //                         control_panel.imp().unit_file_panel.focus_text_search()
-        //                     }
-        //                     PanelID::Journal => {
-        //                         control_panel.imp().unit_journal_panel.focus_text_search()
-        //                     }
-        //                 }
-        //             }
-        //         })
-        //         // .parameter_type(Some(glib::VariantTy::INT32))
-        //         .build()
-        // };
-
-        // let find_in_text_open = {
-        //     let control_panel = self.obj().clone();
-        //     gio::ActionEntry::builder(&ACTION_FIND_IN_TEXT_OPEN[4..])
-        //         .activate(move |_application: &AppWindow, _, _| {
-        //             let settings = systemd_gui::new_settings();
-        //             if let Err(err) = settings.set_boolean(SETTING_FIND_IN_TEXT_OPEN, true) {
-        //                 warn!("{SETTING_FIND_IN_TEXT_OPEN} {err}")
-        //             }
-
-        //             match control_panel
-        //                 .imp()
-        //                 .unit_panel_stack
-        //                 .visible_child_name()
-        //                 .as_deref()
-        //             {
-        //                 Some(INFO_PAGE) => {
-        //                     control_panel.imp().unit_status_panel.focus_text_search()
-        //                 }
-        //                 Some(DEPENDENCIES_PAGE) => control_panel
-        //                     .imp()
-        //                     .unit_dependencies_panel
-        //                     .focus_text_search(),
-        //                 Some(DEFINITION_FILE_PAGE) => {
-        //                     control_panel.imp().unit_file_panel.focus_text_search()
-        //                 }
-        //                 Some(JOURNAL_PAGE) => {
-        //                     control_panel.imp().unit_journal_panel.focus_text_search()
-        //                 }
-        //                 _ => {}
-        //             }
-        //         })
-        //         .build()
-        // };
-
-        app_window.add_action_entries([
-            action_start_unit,
-            action_stop_unit,
-            action_restart_unit,
-            action_reload_unit,
-            action_favorite_set,
-            action_unit_has_reload,
-        ]);
-
         let settings = systemd_gui::new_settings();
         let action = settings.create_action(&SETTING_FIND_IN_TEXT_OPEN[4..]);
 
@@ -348,6 +271,31 @@ impl UnitControlPanelImpl {
         });
 
         app_window.add_action(&action);
+
+        let text_search_entry = self.text_search_entry.clone();
+        let find_in_text_toogle = {
+            gio::ActionEntry::builder(&ACTION_FIND_IN_TEXT_TOGGLE[4..])
+                .activate(move |_application: &AppWindow, _, _| {
+                    if let Some(state) = action.state().and_then(|v| v.get::<bool>()) {
+                        if state {
+                            text_search_entry.grab_focus_on_search_entry();
+                        } else {
+                            action.change_state(&true.to_variant());
+                        }
+                    }
+                })
+                .build()
+        };
+
+        app_window.add_action_entries([
+            action_start_unit,
+            action_stop_unit,
+            action_restart_unit,
+            action_reload_unit,
+            action_favorite_set,
+            action_unit_has_reload,
+            find_in_text_toogle,
+        ]);
 
         //Disable buttons
         let app_window = app_window.clone();

@@ -877,8 +877,7 @@ impl ObjectImpl for JournalPanelImp {
 
         let menu = gio::Menu::new();
         let section_menu = gio::Menu::new();
-        let find_text_mi = text_search::create_menu_item();
-        section_menu.append_item(&find_text_mi);
+        text_search::create_menu_item(&section_menu);
         let menu_label = pgettext("menu", "Wrap Word");
         let wrap_word_toggle_menu = gio::MenuItem::new(Some(&menu_label), None);
         wrap_word_toggle_menu
