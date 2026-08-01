@@ -86,7 +86,7 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1"/>
   <releases>
-    <release version="2.20.7" date="2026-07-31">
+    <release version="2.20.8" date="2026-08-01">
       <description translate="no">
         <p>Added</p>
         <ul>
@@ -96,6 +96,7 @@ https://hughsie.github.io/oars/index.html
         <ul>
           <li>Journal's follow switch has been replaced by a checkbox. This fixes [Issue 48]</li>
           <li>Unit Info tab changed to Status</li>
+          <li>Find in text improvement</li>
         </ul>
         <p>Fixed</p>
         <ul>
