@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-08-01 18:45-0400\n"
-"PO-Revision-Date: 2026-07-31 09:06+0000\n"
+"PO-Revision-Date: 2026-08-01 22:54+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -1805,38 +1805,33 @@ msgid "Show all _Properties"
 msgstr "Afficher tout les propriétés"
 
 #: src/analyze/mod.rs:25
-#, fuzzy
 msgctxt "analyze blame"
 msgid "Analyze Blame"
 msgstr "Analyse blâme"
 
 #. label total
 #: src/analyze/mod.rs:54
-#, fuzzy
 msgctxt "analyze blame"
 msgid "Total Time:"
 msgstr "Temps total :"
 
 #. place holder, lees likely to be displaied
 #: src/analyze/mod.rs:76
-#, fuzzy
 msgctxt "analyze blame"
 msgid "seconds ..."
 msgstr "seconds ..."
 
 #. column header
 #: src/analyze/mod.rs:153
-#, fuzzy
 msgctxt "analyze blame"
 msgid "Init time (ms)"
 msgstr "Temps (ms)"
 
 #. column header
 #: src/analyze/mod.rs:158
-#, fuzzy
 msgctxt "analyze blame"
 msgid "Running units"
-msgstr "Unités en service"
+msgstr "Unités en cours d'exécution"
 
 #. Just a simple log that it's all ok. Need to set env RUST_LOG="info" to see it
 #: src/main.rs:113
