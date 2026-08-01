@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Find in text improvement
+- CS translation
 
 ## [2.20.7] - 2026-07-31
 

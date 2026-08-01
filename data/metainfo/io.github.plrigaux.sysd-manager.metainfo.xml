@@ -97,6 +97,7 @@ https://hughsie.github.io/oars/index.html
           <li>Journal's follow switch has been replaced by a checkbox. This fixes [Issue 48]</li>
           <li>Unit Info tab changed to Status</li>
           <li>Find in text improvement</li>
+          <li>CS translation</li>
         </ul>
         <p>Fixed</p>
         <ul>
