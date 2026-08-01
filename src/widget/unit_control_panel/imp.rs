@@ -3,18 +3,17 @@ use super::{
 };
 use crate::{
     consts::{
-        ACTION_FIND_IN_TEXT_OPEN, ACTION_FIND_IN_TEXT_TOGGLE, ACTION_WIN_FAVORITE_SET,
-        ACTION_WIN_FAVORITE_TOGGLE, ACTION_WIN_REFRESH_POP_MENU, ACTION_WIN_RELOAD_UNIT,
-        ACTION_WIN_RESTART_UNIT, ACTION_WIN_START_UNIT, ACTION_WIN_STOP_UNIT,
-        ACTION_WIN_UNIT_HAS_RELOAD_UNIT_CAPABILITY, DESTRUCTIVE_ACTION, SETTING_FIND_IN_TEXT_OPEN,
-        SUGGESTED_ACTION,
+        ACTION_WIN_FAVORITE_SET, ACTION_WIN_FAVORITE_TOGGLE, ACTION_WIN_REFRESH_POP_MENU,
+        ACTION_WIN_RELOAD_UNIT, ACTION_WIN_RESTART_UNIT, ACTION_WIN_START_UNIT,
+        ACTION_WIN_STOP_UNIT, ACTION_WIN_UNIT_HAS_RELOAD_UNIT_CAPABILITY, DESTRUCTIVE_ACTION,
+        SETTING_FIND_IN_TEXT_OPEN, SUGGESTED_ACTION,
     },
     format2, systemd_gui,
     utils::font_management::{self, create_provider},
     widget::{
         InterPanelMessage, app_window::AppWindow, journal::JournalPanel,
         preferences::data::KEY_PREF_CONTROLS_ALWAYS_SHOWS_START_STOP, set_favorite_info,
-        text_search::PanelID, unit_dependencies_panel::UnitDependenciesPanel,
+        text_search::TextSearchEntry, unit_dependencies_panel::UnitDependenciesPanel,
         unit_file_panel::UnitFilePanel, unit_status::UnitStatusPanel,
     },
 };
@@ -98,11 +97,17 @@ pub struct UnitControlPanelImpl {
     #[template_child]
     favorite_button: TemplateChild<gtk::Button>,
 
+    #[template_child]
+    text_search_bar: TemplateChild<gtk::SearchBar>,
+
+    #[template_child]
+    text_search_entry: TemplateChild<TextSearchEntry>,
+
     app_window: OnceCell<AppWindow>,
 
     current_unit: RefCell<Option<UnitInfo>>,
 
-    search_bar: RefCell<gtk::SearchBar>,
+    unit_list_search_bar: RefCell<gtk::SearchBar>,
 
     #[property(get, set)]
     pub start_mode: RefCell<String>,
@@ -252,73 +257,73 @@ impl UnitControlPanelImpl {
                 .build()
         };
 
-        let find_in_text_toogle = {
-            let control_panel = self.obj().clone();
-            gio::ActionEntry::builder(&ACTION_FIND_IN_TEXT_TOGGLE[4..])
-                .activate(move |_application: &AppWindow, _, target_value| {
-                    let settings = systemd_gui::new_settings();
-                    let value = settings.boolean(SETTING_FIND_IN_TEXT_OPEN);
-                    if let Err(err) = settings.set_boolean(SETTING_FIND_IN_TEXT_OPEN, !value) {
-                        warn!("{SETTING_FIND_IN_TEXT_OPEN} {err}")
-                    }
+        // let find_in_text_toogle = {
+        //     let control_panel = self.obj().clone();
+        //     gio::ActionEntry::builder(&ACTION_FIND_IN_TEXT_TOGGLE[4..])
+        //         .activate(move |_application: &AppWindow, _, target_value| {
+        //             let settings = systemd_gui::new_settings();
+        //             let value = settings.boolean(SETTING_FIND_IN_TEXT_OPEN);
+        //             if let Err(err) = settings.set_boolean(SETTING_FIND_IN_TEXT_OPEN, !value) {
+        //                 warn!("{SETTING_FIND_IN_TEXT_OPEN} {err}")
+        //             }
 
-                    if !value {
-                        let panel: PanelID = target_value.into();
+        //             if !value {
+        //                 let panel: PanelID = target_value.into();
 
-                        match panel {
-                            PanelID::Info => {
-                                control_panel.imp().unit_status_panel.focus_text_search()
-                            }
-                            PanelID::Dependencies => control_panel
-                                .imp()
-                                .unit_dependencies_panel
-                                .focus_text_search(),
-                            PanelID::File => {
-                                control_panel.imp().unit_file_panel.focus_text_search()
-                            }
-                            PanelID::Journal => {
-                                control_panel.imp().unit_journal_panel.focus_text_search()
-                            }
-                        }
-                    }
-                })
-                .parameter_type(Some(glib::VariantTy::INT32))
-                .build()
-        };
+        //                 match panel {
+        //                     PanelID::Info => {
+        //                         control_panel.imp().unit_status_panel.focus_text_search()
+        //                     }
+        //                     PanelID::Dependencies => control_panel
+        //                         .imp()
+        //                         .unit_dependencies_panel
+        //                         .focus_text_search(),
+        //                     PanelID::File => {
+        //                         control_panel.imp().unit_file_panel.focus_text_search()
+        //                     }
+        //                     PanelID::Journal => {
+        //                         control_panel.imp().unit_journal_panel.focus_text_search()
+        //                     }
+        //                 }
+        //             }
+        //         })
+        //         // .parameter_type(Some(glib::VariantTy::INT32))
+        //         .build()
+        // };
 
-        let find_in_text_open = {
-            let control_panel = self.obj().clone();
-            gio::ActionEntry::builder(&ACTION_FIND_IN_TEXT_OPEN[4..])
-                .activate(move |_application: &AppWindow, _, _| {
-                    let settings = systemd_gui::new_settings();
-                    if let Err(err) = settings.set_boolean(SETTING_FIND_IN_TEXT_OPEN, true) {
-                        warn!("{SETTING_FIND_IN_TEXT_OPEN} {err}")
-                    }
+        // let find_in_text_open = {
+        //     let control_panel = self.obj().clone();
+        //     gio::ActionEntry::builder(&ACTION_FIND_IN_TEXT_OPEN[4..])
+        //         .activate(move |_application: &AppWindow, _, _| {
+        //             let settings = systemd_gui::new_settings();
+        //             if let Err(err) = settings.set_boolean(SETTING_FIND_IN_TEXT_OPEN, true) {
+        //                 warn!("{SETTING_FIND_IN_TEXT_OPEN} {err}")
+        //             }
 
-                    match control_panel
-                        .imp()
-                        .unit_panel_stack
-                        .visible_child_name()
-                        .as_deref()
-                    {
-                        Some(INFO_PAGE) => {
-                            control_panel.imp().unit_status_panel.focus_text_search()
-                        }
-                        Some(DEPENDENCIES_PAGE) => control_panel
-                            .imp()
-                            .unit_dependencies_panel
-                            .focus_text_search(),
-                        Some(DEFINITION_FILE_PAGE) => {
-                            control_panel.imp().unit_file_panel.focus_text_search()
-                        }
-                        Some(JOURNAL_PAGE) => {
-                            control_panel.imp().unit_journal_panel.focus_text_search()
-                        }
-                        _ => {}
-                    }
-                })
-                .build()
-        };
+        //             match control_panel
+        //                 .imp()
+        //                 .unit_panel_stack
+        //                 .visible_child_name()
+        //                 .as_deref()
+        //             {
+        //                 Some(INFO_PAGE) => {
+        //                     control_panel.imp().unit_status_panel.focus_text_search()
+        //                 }
+        //                 Some(DEPENDENCIES_PAGE) => control_panel
+        //                     .imp()
+        //                     .unit_dependencies_panel
+        //                     .focus_text_search(),
+        //                 Some(DEFINITION_FILE_PAGE) => {
+        //                     control_panel.imp().unit_file_panel.focus_text_search()
+        //                 }
+        //                 Some(JOURNAL_PAGE) => {
+        //                     control_panel.imp().unit_journal_panel.focus_text_search()
+        //                 }
+        //                 _ => {}
+        //             }
+        //         })
+        //         .build()
+        // };
 
         app_window.add_action_entries([
             action_start_unit,
@@ -327,9 +332,22 @@ impl UnitControlPanelImpl {
             action_reload_unit,
             action_favorite_set,
             action_unit_has_reload,
-            find_in_text_toogle,
-            find_in_text_open,
         ]);
+
+        let settings = systemd_gui::new_settings();
+        let action = settings.create_action(&SETTING_FIND_IN_TEXT_OPEN[4..]);
+
+        let text_search_entry = self.text_search_entry.clone();
+        action.connect_state_notify(move |action| {
+            if let Some(state) = action.state().and_then(|v| v.get::<bool>()) {
+                text_search_entry.set_enable(state);
+                if state {
+                    text_search_entry.grab_focus_on_search_entry();
+                }
+            }
+        });
+
+        app_window.add_action(&action);
 
         //Disable buttons
         let app_window = app_window.clone();
@@ -388,7 +406,7 @@ impl UnitControlPanelImpl {
 
     #[template_callback]
     fn button_search_toggled(&self, toggle_button: &gtk::ToggleButton) {
-        self.search_bar
+        self.unit_list_search_bar
             .borrow()
             .set_search_mode(toggle_button.is_active());
     }
@@ -905,9 +923,16 @@ impl ObjectImpl for UnitControlPanelImpl {
             let unit_journal_panel = self.unit_journal_panel.clone();
             let unit_dependencies_panel = self.unit_dependencies_panel.clone();
             let unit_file_panel = self.unit_file_panel.clone();
+            let unit_status_panel = self.unit_status_panel.clone();
+
+            unit_journal_panel.set_text_search_entry(&self.text_search_entry);
+            unit_dependencies_panel.set_text_search_entry(&self.text_search_entry);
+            unit_file_panel.set_text_search_entry(&self.text_search_entry);
+            unit_status_panel.set_text_search_entry(&self.text_search_entry);
+
             self.unit_panel_stack
                 .connect_visible_child_notify(move |view_stack| {
-                    debug!(
+                    warn!(
                         "connect_visible_child_notify {:?}",
                         view_stack.visible_child_name()
                     );
@@ -933,6 +958,7 @@ impl ObjectImpl for UnitControlPanelImpl {
                             unit_journal_panel.set_inter_message(&VISIBLE_FALSE);
                             unit_dependencies_panel.set_inter_message(&VISIBLE_FALSE);
                             unit_file_panel.set_inter_message(&VISIBLE_FALSE);
+                            unit_status_panel.set_inter_message(&VISIBLE_TRUE)
                         }
                     }
                 });
@@ -947,6 +973,17 @@ impl ObjectImpl for UnitControlPanelImpl {
                 "always-shows-start-stop",
             )
             .build();
+
+        settings
+            .bind(
+                &SETTING_FIND_IN_TEXT_OPEN[4..],
+                &self.text_search_bar.get(),
+                "search-mode-enabled",
+            )
+            .build();
+
+        let enable_text_search = settings.boolean(&SETTING_FIND_IN_TEXT_OPEN[4..]);
+        self.text_search_entry.set_enable(enable_text_search);
     }
 }
 

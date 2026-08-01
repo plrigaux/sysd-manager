@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 1.0 -->
+<!-- Created with Cambalache 1.0.3 -->
 <interface>
   <!-- interface-name unit_dependencies_panel.ui -->
   <requires lib="gtk" version="4.18"/>
@@ -12,10 +12,9 @@
         <property name="margin-bottom">5</property>
         <child>
           <object class="GtkToggleButton" id="find_text_button">
-            <property name="action-name">win.find-in-text-panel-toggle</property>
-            <property name="action-target">2</property>
             <property name="halign">start</property>
             <property name="icon-name">system-search-symbolic</property>
+            <property name="tooltip-text" translatable="yes" context="text_find" comments="toggle button tooltip text">Find in Text</property>
             <property name="valign">baseline-fill</property>
           </object>
         </child>
@@ -86,11 +85,6 @@
                     </property>
                     <property name="hexpand">True</property>
                     <property name="hexpand-set">True</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkSearchBar" id="text_search_bar">
-                    <property name="show-close-button">True</property>
                   </object>
                 </child>
               </object>

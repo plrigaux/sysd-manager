@@ -695,7 +695,7 @@ impl UnitListPanelImp {
 
             //To diplay the "Dead" favorite units
             if view == UnitCuratedList::Favorites {
-                for (key, _) in unit_list.imp().favorites.borrow().iter() {
+                for key in unit_list.imp().favorites.borrow().keys() {
                     if !all_units.contains_key(key) {
                         let unit = UnitInfo::from_unit_key(&key.primary, key.level);
                         list_store.append(&unit);

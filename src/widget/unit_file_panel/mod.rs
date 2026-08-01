@@ -1,6 +1,8 @@
 pub mod flatpak;
 mod imp;
 
+use crate::widget::text_search::TextSearchEntry;
+
 use super::{InterPanelMessage, app_window::AppWindow};
 use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
 
@@ -28,6 +30,10 @@ impl UnitFilePanel {
 
     pub fn focus_text_search(&self) {
         self.imp().focus_text_search()
+    }
+
+    pub fn set_text_search_entry(&self, text_search_entry: &TextSearchEntry) {
+        self.imp().set_text_search_entry(text_search_entry)
     }
 }
 

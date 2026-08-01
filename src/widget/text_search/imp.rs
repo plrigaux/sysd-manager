@@ -11,14 +11,15 @@ use tracing::{debug, info, warn};
 
 use crate::{format2, systemd_gui::is_dark, upgrade, widget};
 
-use super::TextSearchBar;
+use super::TextSearchEntry;
 
 const SEARCH_HIGHLIGHT: &str = "search_highlight";
 const SEARCH_HIGHLIGHT_SELECTED: &str = "search_highlight_selected";
 
-#[derive(Default, gtk::CompositeTemplate)]
-#[template(resource = "/io/github/plrigaux/sysd-manager/text_find.ui")]
-pub struct TextSearchBarImp {
+#[derive(Default, gtk::CompositeTemplate, glib::Properties)]
+#[template(resource = "/io/github/plrigaux/sysd-manager/text_search_entry.ui")]
+#[properties(wrapper_type = super::TextSearchEntry)]
+pub struct TextSearchEntryImp {
     #[template_child]
     pub(super) search_entry: TemplateChild<gtk::SearchEntry>,
 
@@ -40,6 +41,9 @@ pub struct TextSearchBarImp {
     #[template_child]
     search_result_label: TemplateChild<gtk::Label>,
 
+    #[property(get, set = Self::set_enable)]
+    pub(super) enable: Cell<bool>,
+
     text_view: WeakRef<gtk::TextView>,
 
     iter_select: Cell<Option<(gtk::TextIter, gtk::TextIter)>>,
@@ -50,12 +54,10 @@ pub struct TextSearchBarImp {
 }
 
 #[gtk::template_callbacks]
-impl TextSearchBarImp {
+impl TextSearchEntryImp {
     #[template_callback]
     fn search_entry_changed(&self, search_entry: &gtk::SearchEntry) {
-        let entry_text: glib::GString = search_entry.text();
-
-        debug!("Search text changed: {}", entry_text);
+        debug!("Search text changed: {}", search_entry.text());
 
         self.new_find_in_text();
     }
@@ -78,9 +80,19 @@ impl TextSearchBarImp {
     fn on_next_match_clicked(&self, _button: &gtk::Button) {
         self.next_match_clicked();
     }
+
+    fn set_enable(&self, enable: bool) {
+        self.enable.set(enable);
+
+        if enable {
+            self.new_find_in_text();
+        } else {
+            self.clear_tags();
+        }
+    }
 }
 
-impl TextSearchBarImp {
+impl TextSearchEntryImp {
     fn previous_match_clicked(&self) {
         let text_view = upgrade!(self.text_view);
         let text_view = text_view;
@@ -221,6 +233,10 @@ impl TextSearchBarImp {
     }
 
     pub(super) fn new_find_in_text(&self) {
+        if !self.enable.get() {
+            return;
+        }
+
         let entry_text = self.search_entry.text();
 
         if entry_text.is_empty() {
@@ -412,9 +428,9 @@ impl TextSearchBarImp {
 }
 
 #[glib::object_subclass]
-impl ObjectSubclass for TextSearchBarImp {
-    const NAME: &'static str = "TextFind";
-    type Type = TextSearchBar;
+impl ObjectSubclass for TextSearchEntryImp {
+    const NAME: &'static str = "TextSearchEntry";
+    type Type = TextSearchEntry;
     type ParentType = gtk::Box;
 
     fn class_init(klass: &mut Self::Class) {
@@ -428,7 +444,8 @@ impl ObjectSubclass for TextSearchBarImp {
     }
 }
 
-impl ObjectImpl for TextSearchBarImp {
+#[glib::derived_properties]
+impl ObjectImpl for TextSearchEntryImp {
     fn constructed(&self) {
         self.parent_constructed();
 
@@ -437,5 +454,5 @@ impl ObjectImpl for TextSearchBarImp {
     }
 }
 
-impl WidgetImpl for TextSearchBarImp {}
-impl BoxImpl for TextSearchBarImp {}
+impl WidgetImpl for TextSearchEntryImp {}
+impl BoxImpl for TextSearchEntryImp {}

@@ -2,6 +2,7 @@ mod construct_info;
 mod imp;
 
 use super::{InterPanelMessage, app_window::AppWindow};
+use crate::widget::text_search::TextSearchEntry;
 use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
 
 glib::wrapper! {
@@ -26,12 +27,12 @@ impl UnitStatusPanel {
         self.imp().set_inter_message(action);
     }
 
-    pub fn focus_text_search(&self) {
-        self.imp().focus_text_search()
-    }
-
     pub fn main_text_view(&self) -> gtk::TextView {
         self.imp().unit_status_textview.get()
+    }
+
+    pub fn set_text_search_entry(&self, text_search_entry: &TextSearchEntry) {
+        self.imp().set_text_search_entry(text_search_entry)
     }
 }
 

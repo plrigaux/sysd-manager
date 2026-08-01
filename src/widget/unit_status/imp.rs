@@ -12,7 +12,7 @@ use crate::{
         InterPanelMessage,
         app_window::AppWindow,
         preferences::data::KEY_PREF_UNIT_DESCRIPTION_WRAP,
-        text_search::{self, on_new_text, text_search_construct},
+        text_search::{self, TextSearchEntry},
     },
 };
 use gettextrs::pgettext;
@@ -31,7 +31,7 @@ use gtk::{
 };
 use std::cell::OnceCell;
 use std::{cell::RefCell, rc::Rc};
-use tracing::warn;
+use tracing::{debug, warn};
 use zvariant::Value;
 
 #[derive(Default, glib::Properties, gtk::CompositeTemplate)]
@@ -48,9 +48,6 @@ pub struct UnitStatusPanelImp {
     pub(super) unit_status_textview: TemplateChild<gtk::TextView>,
 
     #[template_child]
-    text_search_bar: TemplateChild<gtk::SearchBar>,
-
-    #[template_child]
     find_text_button: TemplateChild<gtk::ToggleButton>,
 
     unit: RefCell<Option<UnitInfo>>,
@@ -59,6 +56,8 @@ pub struct UnitStatusPanelImp {
     hovering_over_link_tag: Rc<RefCell<Option<gtk::TextTag>>>,
 
     app_window: OnceCell<AppWindow>,
+
+    text_search_entry: OnceCell<TextSearchEntry>,
 }
 
 #[gtk::template_callbacks]
@@ -107,7 +106,7 @@ impl UnitStatusPanelImp {
 
         let map = fill_all_info(unit, &mut info_writer);
 
-        on_new_text(&self.text_search_bar);
+        self.on_new_text();
 
         let has_reload_unit_capabilities = if let Some(value) = map.get("ExecReload")
             && let Value::Array(array) = value as &Value
@@ -133,6 +132,16 @@ impl UnitStatusPanelImp {
                 ACTION_WIN_RELOAD_UNIT,
                 unit.is_active() && has_reload_unit_capabilities,
             );
+        }
+    }
+
+    pub fn on_new_text(&self) {
+        // if !search_bar.is_search_mode() {
+        //     return;
+        // }
+
+        if let Some(text_search_bar) = self.text_search_entry.get() {
+            text_search_bar.find_text();
         }
     }
 
@@ -190,7 +199,17 @@ impl UnitStatusPanelImp {
             InterPanelMessage::UnitChange(unit) => self.set_unit(unit),
             InterPanelMessage::Refresh(unit) => self.refresh_panels(unit),
             InterPanelMessage::IsDark(_) => self.refresh_panels(None),
+            InterPanelMessage::PanelVisible(visible) => self.set_visible_on_page(visible),
             _ => {}
+        }
+    }
+
+    fn set_visible_on_page(&self, visible: bool) {
+        debug!("set_visible_on_page val {visible}");
+
+        if visible && let Some(text_search_entry) = self.text_search_entry.get() {
+            text_search_entry.set_text_view(&self.unit_status_textview);
+            text_search_entry.find_text();
         }
     }
 
@@ -207,8 +226,10 @@ impl UnitStatusPanelImp {
         self.unit_status_textview.set_wrap_mode(wrap_mode);
     }
 
-    pub(crate) fn focus_text_search(&self) {
-        text_search::focus_on_text_entry(&self.text_search_bar)
+    pub fn set_text_search_entry(&self, text_search_entry: &TextSearchEntry) {
+        let _ = self.text_search_entry.set(text_search_entry.clone());
+
+        text_search_entry.set_text_view(self.unit_status_textview.as_ref());
     }
 }
 
@@ -247,35 +268,26 @@ impl ObjectImpl for UnitStatusPanelImp {
             )
             .build();
 
-        let menu_wrap_word = gio::Menu::new();
+        let menu = gio::Menu::new();
+        let section_menu = gio::Menu::new();
+        let mi = text_search::create_menu_item();
+        section_menu.append_item(&mi);
+
         //Menu item label for status menu
         let menu_label = pgettext("menu", "Wrap Word");
         let wrap_word_toggle_menu = gio::MenuItem::new(Some(&menu_label), None);
         let action_name = String::from("win.") + KEY_PREF_UNIT_DESCRIPTION_WRAP;
         wrap_word_toggle_menu.set_action_and_target_value(Some(&action_name), None);
-        menu_wrap_word.append_item(&wrap_word_toggle_menu);
+        section_menu.append_item(&wrap_word_toggle_menu);
 
-        text_search_construct(
-            &self.unit_status_textview,
-            &self.text_search_bar,
-            &self.find_text_button,
-            true,
-            text_search::PanelID::Info,
-        );
-
-        if let Some(extra) = self
-            .unit_status_textview
-            .extra_menu()
-            .and_downcast_ref::<gio::Menu>()
-        {
-            extra.append_section(None, &menu_wrap_word);
-        }
+        menu.append_section(None, &section_menu);
+        self.unit_status_textview.set_extra_menu(Some(&menu));
 
         settings
-            .bind::<gtk::SearchBar>(
-                SETTING_FIND_IN_TEXT_OPEN,
-                &self.text_search_bar,
-                "search-mode-enabled",
+            .bind(
+                &SETTING_FIND_IN_TEXT_OPEN[4..],
+                &self.find_text_button.get(),
+                "active",
             )
             .build();
     }

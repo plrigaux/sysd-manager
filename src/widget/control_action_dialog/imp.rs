@@ -1,3 +1,4 @@
+use super::ControlActionDialog;
 use crate::{
     systemd::{
         self,
@@ -33,8 +34,6 @@ use std::cell::OnceCell;
 use strum::IntoEnumIterator;
 use tracing::error;
 use tracing::{info, warn};
-
-use super::ControlActionDialog;
 
 const SAVE_CONTEXT_ENABLE_UNIT_FILE_RUNTIME: &str = "save-context-enable-unit-file-runtime";
 const SAVE_CONTEXT_ENABLE_UNIT_FILE_FORCE: &str = "save-context-enable-unit-file-force";

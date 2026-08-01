@@ -1,3 +1,29 @@
+use crate::{
+    consts::SETTING_FIND_IN_TEXT_OPEN,
+    systemd::{
+        Dependency,
+        data::UnitInfo,
+        enums::{DependencyType, UnitType},
+    },
+    systemd_gui,
+    utils::{font_management::set_text_view_font, text_view_hyperlink::LinkActivator},
+    widget::{
+        app_window::AppWindow,
+        menu_button::{ExMenuButton, OnClose},
+        text_search::{self, TextSearchEntry},
+    },
+};
+use crate::{
+    utils::{
+        text_view_hyperlink,
+        writer::{
+            HyperLinkType, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT,
+            SPECIAL_GLYPH_TREE_SPACE, SPECIAL_GLYPH_TREE_VERTICAL, UnitInfoWriter,
+        },
+    },
+    widget::InterPanelMessage,
+};
+use base::enums::UnitDBusLevel;
 use gettextrs::pgettext;
 use gtk::{
     TemplateChild, gio,
@@ -12,38 +38,10 @@ use gtk::{
         },
     },
 };
-
-use crate::{
-    consts::SETTING_FIND_IN_TEXT_OPEN,
-    systemd::{
-        Dependency,
-        data::UnitInfo,
-        enums::{DependencyType, UnitType},
-    },
-    systemd_gui,
-    utils::{font_management::set_text_view_font, text_view_hyperlink::LinkActivator},
-    widget::{
-        app_window::AppWindow,
-        menu_button::{ExMenuButton, OnClose},
-        text_search::{self, on_new_text},
-    },
-};
-use base::enums::UnitDBusLevel;
 use std::{
-    cell::{Cell, RefCell},
+    cell::{Cell, OnceCell, RefCell},
     collections::{BTreeSet, HashSet},
     rc::Rc,
-};
-
-use crate::{
-    utils::{
-        text_view_hyperlink,
-        writer::{
-            HyperLinkType, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT,
-            SPECIAL_GLYPH_TREE_SPACE, SPECIAL_GLYPH_TREE_VERTICAL, UnitInfoWriter,
-        },
-    },
-    widget::InterPanelMessage,
 };
 use strum::IntoEnumIterator;
 use tracing::{debug, info, warn};
@@ -68,9 +66,6 @@ pub struct UnitDependenciesPanelImp {
     controls_box: TemplateChild<gtk::Box>,
 
     #[template_child]
-    text_search_bar: TemplateChild<gtk::SearchBar>,
-
-    #[template_child]
     find_text_button: TemplateChild<gtk::ToggleButton>,
 
     // #[property(get, set=Self::set_visible_on_page)]
@@ -87,6 +82,8 @@ pub struct UnitDependenciesPanelImp {
     hovering_over_link_tag: Rc<RefCell<Option<gtk::TextTag>>>,
 
     unit_type_filter: RefCell<HashSet<String>>,
+
+    text_search_entry: OnceCell<TextSearchEntry>,
 }
 
 #[gtk::template_callbacks]
@@ -99,6 +96,12 @@ impl UnitDependenciesPanelImp {
 }
 
 impl UnitDependenciesPanelImp {
+    pub fn set_text_search_entry(&self, text_search_entry: &TextSearchEntry) {
+        let _ = self.text_search_entry.set(text_search_entry.clone());
+
+        // text_search_entry.set_text_view(self.unit_status_textview.as_ref());
+    }
+
     pub(crate) fn register(&self, app_window: &AppWindow) {
         let activator = LinkActivator::new(Some(app_window.clone()));
 
@@ -118,6 +121,11 @@ impl UnitDependenciesPanelImp {
             && self.unit.borrow().is_some()
         {
             self.update_dependencies()
+        }
+
+        if visible && let Some(text_search_entry) = self.text_search_entry.get() {
+            text_search_entry.set_text_view(&self.unit_dependencies_textview);
+            text_search_entry.find_text();
         }
     }
 
@@ -172,7 +180,7 @@ impl UnitDependenciesPanelImp {
         let level = unit.dbus_level();
         let primary_name = unit.primary();
         let object_path = unit.object_path();
-        let text_search_bar = self.text_search_bar.clone();
+        // let text_search_bar = self.text_search_bar.clone();
 
         glib::spawn_future_local(async move {
             stack.set_visible_child_name(PANEL_SPINNER);
@@ -236,7 +244,7 @@ impl UnitDependenciesPanelImp {
             }
 
             stack.set_visible_child_name(PANEL_DEPENDENCIES);
-            on_new_text(&text_search_bar);
+            // on_new_text(&text_search_bar);
         });
     }
 
@@ -327,7 +335,7 @@ impl UnitDependenciesPanelImp {
     }
 
     pub(crate) fn focus_text_search(&self) {
-        text_search::focus_on_text_entry(&self.text_search_bar)
+        // text_search::focus_on_text_entry(&self.text_search_bar)
     }
 }
 
@@ -378,23 +386,30 @@ impl ObjectImpl for UnitDependenciesPanelImp {
         let on_close = OnClose::new_dep(&dep);
         filter_button_unit_type.set_on_close(on_close);
 
-        text_search::text_search_construct(
-            &self.unit_dependencies_textview,
-            &self.text_search_bar,
-            &self.find_text_button,
-            true,
-            text_search::PanelID::Dependencies,
-        );
+        // text_search::text_search_construct(
+        //     &self.unit_dependencies_textview,
+        //     &self.text_search_bar,
+        //     &self.find_text_button,
+        //     true,
+        //     text_search::PanelID::Dependencies,
+        // );
 
         let settings = systemd_gui::new_settings();
 
         settings
-            .bind::<gtk::SearchBar>(
-                SETTING_FIND_IN_TEXT_OPEN,
-                &self.text_search_bar,
-                "search-mode-enabled",
+            .bind(
+                &SETTING_FIND_IN_TEXT_OPEN[4..],
+                &self.find_text_button.get(),
+                "active",
             )
             .build();
+
+        let menu = gio::Menu::new();
+        let section_menu = gio::Menu::new();
+        let find_text_mi = text_search::create_menu_item();
+        section_menu.append_item(&find_text_mi);
+        menu.append_section(None, &section_menu);
+        self.unit_dependencies_textview.set_extra_menu(Some(&menu));
     }
 }
 

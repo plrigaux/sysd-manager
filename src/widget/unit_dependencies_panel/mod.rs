@@ -1,12 +1,9 @@
 mod imp;
 
-use std::collections::HashSet;
-
-use gtk::{glib, subclass::prelude::*};
-
-use crate::systemd::enums::DependencyType;
-
 use super::{InterPanelMessage, app_window::AppWindow};
+use crate::{systemd::enums::DependencyType, widget::text_search::TextSearchEntry};
+use gtk::{glib, subclass::prelude::*};
+use std::collections::HashSet;
 
 glib::wrapper! {
     pub struct UnitDependenciesPanel(ObjectSubclass<imp::UnitDependenciesPanelImp>)
@@ -42,6 +39,10 @@ impl UnitDependenciesPanel {
 
     pub fn focus_text_search(&self) {
         self.imp().focus_text_search()
+    }
+
+    pub fn set_text_search_entry(&self, text_search_entry: &TextSearchEntry) {
+        self.imp().set_text_search_entry(text_search_entry)
     }
 }
 

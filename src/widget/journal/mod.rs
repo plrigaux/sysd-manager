@@ -10,7 +10,10 @@ use std::cell::RefCell;
 use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
 use tracing::{info, warn};
 
-use crate::{systemd::journal_data::JournalEventChunk, widget::app_window::AppWindow};
+use crate::{
+    systemd::journal_data::JournalEventChunk,
+    widget::{app_window::AppWindow, text_search::TextSearchEntry},
+};
 
 use super::InterPanelMessage;
 
@@ -36,6 +39,10 @@ impl JournalPanel {
 
     pub fn focus_text_search(&self) {
         self.imp().focus_text_search()
+    }
+
+    pub fn set_text_search_entry(&self, text_search_entry: &TextSearchEntry) {
+        self.imp().set_text_search_entry(text_search_entry)
     }
 }
 

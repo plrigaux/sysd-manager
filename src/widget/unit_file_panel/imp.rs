@@ -15,7 +15,7 @@ use crate::{
         InterPanelMessage,
         app_window::AppWindow,
         preferences::{data::PREFERENCES, style_scheme::set_new_style_scheme},
-        text_search::{self, on_new_text},
+        text_search::{self, TextSearchEntry, on_new_text},
         unit_file_panel::flatpak::PROCEED,
     },
 };
@@ -118,6 +118,8 @@ pub struct UnitFilePanelImp {
     file_content_selected_index: Cell<u32>,
 
     original_file_content: RefCell<String>,
+
+    text_search_entry: OnceCell<TextSearchEntry>,
 }
 
 macro_rules! get_buffer {
@@ -134,6 +136,12 @@ macro_rules! get_buffer {
 
 #[gtk::template_callbacks]
 impl UnitFilePanelImp {
+    pub fn set_text_search_entry(&self, text_search_entry: &TextSearchEntry) {
+        let _ = self.text_search_entry.set(text_search_entry.clone());
+
+        // text_search_entry.set_text_view(self.unit_status_textview.as_ref());
+    }
+
     fn save_file(&self) {
         let binding = self.unit.borrow();
         let Some(unit) = binding.as_ref() else {
@@ -385,15 +393,24 @@ impl UnitFilePanelImp {
         }
     }
 
-    fn set_visible_on_page(&self, value: bool) {
-        debug!("set_visible_on_page val {value}");
-        self.visible_on_page.set(value);
+    fn set_visible_on_page(&self, visible: bool) {
+        debug!("set_visible_on_page val {visible}");
+        self.visible_on_page.set(visible);
 
         if self.visible_on_page.get()
             && !self.unit_dependencies_loaded.get()
             && self.unit.borrow().is_some()
         {
             self.set_file_content_init()
+        }
+
+        if visible
+            && let Some(text_search_entry) = self.text_search_entry.get()
+            && let Some(view) = self.unit_file_text.get()
+        {
+            let file_text_view = view.upcast_ref::<gtk::TextView>();
+            text_search_entry.set_text_view(file_text_view);
+            text_search_entry.find_text();
         }
     }
 
@@ -750,13 +767,13 @@ impl UnitFilePanelImp {
         // let action = settings.create_action_entry(&ACTION_FIND_IN_TEXT[4..]);
         app_window.add_action(&action);
 
-        settings
-            .bind::<gtk::SearchBar>(
-                SETTING_FIND_IN_TEXT_OPEN,
-                &self.text_search_bar,
-                "search-mode-enabled",
-            )
-            .build();
+        // settings
+        //     .bind::<gtk::SearchBar>(
+        //         SETTING_FIND_IN_TEXT_OPEN,
+        //         &self.text_search_bar,
+        //         "search-mode-enabled",
+        //     )
+        //     .build();
     }
 
     fn set_save_file_enable(&self, enable: bool) {
@@ -1144,14 +1161,14 @@ impl ObjectImpl for UnitFilePanelImp {
             });
         }
 
-        let file_text_view = view.upcast_ref::<gtk::TextView>();
-        text_search::text_search_construct(
-            file_text_view,
-            &self.text_search_bar,
-            &self.find_text_button,
-            false,
-            text_search::PanelID::File,
-        );
+        // let file_text_view = view.upcast_ref::<gtk::TextView>();
+        // text_search::text_search_construct(
+        //     file_text_view,
+        //     &self.text_search_bar,
+        //     &self.find_text_button,
+        //     false,
+        //     text_search::PanelID::File,
+        // );
 
         let settings = systemd_gui::new_settings();
 
@@ -1163,23 +1180,31 @@ impl ObjectImpl for UnitFilePanelImp {
             )
             .build();
 
-        let (toggle_find_text, open_find_text) =
-            text_search::create_menu_item(text_search::PanelID::File);
+        settings
+            .bind(
+                &SETTING_FIND_IN_TEXT_OPEN[4..],
+                &self.find_text_button.get(),
+                "active",
+            )
+            .build();
+
         let menu = gio::Menu::new();
+        let section_menu = gio::Menu::new();
+        let find_text_mi = text_search::create_menu_item();
+        section_menu.append_item(&find_text_mi);
+
+        //Menu item label for status menu
 
         // Show Line Number Menu Item
         let menu_label = pgettext("file", "Display Line Numbers");
 
-        let mi = gio::MenuItem::new(Some(&menu_label), Some(UNIT_FILE_LINE_NUMBER_ACTION));
+        let line_number_mi =
+            gio::MenuItem::new(Some(&menu_label), Some(UNIT_FILE_LINE_NUMBER_ACTION));
 
-        menu.append_item(&mi);
-        menu.append_item(&toggle_find_text);
-        menu.append_item(&open_find_text);
+        section_menu.append_item(&line_number_mi);
 
-        let menu_sec = gio::Menu::new();
-        menu_sec.append_section(None, &menu);
-
-        file_text_view.set_extra_menu(Some(&menu_sec));
+        menu.append_section(None, &section_menu);
+        view.set_extra_menu(Some(&menu));
 
         self.sourceview5_buffer
             .set(buffer)

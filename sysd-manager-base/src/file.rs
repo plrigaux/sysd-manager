@@ -174,7 +174,7 @@ pub async fn create_drop_in_io(
             r#"The "../" pattern is not supported""#,
         );
 
-        return Err(err)?;
+        Err(err)?;
     }
 
     let file_path = PathBuf::from(file_path_str);
@@ -185,7 +185,7 @@ pub async fn create_drop_in_io(
             r#"The "../" pattern is not supported for file path"#,
         );
 
-        return Err(err)?;
+        Err(err)?;
     }
 
     path_safe_guard(user_session, file_path_str)?;

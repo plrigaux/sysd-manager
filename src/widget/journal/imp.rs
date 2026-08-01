@@ -25,7 +25,7 @@ use crate::{
         preferences::data::{
             KEY_PREF_JOURNAL_DISPLAY_FOLLOW, KEY_PREF_JOURNAL_DISPLAY_ORDER, PREFERENCES,
         },
-        text_search::{self, PanelID},
+        text_search::{self, TextSearchEntry},
     },
 };
 use gettextrs::pgettext;
@@ -42,7 +42,7 @@ use gtk::{
     },
 };
 use std::{
-    cell::{Cell, RefCell},
+    cell::{Cell, OnceCell, RefCell},
     thread,
 };
 use systemd::journal_data::BOOT_IDX;
@@ -124,13 +124,12 @@ pub struct JournalPanelImp {
     follow_check: TemplateChild<gtk::CheckButton>,
 
     #[template_child]
-    text_search_bar: TemplateChild<gtk::SearchBar>,
-
-    #[template_child]
     find_text_button: TemplateChild<gtk::ToggleButton>,
 
     #[template_child]
     journal_text_view: TemplateChild<gtk::TextView>,
+
+    text_search_entry: OnceCell<TextSearchEntry>,
 
     visible_on_page: Cell<bool>,
 
@@ -337,6 +336,12 @@ impl JournalPanelImp {
 }
 
 impl JournalPanelImp {
+    pub fn set_text_search_entry(&self, text_search_entry: &TextSearchEntry) {
+        let _ = self.text_search_entry.set(text_search_entry.clone());
+
+        // text_search_entry.set_text_view(self.unit_status_textview.as_ref());
+    }
+
     pub(super) fn register(&self, app_window: &AppWindow) {
         let settings = systemd_gui::new_settings();
         let action = settings.create_action(&ACTION_WIN_KEY_JOURNAL_WRAP_WORD[4..]);
@@ -347,11 +352,15 @@ impl JournalPanelImp {
         self.set_wrap_word(wrap);
     }
 
-    fn set_visible_on_page(&self, value: bool) {
-        debug!("set_visible_on_page val {value}");
-        self.visible_on_page.set(value);
+    fn set_visible_on_page(&self, visible: bool) {
+        debug!("set_visible_on_page val {visible}");
+        self.visible_on_page.set(visible);
 
         self.update_journal_according_to_display_order();
+
+        if visible && let Some(text_search_entry) = self.text_search_entry.get() {
+            text_search_entry.set_text_view(&self.journal_text_view);
+        }
     }
 
     pub(crate) fn set_unit(&self, unit: Option<&UnitInfo>) {
@@ -592,7 +601,10 @@ impl JournalPanelImp {
 
         let start_iter = writer.buffer.iter_at_mark(&left_mark);
         let end_iter = writer.buffer.iter_at_mark(&right_mark);
-        text_search::new_added_text(&self.text_search_bar, &writer.buffer, start_iter, end_iter);
+
+        if let Some(text_search_entry) = self.text_search_entry.get() {
+            text_search_entry.new_added_text(&writer.buffer, start_iter, end_iter);
+        }
 
         if what_grab == WhatGrab::Newer && self.follow_check.is_active() {
             let mut end_iter = writer.buffer.end_iter();
@@ -786,7 +798,7 @@ impl JournalPanelImp {
     }
 
     pub(crate) fn focus_text_search(&self) {
-        text_search::focus_on_text_entry(&self.text_search_bar)
+        // text_search::focus_on_text_entry(&self.text_search_bar)
     }
 
     fn set_wrap_word(&self, wrap: bool) {
@@ -855,44 +867,25 @@ impl ObjectImpl for JournalPanelImp {
         sort_toggle_button_content.set_icon_name(icon);
         sort_toggle_button_content.set_label(label);
 
-        text_search::text_search_construct(
-            &self.journal_text_view,
-            &self.text_search_bar,
-            &self.find_text_button,
-            false,
-            PanelID::Journal,
-        );
-
         settings
-            .bind::<gtk::SearchBar>(
-                SETTING_FIND_IN_TEXT_OPEN,
-                &self.text_search_bar,
-                "search-mode-enabled",
+            .bind(
+                &SETTING_FIND_IN_TEXT_OPEN[4..],
+                &self.find_text_button.get(),
+                "active",
             )
             .build();
 
-        let menu_wrap_word = gio::Menu::new();
-        //Menu item label
+        let menu = gio::Menu::new();
+        let section_menu = gio::Menu::new();
+        let find_text_mi = text_search::create_menu_item();
+        section_menu.append_item(&find_text_mi);
         let menu_label = pgettext("menu", "Wrap Word");
         let wrap_word_toggle_menu = gio::MenuItem::new(Some(&menu_label), None);
         wrap_word_toggle_menu
             .set_action_and_target_value(Some(ACTION_WIN_KEY_JOURNAL_WRAP_WORD), None);
-        menu_wrap_word.append_item(&wrap_word_toggle_menu);
-
-        text_search::update_text_view(
-            &self.text_search_bar,
-            &self.journal_text_view,
-            true,
-            PanelID::Journal,
-        );
-
-        if let Some(extra) = self
-            .journal_text_view
-            .extra_menu()
-            .and_downcast_ref::<gio::Menu>()
-        {
-            extra.append_section(None, &menu_wrap_word);
-        }
+        section_menu.append_item(&wrap_word_toggle_menu);
+        menu.append_section(None, &section_menu);
+        self.journal_text_view.set_extra_menu(Some(&menu));
 
         let journal_panel = self.obj().clone();
         self.follow_check.connect_active_notify(move |button| {

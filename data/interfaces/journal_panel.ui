@@ -15,9 +15,8 @@
         <property name="spacing">5</property>
         <child>
           <object class="GtkToggleButton" id="find_text_button">
-            <property name="action-name">win.find-in-text-panel-toggle</property>
-            <property name="action-target">4</property>
             <property name="icon-name">system-search-symbolic</property>
+            <property name="tooltip-text" translatable="yes" context="text_find" comments="toggle button tooltip text">Find in Text</property>
           </object>
         </child>
         <child>
@@ -134,11 +133,6 @@
                     <property name="vscrollbar-policy">always</property>
                     <signal name="edge-overshot" handler="scwin_edge_overshot" swapped="True"/>
                     <signal name="edge-reached" handler="scwin_edge_reached" swapped="True"/>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkSearchBar" id="text_search_bar">
-                    <property name="show-close-button">True</property>
                   </object>
                 </child>
               </object>
