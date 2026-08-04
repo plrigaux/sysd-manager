@@ -13,7 +13,7 @@
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "sysd-manager";
-  version = "2.20.8";
+  version = "2.20.9";
 
   src = fetchFromGitHub {
     owner = "plrigaux";
@@ -54,7 +54,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
   postInstall = ''
     install -Dm755 target/release/sysd-manager "$out/bin/sysd-manager"
-    install -Dm755 target/release/sysd-manager-proxy "$out/bin/sysd-manager-proxy"
+    #install -Dm755 target/release/sysd-manager-proxy "$out/bin/sysd-manager-proxy"
 
     install -Dm644 data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg \
       "$out/share/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg"
@@ -69,21 +69,21 @@ rustPlatform.buildRustPackage (finalAttrs: {
 
     cp -r target/locale "$out/share/"
 
-    install -Dm644 sysd-manager-proxy/data/io.github.plrigaux.SysDManager.conf \
-      "$out/share/dbus-1/system.d/io.github.plrigaux.SysDManager.conf"
-    install -Dm644 target/loc/io.github.plrigaux.SysDManager.policy \
-      "$out/share/polkit-1/actions/io.github.plrigaux.SysDManager.policy"
-    install -Dm644 sysd-manager-proxy/data/50-io.github.plrigaux.SysDManager.rules \
-      "$out/share/polkit-1/rules.d/50-io.github.plrigaux.SysDManager.rules"
-    install -Dm644 sysd-manager-proxy/data/sysd-manager-proxy.service \
-      "$out/lib/systemd/system/sysd-manager-proxy.service"
+    #install -Dm644 sysd-manager-proxy/data/io.github.plrigaux.SysDManager.conf \
+    #  "$out/share/dbus-1/system.d/io.github.plrigaux.SysDManager.conf"
+    #install -Dm644 target/loc/io.github.plrigaux.SysDManager.policy \
+    #  "$out/share/polkit-1/actions/io.github.plrigaux.SysDManager.policy"
+    #install -Dm644 sysd-manager-proxy/data/50-io.github.plrigaux.SysDManager.rules \
+    #  "$out/share/polkit-1/rules.d/50-io.github.plrigaux.SysDManager.rules"
+    #install -Dm644 sysd-manager-proxy/data/sysd-manager-proxy.service \
+    #  "$out/lib/systemd/system/sysd-manager-proxy.service"
   '';
 
   meta = with lib; {
     description = "A systemd GUI to manage service, timer, socket and other units.";
     homepage = "https://github.com/plrigaux/sysd-manager";
     license = licenses.gpl3Plus;
-    maintainers = [ ];
+    maintainers = [ plrigaux ];
     platforms = platforms.linux;
     mainProgram = "sysd-manager";
   };
