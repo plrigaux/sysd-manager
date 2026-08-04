@@ -367,7 +367,7 @@ Priit Jõerüüt <hwlate@joeruut.com>",
     about.add_acknowledgement_section(
         //about dialogue
         Some(&gettext("Thank you for your support")),
-        &["AsciiWolf", "Justin Searle", "Damglador"],
+        &["AsciiWolf", "Justin Searle", "Damglador", "p-bo"],
     );
 
     if let Some(rn_version) = RELEASE_NOTES_VERSION {
