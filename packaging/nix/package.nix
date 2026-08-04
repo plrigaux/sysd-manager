@@ -1,28 +1,30 @@
-{ lib
-, pkgs
-, rustPlatform
-, pkg-config
-, gtk4
-, libadwaita
-, gtksourceview5
-, systemd
-, gettext
-, glib
-, gsettings-desktop-schemas
+{ lib,
+  pkgs,
+  rustPlatform,
+  pkg-config,
+  gtk4,
+  libadwaita,
+  gtksourceview5,
+  systemd,
+  gettext,
+  glib,
+  gsettings-desktop-schemas,
 }:
 
-rustPlatform.buildRustPackage rec {
+rustPlatform.buildRustPackage (finalAttrs: {
   pname = "sysd-manager";
   version = "2.20.8";
 
-  src = ./.;
-
-  cargoLock = {
-    lockFile = ./Cargo.lock;
-    # Replace this with the actual hash after the first build:
-    # nix run nixpkgs#nix-prefetch-cargo-lock -- --lockfile Cargo.lock
-    outputHashes = { };
+  src = fetchFromGitHub {
+    owner = "plrigaux";
+    repo = "sysd-manager";
+    tag = "v${finalAttrs.version}"; #or commit
+    hash = "sha256-GYMLV4hffaIbqUp1b5ERo2QQqiKRlHe9oXfq+wNH/hM=";
   };
+  
+  #cargoHash = "sha256-CsmcXlkOec/KJ59Ng7MyGsfjWQ80YyV6MztRFULmvDA=";
+  cargoLock.lockFile = ./Cargo.lock;
+
 
   nativeBuildInputs = [
     pkg-config
@@ -44,10 +46,6 @@ rustPlatform.buildRustPackage rec {
     "--release"
     "--features"
     "default"
-    "--package"
-    "sysd-manager"
-    "--package"
-    "sysd-manager-proxy"
   ];
 
   postBuild = ''
