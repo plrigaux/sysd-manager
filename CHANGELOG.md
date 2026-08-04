@@ -9,6 +9,14 @@ If this project saves you or your company time, consider [sponsoring](https://gi
 
 ## [Unreleased]
 
+## [2.20.9] - 2026-08-04
+
+### Added
+- Mention __p-bo__  in the acknowledgements
+
+### Changed
+- CS translation
+
 ## [2.20.8] - 2026-08-01
 
 ### Changed
