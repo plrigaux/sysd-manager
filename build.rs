@@ -29,6 +29,7 @@ fn main() {
         "sysd-manager.gresource",
     );
 
+    #[cfg(debug_assertions)]
     compile_schema();
 
     if let Err(error) = generate_notes() {
@@ -136,6 +137,7 @@ pub fn compile_resources<P: AsRef<Path>>(source_dirs: &[P], gresource: &str, tar
     }
 }
 
+#[cfg(debug_assertions)]
 fn compile_schema() {
     const GLIB_SCHEMAS_DIR: &str = ".local/share/glib-2.0/schemas/";
     const GLIB_SCHEMAS_FILE: &str = "data/schemas/io.github.plrigaux.sysd-manager.gschema.xml";
@@ -186,7 +188,7 @@ fn compile_schema() {
         println!("Compile Schema Succeed on {:?}", out_dir);
     } else {
         script_error!(
-            "Compile Schema with {GLIB_COMPILE_SCHEMAS} Failed (status {}),  directory {:?}",
+            "Compile Schema with program {GLIB_COMPILE_SCHEMAS:?} Failed (status {}),  directory {:?}",
             output.status,
             out_dir
         );
@@ -238,144 +240,7 @@ fn generate_notes() -> Result<(), ScriptError> {
 
     Ok(())
 }
-/*
-fn generate_changelog_md(release_notes: &Vec<Release>) -> Result<(), ScriptError> {
-    let Some(out_dir) = env::var_os("OUT_DIR") else {
-        script_error!("No OUT_DIR");
-        return Ok(());
-    };
 
-    const CHANGELOG: &str = "CHANGELOG.md";
-
-    let dest_path = Path::new(&out_dir).join(CHANGELOG);
-    println!("dest_path {:?}", dest_path);
-
-    let mut w = Vec::new();
-
-    writeln!(
-        &mut w,
-        r#"# Changelog
-All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)."#
-    )?;
-
-    let change_type = HashSet::from([
-        "Added",
-        "Changed",
-        "Deprecated",
-        "Removed",
-        "Fixed",
-        "Security",
-    ]);
-
-    let mut junk_buf: Vec<u8> = Vec::new();
-
-    for release in release_notes {
-        writeln!(&mut w, "\n## [{}] - {}", release.version, release.date)?;
-
-        let mut reader = Reader::from_str(&release.description);
-
-        loop {
-            match reader.read_event() {
-                Err(e) => panic!("Error at position {}: {:?}", reader.error_position(), e),
-                // exits the loop when reaching end of file
-                Ok(Event::Start(e)) => match e.name().as_ref() {
-                    b"p" => {
-                        let content = read_to_end_into_buffer_inner(&mut reader, e, &mut junk_buf)?;
-                        if change_type.contains(content.as_str()) {
-                            writeln!(&mut w, "\n### {}", content)?;
-                        } else {
-                            writeln!(&mut w, "{}\n", content)?;
-                        }
-                    }
-                    b"li" => {
-                        let content = read_to_end_into_buffer_inner(&mut reader, e, &mut junk_buf)?;
-                        writeln!(&mut w, "- {}", content)?;
-                    }
-
-                    _ => (),
-                },
-
-                Ok(Event::Eof) => break,
-                _ => (),
-            }
-        }
-    }
-
-    fs::write(&dest_path, w)?;
-
-    let dir = env::var("CARGO_MANIFEST_DIR").unwrap();
-    let mut changelog_file = Path::new(&dir).join(CHANGELOG);
-    println!("CARGO_MANIFEST_DIR {:?} ", dir);
-
-    if !changelog_file.exists() {
-        println!("File {:?} doesn't exist", changelog_file);
-        let (dir, _) = dir.split_once("/target/").unwrap();
-        changelog_file = Path::new(dir).join(CHANGELOG);
-        if !changelog_file.exists() {
-            println!("File {:?} doesn't exist", changelog_file);
-            let cur_dir = env::var("PWD").unwrap();
-            changelog_file = Path::new(&cur_dir).join(CHANGELOG);
-        }
-    }
-
-    if !compare_files(dest_path.as_path(), changelog_file.as_path()) {
-        let mut command = Command::new("cp");
-        let output = command.arg("-v").arg(dest_path).arg(CHANGELOG).output()?;
-
-        println!(
-            "Copying {CHANGELOG} done {}",
-            String::from_utf8_lossy(&output.stdout)
-        );
-    }
-
-    Ok(())
-}
-
-use std::io::Read;
-fn compare_files(file1_path: &Path, file2_path: &Path) -> bool {
-    println!("compare_files {:?} with {:?}", file1_path, file2_path);
-    let mut file1 = match OpenOptions::new().read(true).write(false).open(file1_path) {
-        Ok(n) => n,
-        Err(e) => {
-            script_warning!("Could not read file {:?}! {:?}", file1_path, e);
-            return false;
-        }
-    };
-
-    let mut file2 = match OpenOptions::new().read(true).write(false).open(file2_path) {
-        Ok(n) => n,
-        Err(e) => {
-            script_warning!("Could not read file {:?}! {:?}", file2_path, e);
-            return false;
-        }
-    };
-
-    let Ok(meta1) = file1.metadata() else {
-        script_warning!("compare_files meta data error");
-        return false;
-    };
-
-    let Ok(meta2) = file2.metadata() else {
-        script_warning!("compare_files meta data error");
-        return false;
-    };
-
-    if meta1.len() != meta2.len() {
-        return false;
-    }
-
-    let mut buffer1 = Vec::new();
-    let _ = file1.read_to_end(&mut buffer1);
-
-    let mut buffer2 = Vec::new();
-    let _ = file2.read_to_end(&mut buffer2);
-
-    buffer1 == buffer2
-}
- */
 fn generate_release_notes_rs(release_notes: &[Release]) -> Result<(), ScriptError> {
     let (version, description) = if let Some(first) = release_notes.first() {
         (
