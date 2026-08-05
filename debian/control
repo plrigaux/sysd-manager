@@ -1,0 +1,7 @@
+Package: sysd-manager
+Version: 2.20.10
+Maintainer: Pierre-Luc Rigaux <plrigaux@users.noreply.github.com>
+Architecture: amd64
+Description: Application to empower user to manage their <b>systemd units</b> via Graphical User Interface. Not only are you able to make changes to the enablement and running status of each of the units, but you will also be able to view and modify their unit files and check the journal logs.
+Homepage: https://github.com/plrigaux/sysd-manager
+Depends: libgtk-4-1 (>=4.20), libadwaita-1-0 (>=1.8), libsystemd0 (>=257), libgtksourceview-5-0 (>=5.16)
