@@ -4,6 +4,11 @@ extern crate translating;
 use clap::Command;
 use clap::Parser;
 use clap::Subcommand;
+use std::env;
+use std::fs;
+use std::io::Write;
+use std::path::PathBuf;
+use std::{fs::File, io};
 use tracing::error;
 use tracing::{info, warn};
 use tracing_subscriber::filter::LevelFilter;
@@ -13,12 +18,6 @@ use translating::METAINFO_FILE_PATH;
 use translating::PO_DIR;
 use translating::POLICY_FILE_PATH;
 use translating::error::TransError;
-
-use std::env;
-use std::fs;
-use std::io::Write;
-use std::path::PathBuf;
-use std::{fs::File, io};
 
 /// A GUI interface to manage systemd units
 #[derive(Parser, Debug)]
@@ -77,8 +76,14 @@ enum Commands {
 
 fn main() {
     // Force log level
+
+    let timer = tracing_subscriber::fmt::time::ChronoLocal::new("%Y-%m-%d %H:%M:%S%.3f".to_owned());
     tracing_subscriber::fmt()
+        .with_timer(timer)
+        .with_line_number(true)
         .with_max_level(LevelFilter::DEBUG)
+        // .with_env_filter(EnvFilter::from_default_env())
+        .with_ansi(true)
         .init();
 
     info!("Tanslation tool!");

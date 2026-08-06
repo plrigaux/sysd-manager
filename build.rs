@@ -1,11 +1,13 @@
 #![allow(clippy::uninlined_format_args)]
-use std::io::Write;
-
-use std::io::BufRead;
-
 use quick_xml::{
     Reader, Writer,
     events::{BytesStart, Event},
+};
+use std::{
+    env, fs,
+    io::{BufRead, Write},
+    path::Path,
+    process::Command,
 };
 use translating::PO_DIR;
 use translating::error::TransError;
@@ -70,12 +72,6 @@ fn generate_mo() -> Result<(), TransError> {
 // THE REASON OF THE COPY IS BECAUSE FEDORA COPR DOESN'T HAVE glib-build-tools
 
 // Take a look at the license at the top of the repository in the LICENSE file.
-
-use std::{
-    env, fs,
-    path::{Path, PathBuf},
-    process::Command,
-};
 
 // rustdoc-stripper-ignore-next
 /// Call to run `glib-compile-resources` to generate compiled gresources to embed
@@ -154,7 +150,7 @@ fn compile_schema() {
 
     let home_dir = env::var("HOME").unwrap();
 
-    let out_dir = PathBuf::from(home_dir).join(GLIB_SCHEMAS_DIR);
+    let out_dir = std::path::PathBuf::from(home_dir).join(GLIB_SCHEMAS_DIR);
 
     println!("print out_dir {:?}", out_dir);
 
