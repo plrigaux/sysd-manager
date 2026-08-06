@@ -5,8 +5,8 @@ use std::{
     path::PathBuf,
     process::Command,
 };
-use tracing::error;
 use tracing::info;
+use tracing::{debug, error};
 
 use crate::error::TransError;
 pub mod error;
@@ -203,17 +203,22 @@ pub fn generate_metainfo() -> Result<(), TransError> {
 }
 
 pub fn generate_policy() -> Result<(), TransError> {
+    info!("Generate Policy");
     fs::create_dir_all(PACK_FILE_DIR)?;
 
     let current_dir = std::env::current_dir()?;
 
-    println!("cur dir {}", current_dir.display());
+    debug!("Current directory: {}", current_dir.display());
+
+    let parent_its_dir = current_dir.join("po");
+    let parent_its_dir = parent_its_dir.to_string_lossy().to_string();
+    debug!("Template dir: {}", parent_its_dir);
 
     let out_file = format!("{PACK_FILE_DIR}/{POLICY_FILE}");
 
     let mut command = Command::new("msgfmt");
     let output = command
-        .env("GETTEXTDATADIRS", "./po/its")
+        .env("GETTEXTDATADIRS", &parent_its_dir)
         .arg("--check")
         .arg("--statistics")
         .arg("--verbose")
