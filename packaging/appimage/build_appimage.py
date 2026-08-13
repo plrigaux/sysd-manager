@@ -390,7 +390,7 @@ def linux_build():
 
 
 def just_publish():
-    version = bc.get_version()
+    version = bc.get_version_cargo()
     print(f"{color.CYAN}Publishing version {color.BOLD}{version}{color.END}")
 
     file = f"{APP_IMAGE_DIR}/{app_image_file_name(version)}"

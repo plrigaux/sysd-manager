@@ -161,7 +161,7 @@ pub fn check_linguas() -> Result<(), TransError> {
 }
 
 fn generate_pack() -> Result<(), TransError> {
-    println!("generate_mo");
+    info!("generate_mo");
 
     check_linguas()?;
 

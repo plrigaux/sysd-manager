@@ -63,7 +63,7 @@ def main():
 
 def create_pkgbuild(release=None):
     # version
-    version = bc.get_version()
+    version = bc.get_version_cargo()
     print(f"Version {color.BOLD}{color.CYAN}{version}{color.END}")
 
     # set commit tag
