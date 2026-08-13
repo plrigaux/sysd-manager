@@ -92,6 +92,7 @@ pub fn msgmerge(input_pot_file: &str, output_file: &str) -> Result<(), TransErro
 }
 
 pub fn generate_mo() -> Result<(), TransError> {
+    info!("Generate MO dir: {}", PO_DIR);
     for path in fs::read_dir(PO_DIR)?
         .filter_map(|r| r.ok())
         .filter_map(|dir_entry| {

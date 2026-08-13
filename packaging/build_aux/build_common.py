@@ -113,7 +113,7 @@ def toml() -> dict:
     return cargo_toml
 
 
-def get_version() -> str:
+def get_version_cargo() -> str:
     cargo_toml = toml()
 
     version = cargo_toml["package"]["version"]
@@ -122,7 +122,7 @@ def get_version() -> str:
 
 
 def get_version_tag() -> str:
-    version = get_version()
+    version = get_version_cargo()
     tag_name = f"v{version}"
 
     return tag_name
