@@ -195,11 +195,14 @@ def just_publish(version, file):
 
     title = f"Release {version}"
 
+
+    tag_label = get_version_tag()
+    
     cmd = [
         "gh",
         "release",
         "create",
-        version,
+        tag_label,
         "--title",
         title,
         "--notes",

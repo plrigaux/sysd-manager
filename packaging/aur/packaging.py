@@ -68,9 +68,9 @@ def create_pkgbuild(release=None):
 
     pkg_file = f"{TEMPLATE_DIR}/{PKGBUILD}/sysd-manager-{version}.tar.gz"
     
-    if os.path.isfile(pkg_path):
-        os.remove(pkg_path)
-        print(f"Deleted {pkg_path}")
+    if os.path.isfile(pkg_file):
+        os.remove(pkg_file)
+        print(f"Deleted {pkg_file}")
 
     # set commit tag
     tag_name = bc.get_version_tag()

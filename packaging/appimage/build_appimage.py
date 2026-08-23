@@ -267,7 +267,7 @@ def make_appimage():
     print(f"{color.GREEN}{color.BOLD}Make AppImage{color.END}")
     print(f"{color.GREEN}{color.BOLD}--------------------{color.END}")
 
-    version = bc.get_version()
+    version = bc.get_version_cargo()
 
     my_env = os.environ.copy()
     my_env["ARCH"] = "x86_64"
