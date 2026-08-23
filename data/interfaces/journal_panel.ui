@@ -35,13 +35,10 @@
           </object>
         </child>
         <child>
-          <object class="GtkLabel">
-            <property name="label">Follow</property>
-          </object>
-        </child>
-        <child>
           <object class="GtkCheckButton" id="follow_check">
+            <property name="label" translatable="yes" context="journal" comments="checkbox to foillow logs">Follow</property>
             <property name="tooltip-text" translatable="yes" context="journal">Enable new entries continuous print as they are appended to the journal</property>
+            <property name="use-underline">True</property>
           </object>
         </child>
         <child>

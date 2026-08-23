@@ -3,7 +3,7 @@
 <!-- Created with Cambalache 1.0.3 -->
 <cambalache-project version="1.0.0" target_tk="gtk-4.0" depends="libadwaita-1,webkitgtk-6.0">
   <ui template-class="PreferencesWindow" filename="preferences.ui" sha256="a397f070cb1ee37a8b69cd54f9bdda77d0fe1ba53cd6df32710c30fb66e37b98"/>
-  <ui template-class="JournalPanel" filename="journal_panel.ui" sha256="eeee3c62c3f60afe54b19a557726ace60bd8a56200e67e6d450de65254a6ead1"/>
+  <ui template-class="JournalPanel" filename="journal_panel.ui" sha256="b125c67f4082a20b44dad25b54d51d3fcc5bcc2360bde007ae145d01fdada521"/>
   <ui template-class="UnitFilePanel" filename="unit_file_panel.ui" sha256="4082d95b289eba8f84d2f5114d83bad79988793d17165afcf217720c1c28ce00"/>
   <ui template-class="UnitDependenciesPanel" filename="unit_dependencies_panel.ui" sha256="7c5d2d4c1a7ef9028fce64d9726528246c1f1825b2c0d876c686503d104c2dfa"/>
   <ui template-class="JournalRow" filename="journal_row.ui" sha256="3e2ebf5760552b1cc4d0795c6428894452735f947dd494bf804c0450dce203dc"/>
