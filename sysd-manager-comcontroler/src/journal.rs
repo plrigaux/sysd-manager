@@ -94,7 +94,7 @@ pub(super) fn get_unit_journal_events(
 
         let pid = get_data(&mut journal_reader, KEY_PID, default);
         let priority_str = get_data(&mut journal_reader, KEY_PRIORITY, default_priority);
-        let priority = priority_str.parse::<u8>().map_or(7, |u| u);
+        let priority = priority_str.parse::<u8>().unwrap_or(7);
 
         let name = get_data(&mut journal_reader, KEY_COMM, default);
 
@@ -237,7 +237,7 @@ pub fn get_unit_journal_events_continuous(
 
         let pid = get_data(&mut journal_reader, KEY_PID, &default);
         let priority_str = get_data(&mut journal_reader, KEY_PRIORITY, &default_priority);
-        let priority = priority_str.parse::<u8>().map_or(7, |u| u);
+        let priority = priority_str.parse::<u8>().unwrap_or(7);
 
         let name = get_data(&mut journal_reader, KEY_COMM, &default);
 

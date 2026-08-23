@@ -87,6 +87,19 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="2.20.11" date="2026-08-22">
+      <description translate="no">
+        <p>Added</p>
+        <ul>
+          <li>Mention __p-bo__  in the acknowledgements</li>
+          <li>Translation link</li>
+        </ul>
+        <p>Changed</p>
+        <ul>
+          <li>[Issue 76] Use the checkbox's label for the Follow option and improve UX</li>
+        </ul>
+      </description>
+    </release>
     <release version="2.20.9" date="2026-08-03">
       <description translate="no">
         <p>Added</p>

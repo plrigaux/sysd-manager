@@ -295,7 +295,7 @@ fn get_release_notes(metainfo: &str) -> Result<Vec<Release>, quick_xml::Error> {
             Err(e) => panic!("Error at position {}: {:?}", reader.error_position(), e),
             // exits the loop when reaching end of file
             Ok(Event::Start(e)) => match e.name().as_ref() {
-                b"release" => {
+                "release" => {
                     in_release = true;
                     release = Release::default();
 
@@ -303,17 +303,13 @@ fn get_release_notes(metainfo: &str) -> Result<Vec<Release>, quick_xml::Error> {
                         let attr = attr.unwrap();
 
                         match attr.key.local_name().as_ref() {
-                            b"version" => {
-                                release.version = String::from_utf8_lossy(&attr.value).to_string()
-                            }
-                            b"date" => {
-                                release.date = String::from_utf8_lossy(&attr.value).to_string()
-                            }
+                            "version" => release.version = attr.value.to_string(),
+                            "date" => release.date = attr.value.to_string(),
                             _ => (),
                         }
                     }
                 }
-                b"description" => {
+                "description" => {
                     if !in_release {
                         continue;
                     }
@@ -328,7 +324,7 @@ fn get_release_notes(metainfo: &str) -> Result<Vec<Release>, quick_xml::Error> {
 
                 _ => (),
             },
-            Ok(Event::End(e)) if e.name().as_ref() == b"release" => {
+            Ok(Event::End(e)) if e.name().as_ref() == "release" => {
                 release_notes.push(release.clone());
                 in_release = false
             }

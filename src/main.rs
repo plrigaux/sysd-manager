@@ -85,7 +85,7 @@ fn main() -> glib::ExitCode {
         domain_dir
     };
 
-    gettextrs::setlocale(gettextrs::LocaleCategory::LcAll, "");
+    unsafe { gettextrs::setlocale(gettextrs::LocaleCategory::LcAll, "") };
 
     // Set up gettext translations
     let path =
