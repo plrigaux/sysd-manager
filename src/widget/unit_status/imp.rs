@@ -1,6 +1,6 @@
 use super::construct_info::fill_all_info;
 use crate::{
-    consts::{ACTION_WIN_UNIT_HAS_RELOAD_UNIT_CAPABILITY, SETTING_FIND_IN_TEXT_OPEN, *},
+    consts::{ACTION_WIN_UNIT_HAS_RELOAD_UNIT_CAPABILITY, SETTING_FIND_IN_TEXT, *},
     systemd::data::UnitInfo,
     systemd_gui::{self, new_settings},
     utils::{
@@ -284,7 +284,7 @@ impl ObjectImpl for UnitStatusPanelImp {
 
         settings
             .bind(
-                &SETTING_FIND_IN_TEXT_OPEN[4..],
+                &SETTING_FIND_IN_TEXT[4..],
                 &self.find_text_button.get(),
                 "active",
             )

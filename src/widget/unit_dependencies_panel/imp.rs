@@ -1,5 +1,5 @@
 use crate::{
-    consts::SETTING_FIND_IN_TEXT_OPEN,
+    consts::SETTING_FIND_IN_TEXT,
     systemd::{
         Dependency,
         data::UnitInfo,
@@ -390,7 +390,7 @@ impl ObjectImpl for UnitDependenciesPanelImp {
 
         settings
             .bind(
-                &SETTING_FIND_IN_TEXT_OPEN[4..],
+                &SETTING_FIND_IN_TEXT[4..],
                 &self.find_text_button.get(),
                 "active",
             )

@@ -1,7 +1,7 @@
 use super::flatpak;
 use crate::{
     consts::{
-        ACTION_SAVE_UNIT_FILE, APP_ACTION_DAEMON_RELOAD_BUS, SETTING_FIND_IN_TEXT_OPEN,
+        ACTION_SAVE_UNIT_FILE, APP_ACTION_DAEMON_RELOAD_BUS, SETTING_FIND_IN_TEXT,
         UNIT_FILE_LINE_NUMBER_ACTION,
     },
     format2,
@@ -1173,7 +1173,7 @@ impl ObjectImpl for UnitFilePanelImp {
 
         settings
             .bind(
-                &SETTING_FIND_IN_TEXT_OPEN[4..],
+                &SETTING_FIND_IN_TEXT[4..],
                 &self.find_text_button.get(),
                 "active",
             )

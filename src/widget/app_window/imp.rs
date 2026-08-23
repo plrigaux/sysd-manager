@@ -1,7 +1,7 @@
 use crate::{
     consts::{
         ACTION_APP_CREATE_UNIT, ACTION_APP_PROPERTIES_SELECTOR, ACTION_DAEMON_RELOAD,
-        ACTION_FIND_IN_TEXT_TOGGLE, ACTION_LIST_BOOT, ACTION_PROPERTIES_SELECTOR_GENERAL,
+        ACTION_FIND_IN_TEXT_OPEN, ACTION_LIST_BOOT, ACTION_PROPERTIES_SELECTOR_GENERAL,
         ACTION_UNIT_PROPERTIES_DISPLAY, ACTION_WIN_CHANGE_BUS, APP_ACTION_LIST_BOOT,
         APP_ACTION_PROPERTIES_SELECTOR_GENERAL, APP_ACTION_SEARCH_UNITS,
         APP_ACTION_UNIT_PROPERTIES_DISPLAY, WIN_ACTION_SAVE_UNIT_FILE,
@@ -618,7 +618,7 @@ impl AppWindowImpl {
         application.set_accels_for_action(APP_ACTION_UNIT_PROPERTIES_DISPLAY, &["<Ctrl>p"]);
         application.set_accels_for_action(WIN_ACTION_SAVE_UNIT_FILE, &["<Ctrl>s"]);
         application.set_accels_for_action(ACTION_DAEMON_RELOAD, &["<Ctrl>r"]);
-        application.set_accels_for_action(ACTION_FIND_IN_TEXT_TOGGLE, &["<Shift><Ctrl>f"]);
+        application.set_accels_for_action(ACTION_FIND_IN_TEXT_OPEN, &["<Shift><Ctrl>f"]);
         application.set_accels_for_action(ACTION_APP_CREATE_UNIT, &["<Shift><Ctrl>c"]);
         application.set_accels_for_action("win.close", &["<Ctrl>w"]);
 

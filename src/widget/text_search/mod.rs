@@ -1,5 +1,5 @@
 use crate::{
-    consts::{ACTION_FIND_IN_TEXT_TOGGLE, SETTING_FIND_IN_TEXT_OPEN},
+    consts::{ACTION_FIND_IN_TEXT_OPEN, SETTING_FIND_IN_TEXT},
     widget,
 };
 use adw::subclass::prelude::ObjectSubclassIsExt;
@@ -53,12 +53,12 @@ impl TextSearchEntry {
 pub fn create_menu_item(menu: &gio::Menu) {
     // Open in text Menu item
     let menu_label = pgettext("text_find", "Toggle Find in Text");
-    let item = gio::MenuItem::new(Some(&menu_label), Some(SETTING_FIND_IN_TEXT_OPEN));
+    let item = gio::MenuItem::new(Some(&menu_label), Some(SETTING_FIND_IN_TEXT));
 
     menu.append_item(&item);
 
     let menu_label = pgettext("text_find", "Find in Text");
-    let item = gio::MenuItem::new(Some(&menu_label), Some(ACTION_FIND_IN_TEXT_TOGGLE));
+    let item = gio::MenuItem::new(Some(&menu_label), Some(ACTION_FIND_IN_TEXT_OPEN));
 
     menu.append_item(&item);
 }

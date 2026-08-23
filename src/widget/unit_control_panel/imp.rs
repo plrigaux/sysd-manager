@@ -3,10 +3,10 @@ use super::{
 };
 use crate::{
     consts::{
-        ACTION_FIND_IN_TEXT_TOGGLE, ACTION_WIN_FAVORITE_SET, ACTION_WIN_FAVORITE_TOGGLE,
+        ACTION_FIND_IN_TEXT_OPEN, ACTION_WIN_FAVORITE_SET, ACTION_WIN_FAVORITE_TOGGLE,
         ACTION_WIN_REFRESH_POP_MENU, ACTION_WIN_RELOAD_UNIT, ACTION_WIN_RESTART_UNIT,
         ACTION_WIN_START_UNIT, ACTION_WIN_STOP_UNIT, ACTION_WIN_UNIT_HAS_RELOAD_UNIT_CAPABILITY,
-        DESTRUCTIVE_ACTION, SETTING_FIND_IN_TEXT_OPEN, SUGGESTED_ACTION,
+        DESTRUCTIVE_ACTION, SETTING_FIND_IN_TEXT, SUGGESTED_ACTION,
     },
     format2, systemd_gui,
     utils::font_management::{self, create_provider},
@@ -258,7 +258,7 @@ impl UnitControlPanelImpl {
         };
 
         let settings = systemd_gui::new_settings();
-        let action = settings.create_action(&SETTING_FIND_IN_TEXT_OPEN[4..]);
+        let action = settings.create_action(&SETTING_FIND_IN_TEXT[4..]);
 
         let text_search_entry = self.text_search_entry.clone();
         action.connect_state_notify(move |action| {
@@ -274,7 +274,7 @@ impl UnitControlPanelImpl {
 
         let text_search_entry = self.text_search_entry.clone();
         let find_in_text_toogle = {
-            gio::ActionEntry::builder(&ACTION_FIND_IN_TEXT_TOGGLE[4..])
+            gio::ActionEntry::builder(&ACTION_FIND_IN_TEXT_OPEN[4..])
                 .activate(move |_application: &AppWindow, _, _| {
                     if let Some(state) = action.state().and_then(|v| v.get::<bool>()) {
                         if state {
@@ -924,13 +924,13 @@ impl ObjectImpl for UnitControlPanelImpl {
 
         settings
             .bind(
-                &SETTING_FIND_IN_TEXT_OPEN[4..],
+                &SETTING_FIND_IN_TEXT[4..],
                 &self.text_search_bar.get(),
                 "search-mode-enabled",
             )
             .build();
 
-        let enable_text_search = settings.boolean(&SETTING_FIND_IN_TEXT_OPEN[4..]);
+        let enable_text_search = settings.boolean(&SETTING_FIND_IN_TEXT[4..]);
         self.text_search_entry.set_enable(enable_text_search);
     }
 }

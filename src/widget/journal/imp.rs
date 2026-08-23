@@ -1,7 +1,7 @@
 use crate::{
     consts::{
         ACTION_WIN_KEY_JOURNAL_WRAP_WORD, APP_ACTION_LIST_BOOT, CLASS_ERROR, CLASS_SUCCESS,
-        CLASS_WARNING, SETTING_FIND_IN_TEXT_OPEN,
+        CLASS_WARNING, SETTING_FIND_IN_TEXT,
     },
     systemd::{
         BootFilter,
@@ -869,7 +869,7 @@ impl ObjectImpl for JournalPanelImp {
 
         settings
             .bind(
-                &SETTING_FIND_IN_TEXT_OPEN[4..],
+                &SETTING_FIND_IN_TEXT[4..],
                 &self.find_text_button.get(),
                 "active",
             )
