@@ -66,6 +66,12 @@ def create_pkgbuild(release=None):
     version = bc.get_version_cargo()
     print(f"Version {color.BOLD}{color.CYAN}{version}{color.END}")
 
+    pkg_file = f"{TEMPLATE_DIR}/{PKGBUILD}/sysd-manager-{version}.tar.gz"
+    
+    if os.path.isfile(pkg_path):
+        os.remove(pkg_path)
+        print(f"Deleted {pkg_path}")
+
     # set commit tag
     tag_name = bc.get_version_tag()
     print(f"Tag name {color.BOLD}{color.CYAN}{tag_name}{color.END}")
@@ -146,7 +152,7 @@ def install():
         srcinfo_file.write(printsrcinfo)
 
 
-def gen_pkfile(release=None):
+def gen_pkfile(release=None):    
     create_pkgbuild(release)
     do_check_sum()
     generate_sourceinfo()
