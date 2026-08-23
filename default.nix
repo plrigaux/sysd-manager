@@ -22,10 +22,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     owner = "plrigaux";
     repo = "sysd-manager";
     tag = "v${finalAttrs.version}";
-    hash = "";
+    hash = "sha256-WamZFABpFghE/LN3Hyq1ihXh/oFCl/GdH/fWjmFLZXw=";
   };
 
-  cargoHash = "";
+  cargoHash = "sha256-tjFzgaEt56SfwGmCWkezLdFImWbOlWT2Cw+TrzTSHPQ=";
 
   nativeBuildInputs = [
     pkg-config
