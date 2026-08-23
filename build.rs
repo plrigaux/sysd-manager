@@ -31,7 +31,7 @@ fn main() {
         "sysd-manager.gresource",
     );
 
-    #[cfg(debug_assertions)]
+    //#[cfg(debug_assertions)]
     compile_schema();
 
     if let Err(error) = generate_notes() {
@@ -133,7 +133,7 @@ pub fn compile_resources<P: AsRef<Path>>(source_dirs: &[P], gresource: &str, tar
     }
 }
 
-#[cfg(debug_assertions)]
+// #[cfg(debug_assertions)]
 fn compile_schema() {
     const GLIB_SCHEMAS_DIR: &str = ".local/share/glib-2.0/schemas/";
     const GLIB_SCHEMAS_FILE: &str = "data/schemas/io.github.plrigaux.sysd-manager.gschema.xml";
