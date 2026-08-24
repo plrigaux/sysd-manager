@@ -30,6 +30,7 @@ def main():
             "genpush",
             "check",
             "install",
+            "local",
         ],
         help="action to perform",
     )
@@ -59,6 +60,8 @@ def main():
             check_package()
         case "install":
             install()
+        case "local":
+            local()
 
 
 def create_pkgbuild(release=None):
@@ -66,11 +69,13 @@ def create_pkgbuild(release=None):
     version = bc.get_version_cargo()
     print(f"Version {color.BOLD}{color.CYAN}{version}{color.END}")
 
-    pkg_file = f"{TEMPLATE_DIR}/{PKGBUILD}/sysd-manager-{version}.tar.gz"
+    pkg_file = f"{AUR_DIR}/sysd-manager-{version}.tar.gz"
     
     if os.path.isfile(pkg_file):
         os.remove(pkg_file)
-        print(f"Deleted {pkg_file}")
+        print(f"{color.YELLOW}File {pkg_file} deleted!{color.END}")
+    else:
+        print(f"{color.GREEN}File {pkg_file} doesn't exist! It's Ok!{color.END}")
 
     # set commit tag
     tag_name = bc.get_version_tag()
@@ -108,7 +113,8 @@ def create_pkgbuild(release=None):
 
 
 def do_check_sum():
-    cmd = ["makepkg", "-g"]
+
+    cmd = ["makepkg", "--geninteg", "--clean", "--cleanbuild"]
     checksum = bc.cmd_run_str(cmd, cwd=f"{AUR_OUT_DIR}")
 
     # checksum = checksum.replace("'","\"")
@@ -191,3 +197,8 @@ def clean():
         print(f"{color.BOLD}Deleting{color.END} {color.YELLOW}{f}{color.END}")
         # x = " ".join(["rm", "-fr", f])
         bc.cmd_run(["rm", "-fr", f], cwd=f"{AUR_OUT_DIR}", shell=True)
+
+def local():
+    print(f"{color.BOLD}{color.CYAN}Local install{color.END}")
+
+    bc.cmd_run(["makepkg", "-si"], cwd=f"{AUR_OUT_DIR}")

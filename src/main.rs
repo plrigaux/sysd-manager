@@ -55,6 +55,9 @@ fn main() -> glib::ExitCode {
 
     let (unit, level, run_mode, args) = handle_args();
 
+    #[cfg(not(debug_assertions))]
+    check_gschema();
+
     #[allow(clippy::single_match)]
     match args.command {
         Some(Command::Test { test }) => {
@@ -314,4 +317,29 @@ fn handle_args() -> (Option<UnitInfo>, UnitDBusLevel, RunMode, Args) {
     };
 
     (unit, unit_level, run_mode, args)
+}
+
+#[cfg(not(debug_assertions))]
+fn check_gschema() -> Option<()> {
+    let home = std::env::home_dir()?;
+    #[cfg(not(debug_assertions))]
+    let home_schema = home.join(".local/share/glib-2.0/schemas");
+
+    const SYSD_SCHEMA: &str = "io.github.plrigaux.sysd-manager.gschema.xml";
+    let sysd_schema = home_schema.join(SYSD_SCHEMA);
+
+    if sysd_schema.exists() {
+        warn!(
+            "You have a the {} schema in your local schema dir {:?} !!!",
+            SYSD_SCHEMA, home_schema
+        );
+        let compiled = home_schema.join("gschemas.compiled");
+
+        warn!(
+            "Please delete files {:?} and {:?} to ensure sysd-manager proper operation",
+            sysd_schema, compiled
+        );
+    }
+
+    Some(())
 }
