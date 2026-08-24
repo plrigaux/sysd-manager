@@ -15,6 +15,7 @@ _commit=
 source=("${pkgname}-${pkgver}.tar.gz::https://github.com/plrigaux/${pkgname}/archive/refs/tags/v${pkgver}.tar.gz")
 _pkgsrcdir=$pkgname-$pkgver
 sha256sums=()
+install=$pkgname.install
 
 prepare() {
 	cd $_pkgsrcdir
@@ -65,21 +66,4 @@ package() {
 	install -vDm644 "./sysd-manager-proxy/data/sysd-manager-proxy.service" -T "$pkgdir/usr/lib/systemd/system/sysd-manager-proxy.service"
 	sed -i -e s/{BUS_NAME}/io.github.plrigaux.SysDManager/ -e s/{DESTINATION}/io.github.plrigaux.SysDManager/ -e s/{ENVIRONMENT}// -e s/{EXECUTABLE}/\\/usr\\/bin\\/sysd-manager-proxy/ -e s/{INTERFACE}/io.github.plrigaux.SysDManager/ -e s/{SERVICE_ID}/sysd-manager-proxy/ "$pkgdir/usr/lib/systemd/system/sysd-manager-proxy.service"
 	echo -e Installation of $PROGRAM completed, enjoy.
-}
-
-post_install() {
-    echo "\e[1mCheck if there is a local schema.\e[0m"
-
-    SCHEMA = "~/.local/share/glib-2.0/schemas/io.github.plrigaux.sysd-manager.gschema.xml"
-    if [ -f $SCHEMA ]; then
-    	echo "File \e[1m$SCHEMA\e[0m exists!"
-    	echo "Removing file $SCHEMA"
-    	rm $SCHEMA || true
-
-    	LOCAL_SCHEMA_DIR =  "~/.local/share/glib-2.0/schemas"
-    	echo "Recompiling local schemas $LOCAL_SCHEMA_DIR"
-    	glib-compile-schemas $LOCAL_SCHEMA_DIR || true
-	else
-    	echo "File \e[1m$SCHEMA\e[0m doesn't exist and \e[32mit's ok!\e[0m"
-	fi
 }

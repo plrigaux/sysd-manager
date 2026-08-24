@@ -6,7 +6,7 @@ from build_aux.build_common import color
 
 AUR_DIR = "../aur/sysd-manager"
 PKGBUILD = "PKGBUILD"
-# INSTALL_FILE="sysd-manager.install"
+INSTALL_FILE="sysd-manager.install"
 AUR_OUT_DIR = "../aur/sysd-manager"
 TEMPLATE_DIR = "packaging/aur"
 
@@ -108,7 +108,7 @@ def create_pkgbuild(release=None):
     # print(pkgbuild_text)
     # sums
 
-    # bc.cmd_run(["cp", f"{TEMPLATE_DIR}/{INSTALL_FILE}", f"{AUR_OUT_DIR}"])
+    bc.cmd_run(["cp", f"{TEMPLATE_DIR}/{INSTALL_FILE}", f"{AUR_OUT_DIR}"])
     bc.cmd_run(["cp", "CHANGELOG.md", f"{AUR_OUT_DIR}"])
 
 
