@@ -18,7 +18,10 @@ use crate::{
     },
 };
 use adw::{prelude::*, subclass::prelude::*};
-use base::enums::UnitDBusLevel;
+use base::{
+    consts::{GREEN, RED},
+    enums::UnitDBusLevel,
+};
 use gettextrs::pgettext;
 use gtk::{
     gio,
@@ -453,9 +456,9 @@ impl UnitControlPanelImpl {
                 );
 
                 let red_green = if action != UnitContolType::Stop {
-                    "green"
+                    GREEN
                 } else {
-                    "red"
+                    RED
                 };
 
                 let info = format2!(

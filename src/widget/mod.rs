@@ -23,7 +23,7 @@ use crate::{
     utils::palette::{dark_blue, dark_green, dark_red},
 };
 use adw::prelude::AdwDialogExt;
-use base::consts::{FAVORITE_ICON_FILLED, FAVORITE_ICON_OUTLINE};
+use base::consts::{FAVORITE_ICON_FILLED, FAVORITE_ICON_OUTLINE, GREEN, RED};
 use gettextrs::pgettext;
 use glib::object::{Cast, CastNone, IsA};
 use gtk::{gdk, pango::FontDescription, prelude::*};
@@ -97,7 +97,7 @@ pub fn replace_tags(message: &str) -> String {
                 tag_unit(&mut out, &capture[2]);
             }
 
-            "red" => {
+            RED => {
                 out.push_str("<span fgcolor='");
                 out.push_str(dark_red().get_color());
                 out.push_str("'>");
@@ -105,7 +105,7 @@ pub fn replace_tags(message: &str) -> String {
                 out.push_str("</span>");
             }
 
-            "green" => {
+            GREEN => {
                 out.push_str("<span fgcolor='");
                 out.push_str(dark_green().get_color());
                 out.push_str("'>");

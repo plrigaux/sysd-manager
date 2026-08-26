@@ -2,6 +2,7 @@
 use std::{num::ParseIntError, str::Utf8Error};
 
 use crate::gtk::glib::translate::IntoGlib;
+use base::consts::BOLD;
 use gtk::{gdk, pango};
 
 use super::palette::Palette;
@@ -211,7 +212,7 @@ pub enum Intensity {
 impl Intensity {
     pub fn pango_str(&self) -> &str {
         match self {
-            Intensity::Bold => "bold",
+            Intensity::Bold => BOLD,
             Intensity::Faint => "light",
         }
     }

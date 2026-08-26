@@ -1,6 +1,9 @@
 use std::sync::LazyLock;
 
-use base::enums::UnitDBusLevel;
+use base::{
+    consts::{BOLD, GREEN, RED},
+    enums::UnitDBusLevel,
+};
 use gtk::{
     glib::{self, Binding, Quark},
     prelude::*,
@@ -413,8 +416,8 @@ fn load_state_text_binding(inscription: &gtk::Inscription, unit: &UnitInfo) {
 
 fn load_state_css_classes<'a>(load_state: LoadState) -> Option<[&'a str; 2]> {
     match load_state {
-        LoadState::NotFound => Some(["yellow", "bold"]),
-        LoadState::BadSetting | LoadState::Error | LoadState::Masked => Some(["red", "bold"]),
+        LoadState::NotFound => Some(["yellow", BOLD]),
+        LoadState::BadSetting | LoadState::Error | LoadState::Masked => Some([RED, BOLD]),
         _ => None,
     }
 }
@@ -475,10 +478,10 @@ fn enablement_css_classes<'a>(enablement_status: UnitFileStatus) -> Option<[&'a 
         UnitFileStatus::Bad
         | UnitFileStatus::Disabled
         | UnitFileStatus::Masked
-        | UnitFileStatus::MaskedRuntime => Some(["red", "bold"]),
+        | UnitFileStatus::MaskedRuntime => Some([RED, BOLD]),
 
         UnitFileStatus::Alias | UnitFileStatus::Enabled | UnitFileStatus::EnabledRuntime => {
-            Some(["green", "bold"])
+            Some([GREEN, BOLD])
         }
 
         _ => None,
@@ -539,9 +542,9 @@ fn preset_text_binding(inscription: &gtk::Inscription, unit: &UnitInfo) {
 
 fn preset_css_classes(preset_value: Preset) -> Option<[&'static str; 2]> {
     match preset_value {
-        Preset::Disabled => Some(["red", "bold"]),
-        Preset::Enabled => Some(["green", "bold"]),
-        Preset::Ignore => Some(["yellow", "bold"]),
+        Preset::Disabled => Some([RED, BOLD]),
+        Preset::Enabled => Some([GREEN, BOLD]),
+        Preset::Ignore => Some(["yellow", BOLD]),
         _ => None,
     }
 }

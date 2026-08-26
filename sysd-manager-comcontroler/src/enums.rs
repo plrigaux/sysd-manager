@@ -1,9 +1,12 @@
-use crate::errors::SystemdErrors;
-use crate::sysdbus::{INTERFACE_SYSTEMD_MANAGER, INTERFACE_SYSTEMD_UNIT};
+use crate::{
+    errors::SystemdErrors,
+    sysdbus::{INTERFACE_SYSTEMD_MANAGER, INTERFACE_SYSTEMD_UNIT},
+};
+use base::consts::{GREEN, RED};
 use enumflags2::{_internal::RawBitFlags, bitflags};
 use gettextrs::pgettext;
 use glib::{self, EnumValue, value::ToValue};
-use std::{cell::RefCell, fmt::Display, str::FromStr};
+use std::{borrow::Cow, cell::RefCell, fmt::Display, str::FromStr};
 use strum::{EnumIter, IntoEnumIterator};
 use tracing::{info, warn};
 use zvariant::OwnedValue;
@@ -250,6 +253,26 @@ impl UnitFileStatus {
 
     pub fn has_status(&self) -> bool {
         !matches!(self, UnitFileStatus::Unknown)
+    }
+
+    pub fn toast_display(&self) -> Cow<'_, str> {
+        match self {
+            UnitFileStatus::Disabled => Cow::Owned(Self::set_toast(RED, self.label())),
+            UnitFileStatus::Enabled => Cow::Owned(Self::set_toast(GREEN, self.label())),
+            _ => Cow::Borrowed(self.label()),
+        }
+    }
+
+    fn set_toast(tag: &str, label: &str) -> String {
+        let mut s = String::with_capacity(tag.len() * 2 + label.len() + 10);
+        s.push('<');
+        s.push_str(tag);
+        s.push('>');
+        s.push_str(label);
+        s.push_str("</");
+        s.push_str(tag);
+        s.push('>');
+        s
     }
 }
 

@@ -54,17 +54,11 @@ pub(super) fn switch_ablement_state_set(
 
         match enable_result {
             Ok(enablement_status_ret) => {
-                let blue = dark_blue().get_color();
-
                 let toast_info = format2!(
                     //toast message on success
-                    pgettext(
-                        "toast",
-                        "Unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> has been successfully <span fgcolor='{0}'>{}</span>"
-                    ),
-                    blue,
+                    pgettext("toast", "Unit <unit>{}</unit> has been successfully {}"),
                     unit.primary(),
-                    expected_new_status,
+                    expected_new_status.toast_display(),
                 );
 
                 debug!("{toast_info} {enablement_status_ret:?}");

@@ -24,3 +24,7 @@ pub const MAX_HEART_BEAT_ELAPSE: u64 = 300_000;
 pub const FAVORITE_ICON_FILLED: &str = "bookmark-filled-symbolic";
 pub const FAVORITE_ICON_OUTLINE: &str = "bookmark-outline-symbolic";
 pub const SYSTEMD_ANALYZE: &str = "systemd-analyze";
+
+pub const GREEN: &str = "green";
+pub const RED: &str = "red";
+pub const BOLD: &str = "bold";

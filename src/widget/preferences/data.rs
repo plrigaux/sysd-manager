@@ -434,7 +434,7 @@ impl Preferences {
     }
 
     pub fn set_font(&self, font_description: &FontDescription) {
-        let family = font_description.family().map_or(GString::new(), |f| f);
+        let family = font_description.family().unwrap_or_default();
         self.set_font_family(&family);
 
         let size = font_description.size() / pango::SCALE;
