@@ -644,10 +644,21 @@ impl AppWindowImpl {
             Cow::from(message)
         };
 
-        let toast = adw::Toast::builder()
-            .title(msg)
+        let attributes = pango::AttrList::new();
+        let attr_weight = pango::AttrInt::new_weight(pango::Weight::Bold);
+        let attr_line = pango::AttrFloat::new_line_height(1.5);
+        attributes.insert(attr_weight);
+        attributes.insert(attr_line);
+
+        let label = gtk::Label::builder()
+            .label(msg)
+            .attributes(&attributes)
             .use_markup(use_markup)
+            .single_line_mode(false)
+            .justify(gtk::Justification::Center)
             .build();
+
+        let toast = adw::Toast::builder().custom_title(&label).build();
 
         if let Some((action_name, ref button_label, user_session)) = action {
             info!("Toast action {:?} user_session {user_session}", action);
