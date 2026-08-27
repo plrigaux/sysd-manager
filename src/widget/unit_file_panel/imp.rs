@@ -13,7 +13,7 @@ use crate::{
     utils::font_management::set_text_view_font_display,
     widget::{
         InterPanelMessage,
-        app_window::AppWindow,
+        app_window::{AppWindow, ToastAction},
         preferences::{data::PREFERENCES, style_scheme::set_new_style_scheme},
         text_search::{self, TextSearchEntry, on_new_text},
         unit_file_panel::flatpak::PROCEED,
@@ -261,7 +261,7 @@ impl UnitFilePanelImp {
         unit_name: &str,
         user_session: bool,
     ) {
-        let (msg, use_mark_up, action) = match receiver {
+        match receiver {
             Ok(_) => {
                 self.set_save_file_enable(false);
 
@@ -278,26 +278,26 @@ impl UnitFilePanelImp {
 
                 // Suggest to reload all unit configuation
                 let button_label = gettext("Daemon Reload");
-                (
-                    msg,
-                    true,
-                    Some((APP_ACTION_DAEMON_RELOAD_BUS, button_label, user_session)),
-                )
+                let action = Some(ToastAction::new_t(
+                    APP_ACTION_DAEMON_RELOAD_BUS,
+                    button_label,
+                    user_session.to_variant(),
+                ));
+
+                self.add_toast_message(&msg, true, action);
             }
-            Err(error) => {
+            Err(ref error) => {
                 warn!(
                     "Unit {:?}, Unable to save file: {:?}, Error {:?}",
                     unit_name, file_nav.file_path, error
                 );
 
-                match error {
-                    SystemdErrors::NotAuthorized => (
-                        pgettext("file", "Not able to save file, permission not granted!"),
-                        false,
-                        None,
-                    ),
-
-                    SystemdErrors::ZFdoServiceUnknowm(_s) => {
+                let message = match error {
+                    SystemdErrors::NotAuthorized => {
+                        pgettext("file", "Not able to save file, permission not granted!")
+                    }
+                    //TODO Check if nesserary, need to check the flatpak way
+                    SystemdErrors::ZFdoServiceUnknown(_s) => {
                         // lazy_start_proxy_block();
 
                         // Service Name
@@ -308,36 +308,29 @@ impl UnitFilePanelImp {
                         let window = self.app_window.get().expect("AppWindow supposed to be set");
 
                         dialog.present(Some(window));
-                        (
-                            pgettext("file", "Not able to save file, permission not granted!"),
-                            false,
-                            None,
-                        )
+                        pgettext("file", "Not able to save file, permission not granted!")
                     }
 
                     SystemdErrors::CmdNoFreedesktopFlatpakPermission(_, _) => {
                         let dialog = flatpak::flatpak_permision_alert();
                         dialog.present(self.app_window.get());
-                        (
-                            pgettext(
-                                "file",
-                                "Not able to save file, Flatpak permission not granted!",
-                            ),
-                            false,
-                            None,
+                        pgettext(
+                            "file",
+                            "Not able to save file, Flatpak permission not granted!",
                         )
                     }
 
-                    _ => (
-                        pgettext("file", "Not able to save file, an error happened!"),
-                        false,
-                        None,
-                    ),
-                }
+                    err => {
+                        format2!(
+                            pgettext("file", "Not able to save file!\n Because: {}"),
+                            err.human_error_type()
+                        )
+                    }
+                };
+
+                self.add_toast_message_error(&message, false, error);
             }
         };
-
-        self.add_toast_message(&msg, use_mark_up, action);
     }
 }
 
@@ -387,9 +380,15 @@ impl UnitFilePanelImp {
         (cleaned_text, file_name)
     }
 
-    fn add_toast_message(&self, message: &str, markup: bool, action: Option<(&str, String, bool)>) {
+    fn add_toast_message(&self, message: &str, markup: bool, action: Option<ToastAction<'_>>) {
         if let Some(app_window) = self.app_window.get() {
             app_window.add_toast_message(message, markup, action);
+        }
+    }
+
+    fn add_toast_message_error(&self, message: &str, markup: bool, error: &SystemdErrors) {
+        if let Some(app_window) = self.app_window.get() {
+            app_window.add_toast_message_error(message, markup, error);
         }
     }
 
@@ -1037,10 +1036,10 @@ impl UnitFilePanelImp {
                     (
                         msg,
                         true,
-                        Some((
+                        Some(ToastAction::new_t(
                             APP_ACTION_DAEMON_RELOAD_BUS,
                             button_label,
-                            level.user_session(),
+                            level.user_session().to_variant(),
                         )),
                     )
                 }
@@ -1053,7 +1052,7 @@ impl UnitFilePanelImp {
                             false,
                             None,
                         ),
-                        SystemdErrors::ZFdoServiceUnknowm(_s) => {
+                        SystemdErrors::ZFdoServiceUnknown(_s) => {
                             // Service Name
                             // Action Start it or install it
                             let service_name = sysd_proxy_service_name();

@@ -525,10 +525,13 @@ async fn restartstop_unit_call(
 
                 match action.action(&proxy, unit_name, mode).await {
                     Ok(ok) => Ok(ok),
-                    Err(SystemdErrors::ZFdoServiceUnknowm(msg)) => {
+                    Err(SystemdErrors::ZFdoServiceUnknown(msg)) => {
                         warn!("Async ServiceUnkown: {:?} Function: {:?}", msg, action);
                         to_proxy::lazy_start_proxy_async().await;
-                        action.action(&proxy, unit_name, mode).await
+                        action
+                            .action(&proxy, unit_name, mode)
+                            .await
+                            .map_err(to_proxy::map_unknown_service_to_proxy_error)
                     }
                     Err(err) => Err(err),
                 }

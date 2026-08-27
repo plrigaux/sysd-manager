@@ -11,10 +11,15 @@ use crate::{
     format2, systemd_gui,
     utils::font_management::{self, create_provider},
     widget::{
-        InterPanelMessage, app_window::AppWindow, journal::JournalPanel,
-        preferences::data::KEY_PREF_CONTROLS_ALWAYS_SHOWS_START_STOP, set_favorite_info,
-        text_search::TextSearchEntry, unit_dependencies_panel::UnitDependenciesPanel,
-        unit_file_panel::UnitFilePanel, unit_status::UnitStatusPanel,
+        InterPanelMessage,
+        app_window::{AppWindow, ToastAction},
+        journal::JournalPanel,
+        preferences::data::KEY_PREF_CONTROLS_ALWAYS_SHOWS_START_STOP,
+        set_favorite_info,
+        text_search::TextSearchEntry,
+        unit_dependencies_panel::UnitDependenciesPanel,
+        unit_file_panel::UnitFilePanel,
+        unit_status::UnitStatusPanel,
     },
 };
 use adw::{prelude::*, subclass::prelude::*};
@@ -469,7 +474,7 @@ impl UnitControlPanelImpl {
                     format!("<unit>{}</unit>", mode.as_str())
                 );
 
-                self.add_toast_message(&info, true);
+                self.add_toast_message(&info, true, None);
 
                 if let Some(unit) = unit_op {
                     unit.set_active_state(action.on_succes_unit_state());
@@ -480,17 +485,22 @@ impl UnitControlPanelImpl {
                     .set_inter_message(&InterPanelMessage::Refresh(unit_op));
             }
             Err(err) => {
-                warn!("{} FAILED, Unit {:?} {:?}", action.code(), unit_name, err);
+                warn!(
+                    "{} FAILED, Unit {:?} Error: {:?}",
+                    action.code(),
+                    unit_name,
+                    err
+                );
 
-                let info = format2!(
+                let message = format2!(
                     //toast message error --  "Can't {ACTION} the unit <unit>{UNITNAME}</unit>, because: {SYSTEMD HUMAN ERROR (english)}"),
-                    pgettext("toast", "Can't {} the unit {}, because: {}"),
+                    pgettext("toast", "Can't {} the unit {}!\nBecause: {}"),
                     action.label(),
                     format!("<unit>{}</unit>", unit_name),
                     err.human_error_type()
                 );
 
-                self.add_toast_message(&info, true);
+                self.add_toast_message_error(&message, true, &err);
             }
         };
     }
@@ -722,15 +732,30 @@ impl UnitControlPanelImpl {
             .set_visible_child_name(DEFINITION_FILE_PAGE);
     }
 
-    pub(super) fn add_toast_message(&self, message: &str, use_markup: bool) {
+    pub(super) fn add_toast_message(
+        &self,
+        message: &str,
+        use_markup: bool,
+        action: Option<ToastAction>,
+    ) {
         if let Some(app_window) = self.app_window.get() {
-            app_window.add_toast_message(message, use_markup, None);
+            app_window.add_toast_message(message, use_markup, action);
+        }
+    }
+
+    pub(super) fn add_toast_message_error(
+        &self,
+        message: &str,
+        use_markup: bool,
+        error: &SystemdErrors,
+    ) {
+        if let Some(app_window) = self.app_window.get() {
+            app_window.add_toast_message_error(message, use_markup, error);
         }
     }
 
     pub fn parent_window(&self) -> gtk::Window {
-        let w: gtk::Window = self.app_window.get().expect("window set").clone().into();
-        w
+        self.app_window.get().expect("window set").clone().into()
     }
 
     pub(super) fn call_method<T>(
@@ -795,7 +820,7 @@ impl UnitControlPanelImpl {
                         // toast message success (no unit) -- "{ACTION} successful."
                         format2!(pgettext("toast", "{} successful."), &method_name)
                     };
-                    control_panel.add_toast_message(&msg, true)
+                    control_panel.add_toast_message(&msg, true, None)
                 }
                 Err(ref error) => {
                     let msg = if let Some(ref unit) = unit_option {
@@ -821,7 +846,7 @@ impl UnitControlPanelImpl {
                     };
 
                     warn!("{msg} {error:?}");
-                    control_panel.add_toast_message(&msg, true);
+                    control_panel.add_toast_message_error(&msg, true, error);
                 }
             }
 

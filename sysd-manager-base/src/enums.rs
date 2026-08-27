@@ -137,6 +137,12 @@ impl From<String> for UnitDBusLevel {
     }
 }
 
+impl From<&String> for UnitDBusLevel {
+    fn from(level: &String) -> Self {
+        level.as_str().into()
+    }
+}
+
 impl From<glib::GString> for UnitDBusLevel {
     fn from(level: glib::GString) -> Self {
         level.as_str().into()

@@ -29,7 +29,6 @@ pub enum SystemdErrors {
     NotAuthorized,
     NotAuthorizedAuthentificationDismissed,
     NoUnit,
-    SystemCtlError(String),
     Tokio,
     ZBusError(zbus::Error),
     ZAccessDenied(String, String),
@@ -39,7 +38,8 @@ pub enum SystemdErrors {
     ZUnitMasked(String, String),
     ZVariantError(zvariant::Error),
     ZBusFdoError(zbus::fdo::Error),
-    ZFdoServiceUnknowm(String),
+    ZFdoServiceUnknown(String),
+    ProxyUnknown(String),
     ZFdoZError(String),
     ZXml(zbus_xml::Error),
     Unreachable,
@@ -78,6 +78,10 @@ impl SystemdErrors {
             SystemdErrors::ZNoSuchUnitProxy(_, detail) => detail.clone(),
             SystemdErrors::ZUnitMasked(_, detail) => detail.clone(),
             SystemdErrors::JobRemoved(reason) => uppercase_first_letter(reason),
+            SystemdErrors::ProxyUnknown(_proxy_service_name) => {
+                //Error message displayed to user
+                pgettext("error", "SysD Manager Proxy issue")
+            }
             _ => self.to_string(),
         }
     }
@@ -198,7 +202,7 @@ impl From<zbus::Error> for SystemdErrors {
 impl From<zbus::fdo::Error> for SystemdErrors {
     fn from(error: zbus::fdo::Error) -> Self {
         match error {
-            zbus::fdo::Error::ServiceUnknown(s) => SystemdErrors::ZFdoServiceUnknowm(s),
+            zbus::fdo::Error::ServiceUnknown(s) => SystemdErrors::ZFdoServiceUnknown(s),
             zbus::fdo::Error::ZBus(err) => err.into(),
             _ => SystemdErrors::ZBusFdoError(error),
         }

@@ -1,15 +1,16 @@
 use crate::{
     consts::{
-        ACTION_APP_CREATE_UNIT, ACTION_APP_PROPERTIES_SELECTOR, ACTION_DAEMON_RELOAD,
-        ACTION_FIND_IN_TEXT_OPEN, ACTION_LIST_BOOT, ACTION_PROPERTIES_SELECTOR_GENERAL,
-        ACTION_UNIT_PROPERTIES_DISPLAY, ACTION_WIN_CHANGE_BUS, APP_ACTION_LIST_BOOT,
-        APP_ACTION_PROPERTIES_SELECTOR_GENERAL, APP_ACTION_SEARCH_UNITS,
+        ACTION_APP_CREATE_UNIT, ACTION_APP_DISPLAY_UNIT, ACTION_APP_PROPERTIES_SELECTOR,
+        ACTION_DAEMON_RELOAD, ACTION_FIND_IN_TEXT_OPEN, ACTION_LIST_BOOT,
+        ACTION_PROPERTIES_SELECTOR_GENERAL, ACTION_UNIT_PROPERTIES_DISPLAY, ACTION_WIN_CHANGE_BUS,
+        APP_ACTION_LIST_BOOT, APP_ACTION_PROPERTIES_SELECTOR_GENERAL, APP_ACTION_SEARCH_UNITS,
         APP_ACTION_UNIT_PROPERTIES_DISPLAY, WIN_ACTION_SAVE_UNIT_FILE,
     },
     systemd::{data::UnitInfo, journal_data::Boot},
     systemd_gui::{self},
     widget::{
         InterPanelMessage,
+        app_window::ToastAction,
         creator::UnitCreatorWindow,
         info_window::InfoWindow,
         journal::list_boots::ListBootsWindow,
@@ -22,6 +23,8 @@ use crate::{
     },
 };
 use adw::subclass::prelude::*;
+use base::enums::UnitDBusLevel;
+use gettextrs::pgettext;
 use glib::{self, VariantTy, closure::IntoClosureReturnValue, types::StaticType, value::ToValue};
 use gtk::{
     gio::{self, prelude::*},
@@ -33,6 +36,7 @@ use std::{
     rc::Rc,
 };
 use strum::IntoEnumIterator;
+use systemd::errors::SystemdErrors;
 use tracing::{debug, info, warn};
 
 const WINDOW_WIDTH: &str = "window-width";
@@ -582,6 +586,36 @@ impl AppWindowImpl {
                 .build()
         };
 
+        let display_unit = {
+            let app_window = self.obj().clone();
+
+            gio::ActionEntry::builder(&ACTION_APP_DISPLAY_UNIT[4..])
+                .activate(move |_, _action, variant| {
+                    println!("variant {:?}", variant);
+
+                    let Some(params) = variant.and_then(|v| v.get::<Vec<String>>()) else {
+                        warn!("Malformed {:?}", variant);
+                        return;
+                    };
+
+                    let Some(unit_name) = params.first() else {
+                        warn!("Malformed {:?}", variant);
+                        return;
+                    };
+
+                    let Some(level) = params.get(1) else {
+                        warn!("Malformed {:?}", params);
+                        return;
+                    };
+
+                    let unit = UnitInfo::from_unit_key(unit_name, level.into());
+
+                    app_window.set_unit(Some(&unit));
+                })
+                .parameter_type(Some(VariantTy::STRING_ARRAY))
+                .build()
+        };
+
         const ACTION_APP_QUIT: &str = "app.quit";
 
         let quit = gio::ActionEntry::builder(&ACTION_APP_QUIT[4..])
@@ -602,6 +636,7 @@ impl AppWindowImpl {
             display_unit_properties,
             create_unit,
             quit,
+            display_unit,
         ]);
 
         application.set_accels_for_action(APP_ACTION_SEARCH_UNITS, &["<Ctrl>f"]);
@@ -631,11 +666,37 @@ impl AppWindowImpl {
         &self.toast_overlay
     }
 
+    pub(super) fn add_toast_message_error(
+        &self,
+        message: &str,
+        use_markup: bool,
+        error: &SystemdErrors,
+    ) {
+        let action = Self::check_proxy_action(error);
+        self.add_toast_message(message, use_markup, action);
+    }
+
+    fn check_proxy_action<'a>(err: &SystemdErrors) -> Option<ToastAction<'a>> {
+        match err {
+            SystemdErrors::ProxyUnknown(proxy_unit_name) => {
+                let level = UnitDBusLevel::System.as_str();
+                let target_value = [proxy_unit_name, level];
+                let button_label = pgettext("toast", "Check Proxy");
+                Some(ToastAction::new_t(
+                    ACTION_APP_DISPLAY_UNIT,
+                    button_label,
+                    target_value.to_variant(),
+                ))
+            }
+            _ => None,
+        }
+    }
+
     pub(super) fn add_toast_message(
         &self,
         message: &str,
         use_markup: bool,
-        action: Option<(&str, String, bool)>,
+        action: Option<ToastAction>,
     ) {
         let msg = if use_markup {
             let out = replace_tags(message);
@@ -660,11 +721,14 @@ impl AppWindowImpl {
 
         let toast = adw::Toast::builder().custom_title(&label).build();
 
-        if let Some((action_name, ref button_label, user_session)) = action {
-            info!("Toast action {:?} user_session {user_session}", action);
-            toast.set_action_name(Some(action_name));
-            toast.set_action_target_value(Some(&user_session.to_variant()));
-            toast.set_button_label(Some(button_label));
+        if let Some(action) = action {
+            info!(
+                "Toast action {:?} target_value {:?}",
+                action.action_name, action.target_value
+            );
+            toast.set_action_name(Some(action.action_name));
+            toast.set_action_target_value(action.target_value.as_ref());
+            toast.set_button_label(Some(&action.button_label));
         }
 
         self.toast_overlay.add_toast(toast)

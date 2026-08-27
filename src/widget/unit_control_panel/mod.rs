@@ -5,7 +5,9 @@ use super::{InterPanelMessage, app_window::AppWindow};
 use crate::{
     format2,
     systemd::{data::UnitInfo, enums::StartStopMode, errors::SystemdErrors},
-    widget::{close_window_shortcut, unit_control_panel::enums::UnitContolType},
+    widget::{
+        app_window::ToastAction, close_window_shortcut, unit_control_panel::enums::UnitContolType,
+    },
 };
 use base::enums::UnitDBusLevel;
 
@@ -33,8 +35,23 @@ impl UnitControlPanel {
         self.imp().app_window()
     }
 
-    pub(super) fn add_toast_message(&self, message: &str, use_markup: bool) {
-        self.imp().add_toast_message(message, use_markup);
+    pub(super) fn add_toast_message(
+        &self,
+        message: &str,
+        use_markup: bool,
+        action: Option<ToastAction>,
+    ) {
+        self.imp().add_toast_message(message, use_markup, action);
+    }
+
+    pub(super) fn add_toast_message_error(
+        &self,
+        message: &str,
+        use_markup: bool,
+        error: &SystemdErrors,
+    ) {
+        self.imp()
+            .add_toast_message_error(message, use_markup, error);
     }
 
     pub fn display_info_page(&self) {

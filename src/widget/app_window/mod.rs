@@ -1,5 +1,6 @@
 use glib::Object;
 use gtk::{gio, glib, subclass::prelude::*};
+use systemd::errors::SystemdErrors;
 
 use crate::systemd::data::UnitInfo;
 
@@ -37,13 +38,18 @@ impl AppWindow {
         self.imp().set_inter_message(action);
     }
 
-    pub fn add_toast_message(
+    pub fn add_toast_message(&self, message: &str, markup: bool, action: Option<ToastAction<'_>>) {
+        self.imp().add_toast_message(message, markup, action);
+    }
+
+    pub(super) fn add_toast_message_error(
         &self,
         message: &str,
-        markup: bool,
-        action: Option<(&str, String, bool)>,
+        use_markup: bool,
+        error: &SystemdErrors,
     ) {
-        self.imp().add_toast_message(message, markup, action);
+        self.imp()
+            .add_toast_message_error(message, use_markup, error);
     }
 
     pub fn selected_unit(&self) -> Option<UnitInfo> {
@@ -57,5 +63,33 @@ impl AppWindow {
 
     pub fn set_signal_window(&self, signals_window: Option<&SignalsWindow>) {
         self.imp().signals_window.replace(signals_window.cloned());
+    }
+}
+
+pub struct ToastAction<'a> {
+    action_name: &'a str,
+    button_label: String,
+    target_value: Option<glib::Variant>,
+}
+
+impl<'a> ToastAction<'a> {
+    pub(crate) fn new(
+        action_name: &'a str,
+        button_label: String,
+        target_value: Option<glib::Variant>,
+    ) -> Self {
+        Self {
+            action_name,
+            button_label,
+            target_value,
+        }
+    }
+
+    pub(crate) fn new_t(
+        action_name: &'a str,
+        button_label: String,
+        target_value: glib::Variant,
+    ) -> Self {
+        Self::new(action_name, button_label, Some(target_value))
     }
 }

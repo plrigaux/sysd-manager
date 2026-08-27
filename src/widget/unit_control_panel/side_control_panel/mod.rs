@@ -31,12 +31,6 @@ impl SideControlPanel {
         self.imp().set_inter_message(action);
     }
 
-    pub fn add_toast_message(&self, message: &str, use_markup: bool) {
-        if let Some(parent) = self.imp().control_panel() {
-            parent.add_toast_message(message, use_markup);
-        }
-    }
-
     pub fn call_method(
         &self,
         method_name: &str,

@@ -179,7 +179,7 @@ pub(crate) async fn init_proxy_async2() -> Result<(), SystemdErrors> {
     }
 
     error!("Max tries reached to start dbus service unit {unit_name}, giving up.");
-    Err(SystemdErrors::Custom(format!("Can't start {}", unit_name)))
+    Err(SystemdErrors::ProxyUnknown(unit_name))
 }
 
 async fn wait_job_remove(

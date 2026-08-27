@@ -18,6 +18,7 @@ use zvariant::OwnedObjectPath;
 
 use crate::{
     errors::SystemdErrors,
+    sysd_proxy_service_name,
     sysdbus::{get_blocking_connection, get_connection, run_context},
 };
 
@@ -172,9 +173,9 @@ pub(crate) async fn wait_hello(mut hello_stream: HelloStream) -> Result<(), Syst
 
 pub fn lazy_start_proxy_block() -> Result<(), SystemdErrors> {
     crate::runtime().block_on(async move {
-        warn!("lazy 1");
+        info!("--- Lazy START Begins");
         lazy_start_proxy_async().await;
-        warn!("lazy 2");
+        info!("--- Lazy START Ends");
     });
     Ok(())
 }
@@ -208,15 +209,24 @@ async fn send_heart_beat() -> Result<(), SystemdErrors> {
     }
 }
 
+pub fn map_unknown_service_to_proxy_error(action_err: SystemdErrors) -> SystemdErrors {
+    if matches!(action_err, SystemdErrors::ZFdoServiceUnknown(..)) {
+        SystemdErrors::ProxyUnknown(sysd_proxy_service_name())
+    } else {
+        action_err
+    }
+}
+
 #[macro_export]
 macro_rules! proxy_call_blocking {
     ($func:ident, $($param:expr),+) => {
         match $crate::to_proxy::$func($($param),+) {
             Ok(ok) => Ok(ok),
-            Err(SystemdErrors::ZFdoServiceUnknowm(msg)) => {
+            Err(SystemdErrors::ZFdoServiceUnknown(msg)) => {
                 warn!("Blocking ServiceUnkown: {:?} Func: {}", msg, stringify!($func));
                 $crate::to_proxy::lazy_start_proxy_block();
                 $crate::to_proxy::$func($($param),+)
+                .map_err(to_proxy::map_unknown_service_to_proxy_error)
             },
             Err(err) => Err(err)
         }
@@ -232,10 +242,11 @@ macro_rules! proxy_call_async {
     ($func:ident, $($param:expr),*) => {
         match $crate::to_proxy::$func($($param),*).await {
             Ok(ok) => Ok(ok),
-            Err(SystemdErrors::ZFdoServiceUnknowm(msg)) => {
+            Err(SystemdErrors::ZFdoServiceUnknown(msg)) => {
                 warn!("Async ServiceUnkown: {:?} Function: {}", msg, stringify!($func));
                 $crate::to_proxy::lazy_start_proxy_async().await;
                 $crate::to_proxy::$func($($param),*).await
+                .map_err(to_proxy::map_unknown_service_to_proxy_error)
             },
             Err(err) => Err(err)
         }

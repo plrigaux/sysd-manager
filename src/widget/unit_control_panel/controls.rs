@@ -5,7 +5,7 @@ use gtk::{gio, glib};
 use tracing::{debug, info, warn};
 
 use crate::format2;
-use crate::systemd::{self, data::UnitInfo, enums::UnitFileStatus, errors::SystemdErrors};
+use crate::systemd::{self, data::UnitInfo, enums::UnitFileStatus};
 
 use super::UnitControlPanel;
 use crate::gtk::prelude::*;
@@ -56,26 +56,21 @@ pub(super) fn switch_ablement_state_set(
             Ok(enablement_status_ret) => {
                 let toast_info = format2!(
                     //toast message on success
-                    pgettext("toast", "Unit <unit>{}</unit> has been successfully {}"),
-                    unit.primary(),
+                    pgettext("toast", "Unit {} has been successfully {}"),
+                    format!("<unit>{}</unit> ", unit.primary()),
                     expected_new_status.toast_display(),
                 );
 
                 debug!("{toast_info} {enablement_status_ret:?}");
 
-                control_panel.add_toast_message(&toast_info, true);
+                control_panel.add_toast_message(&toast_info, true, None);
 
                 unit.set_enable_status(expected_new_status);
 
                 switch.set_state(expected_new_status == UnitFileStatus::Enabled);
             }
 
-            Err(error) => {
-                let error_message = match error {
-                    SystemdErrors::SystemCtlError(s) => s,
-                    _ => format!("{error:?}"),
-                };
-
+            Err(ref error) => {
                 let (action_str, action_log) = match expected_new_status {
                     UnitFileStatus::Disabled => {
                         //toast message action on fail
@@ -85,28 +80,24 @@ pub(super) fn switch_ablement_state_set(
                         //toast message action on fail
                         (pgettext("toast", "Enabling"), "Enabling")
                     }
-                    _ => ("???".to_owned(), "???"),
+                    _ => (expected_new_status.label().to_owned(), "???"),
                 };
 
-                let blue = blue().get_color();
-
+                let error_message = &error.human_error_type();
                 let toast_info = format2!(
-                    //toast message on fail, arg0 : Enabling/Disabling, arg1 : unit name
-                    pgettext("toast", "{} unit {} has failed!"),
+                    //Toast Ablement Unit status
+                    pgettext("toast", "{} unit {} has failed!\nBecause: {}"),
                     action_str,
-                    format!(
-                        "<span fgcolor='{}' font_family='monospace' size='larger'>{}</span> ",
-                        blue,
-                        unit.primary()
-                    )
+                    format!("<unit>{}</unit> ", unit.primary()),
+                    error_message
                 );
 
                 warn!(
-                    "{action_log} unit {} has Failed! : {error_message}",
+                    "{action_log} unit {} has Failed! : {error:?}",
                     unit.primary()
                 );
 
-                control_panel.add_toast_message(&toast_info, true);
+                control_panel.add_toast_message_error(&toast_info, true, error);
             }
         }
 
@@ -174,47 +165,41 @@ pub(super) fn reenable_unit(
                     //toast message on success
                     pgettext(
                         "toast",
-                        "Unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> has been successfully <span fgcolor='{0}'>{}</span>"
+                        "Unit <unit>{}</unit> has been successfully <span fgcolor='{}'>{}</span>"
                     ),
-                    blue,
                     unit.primary(),
+                    blue,
                     action_str,
                 );
 
                 debug!("{toast_info} {enablement_status_ret:?}");
 
-                control_panel.add_toast_message(&toast_info, true);
+                control_panel.add_toast_message(&toast_info, true, None);
 
                 unit.set_enable_status(expected_new_status);
 
                 switch.set_state(expected_new_status == UnitFileStatus::Enabled);
             }
 
-            Err(error) => {
-                let error_message = match error {
-                    SystemdErrors::SystemCtlError(s) => s,
-                    _ => format!("{error:?}"),
-                };
-
+            Err(ref error) => {
                 //toast message action on fail
                 let action_str = pgettext("toast", "Reenabling");
 
-                let blue = blue().get_color();
-
+                let error_message = &error.human_error_type();
                 let toast_info = format2!(
-                    //toast message on fail
-                    pgettext(
-                        "toast",
-                        "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> has failed!"
-                    ),
-                    blue,
+                    //Toast reenable Unit status
+                    pgettext("toast", "{} unit {} has failed! {}"),
                     action_str,
+                    format!("<unit>{}</unit> ", unit.primary()),
+                    error_message
+                );
+
+                warn!(
+                    "{action_str} unit {:?} has failed! Error: {error:?}",
                     unit.primary()
                 );
 
-                warn!("{toast_info} : {error_message}");
-
-                control_panel.add_toast_message(&toast_info, true);
+                control_panel.add_toast_message_error(&toast_info, true, error);
             }
         }
 
