@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Cambalache 1.0.1 -->
 <interface>
   <!-- interface-name app_window.ui -->
@@ -31,24 +31,6 @@
       <item>
         <attribute name="action">app.create-unit</attribute>
         <attribute name="label">Create Unit</attribute>
-      </item>
-    </section>
-    <section>
-      <item>
-        <attribute name="action">app.preferences</attribute>
-        <attribute name="label" translatable="yes" context="menu">Preferences</attribute>
-      </item>
-      <item>
-        <attribute name="action">app.proxy-management</attribute>
-        <attribute name="label" translatable="yes" context="menu">Proxy Preferences</attribute>
-      </item>
-      <item>
-        <attribute name="action">app.shortcuts</attribute>
-        <attribute name="label" translatable="yes" context="menu">Keyboard Shortcuts</attribute>
-      </item>
-      <item>
-        <attribute name="action">app.about</attribute>
-        <attribute name="label" translatable="yes" context="menu">About</attribute>
       </item>
     </section>
   </menu>
@@ -92,7 +74,7 @@
                   </object>
                 </child>
                 <child type="end">
-                  <object class="GtkMenuButton">
+                  <object class="GtkMenuButton" id="menu_button">
                     <property name="icon-name">open-menu-symbolic</property>
                     <property name="menu-model">main-menu</property>
                   </object>

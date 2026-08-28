@@ -85,6 +85,9 @@ pub struct AppWindowImpl {
     #[template_child]
     breakpoint: TemplateChild<adw::Breakpoint>,
 
+    #[template_child]
+    menu_button: TemplateChild<gtk::MenuButton>,
+
     orientation_mode: Cell<OrientationMode>,
 
     list_boots: RefCell<Option<Vec<Rc<Boot>>>>,
@@ -253,6 +256,30 @@ impl ObjectImpl for AppWindowImpl {
                 Some(window_panes_orientation.to_variant())
             })
             .build();
+
+        if let Some(menu) = self.menu_button.menu_model().and_downcast::<gio::Menu>() {
+            let menu_section = gio::Menu::new();
+
+            menu_section.append(
+                Some(&pgettext("menu", "Preferences")),
+                Some("app.preferences"),
+            );
+
+            #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
+            menu_section.append(
+                Some(&pgettext("menu", "Proxy Preferences")),
+                Some("app.proxy-management"),
+            );
+
+            menu_section.append(
+                Some(&pgettext("menu", "Keyboard Shortcuts")),
+                Some("app.shortcuts"),
+            );
+
+            menu_section.append(Some(&pgettext("menu", "About")), Some("app.about"));
+
+            menu.append_section(None, &menu_section);
+        }
     }
 }
 
@@ -332,62 +359,6 @@ impl AppWindowImpl {
 }
 
 impl AppWindowImpl {
-    /* fn load_window_size(&self) {
-        // Get the window state from `settings`
-        let settings = self.settings();
-
-        let mut width = settings.int(WINDOW_WIDTH);
-        let mut height = settings.int(WINDOW_HEIGHT);
-        let is_maximized = settings.boolean(IS_MAXIMIZED);
-        let mut separator_position = settings.int(PANED_SEPARATOR_POSITION);
-        let window_panes_orientation = settings.string(WINDOW_PANES_ORIENTATION);
-        let pref_orientation_mode = settings.string(KEY_PREF_ORIENTATION_MODE);
-
-        info!(
-            "Window settings: width {width}, height {height}, is-maximized {is_maximized}, panes orientation {window_panes_orientation}"
-        );
-
-        let obj = self.obj();
-        let (def_width, def_height) = obj.default_size();
-
-        if width < 0 {
-            width = def_width;
-            if width < 0 {
-                width = 1280;
-            }
-        }
-
-        if height < 0 {
-            height = def_height;
-            if height < 0 {
-                height = 720;
-            }
-        }
-
-        // Set the size of the window
-        obj.set_default_size(width, height);
-
-        // If the window was maximized when it was closed, maximize it again
-        if is_maximized {
-            obj.maximize();
-        }
-
-        if separator_position < 0 {
-            separator_position = width / 2;
-        }
-
-        self.paned.set_position(separator_position);
-
-        let orientation_mode = OrientationMode::from_key(&pref_orientation_mode);
-        self.orientation_mode.set(orientation_mode);
-        let window_panes_orientation = if window_panes_orientation == HORIZONTAL {
-            gtk::Orientation::Horizontal
-        } else {
-            gtk::Orientation::Vertical
-        };
-        self.set_orientation(window_panes_orientation);
-    } */
-
     fn set_orientation(&self) {
         let window_panes_orientation = self.paned.orientation();
         let orientation_mode = self.orientation_mode.get();
