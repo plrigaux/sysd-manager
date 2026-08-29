@@ -1,5 +1,6 @@
 #![allow(unused_must_use)]
 pub mod analyze;
+pub mod boots;
 pub mod data;
 pub mod enums;
 pub mod errors;
@@ -71,6 +72,12 @@ pub enum BootFilter {
     Current,
     All,
     Id(String),
+}
+
+impl BootFilter {
+    pub fn normalize(boot_str: &str) -> String {
+        boot_str.chars().filter(|c| *c != '-').collect()
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -768,12 +775,12 @@ pub fn get_unit_journal_continuous(
             err
         );
     } else {
-        warn!("Ok journal tail thread finished");
+        info!("Ok journal tail thread finished");
     }
 }
 
 pub fn list_boots() -> Result<Vec<Boot>, SystemdErrors> {
-    journal::list_boots()
+    boots::list_boots()
 }
 
 pub fn fetch_last_time() -> Result<u64, SystemdErrors> {

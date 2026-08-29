@@ -1,26 +1,23 @@
-use std::{collections::HashSet, ops::DerefMut, sync::mpsc::TryRecvError};
+use super::BootFilter;
+use crate::{
+    boots::{KEY_BOOT_ID, MyId128},
+    errors::SystemdErrors,
+    journal_data::{
+        BOOT_IDX, EventRange, JournalEvent, JournalEventChunk, JournalEventChunkInfo, WhatGrab,
+    },
+    time_handling::{TimestampStyle, USEC_PER_SEC},
+};
+use base::enums::UnitDBusLevel;
+use chrono::{Local, Utc};
+use std::sync::mpsc::TryRecvError;
+use sysd::{Journal, id128::Id128, journal::OpenOptions};
+use tracing::{debug, info, trace, warn};
 
 /// Call systemd journal
 ///
 /// Fields
 /// https://www.freedesktop.org/software/systemd/man/latest/systemd.journal-fields.html#
 /// https://www.freedesktop.org/software/systemd/man/latest/sd_journal_open.html
-///
-use crate::{
-    errors::SystemdErrors,
-    journal_data::{
-        BOOT_IDX, Boot, EventRange, JournalEvent, JournalEventChunk, JournalEventChunkInfo,
-        WhatGrab,
-    },
-    time_handling::{TimestampStyle, USEC_PER_SEC},
-};
-use base::enums::UnitDBusLevel;
-use chrono::{Local, Utc};
-use sysd::{Journal, id128::Id128, journal::OpenOptions};
-use tracing::{debug, info, trace, warn};
-
-use super::BootFilter;
-
 const KEY_SYSTEMS_UNIT: &str = "_SYSTEMD_UNIT";
 const KEY_SYSTEMS_USER_UNIT: &str = "_SYSTEMD_USER_UNIT";
 const KEY_UNIT: &str = "UNIT";
@@ -31,7 +28,6 @@ const KEY_OBJECT_SYSTEMD_UNIT: &str = "OBJECT_SYSTEMD_UNIT";
 const KEY_OBJECT_SYSTEMD_USER_UNIT: &str = "OBJECT_SYSTEMD_USER_UNIT";
 const KEY_SYSTEMD_SLICE: &str = "_SYSTEMD_SLICE";
 const KEY_SYSTEMD_USER_SLICE: &str = "_SYSTEMD_USER_SLICE";
-const KEY_BOOT_ID: &str = "_BOOT_ID";
 const KEY_MESSAGE: &str = "MESSAGE";
 const KEY_PRIORITY: &str = "PRIORITY";
 const KEY_PID: &str = "_PID";
@@ -133,7 +129,8 @@ fn position_crawler(journal_reader: &mut Journal, range: &EventRange) -> Result<
                 journal_reader.seek_realtime_usec(newest_events_time + 1)?;
             } else {
                 //Go to the end
-                journal_reader.seek_tail()?;
+                // journal_reader.seek_tail()?;
+                journal_reader.seek_head()?;
                 //Go back to batch size
                 journal_reader.previous_skip(range.batch_size as u64)?;
             }
@@ -169,13 +166,12 @@ pub fn get_unit_journal_events_continuous(
     //Position the indexer
     position_crawler(&mut journal_reader, &range)?;
 
-    info!("get_unit_journal_continuous");
-
     let mut out_list = JournalEventChunk::new_info(8, JournalEventChunkInfo::Tail, range.what_grab);
 
     loop {
         let mut idx = 0;
         loop {
+            debug!("loop {} {:?}", unit_name, range.what_grab);
             match journal_continuous_receiver.try_recv() {
                 Ok(_) | Err(TryRecvError::Disconnected) => {
                     info!("Terminating journal loop for {unit_name:?}.");
@@ -244,84 +240,10 @@ pub fn get_unit_journal_events_continuous(
         let prefix = make_prefix(time_in_usec, name, pid, timestamp_style);
 
         let journal_event = JournalEvent::new_param(priority, time_in_usec, prefix, message);
-
+        println!("Push 1 event");
         out_list.push(journal_event);
     }
     // Unreachable
-}
-
-pub(super) fn list_boots() -> Result<Vec<Boot>, SystemdErrors> {
-    info!("Starting journal-logger list boot");
-    let mut journal_reader = OpenOptions::default()
-        .open()
-        .expect("Could not open journal");
-
-    let mut last_boot_id = Id128::default();
-
-    let mut set = HashSet::with_capacity(100);
-    let mut boots: Vec<Boot> = Vec::with_capacity(100);
-    let mut index = 1;
-    loop {
-        if journal_reader.next()? == 0 {
-            break;
-        }
-
-        let (_, boot_id) = journal_reader.monotonic_timestamp()?;
-
-        if last_boot_id == boot_id {
-            continue;
-        }
-        last_boot_id = boot_id;
-
-        let boot_id = boot_id.to_string();
-
-        if !set.insert(boot_id.clone()) {
-            continue;
-        }
-
-        if !boots.is_empty() {
-            if journal_reader.previous()? == 0 {
-                break;
-            }
-
-            let previous = journal_reader.timestamp_usec()?;
-
-            if journal_reader.next()? == 0 {
-                break;
-            }
-
-            if let Some(prev) = boots.last_mut() {
-                prev.last = previous
-            }
-        }
-        //if == 0 no limit
-        //println!("{idx} boot_id {boot_id} time {time_in_usec}");
-
-        let time_in_usec = journal_reader.timestamp_usec()?;
-        boots.push(Boot {
-            index,
-            boot_id,
-            first: time_in_usec,
-            last: 0,
-            total: 0,
-        });
-        index += 1;
-    }
-
-    let previous = journal_reader.timestamp_usec()?;
-
-    if let Some(mut prev) = boots.last_mut() {
-        let m = prev.deref_mut();
-        m.last = previous
-    }
-
-    let total: i32 = boots.len() as i32;
-
-    for boot in boots.iter_mut() {
-        boot.total = total;
-    }
-
-    Ok(boots)
 }
 
 pub(super) fn fetch_last_time() -> Result<u64, SystemdErrors> {
@@ -376,16 +298,17 @@ fn create_journal_reader(
     match boot_filter {
         BootFilter::Current => {
             let boot_id = Id128::from_boot()?;
-            let boot_str = format!("{boot_id}");
 
             journal_reader.match_and()?;
-            journal_reader.match_add(KEY_BOOT_ID, boot_str)?;
+            info!("Current boot Id {}", MyId128(boot_id));
+            journal_reader.match_add(KEY_BOOT_ID, boot_id.to_string())?;
         }
         BootFilter::All => {
             //No filter
         }
         BootFilter::Id(boot_id) => {
             journal_reader.match_and()?;
+            let boot_id = BootFilter::normalize(&boot_id);
             journal_reader.match_add(KEY_BOOT_ID, boot_id)?;
         }
     }
@@ -398,25 +321,6 @@ fn next(journal_reader: &mut Journal, grab_direction: WhatGrab) -> Result<u64, s
         WhatGrab::Older => journal_reader.previous(),
     }
 }
-
-/* fn previous(journal_reader: &mut Journal, grab_direction: WhatGrab) -> Result<u64, sysd::Error> {
-    match grab_direction {
-        WhatGrab::Newer => journal_reader.previous(),
-        WhatGrab::Older => journal_reader.next(),
-    }
-}
- */
-/* fn get_realtime_usec(journal_reader: &Journal) -> Result<u64, SystemdErrors> {
-    //  libsysd::journal::sd_journal_get_realtime_usec(journal_reader)
-
-    let mut timestamp_us: u64 = 0;
-    sysd::sd_try!(libsysd::journal::sd_journal_get_realtime_usec(
-        journal_reader.as_ptr(),
-        &mut timestamp_us
-    ));
-
-    Ok(timestamp_us)
-} */
 
 fn truncate(message: String, max_chars: usize) -> String {
     if message.len() > max_chars {
@@ -500,8 +404,6 @@ mod tests {
     use sysd::journal;
     use test_base::init_logs;
 
-    use crate::time_handling::get_since_time;
-
     use super::*;
 
     #[test]
@@ -563,19 +465,5 @@ mod tests {
         let time_in_usec = since_the_epoch.as_micros() as u64;
 
         assert_eq!(real_time, time_in_usec);
-    }
-
-    #[test]
-    #[ignore = "Too long"]
-    fn test_get_boot() -> Result<(), SystemdErrors> {
-        for (idx, boot) in list_boots()?.iter().enumerate() {
-            let time = get_since_time(boot.first, TimestampStyle::Pretty);
-
-            let time2 = get_since_time(boot.last, TimestampStyle::Pretty);
-
-            println!("{idx} {} {} {}", boot.boot_id, time, time2);
-        }
-
-        Ok(())
     }
 }
