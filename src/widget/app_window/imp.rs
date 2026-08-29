@@ -36,7 +36,7 @@ use std::{
     rc::Rc,
 };
 use strum::IntoEnumIterator;
-use systemd::errors::SystemdErrors;
+use systemd::{errors::SystemdErrors, journal_data::BootCol};
 use tracing::{debug, info, warn};
 
 const WINDOW_WIDTH: &str = "window-width";
@@ -90,7 +90,7 @@ pub struct AppWindowImpl {
 
     orientation_mode: Cell<OrientationMode>,
 
-    list_boots: RefCell<Option<Vec<Rc<Boot>>>>,
+    list_boots: RefCell<Option<Vec<Rc<BootCol>>>>,
 
     pub(super) selected_unit: RefCell<Option<UnitInfo>>,
 
@@ -705,15 +705,23 @@ impl AppWindowImpl {
         self.toast_overlay.add_toast(toast)
     }
 
-    pub fn update_list_boots(&self, boots: Vec<Rc<Boot>>) {
-        self.list_boots.replace(Some(boots));
+    pub fn update_list_boots(&self, boots: Vec<Boot>) {
+        let mut new_boots = Vec::with_capacity(boots.len());
+        let total = boots.len() as i32;
+        for (index, boot) in boots.into_iter().enumerate() {
+            let index = -(index as i32);
+            let col = BootCol::new(boot, index, total);
+            new_boots.push(Rc::new(col));
+        }
+
+        self.list_boots.replace(Some(new_boots));
     }
 
-    pub fn cached_list_boots(&self) -> Ref<'_, Option<Vec<Rc<Boot>>>> {
+    pub fn cached_list_boots(&self) -> Ref<'_, Option<Vec<Rc<BootCol>>>> {
         self.list_boots.borrow()
     }
 
-    pub fn cached_list_boots_mut(&self) -> RefMut<'_, Option<Vec<Rc<Boot>>>> {
+    pub fn cached_list_boots_mut(&self) -> RefMut<'_, Option<Vec<Rc<BootCol>>>> {
         self.list_boots.borrow_mut()
     }
 }

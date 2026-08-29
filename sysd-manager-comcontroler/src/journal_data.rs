@@ -1,3 +1,5 @@
+use crate::boots::MyId128;
+
 pub const BOOT_IDX: u8 = 200;
 
 #[derive(Clone, Copy, Debug)]
@@ -156,17 +158,49 @@ impl JournalEvent {
         }
     }
 }
+
 pub struct Boot {
-    pub index: i32,
-    pub boot_id: String,
+    pub boot_id: MyId128,
     pub first: u64,
     pub last: u64,
-    pub total: i32,
 }
 
 impl Boot {
+    // pub fn neg_offset(&self) -> i32 {
+    //     -(self.total - self.index)
+    // }
+
+    // pub fn index(&self) -> i32 {
+    //     self.index
+    // }
+
+    pub fn duration(&self) -> u64 {
+        self.last - self.first
+    }
+}
+
+#[derive(Copy, Clone)]
+pub struct BootCol {
+    pub boot_id: MyId128,
+    pub first: u64,
+    pub last: u64,
+    pub index: i32,
+    pub total: i32,
+}
+
+impl BootCol {
+    pub fn new(boot: Boot, index: i32, total: i32) -> Self {
+        Self {
+            boot_id: boot.boot_id,
+            first: boot.first,
+            last: boot.last,
+            index,
+            total,
+        }
+    }
+
     pub fn neg_offset(&self) -> i32 {
-        -(self.total - self.index)
+        self.total + self.index
     }
 
     pub fn index(&self) -> i32 {
@@ -175,5 +209,9 @@ impl Boot {
 
     pub fn duration(&self) -> u64 {
         self.last - self.first
+    }
+
+    pub fn boot_str(&self) -> String {
+        self.boot_id.to_string()
     }
 }
