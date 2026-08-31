@@ -146,11 +146,17 @@ Packages available [here](https://packages.altlinux.org/en/sisyphus/binary/sysd-
 
 ### Method 5: Nix Package
 
-Before you can download SysD Manager directly from NixO, you can find a build file there.
+Before you can download SysD Manager directly from NixO, you can find the ```default.nix``` build file there.
 
 <a href="https://github.com/plrigaux/sysd-manager/releases/latest">
   <img width="100" alt="Download AppImage" src="data/icons/NixOS.svg"/>
 </a>
+
+To install, use the following command line:
+
+```
+nix-build -K --show-trace -E 'with import <nixpkgs> {}; callPackage ./default.nix {}'
+```
 
 ### Method 6: Build from Source
 
