@@ -15,17 +15,17 @@
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "sysd-manager";
-  version = "2.20.10";
+  version = "{VERSION}";
   __structuredAttrs = true;
 
   src = fetchFromGitHub {
     owner = "plrigaux";
     repo = "sysd-manager";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-FkqWQ66QdUCo9eXtfwxP5IRB5elZn1F0GtED67fvnyA=";
+    hash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
   };
 
-  cargoHash = "sha256-EJ64ZGPmQM+Gs5O4WkUMJmT8zDRyF4ZjzXGi1Jw+ovA=";
+  cargoHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
 
   nativeBuildInputs = [
     pkg-config

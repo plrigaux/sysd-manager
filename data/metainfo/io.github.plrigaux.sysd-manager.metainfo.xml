@@ -87,6 +87,21 @@ https://hughsie.github.io/oars/index.html
 -->
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="2.21.0" date="2026-08-30">
+      <description translate="no">
+        <p>Changed</p>
+        <ul>
+          <li>Better Proxy error hanling</li>
+          <li>Remove Proxy preference if you pacakaging doesn't have access to it</li>
+          <li>Improve boot list fetch by a factor 10</li>
+        </ul>
+        <p>Fixed</p>
+        <ul>
+          <li>[Issue 78] Now display journal events when new events arrives and when originally there were no displayed events</li>
+          <li>Fixed some toast messages</li>
+        </ul>
+      </description>
+    </release>
     <release version="2.20.11" date="2026-08-22">
       <description translate="no">
         <p>Added</p>

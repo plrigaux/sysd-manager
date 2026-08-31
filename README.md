@@ -144,8 +144,15 @@ Portable application that runs on most Linux distributions.
 For distros using RPM, ALT Linux is making builds for different archrtectures. 
 Packages available [here](https://packages.altlinux.org/en/sisyphus/binary/sysd-manager/).
 
+### Method 5: Nix Package
 
-### Method 5: Build from Source
+Before you can download SysD Manager directly from NixO, you can find a build file there.
+
+<a href="https://github.com/plrigaux/sysd-manager/releases/latest">
+  <img width="100" alt="Download AppImage" src="data/icons/NixOS.svg"/>
+</a>
+
+### Method 6: Build from Source
 
 For developers and users who prefer building from source.
 

@@ -41,3 +41,10 @@ def main():
         bc.cmd_run(["git", "push"], on_fail_exit=False)
 
     bc.version(False, None, args.force)
+
+
+def create_release():
+
+    version = get_version_cargo()
+    print(f"Create release for version {version}")
+    bc.just_publish(version)
