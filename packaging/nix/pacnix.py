@@ -11,7 +11,8 @@ DEFAULT_NIX = "default.nix"
 
 
 def main():
-    os.chdir("..")
+    #os.chdir("..")
+    bc.position_on_root()
 
     parser = argparse.ArgumentParser(
         description="Nix builder",
@@ -21,7 +22,7 @@ def main():
     parser.add_argument(
         "action",
         choices=[
-            "create",
+            "create","path"
         ],
         help="action to perform",
     )
@@ -37,6 +38,8 @@ def main():
     match args.action:
         case "create":
             create()
+        case "path":
+            path()
 
 
 def create():
@@ -63,3 +66,5 @@ def create():
         pkgbuild_file.write(pkgbuild_text)
 
 
+def path():
+    bc.position_on_root()

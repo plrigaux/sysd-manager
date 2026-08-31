@@ -5,7 +5,8 @@ import argparse
 import os
 
 def tag():
-    os.chdir("..")
+    # os.chdir("..")
+    bc.position_on_root()
 
     parser = argparse.ArgumentParser(
         description="Tag git version",
@@ -46,6 +47,8 @@ def tag():
 def create_release():
     print("Create release")
     #os.chdir("..")
+    bc.position_on_root()
+
     version = bc.get_version_cargo()
     print(f"Create release for version {version}")
     bc.just_publish(version)
