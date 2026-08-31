@@ -44,8 +44,8 @@ def tag():
 
 
 def create_release():
-
-    os.chdir("..")
+    print("Create release")
+    #os.chdir("..")
     version = bc.get_version_cargo()
     print(f"Create release for version {version}")
     bc.just_publish(version)
