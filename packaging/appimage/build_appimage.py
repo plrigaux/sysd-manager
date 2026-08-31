@@ -428,7 +428,8 @@ def main():
 
     args = parser.parse_args()
 
-    os.chdir("..")
+
+    bc.position_on_root()
 
     curdir = os.getcwd()
     print(f"{color.BLUE}{color.BOLD}current working dir:{color.END} ", curdir)
