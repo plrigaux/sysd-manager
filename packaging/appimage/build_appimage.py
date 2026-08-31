@@ -395,7 +395,8 @@ def just_publish():
 
     file = f"{APP_IMAGE_DIR}/{app_image_file_name(version)}"
     
-    bc.just_publish(version, file)
+    #bc.just_publish(version, file)
+    bc.publish_upload(version, f"{file}")
 
 
 def publish_upload():

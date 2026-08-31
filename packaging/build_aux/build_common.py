@@ -190,7 +190,7 @@ def version(allow_dirty: bool, message: str, force: bool):
     cmd_run(git_push)
 
 
-def just_publish(version, file):
+def just_publish(version, file=None):
     print(f"{color.CYAN}Publishing version {color.BOLD}{version}{color.END}")
 
     title = f"Release {version}"
@@ -207,8 +207,10 @@ def just_publish(version, file):
         title,
         "--notes",
         "See https://github.com/plrigaux/sysd-manager/blob/main/CHANGELOG.md",
-        file,
     ]
+
+    if file:
+        cmd.append(file) 
 
     cmd_run(cmd)
 
@@ -216,6 +218,8 @@ def just_publish(version, file):
 def publish_upload(version, file):
     print(f"{color.CYAN}Publishing Upload version {color.BOLD}{version}{color.END}")
 
-    cmd = ["gh", "release", "upload", version, file, "--clobber"]
+    tag_label = get_version_tag()
+    
+    cmd = ["gh", "release", "upload", tag_label, file, "--clobber"]
 
     cmd_run(cmd)

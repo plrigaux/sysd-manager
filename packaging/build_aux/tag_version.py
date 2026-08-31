@@ -4,7 +4,7 @@ from  build_aux.build_common import color
 import argparse
 import os
 
-def main():
+def tag():
     os.chdir("..")
 
     parser = argparse.ArgumentParser(
@@ -41,3 +41,11 @@ def main():
         bc.cmd_run(["git", "push"], on_fail_exit=False)
 
     bc.version(False, None, args.force)
+
+
+def create_release():
+
+    os.chdir("..")
+    version = bc.get_version_cargo()
+    print(f"Create release for version {version}")
+    bc.just_publish(version)

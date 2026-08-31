@@ -1,6 +1,6 @@
 [package]
 name = "sysd-manager-comcontroler"
-version = "2.20.13"
+version = "2.21.0"
 edition.workspace = true
 rust-version.workspace = true
 authors.workspace = true
