@@ -38,7 +38,7 @@ zbus.workspace = true
 zbus_xml = "5"
 zvariant.workspace = true
 zvariant_derive = "5"
-zvariant_utils = "3"
+zvariant_utils = "4"
 
 
 [dev-dependencies]
