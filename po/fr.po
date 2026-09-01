@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-01 13:55-0400\n"
-"PO-Revision-Date: 2026-09-01 17:52+0000\n"
+"PO-Revision-Date: 2026-09-01 18:14+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -2667,8 +2667,8 @@ msgid ""
 "Can't {} the unit {}!\n"
 "Because: {}"
 msgstr ""
-"Ne peux {} l'unité {}!\n"
-"Raison: {}"
+"Ne peux {} l'unité {} !\n"
+"Raison : {}"
 
 #: src/widget/unit_control_panel/imp.rs:814
 #, rust-format
@@ -2684,21 +2684,25 @@ msgid "{} successful."
 msgstr "{} réussi."
 
 #: src/widget/unit_control_panel/imp.rs:831
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "toast"
 msgid ""
 "{} unit <unit>{}</unit> failed.\n"
 "Reason: <red>{}</red>."
-msgstr "{} unité <unit>{}</unit> a échoué. Raison : <red>{}</red>."
+msgstr ""
+"{} unité <unit>{}</unit> a échoué.\n"
+"Raison : <red>{}</red>."
 
 #. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
 #: src/widget/unit_control_panel/imp.rs:842
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "toast"
 msgid ""
 "{} failed.\n"
 "Reason: <red>{}</red>."
-msgstr "{} a échoué. Raison: <red>{}</red>."
+msgstr ""
+"{} a échoué.\n"
+"Raison : <red>{}</red>."
 
 #: src/widget/unit_control_panel/mod.rs:136
 #, rust-format
@@ -2709,13 +2713,11 @@ msgstr ""
 "b>."
 
 #: src/widget/unit_control_panel/mod.rs:149
-#, fuzzy
 msgctxt "workaround"
 msgid "The authorisation can be configured in the following file:"
 msgstr "L'autorisation peut être configurée dans le fichier suivant :"
 
 #: src/widget/unit_control_panel/mod.rs:169
-#, fuzzy
 msgctxt "workaround"
 msgid "Otherwise, you can try the bellow command line in your terminal."
 msgstr ""
@@ -2900,7 +2902,7 @@ msgctxt "file"
 msgid "Note: you can change the drop-in file name by modifying the above line"
 msgstr ""
 "Remarque : vous pouvez modifier le nom du fichier de remplacement en "
-"modifiant la ligne ci-dessus."
+"modifiant la ligne ci-dessus"
 
 #: src/widget/unit_file_panel/imp.rs:930
 msgctxt "file"
@@ -2909,7 +2911,7 @@ msgid ""
 "drop-in file"
 msgstr ""
 "Tout ce qui se trouve entre ici et le commentaire ci-dessous deviendra le "
-"contenu du fichier de remplacement."
+"contenu du fichier de remplacement"
 
 #. Create Drop in file footer
 #: src/widget/unit_file_panel/imp.rs:939
