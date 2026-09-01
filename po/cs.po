@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-01 18:45-0400\n"
+"POT-Creation-Date: 2026-09-01 09:36-0400\n"
 "PO-Revision-Date: 2026-08-03 07:02+0000\n"
 "Last-Translator: Pavel Borecki <pavel.borecki@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/sysd-manager/"
@@ -79,72 +79,27 @@ msgstr ""
 "Pro spouštění privilegovaných systemd volání prostřednictvím SysD Manager "
 "Proxy je zapotřebí se ověřit"
 
-#: data/interfaces/app_window.ui:13
-msgctxt "menu"
-msgid "Analyze Blame"
-msgstr "Analýza a hledání potíží"
-
-#: data/interfaces/app_window.ui:17
-msgctxt "menu"
-msgid "Daemon Reload"
-msgstr "Znovunačíst proces služby"
-
-#: data/interfaces/app_window.ui:21
-msgctxt "menu"
-msgid "Systemd Info"
-msgstr "Informace o systemd"
-
-#: data/interfaces/app_window.ui:25
-msgctxt "menu"
-msgid "List Boots"
-msgstr "Vypsat zavedení systému"
-
-#: data/interfaces/app_window.ui:29
-msgctxt "menu"
-msgid "Watch Signals"
-msgstr "Hlídat signály"
-
-#: data/interfaces/app_window.ui:39
-msgctxt "menu"
-msgid "Preferences"
-msgstr "Předvolby"
-
 #: data/interfaces/app_window.ui:43
-msgctxt "menu"
-msgid "Proxy Preferences"
-msgstr "Předvolby proxy"
-
-#: data/interfaces/app_window.ui:47
-msgctxt "menu"
-msgid "Keyboard Shortcuts"
-msgstr "Klávesové zkratky"
-
-#: data/interfaces/app_window.ui:51
-msgctxt "menu"
-msgid "About"
-msgstr "O aplikaci"
-
-#: data/interfaces/app_window.ui:90
 msgctxt "top button tooltip"
 msgid "Open Search Bar"
 msgstr "Otevřít pruh vyhledávání"
 
-#: data/interfaces/app_window.ui:102
+#: data/interfaces/app_window.ui:54
 msgid "To select system or session bus"
 msgstr "Pro výběr systémové sběrnice nebo té v rámci relace"
 
 #. selector of differents units list
-#: data/interfaces/app_window.ui:109
+#: data/interfaces/app_window.ui:61
 msgctxt "menu"
 msgid "Curated Lists"
 msgstr "Uspořádané seznamy"
 
-#: data/interfaces/app_window.ui:110
+#: data/interfaces/app_window.ui:62
 msgctxt "tooltip"
 msgid "To display different units' presentation and subset"
 msgstr "Pro zobrazení různých prezentací jednotek a podmnožiny"
 
-#: data/interfaces/app_window.ui:117
+#: data/interfaces/app_window.ui:69
 msgctxt "top button tooltip"
 msgid "Refresh Unit List"
 msgstr "Znovu načíst seznam jednotek"
@@ -356,56 +311,62 @@ msgctxt "journal"
 msgid "Clear journal events and refetch them"
 msgstr "Vyčistit události žurnálu a znovu je získat"
 
-#: data/interfaces/journal_panel.ui:44
+#. checkbox to foillow logs
+#: data/interfaces/journal_panel.ui:39
+msgctxt "journal"
+msgid "Follow"
+msgstr ""
+
+#: data/interfaces/journal_panel.ui:40
 msgctxt "journal"
 msgid "Enable new entries continuous print as they are appended to the journal"
 msgstr ""
 "Zapnout průběžné vypisování nových položek tak, jak jsou přidávány do žurnálu"
 
 #. tooltip
-#: data/interfaces/journal_panel.ui:58
+#: data/interfaces/journal_panel.ui:55
 msgctxt "journal"
 msgid "Toggle events display order"
 msgstr "Zap/vyp. pořadí zobrazení událostí"
 
 #. tooltip
-#: data/interfaces/journal_panel.ui:64
+#: data/interfaces/journal_panel.ui:61
 msgctxt "journal"
 msgid "List the boots of the system"
 msgstr "Vypsat zavedení systému"
 
 #. button
-#: data/interfaces/journal_panel.ui:69
+#: data/interfaces/journal_panel.ui:66
 msgctxt "journal"
 msgid "List Boots"
 msgstr "Vypsat zavedení systému"
 
 #. button
-#: data/interfaces/journal_panel.ui:89
+#: data/interfaces/journal_panel.ui:86
 msgctxt "journal"
 msgid "Current boot"
 msgstr "Stávající zavedení systému"
 
 #. button
-#: data/interfaces/journal_panel.ui:95
+#: data/interfaces/journal_panel.ui:92
 msgctxt "journal"
 msgid "All events"
 msgstr "Všechny události"
 
 #. title
-#: data/interfaces/journal_panel.ui:102
+#: data/interfaces/journal_panel.ui:99
 msgctxt "journal"
 msgid "Boot id"
 msgstr "Identif. zavedení systému"
 
 #. wiki link
-#: data/interfaces/journal_panel.ui:149
+#: data/interfaces/journal_panel.ui:146
 msgctxt "journal"
 msgid "For more information"
 msgstr "Pro více informací"
 
 #. description
-#: data/interfaces/journal_panel.ui:153
+#: data/interfaces/journal_panel.ui:150
 msgctxt "journal"
 msgid ""
 "Either there are no log events to display, or you don't have permission to "
@@ -415,7 +376,7 @@ msgstr ""
 "přistupovat."
 
 #. title
-#: data/interfaces/journal_panel.ui:155
+#: data/interfaces/journal_panel.ui:152
 msgctxt "journal"
 msgid "No journal events"
 msgstr "Žádné události žurnálu"
@@ -1038,150 +999,156 @@ msgid "Open Unit Property Filter"
 msgstr "Otevřít filtr vlastností jednotky"
 
 #: data/interfaces/shortcuts.ui:56
+#, fuzzy
+msgctxt "shortcut window"
+msgid "Open Analyze Blame"
+msgstr "Analýza a hledání potíží"
+
+#: data/interfaces/shortcuts.ui:62
 msgctxt "shortcut window"
 msgid "Open List Boots"
 msgstr "Otevřít Vypsat zavedení systému"
 
-#: data/interfaces/shortcuts.ui:62
+#: data/interfaces/shortcuts.ui:68
 msgctxt "shortcut window"
 msgid "Open columns manager"
 msgstr "Otevřít správce sloupců"
 
-#: data/interfaces/shortcuts.ui:68
+#: data/interfaces/shortcuts.ui:74
 msgctxt "shortcut window"
 msgid "Deamon Reload"
 msgstr "Znovu načíst proces služby"
 
-#: data/interfaces/shortcuts.ui:74
+#: data/interfaces/shortcuts.ui:80
 msgctxt "shortcut window"
 msgid "Open Find in Text"
 msgstr "Otevřít hledání v textu"
 
 #. subtitle
-#: data/interfaces/shortcuts.ui:80
+#: data/interfaces/shortcuts.ui:86
 msgctxt "shortcut window"
 msgid "Create Timer or Service Unit Type"
 msgstr "Vytvořit časovač nebo typ jednotky služby"
 
-#: data/interfaces/shortcuts.ui:81
+#: data/interfaces/shortcuts.ui:87
 msgctxt "shortcut window"
 msgid "Create Unit"
 msgstr "Vytvořit jednotku"
 
 #. Section name
-#: data/interfaces/shortcuts.ui:88
+#: data/interfaces/shortcuts.ui:94
 msgctxt "shortcut window"
 msgid "Pages"
 msgstr "Stránek"
 
-#: data/interfaces/shortcuts.ui:92
+#: data/interfaces/shortcuts.ui:98
 msgctxt "shortcut window"
 msgid "Display Unit Status"
 msgstr "Zobrazit stav jednotky"
 
-#: data/interfaces/shortcuts.ui:98
+#: data/interfaces/shortcuts.ui:104
 msgctxt "shortcut window"
 msgid "Display Unit Dependencies"
 msgstr "Zobrazit závislosti jednotky"
 
-#: data/interfaces/shortcuts.ui:104
+#: data/interfaces/shortcuts.ui:110
 msgctxt "shortcut window"
 msgid "Display Unit Definition File"
 msgstr "Zobrazit soubor definice jednotky"
 
-#: data/interfaces/shortcuts.ui:110
+#: data/interfaces/shortcuts.ui:116
 msgctxt "shortcut window"
 msgid "Display Unit Journal Events"
 msgstr "Zobrazit události žurnálu jednotky"
 
 #. Section name
-#: data/interfaces/shortcuts.ui:117
+#: data/interfaces/shortcuts.ui:123
 msgctxt "shortcut window"
 msgid "Unit"
 msgstr "Jednotka"
 
-#: data/interfaces/shortcuts.ui:121
+#: data/interfaces/shortcuts.ui:127
 msgctxt "shortcut window"
 msgid "Show unit properties"
 msgstr "Zobrazit vlastnosti jednotky"
 
 #. In the shortcut Window description
-#: data/interfaces/shortcuts.ui:127
+#: data/interfaces/shortcuts.ui:133
 msgctxt "shortcut window"
 msgid "Save the selected unit file"
 msgstr "Uložit vybraný soubor jednotky"
 
 #. Section name
-#: data/interfaces/shortcuts.ui:134
+#: data/interfaces/shortcuts.ui:140
 msgctxt "shortcut window"
 msgid "Curated Lists"
 msgstr "Uspořádané seznamy"
 
 #. subtitle
-#: data/interfaces/shortcuts.ui:138
+#: data/interfaces/shortcuts.ui:144
 msgctxt "shortcut window"
 msgid "Merge Loaded Units with Unit Files"
 msgstr "Sloučit načtené jednotky se soubory jednotek"
 
-#: data/interfaces/shortcuts.ui:139
+#: data/interfaces/shortcuts.ui:145
 msgctxt "shortcut window"
 msgid "Display SysD Manager Original List"
 msgstr "Zobrazit původní seznam SysD Manager"
 
 #. subtitle
-#: data/interfaces/shortcuts.ui:145
+#: data/interfaces/shortcuts.ui:151
 msgctxt "shortcut window"
 msgid "Display only Loaded Units"
 msgstr "Zobrazit pouze načtené jednotky"
 
-#: data/interfaces/shortcuts.ui:146
+#: data/interfaces/shortcuts.ui:152
 msgctxt "shortcut window"
 msgid "Display Loaded Units"
 msgstr "Zobrazit načtené jednotky"
 
 #. subtitle
-#: data/interfaces/shortcuts.ui:152
+#: data/interfaces/shortcuts.ui:158
 msgctxt "shortcut window"
 msgid "Display only Unit Files"
 msgstr "Zobrazit pouze soubory jednotek"
 
-#: data/interfaces/shortcuts.ui:153
+#: data/interfaces/shortcuts.ui:159
 msgctxt "shortcut window"
 msgid "Display Unit Files"
 msgstr "Zobrazit soubory jednotek"
 
-#: data/interfaces/shortcuts.ui:159
+#: data/interfaces/shortcuts.ui:165
 msgctxt "shortcut window"
 msgid "Display User Customised Units list"
 msgstr "Zobrazit seznam uživatelem přizpůsobených jednotek"
 
-#: data/interfaces/shortcuts.ui:165
+#: data/interfaces/shortcuts.ui:171
 msgctxt "shortcut window"
 msgid "Display Favorite Units"
 msgstr "Zobrazit oblíbené jednotky"
 
 #. Section name
-#: data/interfaces/shortcuts.ui:172
+#: data/interfaces/shortcuts.ui:178
 msgctxt "shortcut window"
 msgid "Special Lists"
 msgstr "Zvláštní seznamy"
 
-#: data/interfaces/shortcuts.ui:176
+#: data/interfaces/shortcuts.ui:182
 msgctxt "shortcut window"
 msgid "Display Timers"
 msgstr "Zobrazit časovače"
 
-#: data/interfaces/shortcuts.ui:182
+#: data/interfaces/shortcuts.ui:188
 msgctxt "shortcut window"
 msgid "Display Sockets"
 msgstr "Zobrazit sokety"
 
-#: data/interfaces/shortcuts.ui:188
+#: data/interfaces/shortcuts.ui:194
 msgctxt "shortcut window"
 msgid "Display Paths"
 msgstr "Zobrazit popisy umístění"
 
-#: data/interfaces/shortcuts.ui:194
+#: data/interfaces/shortcuts.ui:200
 msgctxt "shortcut window"
 msgid "Display Automounts"
 msgstr "Zobrazit automatická připojení"
@@ -1204,8 +1171,8 @@ msgstr "Zakázat soubor je_dnotky ➚"
 msgctxt "control"
 msgid "Unmask the selected unit file. This will undo the effect of <b>Mask</b>"
 msgstr ""
-"Zrušit maskování označeného souboru jednotky. Zruší účinek předchozího <b>"
-"Zamaskovat</b>"
+"Zrušit maskování označeného souboru jednotky. Zruší účinek předchozího "
+"<b>Zamaskovat</b>"
 
 #. button
 #: data/interfaces/side_control_panel.ui:52
@@ -1247,8 +1214,8 @@ msgid ""
 msgstr ""
 "Odebrat nastavení, stav, mezipaměť, záznamy událostí nebo běhová data "
 "uvedené jednotky. \n"
-"<u>Pozn.:</u> aby ji bylo možné vyčistit je třeba, aby jednotka byla <b>"
-"neaktivní</b>."
+"<u>Pozn.:</u> aby ji bylo možné vyčistit je třeba, aby jednotka byla "
+"<b>neaktivní</b>."
 
 #. button
 #: data/interfaces/side_control_panel.ui:101
@@ -1827,9 +1794,65 @@ msgid "Running units"
 msgstr "Spuštěné jednotky"
 
 #. Just a simple log that it's all ok. Need to set env RUST_LOG="info" to see it
-#: src/main.rs:113
+#: src/main.rs:116
 msgid "Program starting up"
 msgstr "Program se spouští"
+
+#: src/widget/app_window/imp.rs:264
+msgctxt "menu"
+msgid "Analyze Blame"
+msgstr "Analýza a hledání potíží"
+
+#: src/widget/app_window/imp.rs:269
+msgctxt "menu"
+msgid "Daemon Reload"
+msgstr "Znovunačíst proces služby"
+
+#: src/widget/app_window/imp.rs:274
+msgctxt "menu"
+msgid "Systemd Info"
+msgstr "Informace o systemd"
+
+#: src/widget/app_window/imp.rs:279
+msgctxt "menu"
+msgid "List Boots"
+msgstr "Vypsat zavedení systému"
+
+#: src/widget/app_window/imp.rs:284
+msgctxt "menu"
+msgid "Watch Signals"
+msgstr "Hlídat signály"
+
+#: src/widget/app_window/imp.rs:289
+#, fuzzy
+msgctxt "menu"
+msgid "Create Unit"
+msgstr "Vytvořit jednotku"
+
+#: src/widget/app_window/imp.rs:296
+msgctxt "menu"
+msgid "Preferences"
+msgstr "Předvolby"
+
+#: src/widget/app_window/imp.rs:302
+msgctxt "menu"
+msgid "Proxy Preferences"
+msgstr "Předvolby proxy"
+
+#: src/widget/app_window/imp.rs:307
+msgctxt "menu"
+msgid "Keyboard Shortcuts"
+msgstr "Klávesové zkratky"
+
+#: src/widget/app_window/imp.rs:311
+msgctxt "menu"
+msgid "About"
+msgstr "O aplikaci"
+
+#: src/widget/app_window/imp.rs:689
+msgctxt "toast"
+msgid "Check Proxy"
+msgstr ""
 
 #: src/widget/app_window/menu.rs:320
 msgid "Daemon Reload failed!"
@@ -2398,105 +2421,112 @@ msgstr "Ekvivalent k SIGIO"
 #: src/widget/kill_panel/imp.rs:671
 msgctxt "kill"
 msgid "Power supply failure"
-msgstr "Selhání napájecího zdroje"
+msgstr ""
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:679
 msgctxt "kill"
 msgid "Bad system call"
-msgstr "Nesprávné systémové volání"
+msgstr ""
 
 #. kill signal description
 #: src/widget/kill_panel/imp.rs:687
+#, fuzzy
 msgctxt "kill"
 msgid "Equivalent to SIGSYS"
-msgstr "Ekvivalent k SIGSYS"
+msgstr "Ekvivalent k SIGIO"
 
 #. tooltip for action button
 #: src/widget/mod.rs:56
 #, rust-format
 msgctxt "controls"
 msgid "Remove {} from Favorites"
-msgstr "Odebrat {} z oblíbených"
+msgstr ""
 
 #. tooltip for action button
 #: src/widget/mod.rs:62
 #, rust-format
 msgctxt "controls"
 msgid "Add {} to Favorites"
-msgstr "Přidat {} do oblíbených"
+msgstr ""
 
 #. browser dbus option
 #: src/widget/preferences/data.rs:67
+#, fuzzy
 msgctxt "dbus"
 msgid "User Session Bus"
-msgstr "Sběrnice uživatelské relace"
+msgstr "Uživatelská relace"
 
 #. browser dbus option
 #: src/widget/preferences/data.rs:69
+#, fuzzy
 msgctxt "dbus"
 msgid "System Bus"
-msgstr "Systémová sběrnice"
+msgstr "Systémové"
 
 #. browser dbus option
 #: src/widget/preferences/data.rs:71
+#, fuzzy
 msgctxt "dbus"
 msgid "System & User Session Bus"
-msgstr "Sběrnice systémové a uživatelské relace"
+msgstr "Uživatelská relace"
 
 #. preference color scheme option
 #: src/widget/preferences/data.rs:164
+#, fuzzy
 msgctxt "color scheme"
 msgid "No Preference"
-msgstr "Žádná preference"
+msgstr "Předvolby"
 
 #. preference color scheme option
 #: src/widget/preferences/data.rs:166
 msgctxt "color scheme"
 msgid "Prefer Dark"
-msgstr "Upřednostňovat tmavý"
+msgstr ""
 
 #. preference color scheme option
 #: src/widget/preferences/data.rs:168
 msgctxt "color scheme"
 msgid "Prefer Light"
-msgstr "Upřednostňovat světlý"
+msgstr ""
 
 #. preference color scheme option
 #: src/widget/preferences/data.rs:170
+#, fuzzy
 msgctxt "color scheme"
 msgid "Force Dark"
-msgstr "Vynutit tmavý"
+msgstr "Vynutit"
 
 #. preference color scheme option
 #: src/widget/preferences/data.rs:172
+#, fuzzy
 msgctxt "color scheme"
 msgid "Force Light"
-msgstr "Vynutit světlý"
+msgstr "Vynutit"
 
 #. preference application orientation option
 #: src/widget/preferences/data.rs:218
 msgctxt "pref orientation"
 msgid "Automatic"
-msgstr "Automaticky"
+msgstr ""
 
 #. preference application orientation option
 #: src/widget/preferences/data.rs:220
 msgctxt "pref orientation"
 msgid "Side by Side"
-msgstr "Vedle sebe"
+msgstr ""
 
 #. preference application orientation option
 #: src/widget/preferences/data.rs:222
 msgctxt "pref orientation"
 msgid "Top Bottom"
-msgstr "Pod sebou"
+msgstr ""
 
 #. unit file no preference style selected
 #: src/widget/preferences/imp.rs:452
 msgctxt "pref file style"
 msgid "None"
-msgstr "Žádný"
+msgstr ""
 
 #. find count
 #. find count initial
@@ -2504,225 +2534,244 @@ msgstr "Žádný"
 #, rust-format
 msgctxt "text_find"
 msgid "{} of {}"
-msgstr "{} z {}"
+msgstr ""
 
 #. Open in text Menu item
 #: src/widget/text_search/mod.rs:55
+#, fuzzy
 msgctxt "text_find"
 msgid "Toggle Find in Text"
-msgstr "Zap/vyp. hledání v textu"
+msgstr "Otevřít hledání v textu"
 
-#: src/widget/unit_control_panel/controls.rs:63
-#: src/widget/unit_control_panel/controls.rs:183
-msgctxt "toast"
-msgid ""
-"Unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> has "
-"been successfully <span fgcolor='{0}'>{}</span>"
-msgstr ""
-"Jednotka <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
-"byla úspěšně <span fgcolor='{0}'>{}</span>"
-
-#. toast message action on fail
-#: src/widget/unit_control_panel/controls.rs:88
-msgctxt "toast"
-msgid "Disabling"
-msgstr "Zakazování"
-
-#. toast message action on fail
-#: src/widget/unit_control_panel/controls.rs:92
-msgctxt "toast"
-msgid "Enabling"
-msgstr "Povolování"
-
-#. toast message on fail, arg0 : Enabling/Disabling, arg1 : unit name
-#: src/widget/unit_control_panel/controls.rs:101
+#. toast message on success
+#: src/widget/unit_control_panel/controls.rs:59
 #, rust-format
 msgctxt "toast"
-msgid "{} unit {} has failed!"
-msgstr "{} jednotka {} selhala!"
+msgid "Unit {} has been successfully {}"
+msgstr ""
+
+#. toast message action on fail
+#: src/widget/unit_control_panel/controls.rs:77
+#, fuzzy
+msgctxt "toast"
+msgid "Disabling"
+msgstr "Zakázat"
+
+#. toast message action on fail
+#: src/widget/unit_control_panel/controls.rs:81
+#, fuzzy
+msgctxt "toast"
+msgid "Enabling"
+msgstr "Povolit"
+
+#. Toast Ablement Unit status
+#: src/widget/unit_control_panel/controls.rs:89
+#, rust-format
+msgctxt "toast"
+msgid ""
+"{} unit {} has failed!\n"
+"Because: {}"
+msgstr ""
 
 #. Toast message action on Reenable, in the rentance: ... has been successfully "Reenable"
-#: src/widget/unit_control_panel/controls.rs:177
+#: src/widget/unit_control_panel/controls.rs:162
+#, fuzzy
 msgctxt "toast"
 msgid "Reenable"
 msgstr "Znovu povolit"
 
+#: src/widget/unit_control_panel/controls.rs:168
+#, rust-format
+msgctxt "toast"
+msgid "Unit <unit>{}</unit> has been successfully <span fgcolor='{}'>{}</span>"
+msgstr ""
+
 #. toast message action on fail
-#: src/widget/unit_control_panel/controls.rs:206
+#: src/widget/unit_control_panel/controls.rs:186
+#, fuzzy
 msgctxt "toast"
 msgid "Reenabling"
-msgstr "Opětovné povolování"
+msgstr "Znovu povolit"
 
-#: src/widget/unit_control_panel/controls.rs:214
-msgctxt "toast"
-msgid ""
-"{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
-"has failed!"
-msgstr ""
-"{} jednotka <span fgcolor='{0}' font_family='monospace' size='larger'>{}</"
-"span> selhala!"
-
-#: src/widget/unit_control_panel/controls.rs:238
-#: src/widget/unit_list/imp/pop_menu.rs:190
+#. Toast reenable Unit status
+#: src/widget/unit_control_panel/controls.rs:191
 #, rust-format
+msgctxt "toast"
+msgid "{} unit {} has failed! {}"
+msgstr ""
+
+#: src/widget/unit_control_panel/controls.rs:217
+#: src/widget/unit_list/imp/pop_menu.rs:190
+#, fuzzy, rust-format
 msgctxt "controls"
 msgid "Disable unit {}"
-msgstr "Zakázat jednotku {}"
+msgstr "Zakázat soubor jednotky"
 
-#: src/widget/unit_control_panel/controls.rs:240
+#: src/widget/unit_control_panel/controls.rs:219
 #: src/widget/unit_list/imp/pop_menu.rs:184
-#, rust-format
+#, fuzzy, rust-format
 msgctxt "controls"
 msgid "Enable unit {}"
-msgstr "Povolit jednotku {}"
+msgstr "Povolit soubor jednotky"
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:24
+#, fuzzy
 msgctxt "toast"
 msgid "start"
-msgstr "spustit"
+msgstr "Restartovat"
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:26
 msgctxt "toast"
 msgid "stop"
-msgstr "zastavit"
+msgstr ""
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:28
+#, fuzzy
 msgctxt "toast"
 msgid "restart"
-msgstr "restartovat"
+msgstr "Restartovat"
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:30
 msgctxt "toast"
 msgid "reload"
-msgstr "znovu načíst"
+msgstr ""
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:37
+#, fuzzy
 msgctxt "toast"
 msgid "started"
-msgstr "spuštěno"
+msgstr "Restartovat"
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:39
 msgctxt "toast"
 msgid "stopped"
-msgstr "zastaveno"
+msgstr ""
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:41
+#, fuzzy
 msgctxt "toast"
 msgid "restarted"
-msgstr "restartováno"
+msgstr "Restartovat"
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:43
+#, fuzzy
 msgctxt "toast"
 msgid "reloaded"
-msgstr "znovu načteno"
+msgstr "Načteno"
 
 #. toast message
-#: src/widget/unit_control_panel/imp.rs:463
+#: src/widget/unit_control_panel/imp.rs:471
 #, rust-format
 msgctxt "toast"
 msgid "Unit {} has been {} with the mode {}"
-msgstr "Jednotka {} byla {} s režimem {}"
+msgstr ""
 
 #. toast message error --  "Can't {ACTION} the unit <unit>{UNITNAME}</unit>, because: {SYSTEMD HUMAN ERROR (english)}"),
-#: src/widget/unit_control_panel/imp.rs:484
+#: src/widget/unit_control_panel/imp.rs:497
 #, rust-format
 msgctxt "toast"
-msgid "Can't {} the unit {}, because: {}"
-msgstr "Není možné {} jednotku {}, protože: {}"
+msgid ""
+"Can't {} the unit {}!\n"
+"Because: {}"
+msgstr ""
 
-#: src/widget/unit_control_panel/imp.rs:786
-#, rust-format
-msgctxt "toast"
-msgid "{} unit <unit>{}</unit> is <green>successful</green>"
-msgstr "{} jednotka <unit>{}</unit> je <green>úspěšná</green>"
-
-#. toast message success (no unit) -- "{ACTION} successful."
-#: src/widget/unit_control_panel/imp.rs:793
-#, rust-format
-msgctxt "toast"
-msgid "{} successful."
-msgstr "{} úspěšné."
-
-#: src/widget/unit_control_panel/imp.rs:803
-#, rust-format
-msgctxt "toast"
-msgid "{} unit <unit>{}</unit> failed. Reason: <red>{}</red>."
-msgstr "{} unit <unit>{}</unit> selhala. Důvod: <red>{}</red>."
-
-#. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
 #: src/widget/unit_control_panel/imp.rs:814
 #, rust-format
 msgctxt "toast"
-msgid "{} failed. Reason: <red>{}</red>."
-msgstr "{} se nezdařilo. Důvod: <red>{}</red>."
+msgid "{} unit <unit>{}</unit> is <green>successful</green>"
+msgstr ""
 
-#: src/widget/unit_control_panel/mod.rs:119
+#. toast message success (no unit) -- "{ACTION} successful."
+#: src/widget/unit_control_panel/imp.rs:821
+#, rust-format
+msgctxt "toast"
+msgid "{} successful."
+msgstr ""
+
+#: src/widget/unit_control_panel/imp.rs:831
+#, rust-format
+msgctxt "toast"
+msgid "{} unit <unit>{}</unit> failed. Reason: <red>{}</red>."
+msgstr ""
+
+#. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
+#: src/widget/unit_control_panel/imp.rs:842
+#, rust-format
+msgctxt "toast"
+msgid "{} failed. Reason: <red>{}</red>."
+msgstr ""
+
+#: src/widget/unit_control_panel/mod.rs:136
 #, rust-format
 msgctxt "workaround"
 msgid "Unfortunately <b>SysD Manager</b> can't perfom <b>{}</b> action."
-msgstr "<b>SysD Manager</b> žel nemůže provést akci <b>{}</b>."
+msgstr ""
 
-#: src/widget/unit_control_panel/mod.rs:132
+#: src/widget/unit_control_panel/mod.rs:149
 msgctxt "workaround"
 msgid "The authorisation can be configured in the following file :"
-msgstr "Pověření je možné nastavit v následujícím souboru:"
+msgstr ""
 
-#: src/widget/unit_control_panel/mod.rs:152
+#: src/widget/unit_control_panel/mod.rs:169
 msgctxt "workaround"
 msgid "Otherwise, you can try the bellow command line in your terminal"
 msgstr ""
-"V opačném případě je možné zkusit v terminálu níže uvedený řádek příkazů"
 
 #. workaround dialog title -- "Fail! {SYSTEMD HUMAN ERROR (English)}"
-#: src/widget/unit_control_panel/mod.rs:174
+#: src/widget/unit_control_panel/mod.rs:191
 #, rust-format
 msgctxt "workaround"
 msgid "Fail! {}"
-msgstr "Selhat! {}"
+msgstr ""
 
 #. action name
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:134
+#, fuzzy
 msgctxt "action"
 msgid "Freeze"
-msgstr "Zamrznout"
+msgstr "Zamrazit"
 
 #. action name
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:148
+#, fuzzy
 msgctxt "action"
 msgid "Thaw"
 msgstr "Rozmrazit"
 
 #. action name
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:182
+#, fuzzy
 msgctxt "action"
 msgid "Reload"
-msgstr "Znovu načíst"
+msgstr "Znovu načíst jednotku"
 
 #. action name
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:276
 msgctxt "action"
 msgid "Unmask"
-msgstr "Odmaskovat"
+msgstr ""
 
 #. Filter title
 #: src/widget/unit_dependencies_panel/imp.rs:371
+#, fuzzy
 msgctxt "dependency"
 msgid "Unit Types"
-msgstr "Typy jednotek"
+msgstr "Soubory jednotek"
 
 #. tooltip on filter
 #: src/widget/unit_dependencies_panel/imp.rs:376
+#, fuzzy
 msgctxt "dependency"
 msgid "Filter dependencies by types"
-msgstr "Filtrovat závislosti podle typů"
+msgstr "Závislosti jednotek"
 
 #: src/widget/unit_file_panel/flatpak.rs:18
 msgctxt "warning"
@@ -2730,13 +2779,12 @@ msgid ""
 "Failed to perform action. The proxy service might be inactive.\n"
 "Please install and start the following service"
 msgstr ""
-"Akci se nepodařilo provést. Je možné, že není aktivní služba proxy.\n"
-"Nainstalujte a spusťte následující službu"
 
 #: src/widget/unit_file_panel/flatpak.rs:21
+#, fuzzy
 msgctxt "warning"
 msgid "Operation Failed"
-msgstr "Operace se nezdařila"
+msgstr "Vytvoření se nezdařilo! {}"
 
 #. Dialog button
 #. TODO tranlate
@@ -2745,25 +2793,26 @@ msgstr "Operace se nezdařila"
 #: src/widget/unit_file_panel/flatpak.rs:106
 msgctxt "warning"
 msgid "_Cancel"
-msgstr "_Zrušit"
+msgstr ""
 
 #. Dialog button
 #: src/widget/unit_file_panel/flatpak.rs:32
+#, fuzzy
 msgctxt "warning"
 msgid "_Save"
-msgstr "_Uložit"
+msgstr "Uložit"
 
 #. Dialog Header
 #: src/widget/unit_file_panel/flatpak.rs:95
 msgctxt "warning"
 msgid "Warning!"
-msgstr "Varování!"
+msgstr ""
 
 #. Dialog button
 #: src/widget/unit_file_panel/flatpak.rs:108
 msgctxt "warning"
 msgid "_Proceed"
-msgstr "_Pokračovat"
+msgstr ""
 
 #: src/widget/unit_file_panel/flatpak.rs:123
 msgctxt "flatpak"
@@ -2774,140 +2823,143 @@ msgid ""
 "Follow this <a href=\"https://github.com/plrigaux/sysd-manager/wiki/"
 "Flatpak\">link</a> to know how to acquire the required permission."
 msgstr ""
-"Je zapotřebí provést tzv. <b>jailbreak</b> vaší Flatpak aplikace a umožnit "
-"jí tak spouštět podprogramy nebo ukládat soubory na hostitelském systému.\n"
-"\n"
-"Jděte na tento <a href=\"https://github.com/plrigaux/sysd-manager/wiki/"
-"Flatpak\">odkaz</a> a zjistěte jak získat potřebná oprávnění."
 
 #: src/widget/unit_file_panel/flatpak.rs:127
 msgctxt "flatpak"
 msgid "Missing Flatpak Permission!"
-msgstr "Chybí oprávnění pro Flatpak!"
+msgstr ""
 
 #. Dialog button
 #: src/widget/unit_file_panel/flatpak.rs:139
 msgctxt "warning"
 msgid "_Close"
-msgstr "_Zavřít"
+msgstr ""
 
 #: src/widget/unit_file_panel/imp.rs:269
 #, rust-format
 msgctxt "file"
 msgid "File {} created successfully!"
-msgstr "Soubor {} úspěšně vytvořen!"
+msgstr ""
 
 #: src/widget/unit_file_panel/imp.rs:270
 #, rust-format
 msgctxt "file"
 msgid "File {} saved successfully!"
-msgstr "Soubor {} úspěšně uložen!"
+msgstr ""
 
 #. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:280 src/widget/unit_file_panel/imp.rs:1036
+#: src/widget/unit_file_panel/imp.rs:280 src/widget/unit_file_panel/imp.rs:1035
+#, fuzzy
 msgid "Daemon Reload"
-msgstr "Znovunačíst proces služby"
+msgstr "Znovu načíst proces služba"
 
-#: src/widget/unit_file_panel/imp.rs:295 src/widget/unit_file_panel/imp.rs:312
-#: src/widget/unit_file_panel/imp.rs:1052
+#: src/widget/unit_file_panel/imp.rs:297 src/widget/unit_file_panel/imp.rs:311
+#: src/widget/unit_file_panel/imp.rs:1051
 msgctxt "file"
 msgid "Not able to save file, permission not granted!"
-msgstr "Soubor nebylo možné uložit – neuděleno oprávnění!"
+msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:324
+#: src/widget/unit_file_panel/imp.rs:319
 msgctxt "file"
 msgid "Not able to save file, Flatpak permission not granted!"
-msgstr "Soubor nebylo možné uložit – Flatpak oprávnění neuděleno!"
+msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:332
+#: src/widget/unit_file_panel/imp.rs:325
+#, rust-format
 msgctxt "file"
-msgid "Not able to save file, an error happened!"
-msgstr "Soubor nebylo možné uložit – došlo k chybě!"
+msgid ""
+"Not able to save file!\n"
+" Because: {}"
+msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:506
+#: src/widget/unit_file_panel/imp.rs:505
 msgctxt "file"
 msgid "File not found! You may need to perform \"Daemon Reload\""
-msgstr "Soubor nenalezen! Může být třeba provést „Znovunačtení procesu služby“"
+msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:598
+#: src/widget/unit_file_panel/imp.rs:597
+#, fuzzy
 msgctxt "file"
 msgid "Unit File"
 msgstr "Soubor jednotky"
 
-#: src/widget/unit_file_panel/imp.rs:600
+#: src/widget/unit_file_panel/imp.rs:599
 msgctxt "file"
 msgid "Drop In"
-msgstr "Drop In"
+msgstr ""
 
 #. Create Drop in file name
-#: src/widget/unit_file_panel/imp.rs:911
+#: src/widget/unit_file_panel/imp.rs:910
 msgctxt "file"
 msgid "Editing"
-msgstr "Upravování"
+msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:921
+#: src/widget/unit_file_panel/imp.rs:920
 msgctxt "file"
 msgid "Note: you can change the drop-in file name by modifying the above line"
-msgstr "Pozn.: název souboru drop-in je možné změnit úpravou řádku výše"
+msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:931
+#: src/widget/unit_file_panel/imp.rs:930
 msgctxt "file"
 msgid ""
 "Anything between here and the comment below will become the contents of the "
 "drop-in file"
 msgstr ""
-"Vše mezi tímto a níže uvedeným komentářem se stane obsahem souboru drop-in"
 
 #. Create Drop in file footer
-#: src/widget/unit_file_panel/imp.rs:940
+#: src/widget/unit_file_panel/imp.rs:939
 msgctxt "file"
 msgid "Edits below this comment will be discarded"
-msgstr "Úpravy pod tímto komentářem budou zahozeny"
+msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:1028
-#, rust-format
+#: src/widget/unit_file_panel/imp.rs:1027
+#, fuzzy, rust-format
 msgctxt "file"
 msgid "Unit {} reverted successfully!"
-msgstr "Jednotka {} úspěšně vrácena do původního stavu!"
+msgstr "Jednotka {} vytvořena!"
 
-#: src/widget/unit_file_panel/imp.rs:1073
+#: src/widget/unit_file_panel/imp.rs:1072
 msgctxt "file"
 msgid "Not able to revert unit, permission not granted!"
-msgstr "Jednotku nebylo možné vrátit do původního stavu – oprávnění neuděleno!"
+msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:1081
+#: src/widget/unit_file_panel/imp.rs:1080
 msgctxt "file"
 msgid "Not able to revert unit, an error happened!"
-msgstr "Jednotku nebylo možné vrátit do původního stavu – došlo k chybě!"
+msgstr ""
 
 #. Menu item label for status menu
 #. Show Line Number Menu Item
-#: src/widget/unit_file_panel/imp.rs:1189
+#: src/widget/unit_file_panel/imp.rs:1188
+#, fuzzy
 msgctxt "file"
 msgid "Display Line Numbers"
-msgstr "Zobrazit čísla řádků"
+msgstr "Zobrazit časovače"
 
 #: src/widget/unit_list/filter/imp.rs:370
 msgctxt "filter"
 msgid "Any sub states"
-msgstr "Libovolné dílčí stavy"
+msgstr ""
 
 #. Clear button
 #: src/widget/unit_list/filter/imp.rs:374
 #: src/widget/unit_list/filter/imp.rs:1073
 #: src/widget/unit_list/filter/substate.rs:142
+#, fuzzy
 msgctxt "filter"
 msgid "Clear"
 msgstr "Vyčistit"
 
 #. Filter option
 #: src/widget/unit_list/filter/imp.rs:471
+#, fuzzy
 msgctxt "filter"
 msgid "Match Type"
-msgstr "Typ shody"
+msgstr "Rozlišovat malá/VELKÁ písmena"
 
 #. Filter option
 #: src/widget/unit_list/filter/imp.rs:489
+#, fuzzy
 msgctxt "filter"
 msgid "Case Insensitive"
 msgstr "Nerozlišovat malá/VELKÁ písmena"
@@ -2916,7 +2968,7 @@ msgstr "Nerozlišovat malá/VELKÁ písmena"
 #: src/widget/unit_list/filter/imp.rs:511
 msgctxt "filter"
 msgid "Unset"
-msgstr "Zrušit nastavení"
+msgstr ""
 
 #. Filter option
 #. Invert filter Button
@@ -2924,71 +2976,74 @@ msgstr "Zrušit nastavení"
 #: src/widget/unit_list/filter/imp.rs:1094
 msgctxt "filter"
 msgid "Invert"
-msgstr "Převrátit"
+msgstr ""
 
 #. Clear button tooltip
 #: src/widget/unit_list/filter/imp.rs:1075
 #: src/widget/unit_list/filter/substate.rs:143
+#, fuzzy
 msgctxt "filter"
 msgid "Clear filter's selected items"
-msgstr "Vyčistit vybrané položky filtru"
+msgstr "Uložit vybraný soubor jednotky"
 
 #: src/widget/unit_list/filter/imp.rs:1095
+#, fuzzy
 msgctxt "filter"
 msgid "Invert filter's selected items"
-msgstr "Převrátit výběr položek filtru"
+msgstr "Uložit vybraný soubor jednotky"
 
 #: src/widget/unit_list/filter/substate.rs:37
 msgctxt "filter"
 msgid "Add"
-msgstr "Přidat"
+msgstr ""
 
 #: src/widget/unit_list/filter/substate.rs:38
 msgctxt "filter"
 msgid "Add filter on sub state"
-msgstr "Přidat filtr na dílčí stav"
+msgstr ""
 
 #. Automounts list column name
 #: src/widget/unit_list/imp/construct.rs:143
 msgctxt "list column"
 msgid "Where"
-msgstr "Kde"
+msgstr ""
 
 #. Automounts list column name
 #: src/widget/unit_list/imp/construct.rs:154
 msgctxt "list column"
 msgid "What"
-msgstr "Co"
+msgstr ""
 
 #. Automounts list column name
 #: src/widget/unit_list/imp/construct.rs:165
 msgctxt "list column"
 msgid "Mounted"
-msgstr "Připojeno"
+msgstr ""
 
 #. Automounts list column name
 #: src/widget/unit_list/imp/construct.rs:175
 msgctxt "list column"
 msgid "Idle Timeout"
-msgstr "Časový limit nečinnosti"
+msgstr ""
 
 #. Path list column name
 #: src/widget/unit_list/imp/construct.rs:293
 msgctxt "list column"
 msgid "Condition"
-msgstr "Podmínka"
+msgstr ""
 
 #. Path list column name
 #: src/widget/unit_list/imp/construct.rs:304
 msgctxt "list column"
 msgid "Path"
-msgstr "Popis umístění"
+msgstr ""
 
 #. Path list column name
 #. Unit full name column name
 #: src/widget/unit_list/imp/construct.rs:326
 #: src/widget/unit_list/imp/construct.rs:804
 #: src/widget/unit_list/imp/construct.rs:823
+#, fuzzy
 msgctxt "list column"
 msgid "Unit"
 msgstr "Jednotka"
@@ -2996,39 +3051,46 @@ msgstr "Jednotka"
 #: src/widget/unit_list/imp/construct.rs:672
 msgctxt "list column"
 msgid "Sub"
-msgstr "Sub"
+msgstr ""
 
 #: src/widget/unit_list/imp/construct.rs:690
+#, fuzzy
 msgctxt "list column"
 msgid "Load"
-msgstr "Načíst"
+msgstr "Načteno"
 
 #: src/widget/unit_list/imp/construct.rs:708
+#, fuzzy
 msgctxt "list column"
 msgid "Bus"
 msgstr "Sběrnice"
 
 #: src/widget/unit_list/imp/construct.rs:727
+#, fuzzy
 msgctxt "list column"
 msgid "Preset"
 msgstr "Přednastavené"
 
 #: src/widget/unit_list/imp/construct.rs:746
+#, fuzzy
 msgctxt "list column"
 msgid "State"
 msgstr "Stav"
 
 #: src/widget/unit_list/imp/construct.rs:765
+#, fuzzy
 msgctxt "list column"
 msgid "Active"
-msgstr "Aktivní"
+msgstr "OnActiveSec"
 
 #: src/widget/unit_list/imp/construct.rs:784
+#, fuzzy
 msgctxt "list column"
 msgid "Description"
-msgstr "Popis"
+msgstr "Trvání"
 
 #: src/widget/unit_list/imp/construct.rs:842
+#, fuzzy
 msgctxt "list column"
 msgid "Type"
 msgstr "Typ"
@@ -3037,67 +3099,68 @@ msgstr "Typ"
 #: src/widget/unit_list/imp/construct.rs:852
 msgctxt "list column"
 msgid "Listen Type"
-msgstr "Typ očekávání spojení"
+msgstr ""
 
 #. Socket list column name
 #: src/widget/unit_list/imp/construct.rs:862
 msgctxt "list column"
 msgid "Listen"
-msgstr "Očekávat spojení"
+msgstr ""
 
 #. Timer list column name
 #: src/widget/unit_list/imp/construct.rs:873
 msgctxt "list column"
 msgid "Next"
-msgstr "Příští"
+msgstr ""
 
 #. Timer list column name
 #: src/widget/unit_list/imp/construct.rs:883
 msgctxt "list column"
 msgid "Left"
-msgstr "Zbývá"
+msgstr ""
 
 #. Timer list column name
 #: src/widget/unit_list/imp/construct.rs:893
 msgctxt "list column"
 msgid "Last"
-msgstr "Poslední"
+msgstr ""
 
 #. Timer list column name
 #: src/widget/unit_list/imp/construct.rs:902
 msgctxt "list column"
 msgid "Passed"
-msgstr "Předáno"
+msgstr ""
 
 #. Timer list column name
 #: src/widget/unit_list/imp/construct.rs:913
+#, fuzzy
 msgctxt "list column"
 msgid "Activates"
-msgstr "Aktivuje"
+msgstr "Akce"
 
 #: src/widget/unit_list/imp/pop_menu.rs:166
-#, rust-format
+#, fuzzy, rust-format
 msgctxt "controls"
 msgid "Start unit {}"
-msgstr "Spustit jednotku {}"
+msgstr "Spustit jednotku"
 
 #: src/widget/unit_list/imp/pop_menu.rs:172
-#, rust-format
+#, fuzzy, rust-format
 msgctxt "controls"
 msgid "Stop unit {}"
-msgstr "Zastavit jednotku {}"
+msgstr "Zastavit jednotku"
 
 #: src/widget/unit_list/imp/pop_menu.rs:178
-#, rust-format
+#, fuzzy, rust-format
 msgctxt "controls"
 msgid "Restart unit {}"
-msgstr "Restartovat jednotku {}"
+msgstr "Restartovat jednotku"
 
 #: src/widget/unit_list/imp/pop_menu.rs:196
 #, rust-format
 msgctxt "controls"
 msgid "Disable and then Enable unit {}"
-msgstr "Zakázat a poté povolit jednotku {}"
+msgstr ""
 
 #: src/widget/unit_list/imp/pop_menu.rs:202
 #, rust-format
@@ -3106,114 +3169,118 @@ msgid ""
 "Reload unit {} configuration by calling the <b>ExecReload</b> unit file "
 "instruction"
 msgstr ""
-"Znovu načíst nastavení jednotky {} zavoláním instrukce souboru jednotky <b>"
-"ExecReload</b>"
 
 #. column header menu
 #: src/widget/unit_list/menus.rs:19
 msgctxt "menu"
 msgid "Hide this Column"
-msgstr "Skrýt tento sloupec"
+msgstr ""
 
 #. column header menu
 #: src/widget/unit_list/menus.rs:27
+#, fuzzy
 msgctxt "menu"
 msgid "Configure columns"
-msgstr "Nastavit sloupce"
+msgstr "Nastavit zobrazované sloupce"
 
 #: src/widget/unit_list/menus.rs:33
 msgctxt "menu"
 msgid "Reset all columns"
-msgstr "Vrátit všechny sloupce do výchozího stavu"
+msgstr ""
 
 #. column header menu
 #: src/widget/unit_list/menus.rs:44
+#, fuzzy
 msgctxt "menu"
 msgid "Configure Filters"
-msgstr "Nastavit filtry"
+msgstr "Vyčistit filtry"
 
 #. column header menu
 #: src/widget/unit_list/menus.rs:52
+#, fuzzy
 msgctxt "menu"
 msgid "Clear Column Filter"
-msgstr "Vyčistit filtr sloupců"
+msgstr "Vyčistit filtry"
 
 #. column header menu section
 #: src/widget/unit_list/menus.rs:58
+#, fuzzy
 msgctxt "menu"
 msgid "Filtering"
-msgstr "Filtrování"
+msgstr "Filtry"
 
 #. Menu Option
 #: src/widget/unit_list/mod.rs:178
+#, fuzzy
 msgctxt "menu"
 msgid "Include Unit Files"
-msgstr "Zahrnout soubory jednotek"
+msgstr "Povolit soubor jednotky"
 
 #. Curated List View
 #: src/widget/unit_list/mod.rs:198
+#, fuzzy
 msgctxt "menu"
 msgid "Default"
 msgstr "Výchozí"
 
 #. Curated List View
 #: src/widget/unit_list/mod.rs:202
+#, fuzzy
 msgctxt "menu"
 msgid "Loaded Units"
-msgstr "Načtené jednotky"
+msgstr "Zobrazit načtené jednotky"
 
 #. List view
 #: src/widget/unit_list/mod.rs:206
+#, fuzzy
 msgctxt "menu"
 msgid "Unit Files"
 msgstr "Soubory jednotek"
 
 #. Curated List View
 #: src/widget/unit_list/mod.rs:210
+#, fuzzy
 msgctxt "menu"
 msgid "Timers"
-msgstr "Časovače"
+msgstr "Časovač"
 
 #. Curated List View
 #: src/widget/unit_list/mod.rs:214
+#, fuzzy
 msgctxt "menu"
 msgid "Sockets"
-msgstr "Sokety"
+msgstr "Zobrazit sokety"
 
 #. Curated List View
 #: src/widget/unit_list/mod.rs:218
+#, fuzzy
 msgctxt "menu"
 msgid "Services"
-msgstr "Služby"
+msgstr "Služba"
 
 #. Curated List View
 #: src/widget/unit_list/mod.rs:222
 msgctxt "menu"
 msgid "Path"
-msgstr "Popis umístění"
+msgstr ""
 
 #. Curated List View
 #: src/widget/unit_list/mod.rs:226
+#, fuzzy
 msgctxt "menu"
 msgid "Automounts"
-msgstr "Automatická připojení"
+msgstr "Zobrazit automatická připojení"
 
 #. Curated List View
 #: src/widget/unit_list/mod.rs:230
+#, fuzzy
 msgctxt "menu"
 msgid "Customized"
-msgstr "Přizpůsobeno"
+msgstr "Uživatelsky určené"
 
 #. Curated List View
 #: src/widget/unit_list/mod.rs:234
+#, fuzzy
 msgctxt "menu"
 msgid "Favorites"
-msgstr "Oblíbené"
-
-#~ msgid "user"
-#~ msgstr "uživatel"
-
-#, fuzzy
-#~ msgctxt "preference"
-#~ msgid "Reload Daemon"
-#~ msgstr "Znovu načíst"
+msgstr "Přidat do oblíbených"

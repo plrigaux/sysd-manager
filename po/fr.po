@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-01 18:45-0400\n"
+"POT-Creation-Date: 2026-09-01 09:36-0400\n"
 "PO-Revision-Date: 2026-08-01 22:54+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
@@ -79,73 +79,28 @@ msgstr ""
 "L'authentification est requise pour exécuter des appels système privilégiés "
 "via le Proxy de SysD Manager"
 
-#: data/interfaces/app_window.ui:13
-msgctxt "menu"
-msgid "Analyze Blame"
-msgstr "Analyse blâme"
-
-#: data/interfaces/app_window.ui:17
-msgctxt "menu"
-msgid "Daemon Reload"
-msgstr "Recharger la configuration"
-
-#: data/interfaces/app_window.ui:21
-msgctxt "menu"
-msgid "Systemd Info"
-msgstr "Systemd information"
-
-#: data/interfaces/app_window.ui:25
-msgctxt "menu"
-msgid "List Boots"
-msgstr "Lister les boots"
-
-#: data/interfaces/app_window.ui:29
-msgctxt "menu"
-msgid "Watch Signals"
-msgstr "Monitorer les signaux"
-
-#: data/interfaces/app_window.ui:39
-msgctxt "menu"
-msgid "Preferences"
-msgstr "Préférences"
-
 #: data/interfaces/app_window.ui:43
-msgctxt "menu"
-msgid "Proxy Preferences"
-msgstr "Préférences du Proxy"
-
-#: data/interfaces/app_window.ui:47
-msgctxt "menu"
-msgid "Keyboard Shortcuts"
-msgstr "Raccourcis clavier"
-
-#: data/interfaces/app_window.ui:51
-msgctxt "menu"
-msgid "About"
-msgstr "À propos"
-
-#: data/interfaces/app_window.ui:90
 msgctxt "top button tooltip"
 msgid "Open Search Bar"
 msgstr "Ouvrir la barre de recherche"
 
-#: data/interfaces/app_window.ui:102
+#: data/interfaces/app_window.ui:54
 msgid "To select system or session bus"
 msgstr "Pour sélectionner le bus système ou session"
 
 #. selector of differents units list
-#: data/interfaces/app_window.ui:109
+#: data/interfaces/app_window.ui:61
 msgctxt "menu"
 msgid "Curated Lists"
 msgstr "Listes organisées"
 
-#: data/interfaces/app_window.ui:110
+#: data/interfaces/app_window.ui:62
 msgctxt "tooltip"
 msgid "To display different units' presentation and subset"
 msgstr ""
 "Pour afficher la présentation et le sous-ensemble des différentes unités"
 
-#: data/interfaces/app_window.ui:117
+#: data/interfaces/app_window.ui:69
 msgctxt "top button tooltip"
 msgid "Refresh Unit List"
 msgstr "Rafraîchir la liste des unités"
@@ -359,7 +314,13 @@ msgctxt "journal"
 msgid "Clear journal events and refetch them"
 msgstr "Effacer les événements du journal et les récupérer à nouveau"
 
-#: data/interfaces/journal_panel.ui:44
+#. checkbox to foillow logs
+#: data/interfaces/journal_panel.ui:39
+msgctxt "journal"
+msgid "Follow"
+msgstr ""
+
+#: data/interfaces/journal_panel.ui:40
 msgctxt "journal"
 msgid "Enable new entries continuous print as they are appended to the journal"
 msgstr ""
@@ -367,49 +328,49 @@ msgstr ""
 "qu'elles sont ajoutées au journal"
 
 #. tooltip
-#: data/interfaces/journal_panel.ui:58
+#: data/interfaces/journal_panel.ui:55
 msgctxt "journal"
 msgid "Toggle events display order"
 msgstr "Basculer l'ordre d'affichage des événements"
 
 #. tooltip
-#: data/interfaces/journal_panel.ui:64
+#: data/interfaces/journal_panel.ui:61
 msgctxt "journal"
 msgid "List the boots of the system"
 msgstr "Lister les démarrages du système"
 
 #. button
-#: data/interfaces/journal_panel.ui:69
+#: data/interfaces/journal_panel.ui:66
 msgctxt "journal"
 msgid "List Boots"
 msgstr "Lister les démarrage"
 
 #. button
-#: data/interfaces/journal_panel.ui:89
+#: data/interfaces/journal_panel.ui:86
 msgctxt "journal"
 msgid "Current boot"
 msgstr "Démarrage actuel"
 
 #. button
-#: data/interfaces/journal_panel.ui:95
+#: data/interfaces/journal_panel.ui:92
 msgctxt "journal"
 msgid "All events"
 msgstr "Tous les évènements"
 
 #. title
-#: data/interfaces/journal_panel.ui:102
+#: data/interfaces/journal_panel.ui:99
 msgctxt "journal"
 msgid "Boot id"
 msgstr "Id du boot"
 
 #. wiki link
-#: data/interfaces/journal_panel.ui:149
+#: data/interfaces/journal_panel.ui:146
 msgctxt "journal"
 msgid "For more information"
 msgstr "lien vers le wiki"
 
 #. description
-#: data/interfaces/journal_panel.ui:153
+#: data/interfaces/journal_panel.ui:150
 msgctxt "journal"
 msgid ""
 "Either there are no log events to display, or you don't have permission to "
@@ -419,7 +380,7 @@ msgstr ""
 "autorisé à y accéder."
 
 #. title
-#: data/interfaces/journal_panel.ui:155
+#: data/interfaces/journal_panel.ui:152
 msgctxt "journal"
 msgid "No journal events"
 msgstr "Aucun événement de journal"
@@ -1041,150 +1002,156 @@ msgid "Open Unit Property Filter"
 msgstr "Ouvrir le filtre sur les propriétés de l'unité"
 
 #: data/interfaces/shortcuts.ui:56
+#, fuzzy
+msgctxt "shortcut window"
+msgid "Open Analyze Blame"
+msgstr "Analyse blâme"
+
+#: data/interfaces/shortcuts.ui:62
 msgctxt "shortcut window"
 msgid "Open List Boots"
 msgstr "Ouvrir la liste des boots"
 
-#: data/interfaces/shortcuts.ui:62
+#: data/interfaces/shortcuts.ui:68
 msgctxt "shortcut window"
 msgid "Open columns manager"
 msgstr "Ouvrir le gestionnaire de colonnes"
 
-#: data/interfaces/shortcuts.ui:68
+#: data/interfaces/shortcuts.ui:74
 msgctxt "shortcut window"
 msgid "Deamon Reload"
 msgstr "Recharger la configuration"
 
-#: data/interfaces/shortcuts.ui:74
+#: data/interfaces/shortcuts.ui:80
 msgctxt "shortcut window"
 msgid "Open Find in Text"
 msgstr "Ouvrir Rechercher dans le texte"
 
 #. subtitle
-#: data/interfaces/shortcuts.ui:80
+#: data/interfaces/shortcuts.ui:86
 msgctxt "shortcut window"
 msgid "Create Timer or Service Unit Type"
 msgstr "Créer une unité de type timer ou service"
 
-#: data/interfaces/shortcuts.ui:81
+#: data/interfaces/shortcuts.ui:87
 msgctxt "shortcut window"
 msgid "Create Unit"
 msgstr "Créer une Unité"
 
 #. Section name
-#: data/interfaces/shortcuts.ui:88
+#: data/interfaces/shortcuts.ui:94
 msgctxt "shortcut window"
 msgid "Pages"
 msgstr "Pages"
 
-#: data/interfaces/shortcuts.ui:92
+#: data/interfaces/shortcuts.ui:98
 msgctxt "shortcut window"
 msgid "Display Unit Status"
 msgstr "Afficher le statut de l'unité"
 
-#: data/interfaces/shortcuts.ui:98
+#: data/interfaces/shortcuts.ui:104
 msgctxt "shortcut window"
 msgid "Display Unit Dependencies"
 msgstr "Afficher les dépendances de l'unité"
 
-#: data/interfaces/shortcuts.ui:104
+#: data/interfaces/shortcuts.ui:110
 msgctxt "shortcut window"
 msgid "Display Unit Definition File"
 msgstr "Afficher le fichier de définition de l'unité"
 
-#: data/interfaces/shortcuts.ui:110
+#: data/interfaces/shortcuts.ui:116
 msgctxt "shortcut window"
 msgid "Display Unit Journal Events"
 msgstr "Afficher le Journal Événements de l'unité"
 
 #. Section name
-#: data/interfaces/shortcuts.ui:117
+#: data/interfaces/shortcuts.ui:123
 msgctxt "shortcut window"
 msgid "Unit"
 msgstr "Unité"
 
-#: data/interfaces/shortcuts.ui:121
+#: data/interfaces/shortcuts.ui:127
 msgctxt "shortcut window"
 msgid "Show unit properties"
 msgstr "Afficher les propriétés de l'unité"
 
 #. In the shortcut Window description
-#: data/interfaces/shortcuts.ui:127
+#: data/interfaces/shortcuts.ui:133
 msgctxt "shortcut window"
 msgid "Save the selected unit file"
 msgstr "Enregistrer le fichier d'unité sélectionné"
 
 #. Section name
-#: data/interfaces/shortcuts.ui:134
+#: data/interfaces/shortcuts.ui:140
 msgctxt "shortcut window"
 msgid "Curated Lists"
 msgstr "Listes organisées"
 
 #. subtitle
-#: data/interfaces/shortcuts.ui:138
+#: data/interfaces/shortcuts.ui:144
 msgctxt "shortcut window"
 msgid "Merge Loaded Units with Unit Files"
 msgstr "Fusionner les unités chargées avec les fichiers d'unités"
 
-#: data/interfaces/shortcuts.ui:139
+#: data/interfaces/shortcuts.ui:145
 msgctxt "shortcut window"
 msgid "Display SysD Manager Original List"
 msgstr "Afficher la liste originale de SysD Manager"
 
 #. subtitle
-#: data/interfaces/shortcuts.ui:145
+#: data/interfaces/shortcuts.ui:151
 msgctxt "shortcut window"
 msgid "Display only Loaded Units"
 msgstr "Afficher les unités chargées"
 
-#: data/interfaces/shortcuts.ui:146
+#: data/interfaces/shortcuts.ui:152
 msgctxt "shortcut window"
 msgid "Display Loaded Units"
 msgstr "Afficher les unités chargées"
 
 #. subtitle
-#: data/interfaces/shortcuts.ui:152
+#: data/interfaces/shortcuts.ui:158
 msgctxt "shortcut window"
 msgid "Display only Unit Files"
 msgstr "Afficher seulement les fichiers d'unité"
 
-#: data/interfaces/shortcuts.ui:153
+#: data/interfaces/shortcuts.ui:159
 msgctxt "shortcut window"
 msgid "Display Unit Files"
 msgstr "Afficher les fichiers d'unité"
 
-#: data/interfaces/shortcuts.ui:159
+#: data/interfaces/shortcuts.ui:165
 msgctxt "shortcut window"
 msgid "Display User Customised Units list"
 msgstr "Afficher la liste personnalisé par l'utilisateur"
 
-#: data/interfaces/shortcuts.ui:165
+#: data/interfaces/shortcuts.ui:171
 msgctxt "shortcut window"
 msgid "Display Favorite Units"
 msgstr "Afficher les unités favorites"
 
 #. Section name
-#: data/interfaces/shortcuts.ui:172
+#: data/interfaces/shortcuts.ui:178
 msgctxt "shortcut window"
 msgid "Special Lists"
 msgstr "Listes spéciales"
 
-#: data/interfaces/shortcuts.ui:176
+#: data/interfaces/shortcuts.ui:182
 msgctxt "shortcut window"
 msgid "Display Timers"
 msgstr "Afficher les Chronos"
 
-#: data/interfaces/shortcuts.ui:182
+#: data/interfaces/shortcuts.ui:188
 msgctxt "shortcut window"
 msgid "Display Sockets"
 msgstr "Afficher les sockets"
 
-#: data/interfaces/shortcuts.ui:188
+#: data/interfaces/shortcuts.ui:194
 msgctxt "shortcut window"
 msgid "Display Paths"
 msgstr "Afficher les paths"
 
-#: data/interfaces/shortcuts.ui:194
+#: data/interfaces/shortcuts.ui:200
 msgctxt "shortcut window"
 msgid "Display Automounts"
 msgstr "Afficher les Automounts"
@@ -1834,9 +1801,65 @@ msgid "Running units"
 msgstr "Unités en cours d'exécution"
 
 #. Just a simple log that it's all ok. Need to set env RUST_LOG="info" to see it
-#: src/main.rs:113
+#: src/main.rs:116
 msgid "Program starting up"
 msgstr "Le Programme démarre"
+
+#: src/widget/app_window/imp.rs:264
+msgctxt "menu"
+msgid "Analyze Blame"
+msgstr "Analyse blâme"
+
+#: src/widget/app_window/imp.rs:269
+msgctxt "menu"
+msgid "Daemon Reload"
+msgstr "Recharger la configuration"
+
+#: src/widget/app_window/imp.rs:274
+msgctxt "menu"
+msgid "Systemd Info"
+msgstr "Systemd information"
+
+#: src/widget/app_window/imp.rs:279
+msgctxt "menu"
+msgid "List Boots"
+msgstr "Lister les boots"
+
+#: src/widget/app_window/imp.rs:284
+msgctxt "menu"
+msgid "Watch Signals"
+msgstr "Monitorer les signaux"
+
+#: src/widget/app_window/imp.rs:289
+#, fuzzy
+msgctxt "menu"
+msgid "Create Unit"
+msgstr "Créer une Unité"
+
+#: src/widget/app_window/imp.rs:296
+msgctxt "menu"
+msgid "Preferences"
+msgstr "Préférences"
+
+#: src/widget/app_window/imp.rs:302
+msgctxt "menu"
+msgid "Proxy Preferences"
+msgstr "Préférences du Proxy"
+
+#: src/widget/app_window/imp.rs:307
+msgctxt "menu"
+msgid "Keyboard Shortcuts"
+msgstr "Raccourcis clavier"
+
+#: src/widget/app_window/imp.rs:311
+msgctxt "menu"
+msgid "About"
+msgstr "À propos"
+
+#: src/widget/app_window/imp.rs:689
+msgctxt "toast"
+msgid "Check Proxy"
+msgstr ""
 
 #: src/widget/app_window/menu.rs:320
 msgid "Daemon Reload failed!"
@@ -2521,219 +2544,233 @@ msgctxt "text_find"
 msgid "Toggle Find in Text"
 msgstr "Activer/désactiver la recherche dans le texte"
 
-#: src/widget/unit_control_panel/controls.rs:63
-#: src/widget/unit_control_panel/controls.rs:183
+#. toast message on success
+#: src/widget/unit_control_panel/controls.rs:59
+#, fuzzy, rust-format
 msgctxt "toast"
-msgid ""
-"Unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> has "
-"been successfully <span fgcolor='{0}'>{}</span>"
-msgstr ""
-"L'unité <span fgcolor = '{0}' font_family = 'monospace' size = 'larger'> {} "
-"</span> a été <span fgcolor = '{0}'>{}</span> avec succès"
+msgid "Unit {} has been successfully {}"
+msgstr "Fichier {} restaurée avec succès !"
 
 #. toast message action on fail
-#: src/widget/unit_control_panel/controls.rs:88
+#: src/widget/unit_control_panel/controls.rs:77
 msgctxt "toast"
 msgid "Disabling"
 msgstr "Désactivation"
 
 #. toast message action on fail
-#: src/widget/unit_control_panel/controls.rs:92
+#: src/widget/unit_control_panel/controls.rs:81
 msgctxt "toast"
 msgid "Enabling"
 msgstr "Activation"
 
-#. toast message on fail, arg0 : Enabling/Disabling, arg1 : unit name
-#: src/widget/unit_control_panel/controls.rs:101
-#, rust-format
+#. Toast Ablement Unit status
+#: src/widget/unit_control_panel/controls.rs:89
+#, fuzzy, rust-format
 msgctxt "toast"
-msgid "{} unit {} has failed!"
+msgid ""
+"{} unit {} has failed!\n"
+"Because: {}"
 msgstr "{} l'unité {} a échouée !"
 
 #. Toast message action on Reenable, in the rentance: ... has been successfully "Reenable"
-#: src/widget/unit_control_panel/controls.rs:177
+#: src/widget/unit_control_panel/controls.rs:162
+#, fuzzy
 msgctxt "toast"
 msgid "Reenable"
 msgstr "Réactiver"
 
+#: src/widget/unit_control_panel/controls.rs:168
+#, fuzzy, rust-format
+msgctxt "toast"
+msgid "Unit <unit>{}</unit> has been successfully <span fgcolor='{}'>{}</span>"
+msgstr "Fichier {} restaurée avec succès !"
+
 #. toast message action on fail
-#: src/widget/unit_control_panel/controls.rs:206
+#: src/widget/unit_control_panel/controls.rs:186
+#, fuzzy
 msgctxt "toast"
 msgid "Reenabling"
-msgstr "Réactivation"
+msgstr "Activation"
 
-#: src/widget/unit_control_panel/controls.rs:214
+#. Toast reenable Unit status
+#: src/widget/unit_control_panel/controls.rs:191
+#, fuzzy, rust-format
 msgctxt "toast"
-msgid ""
-"{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
-"has failed!"
-msgstr ""
-"{} l'unité <span fgcolor='{0}' font_family='monospace' size='larger'>{}</"
-"span> a échoué !"
+msgid "{} unit {} has failed! {}"
+msgstr "{} l'unité {} a échouée !"
 
-#: src/widget/unit_control_panel/controls.rs:238
+#: src/widget/unit_control_panel/controls.rs:217
 #: src/widget/unit_list/imp/pop_menu.rs:190
-#, rust-format
+#, fuzzy, rust-format
 msgctxt "controls"
 msgid "Disable unit {}"
-msgstr "Désactiver l'unité {}"
+msgstr "Désactiver le fichier de l'unité"
 
-#: src/widget/unit_control_panel/controls.rs:240
+#: src/widget/unit_control_panel/controls.rs:219
 #: src/widget/unit_list/imp/pop_menu.rs:184
-#, rust-format
+#, fuzzy, rust-format
 msgctxt "controls"
 msgid "Enable unit {}"
-msgstr "Activer l'unité {}"
+msgstr "Activer le fichier d'unité"
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:24
+#, fuzzy
 msgctxt "toast"
 msgid "start"
-msgstr "démarrer"
+msgstr "Redémarrer"
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:26
 msgctxt "toast"
 msgid "stop"
-msgstr "arrêter"
+msgstr ""
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:28
+#, fuzzy
 msgctxt "toast"
 msgid "restart"
-msgstr "redémarrer"
+msgstr "Redémarrer"
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:30
 msgctxt "toast"
 msgid "reload"
-msgstr "recharger"
+msgstr ""
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:37
+#, fuzzy
 msgctxt "toast"
 msgid "started"
-msgstr "démarré"
+msgstr "Redémarrer"
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:39
 msgctxt "toast"
 msgid "stopped"
-msgstr "arrêté"
+msgstr ""
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:41
+#, fuzzy
 msgctxt "toast"
 msgid "restarted"
-msgstr "redémarré"
+msgstr "Redémarrer"
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:43
+#, fuzzy
 msgctxt "toast"
 msgid "reloaded"
-msgstr "rechargé"
+msgstr "Chargés"
 
 #. toast message
-#: src/widget/unit_control_panel/imp.rs:463
-#, rust-format
+#: src/widget/unit_control_panel/imp.rs:471
+#, fuzzy, rust-format
 msgctxt "toast"
 msgid "Unit {} has been {} with the mode {}"
-msgstr "L'unité {} a été {} avec le mode {}"
+msgstr "Fichier {} restaurée avec succès !"
 
 #. toast message error --  "Can't {ACTION} the unit <unit>{UNITNAME}</unit>, because: {SYSTEMD HUMAN ERROR (english)}"),
-#: src/widget/unit_control_panel/imp.rs:484
-#, rust-format
+#: src/widget/unit_control_panel/imp.rs:497
+#, fuzzy, rust-format
 msgctxt "toast"
-msgid "Can't {} the unit {}, because: {}"
-msgstr "Ne peut {} l'unité {}, à cause : {}"
+msgid ""
+"Can't {} the unit {}!\n"
+"Because: {}"
+msgstr "{} l'unité {} a échouée !"
 
-#: src/widget/unit_control_panel/imp.rs:786
-#, rust-format
-msgctxt "toast"
-msgid "{} unit <unit>{}</unit> is <green>successful</green>"
-msgstr "{} unité <unit>{}</unit> est <green>réussi</green>"
-
-#. toast message success (no unit) -- "{ACTION} successful."
-#: src/widget/unit_control_panel/imp.rs:793
-#, rust-format
-msgctxt "toast"
-msgid "{} successful."
-msgstr "{} réussi."
-
-#: src/widget/unit_control_panel/imp.rs:803
-#, rust-format
-msgctxt "toast"
-msgid "{} unit <unit>{}</unit> failed. Reason: <red>{}</red>."
-msgstr "{} unité <unit>{}</unit> à échoué. Raison: <red>{}</red>."
-
-#. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
 #: src/widget/unit_control_panel/imp.rs:814
 #, rust-format
 msgctxt "toast"
-msgid "{} failed. Reason: <red>{}</red>."
-msgstr "{} a échoué. Raison : <red>{}</red>."
+msgid "{} unit <unit>{}</unit> is <green>successful</green>"
+msgstr ""
 
-#: src/widget/unit_control_panel/mod.rs:119
+#. toast message success (no unit) -- "{ACTION} successful."
+#: src/widget/unit_control_panel/imp.rs:821
+#, rust-format
+msgctxt "toast"
+msgid "{} successful."
+msgstr ""
+
+#: src/widget/unit_control_panel/imp.rs:831
+#, rust-format
+msgctxt "toast"
+msgid "{} unit <unit>{}</unit> failed. Reason: <red>{}</red>."
+msgstr ""
+
+#. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
+#: src/widget/unit_control_panel/imp.rs:842
+#, rust-format
+msgctxt "toast"
+msgid "{} failed. Reason: <red>{}</red>."
+msgstr ""
+
+#: src/widget/unit_control_panel/mod.rs:136
 #, rust-format
 msgctxt "workaround"
 msgid "Unfortunately <b>SysD Manager</b> can't perfom <b>{}</b> action."
 msgstr ""
-"Malheureusement, <b>SysD Manager</b> ne peut pas exécuter l'action <b>{}</b>."
 
-#: src/widget/unit_control_panel/mod.rs:132
+#: src/widget/unit_control_panel/mod.rs:149
 msgctxt "workaround"
 msgid "The authorisation can be configured in the following file :"
-msgstr "L'autorisation peut être configurée dans le fichier suivant :"
+msgstr ""
 
-#: src/widget/unit_control_panel/mod.rs:152
+#: src/widget/unit_control_panel/mod.rs:169
 msgctxt "workaround"
 msgid "Otherwise, you can try the bellow command line in your terminal"
 msgstr ""
-"Sinon, vous pouvez essayer la ligne de commande ci-dessous dans votre "
-"terminal"
 
 #. workaround dialog title -- "Fail! {SYSTEMD HUMAN ERROR (English)}"
-#: src/widget/unit_control_panel/mod.rs:174
+#: src/widget/unit_control_panel/mod.rs:191
 #, rust-format
 msgctxt "workaround"
 msgid "Fail! {}"
-msgstr "Échec ! {}"
+msgstr ""
 
 #. action name
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:134
+#, fuzzy
 msgctxt "action"
 msgid "Freeze"
 msgstr "Geler"
 
 #. action name
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:148
+#, fuzzy
 msgctxt "action"
 msgid "Thaw"
 msgstr "Décongeler"
 
 #. action name
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:182
+#, fuzzy
 msgctxt "action"
 msgid "Reload"
-msgstr "Recharger"
+msgstr "Recharger l'unité"
 
 #. action name
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:276
 msgctxt "action"
 msgid "Unmask"
-msgstr "Démasquer"
+msgstr ""
 
 #. Filter title
 #: src/widget/unit_dependencies_panel/imp.rs:371
+#, fuzzy
 msgctxt "dependency"
 msgid "Unit Types"
-msgstr "Types d'unité"
+msgstr "Fichiers d'unité"
 
 #. tooltip on filter
 #: src/widget/unit_dependencies_panel/imp.rs:376
+#, fuzzy
 msgctxt "dependency"
 msgid "Filter dependencies by types"
-msgstr "Filtrer les dépendances par types"
+msgstr "Dépendances des unités"
 
 #: src/widget/unit_file_panel/flatpak.rs:18
 msgctxt "warning"
@@ -2741,13 +2778,12 @@ msgid ""
 "Failed to perform action. The proxy service might be inactive.\n"
 "Please install and start the following service"
 msgstr ""
-"L'action n'a pas pu être effectuée. Le service proxy est peut-être inactif.\n"
-"Veuillez installer et démarrer le service suivant"
 
 #: src/widget/unit_file_panel/flatpak.rs:21
+#, fuzzy
 msgctxt "warning"
 msgid "Operation Failed"
-msgstr "L'opération a échouée"
+msgstr "Création a échouée ! {}"
 
 #. Dialog button
 #. TODO tranlate
@@ -2756,25 +2792,26 @@ msgstr "L'opération a échouée"
 #: src/widget/unit_file_panel/flatpak.rs:106
 msgctxt "warning"
 msgid "_Cancel"
-msgstr "_Annuler"
+msgstr ""
 
 #. Dialog button
 #: src/widget/unit_file_panel/flatpak.rs:32
+#, fuzzy
 msgctxt "warning"
 msgid "_Save"
-msgstr "_Enregistrer"
+msgstr "Enregister"
 
 #. Dialog Header
 #: src/widget/unit_file_panel/flatpak.rs:95
 msgctxt "warning"
 msgid "Warning!"
-msgstr "Attention !"
+msgstr ""
 
 #. Dialog button
 #: src/widget/unit_file_panel/flatpak.rs:108
 msgctxt "warning"
 msgid "_Proceed"
-msgstr "_Procéder"
+msgstr ""
 
 #: src/widget/unit_file_panel/flatpak.rs:123
 msgctxt "flatpak"
@@ -2785,146 +2822,143 @@ msgid ""
 "Follow this <a href=\"https://github.com/plrigaux/sysd-manager/wiki/"
 "Flatpak\">link</a> to know how to acquire the required permission."
 msgstr ""
-"Vous devez <b>jailbreaker</b> votre application Flatpak pour pouvoir "
-"enregistrer des fichiers sur le système hôte.\n"
-"\n"
-"Suivez le <a href=\"https://github.com/plrigaux/sysd-manager/wiki/"
-"Flatpak\">lien</a> pour savoir comment obtenir l'autorisation nécessaire."
 
 #: src/widget/unit_file_panel/flatpak.rs:127
 msgctxt "flatpak"
 msgid "Missing Flatpak Permission!"
-msgstr "Permission Flatpak nécessaire !"
+msgstr ""
 
 #. Dialog button
 #: src/widget/unit_file_panel/flatpak.rs:139
 msgctxt "warning"
 msgid "_Close"
-msgstr "_Fermer"
+msgstr ""
 
 #: src/widget/unit_file_panel/imp.rs:269
-#, rust-format
+#, fuzzy, rust-format
 msgctxt "file"
 msgid "File {} created successfully!"
-msgstr "Fichier {} créé avec succès !"
+msgstr "Fichier {} restaurée avec succès !"
 
 #: src/widget/unit_file_panel/imp.rs:270
-#, rust-format
+#, fuzzy, rust-format
 msgctxt "file"
 msgid "File {} saved successfully!"
-msgstr "Fichier {} enregistré avec succès !"
+msgstr "Fichier {} restaurée avec succès !"
 
 #. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:280 src/widget/unit_file_panel/imp.rs:1036
+#: src/widget/unit_file_panel/imp.rs:280 src/widget/unit_file_panel/imp.rs:1035
+#, fuzzy
 msgid "Daemon Reload"
 msgstr "Recharger la configuration"
 
-#: src/widget/unit_file_panel/imp.rs:295 src/widget/unit_file_panel/imp.rs:312
-#: src/widget/unit_file_panel/imp.rs:1052
+#: src/widget/unit_file_panel/imp.rs:297 src/widget/unit_file_panel/imp.rs:311
+#: src/widget/unit_file_panel/imp.rs:1051
 msgctxt "file"
 msgid "Not able to save file, permission not granted!"
-msgstr "Impossible d'enregistrer le fichier, autorisation refusée !"
+msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:324
+#: src/widget/unit_file_panel/imp.rs:319
 msgctxt "file"
 msgid "Not able to save file, Flatpak permission not granted!"
 msgstr ""
-"Impossible d'enregistrer le fichier, autorisation Flatpak non accordée !"
 
-#: src/widget/unit_file_panel/imp.rs:332
+#: src/widget/unit_file_panel/imp.rs:325
+#, fuzzy, rust-format
 msgctxt "file"
-msgid "Not able to save file, an error happened!"
-msgstr "Impossible d'enregistrer le fichier, une erreur s'est produite !"
+msgid ""
+"Not able to save file!\n"
+" Because: {}"
+msgstr "{} l'unité {} a échouée !"
 
-#: src/widget/unit_file_panel/imp.rs:506
+#: src/widget/unit_file_panel/imp.rs:505
 msgctxt "file"
 msgid "File not found! You may need to perform \"Daemon Reload\""
 msgstr ""
-"Fichier introuvable ! Vous devrez peut-être effectuer \"Recharger la "
-"configuration\""
 
-#: src/widget/unit_file_panel/imp.rs:598
+#: src/widget/unit_file_panel/imp.rs:597
+#, fuzzy
 msgctxt "file"
 msgid "Unit File"
 msgstr "Fichier de l'unité"
 
-#: src/widget/unit_file_panel/imp.rs:600
+#: src/widget/unit_file_panel/imp.rs:599
 msgctxt "file"
 msgid "Drop In"
-msgstr "Drop In"
+msgstr ""
 
 #. Create Drop in file name
-#: src/widget/unit_file_panel/imp.rs:911
+#: src/widget/unit_file_panel/imp.rs:910
 msgctxt "file"
 msgid "Editing"
-msgstr "Nom du fichier Drop-in créé"
+msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:921
+#: src/widget/unit_file_panel/imp.rs:920
 msgctxt "file"
 msgid "Note: you can change the drop-in file name by modifying the above line"
 msgstr ""
-"Remarque : vous pouvez modifier le nom du fichier du drop-in en changeant la "
-"ligne du dessus"
 
-#: src/widget/unit_file_panel/imp.rs:931
+#: src/widget/unit_file_panel/imp.rs:930
 msgctxt "file"
 msgid ""
 "Anything between here and the comment below will become the contents of the "
 "drop-in file"
 msgstr ""
-"Tout ce qui se trouve entre ici et le commentaire ci-dessous deviendra le "
-"contenu du fichier de remplacement"
 
 #. Create Drop in file footer
-#: src/widget/unit_file_panel/imp.rs:940
+#: src/widget/unit_file_panel/imp.rs:939
 msgctxt "file"
 msgid "Edits below this comment will be discarded"
-msgstr "Les modifications apportées après ce commentaire seront ignorées"
+msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:1028
-#, rust-format
+#: src/widget/unit_file_panel/imp.rs:1027
+#, fuzzy, rust-format
 msgctxt "file"
 msgid "Unit {} reverted successfully!"
 msgstr "Fichier {} restaurée avec succès !"
 
-#: src/widget/unit_file_panel/imp.rs:1073
+#: src/widget/unit_file_panel/imp.rs:1072
 msgctxt "file"
 msgid "Not able to revert unit, permission not granted!"
-msgstr "Impossible de revenir en arrière, autorisation non accordée!"
+msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:1081
+#: src/widget/unit_file_panel/imp.rs:1080
 msgctxt "file"
 msgid "Not able to revert unit, an error happened!"
-msgstr "Impossible de revenir en arrière, une erreur s'est produite!"
+msgstr ""
 
 #. Menu item label for status menu
 #. Show Line Number Menu Item
-#: src/widget/unit_file_panel/imp.rs:1189
+#: src/widget/unit_file_panel/imp.rs:1188
+#, fuzzy
 msgctxt "file"
 msgid "Display Line Numbers"
-msgstr "Afficher les numéros de ligne"
+msgstr "Afficher les Chronos"
 
 #: src/widget/unit_list/filter/imp.rs:370
 msgctxt "filter"
 msgid "Any sub states"
-msgstr "Tous les sous-états"
+msgstr ""
 
 #. Clear button
 #: src/widget/unit_list/filter/imp.rs:374
 #: src/widget/unit_list/filter/imp.rs:1073
 #: src/widget/unit_list/filter/substate.rs:142
+#, fuzzy
 msgctxt "filter"
 msgid "Clear"
-msgstr "Réinitialiser"
+msgstr "Effacer"
 
 #. Filter option
 #: src/widget/unit_list/filter/imp.rs:471
+#, fuzzy
 msgctxt "filter"
 msgid "Match Type"
-msgstr "Type de correspondance"
+msgstr "Respecte la casse"
 
 #. Filter option
 #: src/widget/unit_list/filter/imp.rs:489
+#, fuzzy
 msgctxt "filter"
 msgid "Case Insensitive"
 msgstr "Insensible à la casse"
@@ -2933,7 +2967,7 @@ msgstr "Insensible à la casse"
 #: src/widget/unit_list/filter/imp.rs:511
 msgctxt "filter"
 msgid "Unset"
-msgstr "Désactivé"
+msgstr ""
 
 #. Filter option
 #. Invert filter Button
@@ -2941,71 +2975,74 @@ msgstr "Désactivé"
 #: src/widget/unit_list/filter/imp.rs:1094
 msgctxt "filter"
 msgid "Invert"
-msgstr "Inverser"
+msgstr ""
 
 #. Clear button tooltip
 #: src/widget/unit_list/filter/imp.rs:1075
 #: src/widget/unit_list/filter/substate.rs:143
+#, fuzzy
 msgctxt "filter"
 msgid "Clear filter's selected items"
-msgstr "Effacer les éléments sélectionnés du filtre"
+msgstr "Enregistrer le fichier d'unité sélectionné"
 
 #: src/widget/unit_list/filter/imp.rs:1095
+#, fuzzy
 msgctxt "filter"
 msgid "Invert filter's selected items"
-msgstr "Inverser les éléments sélectionnés du filtre"
+msgstr "Enregistrer le fichier d'unité sélectionné"
 
 #: src/widget/unit_list/filter/substate.rs:37
 msgctxt "filter"
 msgid "Add"
-msgstr "Ajouter"
+msgstr ""
 
 #: src/widget/unit_list/filter/substate.rs:38
 msgctxt "filter"
 msgid "Add filter on sub state"
-msgstr "Ajouter un filtre au sous-état"
+msgstr ""
 
 #. Automounts list column name
 #: src/widget/unit_list/imp/construct.rs:143
 msgctxt "list column"
 msgid "Where"
-msgstr "Où"
+msgstr ""
 
 #. Automounts list column name
 #: src/widget/unit_list/imp/construct.rs:154
 msgctxt "list column"
 msgid "What"
-msgstr "Quoi"
+msgstr ""
 
 #. Automounts list column name
 #: src/widget/unit_list/imp/construct.rs:165
 msgctxt "list column"
 msgid "Mounted"
-msgstr "Monté"
+msgstr ""
 
 #. Automounts list column name
 #: src/widget/unit_list/imp/construct.rs:175
 msgctxt "list column"
 msgid "Idle Timeout"
-msgstr "Délai d'inactivité"
+msgstr ""
 
 #. Path list column name
 #: src/widget/unit_list/imp/construct.rs:293
 msgctxt "list column"
 msgid "Condition"
-msgstr "Condition"
+msgstr ""
 
 #. Path list column name
 #: src/widget/unit_list/imp/construct.rs:304
 msgctxt "list column"
 msgid "Path"
-msgstr "Path"
+msgstr ""
 
 #. Path list column name
 #. Unit full name column name
 #: src/widget/unit_list/imp/construct.rs:326
 #: src/widget/unit_list/imp/construct.rs:804
 #: src/widget/unit_list/imp/construct.rs:823
+#, fuzzy
 msgctxt "list column"
 msgid "Unit"
 msgstr "Unité"
@@ -3013,39 +3050,46 @@ msgstr "Unité"
 #: src/widget/unit_list/imp/construct.rs:672
 msgctxt "list column"
 msgid "Sub"
-msgstr "Sous Activation"
+msgstr ""
 
 #: src/widget/unit_list/imp/construct.rs:690
+#, fuzzy
 msgctxt "list column"
 msgid "Load"
-msgstr "Chargement"
+msgstr "Chargés"
 
 #: src/widget/unit_list/imp/construct.rs:708
+#, fuzzy
 msgctxt "list column"
 msgid "Bus"
 msgstr "Bus"
 
 #: src/widget/unit_list/imp/construct.rs:727
+#, fuzzy
 msgctxt "list column"
 msgid "Preset"
 msgstr "Prérégler"
 
 #: src/widget/unit_list/imp/construct.rs:746
+#, fuzzy
 msgctxt "list column"
 msgid "State"
-msgstr "État"
+msgstr "Statut"
 
 #: src/widget/unit_list/imp/construct.rs:765
+#, fuzzy
 msgctxt "list column"
 msgid "Active"
-msgstr "Activation"
+msgstr "OnActiveSec"
 
 #: src/widget/unit_list/imp/construct.rs:784
+#, fuzzy
 msgctxt "list column"
 msgid "Description"
-msgstr "Description"
+msgstr "Durée"
 
 #: src/widget/unit_list/imp/construct.rs:842
+#, fuzzy
 msgctxt "list column"
 msgid "Type"
 msgstr "Type"
@@ -3054,67 +3098,68 @@ msgstr "Type"
 #: src/widget/unit_list/imp/construct.rs:852
 msgctxt "list column"
 msgid "Listen Type"
-msgstr "Types d'écoute"
+msgstr ""
 
 #. Socket list column name
 #: src/widget/unit_list/imp/construct.rs:862
 msgctxt "list column"
 msgid "Listen"
-msgstr "Écoute"
+msgstr ""
 
 #. Timer list column name
 #: src/widget/unit_list/imp/construct.rs:873
 msgctxt "list column"
 msgid "Next"
-msgstr "Suivant"
+msgstr ""
 
 #. Timer list column name
 #: src/widget/unit_list/imp/construct.rs:883
 msgctxt "list column"
 msgid "Left"
-msgstr "Restant"
+msgstr ""
 
 #. Timer list column name
 #: src/widget/unit_list/imp/construct.rs:893
 msgctxt "list column"
 msgid "Last"
-msgstr "Dernier"
+msgstr ""
 
 #. Timer list column name
 #: src/widget/unit_list/imp/construct.rs:902
 msgctxt "list column"
 msgid "Passed"
-msgstr "Passé"
+msgstr ""
 
 #. Timer list column name
 #: src/widget/unit_list/imp/construct.rs:913
+#, fuzzy
 msgctxt "list column"
 msgid "Activates"
-msgstr "Active"
+msgstr "Actions"
 
 #: src/widget/unit_list/imp/pop_menu.rs:166
-#, rust-format
+#, fuzzy, rust-format
 msgctxt "controls"
 msgid "Start unit {}"
-msgstr "Redémarrer l'unité {}"
+msgstr "Redémarrer l'unité"
 
 #: src/widget/unit_list/imp/pop_menu.rs:172
-#, rust-format
+#, fuzzy, rust-format
 msgctxt "controls"
 msgid "Stop unit {}"
-msgstr "Arrêter l'unité {}"
+msgstr "Arrêter l'unité"
 
 #: src/widget/unit_list/imp/pop_menu.rs:178
-#, rust-format
+#, fuzzy, rust-format
 msgctxt "controls"
 msgid "Restart unit {}"
-msgstr "Redémarrer l'unité {}"
+msgstr "Redémarrer l'unité"
 
 #: src/widget/unit_list/imp/pop_menu.rs:196
 #, rust-format
 msgctxt "controls"
 msgid "Disable and then Enable unit {}"
-msgstr "Désactiver et ensuite activer l'unité {}"
+msgstr ""
 
 #: src/widget/unit_list/imp/pop_menu.rs:202
 #, rust-format
@@ -3123,529 +3168,118 @@ msgid ""
 "Reload unit {} configuration by calling the <b>ExecReload</b> unit file "
 "instruction"
 msgstr ""
-"Rechargez la configuration de l'unité {} en appelant l'instruction "
-"<b>ExecReload</b> de son fichier d'unité"
 
 #. column header menu
 #: src/widget/unit_list/menus.rs:19
 msgctxt "menu"
 msgid "Hide this Column"
-msgstr "Masquer cette colonne"
+msgstr ""
 
 #. column header menu
 #: src/widget/unit_list/menus.rs:27
+#, fuzzy
 msgctxt "menu"
 msgid "Configure columns"
-msgstr "Configurer les colonnes"
+msgstr "Configurer l'affichage des colonnes"
 
 #: src/widget/unit_list/menus.rs:33
 msgctxt "menu"
 msgid "Reset all columns"
-msgstr "Réinitialiser toutes les colonnes"
+msgstr ""
 
 #. column header menu
 #: src/widget/unit_list/menus.rs:44
+#, fuzzy
 msgctxt "menu"
 msgid "Configure Filters"
-msgstr "Configurer les filtres"
+msgstr "Supprimer les filtres"
 
 #. column header menu
 #: src/widget/unit_list/menus.rs:52
+#, fuzzy
 msgctxt "menu"
 msgid "Clear Column Filter"
-msgstr "Supprimer les filtres de cette colonne"
+msgstr "Supprimer les filtres"
 
 #. column header menu section
 #: src/widget/unit_list/menus.rs:58
+#, fuzzy
 msgctxt "menu"
 msgid "Filtering"
-msgstr "Filtrage"
+msgstr "Filtres"
 
 #. Menu Option
 #: src/widget/unit_list/mod.rs:178
+#, fuzzy
 msgctxt "menu"
 msgid "Include Unit Files"
-msgstr "Inclure les fichiers d'unité"
+msgstr "Activer le fichier d'unité"
 
 #. Curated List View
 #: src/widget/unit_list/mod.rs:198
+#, fuzzy
 msgctxt "menu"
 msgid "Default"
-msgstr "Défaut"
+msgstr "Par défaut"
 
 #. Curated List View
 #: src/widget/unit_list/mod.rs:202
+#, fuzzy
 msgctxt "menu"
 msgid "Loaded Units"
-msgstr "Unités chargées"
+msgstr "Afficher les unités chargées"
 
 #. List view
 #: src/widget/unit_list/mod.rs:206
+#, fuzzy
 msgctxt "menu"
 msgid "Unit Files"
-msgstr "Fichiers"
+msgstr "Fichiers d'unité"
 
 #. Curated List View
 #: src/widget/unit_list/mod.rs:210
+#, fuzzy
 msgctxt "menu"
 msgid "Timers"
-msgstr "Chronos"
+msgstr "Timer"
 
 #. Curated List View
 #: src/widget/unit_list/mod.rs:214
+#, fuzzy
 msgctxt "menu"
 msgid "Sockets"
-msgstr "Sockets"
+msgstr "Afficher les sockets"
 
 #. Curated List View
 #: src/widget/unit_list/mod.rs:218
+#, fuzzy
 msgctxt "menu"
 msgid "Services"
-msgstr "Services"
+msgstr "Service"
 
 #. Curated List View
 #: src/widget/unit_list/mod.rs:222
 msgctxt "menu"
 msgid "Path"
-msgstr "Path"
+msgstr ""
 
 #. Curated List View
 #: src/widget/unit_list/mod.rs:226
+#, fuzzy
 msgctxt "menu"
 msgid "Automounts"
-msgstr "Automounts"
+msgstr "Afficher les Automounts"
 
 #. Curated List View
 #: src/widget/unit_list/mod.rs:230
+#, fuzzy
 msgctxt "menu"
 msgid "Customized"
-msgstr "Personnalisé"
+msgstr "Personnel"
 
 #. Curated List View
 #: src/widget/unit_list/mod.rs:234
+#, fuzzy
 msgctxt "menu"
 msgid "Favorites"
-msgstr "Favoris"
-
-#~ msgctxt "analyse blame"
-#~ msgid "Analyse Blame"
-#~ msgstr "Temps d'initialisation des unité"
-
-#~ msgctxt "text_find"
-#~ msgid "Open Find in Text"
-#~ msgstr "Ouvrir rechercher dans le texte"
-
-#~ msgctxt "preference"
-#~ msgid "Unit Description"
-#~ msgstr "Description de l'unité"
-
-#~ msgctxt "shortcut window"
-#~ msgid "Display Unit Information"
-#~ msgstr "Afficher les informations sur l'unité"
-
-#~ msgctxt "controls tab"
-#~ msgid "Unit Info"
-#~ msgstr "Information"
-
-#~ msgctxt "toast"
-#~ msgid ""
-#~ "{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</"
-#~ "span> successful"
-#~ msgstr ""
-#~ "{} l'unité <span fgcolor='{0}' font_family='monospace' size='larger'>{}</"
-#~ "span> réussie"
-
-#, rust-format
-#~ msgctxt "toast"
-#~ msgid ""
-#~ "{} unit <span fgcolor='{}' font_family='monospace' size='larger'>{}</"
-#~ "span> failed. Reason: <span fgcolor='{}'>{}</span>."
-#~ msgstr ""
-#~ "{} l'unité <span fgcolor = '{}' font_family = 'monospace' size = "
-#~ "'larger'> {} </span> a échoué. Raison : <span fgcolor = '{}'> {} </span>."
-
-#~ msgid "user"
-#~ msgstr "utilisateur"
-
-#~ msgctxt "controls"
-#~ msgid "Add Favorite"
-#~ msgstr "Ajouter aux Favoris"
-
-#~ msgctxt "controls"
-#~ msgid "Reload"
-#~ msgstr "Recharger"
-
-#~ msgctxt "filter"
-#~ msgid "Case insensitive"
-#~ msgstr "Insensible à la casse"
-
-#~ msgctxt "preference"
-#~ msgid "Reload Daemon"
-#~ msgstr "Recharger la Configuration"
-
-#~ msgctxt "menu"
-#~ msgid "Proxy Management"
-#~ msgstr "Gestion du Proxy"
-
-#~ msgctxt "preference"
-#~ msgid "_Proxy Configuration"
-#~ msgstr "Configuration du _Proxy"
-
-#~ msgctxt "journal"
-#~ msgid ""
-#~ "No journal events!\n"
-#~ "It can be a good thing. 😉"
-#~ msgstr ""
-#~ "Pas d'événements dans le journal !\n"
-#~ "C'est peut être une bonne chose. 😉"
-
-#~ msgctxt "preference"
-#~ msgid "Preferences"
-#~ msgstr "Préférences"
-
-#~ msgctxt "unit search"
-#~ msgid "Clear Filters"
-#~ msgstr "Supprimer les filtres"
-
-#~ msgid "find text"
-#~ msgstr "chercher dans le text"
-
-#~ msgctxt "control tooltip"
-#~ msgid "More manage unit actions"
-#~ msgstr "Plus d'actions pour gérer les unités"
-
-#~ msgctxt "title"
-#~ msgid "SysD Manager"
-#~ msgstr "Gestionnaire SysD"
-
-#, fuzzy
-#~ msgctxt "menu"
-#~ msgid "Deamon Reload"
-#~ msgstr "Recharger"
-
-#~ msgctxt "menu"
-#~ msgid "Reload All Units"
-#~ msgstr "Recharger toutes les unités"
-
-#~ msgctxt "list"
-#~ msgid "The name is an alias (symlink to another unit file)."
-#~ msgstr ""
-#~ "Le nom est un alias (lien symbolique vers un autre fichier d'unité)."
-
-#~ msgctxt "list"
-#~ msgid "The unit file is invalid or another error occurred."
-#~ msgstr ""
-#~ "Le fichier d'unité n'est pas valide ou une autre erreur s'est produite."
-
-#~ msgctxt "list"
-#~ msgid ""
-#~ "The unit file is not enabled, but contains an [Install] section with "
-#~ "installation instructions."
-#~ msgstr ""
-#~ "Le fichier d'unité n'est pas activé, mais contient une section [Install] "
-#~ "avec des instructions d'installation."
-
-#~ msgctxt "list"
-#~ msgid ""
-#~ "Enabled via <span fgcolor='#62a0ea'>.wants/</span>, <span "
-#~ "fgcolor='#62a0ea'>.requires/</span> or <u>Alias=</u> symlinks "
-#~ "(permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span>, or "
-#~ "transiently in <span fgcolor='#62a0ea'>/run/systemd/system/</span>)."
-#~ msgstr ""
-#~ "Activé via les liens symboliques <span fgcolor='#62a0ea'>.wants/</span>, "
-#~ "<span fgcolor='#62a0ea'>.requires/</span> ou <u>Alias=</u> (de manière "
-#~ "permanente dans <span fgcolor='#62a0ea'>/etc/systemd/system/</span>, ou "
-#~ "de manière transitoire dans <span fgcolor='#62a0ea'>/run/systemd/system/</"
-#~ "span>)."
-
-#~ msgctxt "list"
-#~ msgid ""
-#~ "The unit file was generated dynamically via a generator tool. See <b>man "
-#~ "systemd.generator(7)</b>. Generated unit files may not be enabled, they "
-#~ "are enabled implicitly by their generator."
-#~ msgstr ""
-#~ "Le fichier unité a été généré dynamiquement via un outil générateur. Voir "
-#~ "<b>man systemd.generator(7)</b>. Les fichiers d'unité générés ne peuvent "
-#~ "pas être activés ; ils le sont implicitement par leur générateur."
-
-#~ msgctxt "list"
-#~ msgid ""
-#~ "The unit file itself is not enabled, but it has a non-empty <u>Also=</u> "
-#~ "setting in the [Install] unit file section, listing other unit files that "
-#~ "might be enabled, or it has an alias under a different name through a "
-#~ "symlink that is not specified in <u>Also=</u>. For template unit files, "
-#~ "an instance different than the one specified in <u>DefaultInstance=</u> "
-#~ "is enabled."
-#~ msgstr ""
-#~ "Le fichier d'unité lui-même n'est pas activé, mais il possède un "
-#~ "paramètre <u>Also=</u> non vide dans la section [Install] du fichier "
-#~ "d'unité, répertoriant d'autres fichiers d'unité susceptibles d'être "
-#~ "activés, ou un alias sous un nom différent via un lien symbolique non "
-#~ "spécifié dans <u>Also=</u>. Pour les fichiers d'unité de modèle, une "
-#~ "instance différente de celle spécifiée dans <u>DefaultInstance=</u> est "
-#~ "activée."
-
-#~ msgctxt "list"
-#~ msgid ""
-#~ "Made available through one or more symlinks to the unit file (permanently "
-#~ "in <span fgcolor='#62a0ea'>/etc/systemd/system/</span> or transiently in "
-#~ "<span fgcolor='#62a0ea'>/run/systemd/system/</span>), even though the "
-#~ "unit file might reside outside of the unit file search path."
-#~ msgstr ""
-#~ "Rendu disponible via un ou plusieurs liens symboliques vers le fichier "
-#~ "unité (de manière permanente dans <span fgcolor='#62a0ea'>/etc/systemd/"
-#~ "system/</span> ou de manière transitoire dans <span fgcolor='#62a0ea'>/"
-#~ "run/systemd/system/</span>), même si le fichier unité peut résider en "
-#~ "dehors du chemin de recherche du fichier unité."
-
-#~ msgctxt "list"
-#~ msgid ""
-#~ "Completely disabled, so that any start operation on it fails (permanently "
-#~ "in <span fgcolor='#62a0ea'>/etc/systemd/system/</span> or transiently in "
-#~ "<span fgcolor='#62a0ea'>/run/systemd/systemd/</span>)."
-#~ msgstr ""
-#~ "Complètement désactivé, de sorte que toute opération de démarrage échoue "
-#~ "(de manière permanente dans <span fgcolor='#62a0ea'>/etc/systemd/system/</"
-#~ "span> ou de manière transitoire dans <span fgcolor='#62a0ea'>/run/systemd/"
-#~ "systemd/</span>)."
-
-#~ msgctxt "list"
-#~ msgid ""
-#~ "The unit file is not enabled, and has no provisions for enabling in the "
-#~ "[Install] unit file section."
-#~ msgstr ""
-#~ "Le fichier d'unité n'est pas activé et ne dispose d'aucune disposition "
-#~ "pour l'activation dans la section du fichier d'unité [Install]."
-
-#~ msgctxt "list"
-#~ msgid ""
-#~ "The unit file has been created dynamically with the runtime API. "
-#~ "Transient units may not be enabled."
-#~ msgstr ""
-#~ "Le fichier d'unité a été créé dynamiquement avec l'API d'exécution. Les "
-#~ "unités transitoires ne peuvent pas être activées."
-
-#~ msgctxt "dependency"
-#~ msgid "Forward"
-#~ msgstr "En avant"
-
-#~ msgctxt "dependency"
-#~ msgid "Reverse"
-#~ msgstr "En arrière"
-
-#~ msgctxt "dependency"
-#~ msgid "After"
-#~ msgstr "Après"
-
-#~ msgctxt "dependency"
-#~ msgid "Before"
-#~ msgstr "Devant"
-
-#~ msgctxt "clean"
-#~ msgid "_Runtime"
-#~ msgstr "_Runtime"
-
-#~ msgctxt "clean"
-#~ msgid "_State"
-#~ msgstr "État"
-
-#~ msgctxt "clean"
-#~ msgid "Cac_he"
-#~ msgstr "Cac_he"
-
-#~ msgctxt "clean"
-#~ msgid "_Logs"
-#~ msgstr "Journau_x"
-
-#~ msgctxt "clean"
-#~ msgid "_File Descriptor Store"
-#~ msgstr "Magasin de descripteurs de _fichiers"
-
-#~ msgctxt "clean"
-#~ msgid "_All"
-#~ msgstr "_Tous"
-
-#~ msgctxt "error"
-#~ msgid ""
-#~ "The program <b>flatpack-spawn</b> is needed if you use the application "
-#~ "from Flatpack.\n"
-#~ "Please install it to enable all features."
-#~ msgstr ""
-#~ "Le programme <b> flatPack-spawn </b> est nécessaire si vous utilisez "
-#~ "l'application sous format Flatpack.\n"
-#~ "Veuillez l'installer pour activer toutes les fonctionnalités."
-
-#~ msgctxt "error"
-#~ msgid ""
-#~ "It requires permission to talk to <b>org.freedesktop.Flatpak</b> D-Bus "
-#~ "interface when the program is a Flatpak."
-#~ msgstr ""
-#~ "Il nécessite l'autorisation de parler à <b> org.freedesktop.flatpak </b> "
-#~ "d-bus interface lorsque le programme est un flatpak."
-
-#~ msgctxt "pref time style"
-#~ msgid "Pretty"
-#~ msgstr "Joli"
-
-#~ msgctxt "pref time style"
-#~ msgid "Pretty usec"
-#~ msgstr "Joli usec"
-
-#~ msgctxt "pref time style"
-#~ msgid "UTC"
-#~ msgstr "UTC"
-
-#~ msgctxt "pref time style"
-#~ msgid "UTC usec"
-#~ msgstr "UTC usec"
-
-#~ msgctxt "pref time style"
-#~ msgid "Unix"
-#~ msgstr "Unix"
-
-#~ msgctxt "pref time style"
-#~ msgid "Unix usec"
-#~ msgstr "Unix usec"
-
-#~ msgctxt "pref time style"
-#~ msgid "Day YYYY-MM-DD HH:MM:SS TZ"
-#~ msgstr "Jour YYYY-MM-DD HH:MM:SS TZ"
-
-#~ msgctxt "pref time style"
-#~ msgid "Day YYYY-MM-DD HH:MM:SS.000000 TZ"
-#~ msgstr "Jour YYYY-MM-DD HH:MM:SS.000000 TZ"
-
-#~ msgctxt "pref time style"
-#~ msgid "Day YYYY-MM-DD HH:MM:SS UTC"
-#~ msgstr "Jour YYYY-MM-DD HH:MM:SS UTC"
-
-#~ msgctxt "pref time style"
-#~ msgid "Day YYYY-MM-DD HH:MM:SS.000000 UTC"
-#~ msgstr "Jour YYYY-MM-DD HH:MM:SS.000000 UTC"
-
-#~ msgctxt "pref time style"
-#~ msgid "Seconds since the epoch"
-#~ msgstr "Secondes depuis l'Époque"
-
-#~ msgctxt "pref time style"
-#~ msgid "Micro seconds since the epoch"
-#~ msgstr "Micro secondes depuis l'Époque"
-
-#~ msgctxt "unit file"
-#~ msgid ""
-#~ "To save this file content, it requires permission to talk to "
-#~ "<b>org.freedesktop.Flatpak</b> D-Bus interface when the program is "
-#~ "packaged as a Flatpak."
-#~ msgstr ""
-#~ "Il nécessite l'autorisation de parler à <b> org.freedesktop.flatpak </b> "
-#~ "d-bus interface lorsque le programme est un Flatpak.bus interface lorsque "
-#~ "le programme est un Flatpak."
-
-#~ msgctxt "unit file"
-#~ msgid ""
-#~ "<b>Option 1:</b> You can use <a href=\"https://flathub.org/apps/"
-#~ "com.github.tchx84.Flatseal\">Flatseal</a>. Under Session Bus Talks add "
-#~ "<b>org.freedesktop.Flatpak</b> and restart the program."
-#~ msgstr ""
-#~ "<b> Option 1 : </b> Vous pouvez utiliser <a href = \"https://frathub.org/"
-#~ "apps/com.github.tchx84.flatseal\">FlatSeal</a>. Sous la section Bus Talks "
-#~ "ajoutez <b> org.freedesktop.flatpak </b> et redémarrez le programme."
-
-#, rust-format
-#~ msgctxt "unit file"
-#~ msgid ""
-#~ "<b>Option 2:</b> Edit the <a href=\"file://{}\">file</a> through another "
-#~ "editor."
-#~ msgstr ""
-#~ "<b> Option 2 : </b> Modifiez le fichier <a href = \"file://{}\"> </a> via "
-#~ "un autre éditeur."
-
-#, rust-format
-#~ msgctxt "unit file"
-#~ msgid "<b>Option 3:</b> In your terminal, run the command: <u>{}</u>"
-#~ msgstr ""
-#~ "<b>Option 3:</b> Dans votre terminal, exécutez la commande: <u>{}</u>"
-
-#~ msgctxt "file"
-#~ msgid "File path:"
-#~ msgstr "Chemin du fichier :"
-
-#~ msgctxt "file"
-#~ msgid "No unit file"
-#~ msgstr "Aucun fichier d'unité"
-
-#~ msgctxt "filter"
-#~ msgid "Unit"
-#~ msgstr "Unité"
-
-#~ msgctxt "filter"
-#~ msgid "Type"
-#~ msgstr "Type"
-
-#~ msgctxt "filter"
-#~ msgid "Bus"
-#~ msgstr "Bus"
-
-#~ msgctxt "filter"
-#~ msgid "State"
-#~ msgstr "État"
-
-#~ msgctxt "filter"
-#~ msgid "Preset"
-#~ msgstr "Préréglage"
-
-#~ msgctxt "filter"
-#~ msgid "Load"
-#~ msgstr "Chargement"
-
-#~ msgctxt "filter"
-#~ msgid "Active"
-#~ msgstr "Activation"
-
-#~ msgctxt "filter"
-#~ msgid "Sub"
-#~ msgstr "Sous activation"
-
-#~ msgctxt "preference"
-#~ msgid "Columns Display Parameters"
-#~ msgstr "Paramètres d'affichage des colonnes"
-
-#~ msgctxt "preference column"
-#~ msgid "Show"
-#~ msgstr "Afficher"
-
-#, rust-format
-#~ msgctxt "preference column"
-#~ msgid "Hide or display unit list column {}"
-#~ msgstr "Masquer ou afficher la colonne de la liste des unités {}"
-
-#~ msgctxt "preference column"
-#~ msgid "Width"
-#~ msgstr "Largeur"
-
-#, rust-format
-#~ msgctxt "preference column"
-#~ msgid "Set width of column {}"
-#~ msgstr "Définir la largeur de la colonne {}"
-
-#~ msgctxt "kill default action"
-#~ msgid "Stop"
-#~ msgstr "Arrêtez"
-
-#~ msgctxt "thaw"
-#~ msgid "Thaw"
-#~ msgstr "Décongeler"
-
-#~ msgctxt "mask"
-#~ msgid "No Unit Selected"
-#~ msgstr "Pas d'unité sélectionnée"
-
-#, fuzzy
-#~ msgctxt "enable"
-#~ msgid "Enable Unit File"
-#~ msgstr "Activer un fichier d'unité"
-
-#, rust-format
-#~ msgctxt "analyse blame"
-#~ msgid "{} seconds"
-#~ msgstr "{} seconds"
+msgstr "Favori"

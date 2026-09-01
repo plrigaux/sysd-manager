@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-01 18:45-0400\n"
+"POT-Creation-Date: 2026-09-01 09:36-0400\n"
 "PO-Revision-Date: 2026-03-16 02:06+0000\n"
 "Last-Translator: Димко <Dymkovych@proton.me>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/sysd-manager/"
@@ -75,73 +75,27 @@ msgid ""
 "Manager Proxy"
 msgstr ""
 
-#: data/interfaces/app_window.ui:13
-msgctxt "menu"
-msgid "Analyze Blame"
-msgstr ""
-
-#: data/interfaces/app_window.ui:17
-msgctxt "menu"
-msgid "Daemon Reload"
-msgstr ""
-
-#: data/interfaces/app_window.ui:21
-msgctxt "menu"
-msgid "Systemd Info"
-msgstr ""
-
-#: data/interfaces/app_window.ui:25
-msgctxt "menu"
-msgid "List Boots"
-msgstr ""
-
-#: data/interfaces/app_window.ui:29
-msgctxt "menu"
-msgid "Watch Signals"
-msgstr ""
-
-#: data/interfaces/app_window.ui:39
-msgctxt "menu"
-msgid "Preferences"
-msgstr "Налаштування"
-
 #: data/interfaces/app_window.ui:43
-#, fuzzy
-msgctxt "menu"
-msgid "Proxy Preferences"
-msgstr "Налаштування"
-
-#: data/interfaces/app_window.ui:47
-msgctxt "menu"
-msgid "Keyboard Shortcuts"
-msgstr "Клавіатурні скорочення"
-
-#: data/interfaces/app_window.ui:51
-msgctxt "menu"
-msgid "About"
-msgstr "Про програму"
-
-#: data/interfaces/app_window.ui:90
 msgctxt "top button tooltip"
 msgid "Open Search Bar"
 msgstr "Відкрити рядок пошуку"
 
-#: data/interfaces/app_window.ui:102
+#: data/interfaces/app_window.ui:54
 msgid "To select system or session bus"
 msgstr ""
 
 #. selector of differents units list
-#: data/interfaces/app_window.ui:109
+#: data/interfaces/app_window.ui:61
 msgctxt "menu"
 msgid "Curated Lists"
 msgstr ""
 
-#: data/interfaces/app_window.ui:110
+#: data/interfaces/app_window.ui:62
 msgctxt "tooltip"
 msgid "To display different units' presentation and subset"
 msgstr ""
 
-#: data/interfaces/app_window.ui:117
+#: data/interfaces/app_window.ui:69
 msgctxt "top button tooltip"
 msgid "Refresh Unit List"
 msgstr ""
@@ -343,55 +297,61 @@ msgctxt "journal"
 msgid "Clear journal events and refetch them"
 msgstr ""
 
-#: data/interfaces/journal_panel.ui:44
+#. checkbox to foillow logs
+#: data/interfaces/journal_panel.ui:39
+msgctxt "journal"
+msgid "Follow"
+msgstr ""
+
+#: data/interfaces/journal_panel.ui:40
 msgctxt "journal"
 msgid "Enable new entries continuous print as they are appended to the journal"
 msgstr ""
 
 #. tooltip
-#: data/interfaces/journal_panel.ui:58
+#: data/interfaces/journal_panel.ui:55
 msgctxt "journal"
 msgid "Toggle events display order"
 msgstr ""
 
 #. tooltip
-#: data/interfaces/journal_panel.ui:64
+#: data/interfaces/journal_panel.ui:61
 msgctxt "journal"
 msgid "List the boots of the system"
 msgstr ""
 
 #. button
-#: data/interfaces/journal_panel.ui:69
+#: data/interfaces/journal_panel.ui:66
 msgctxt "journal"
 msgid "List Boots"
 msgstr ""
 
 #. button
-#: data/interfaces/journal_panel.ui:89
+#: data/interfaces/journal_panel.ui:86
 msgctxt "journal"
 msgid "Current boot"
 msgstr ""
 
 #. button
-#: data/interfaces/journal_panel.ui:95
+#: data/interfaces/journal_panel.ui:92
 msgctxt "journal"
 msgid "All events"
 msgstr ""
 
 #. title
-#: data/interfaces/journal_panel.ui:102
+#: data/interfaces/journal_panel.ui:99
 msgctxt "journal"
 msgid "Boot id"
 msgstr ""
 
 #. wiki link
-#: data/interfaces/journal_panel.ui:149
+#: data/interfaces/journal_panel.ui:146
 msgctxt "journal"
 msgid "For more information"
 msgstr ""
 
 #. description
-#: data/interfaces/journal_panel.ui:153
+#: data/interfaces/journal_panel.ui:150
 msgctxt "journal"
 msgid ""
 "Either there are no log events to display, or you don't have permission to "
@@ -399,7 +359,7 @@ msgid ""
 msgstr ""
 
 #. title
-#: data/interfaces/journal_panel.ui:155
+#: data/interfaces/journal_panel.ui:152
 msgctxt "journal"
 msgid "No journal events"
 msgstr ""
@@ -1010,149 +970,154 @@ msgstr ""
 
 #: data/interfaces/shortcuts.ui:56
 msgctxt "shortcut window"
-msgid "Open List Boots"
+msgid "Open Analyze Blame"
 msgstr ""
 
 #: data/interfaces/shortcuts.ui:62
 msgctxt "shortcut window"
-msgid "Open columns manager"
+msgid "Open List Boots"
 msgstr ""
 
 #: data/interfaces/shortcuts.ui:68
 msgctxt "shortcut window"
-msgid "Deamon Reload"
+msgid "Open columns manager"
 msgstr ""
 
 #: data/interfaces/shortcuts.ui:74
+msgctxt "shortcut window"
+msgid "Deamon Reload"
+msgstr ""
+
+#: data/interfaces/shortcuts.ui:80
 msgctxt "shortcut window"
 msgid "Open Find in Text"
 msgstr ""
 
 #. subtitle
-#: data/interfaces/shortcuts.ui:80
+#: data/interfaces/shortcuts.ui:86
 msgctxt "shortcut window"
 msgid "Create Timer or Service Unit Type"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:81
+#: data/interfaces/shortcuts.ui:87
 msgctxt "shortcut window"
 msgid "Create Unit"
 msgstr ""
 
 #. Section name
-#: data/interfaces/shortcuts.ui:88
+#: data/interfaces/shortcuts.ui:94
 msgctxt "shortcut window"
 msgid "Pages"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:92
+#: data/interfaces/shortcuts.ui:98
 msgctxt "shortcut window"
 msgid "Display Unit Status"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:98
+#: data/interfaces/shortcuts.ui:104
 msgctxt "shortcut window"
 msgid "Display Unit Dependencies"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:104
+#: data/interfaces/shortcuts.ui:110
 msgctxt "shortcut window"
 msgid "Display Unit Definition File"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:110
+#: data/interfaces/shortcuts.ui:116
 msgctxt "shortcut window"
 msgid "Display Unit Journal Events"
 msgstr ""
 
 #. Section name
-#: data/interfaces/shortcuts.ui:117
+#: data/interfaces/shortcuts.ui:123
 msgctxt "shortcut window"
 msgid "Unit"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:121
+#: data/interfaces/shortcuts.ui:127
 msgctxt "shortcut window"
 msgid "Show unit properties"
 msgstr ""
 
 #. In the shortcut Window description
-#: data/interfaces/shortcuts.ui:127
+#: data/interfaces/shortcuts.ui:133
 msgctxt "shortcut window"
 msgid "Save the selected unit file"
 msgstr ""
 
 #. Section name
-#: data/interfaces/shortcuts.ui:134
+#: data/interfaces/shortcuts.ui:140
 msgctxt "shortcut window"
 msgid "Curated Lists"
 msgstr ""
 
 #. subtitle
-#: data/interfaces/shortcuts.ui:138
+#: data/interfaces/shortcuts.ui:144
 msgctxt "shortcut window"
 msgid "Merge Loaded Units with Unit Files"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:139
+#: data/interfaces/shortcuts.ui:145
 msgctxt "shortcut window"
 msgid "Display SysD Manager Original List"
 msgstr ""
 
 #. subtitle
-#: data/interfaces/shortcuts.ui:145
+#: data/interfaces/shortcuts.ui:151
 msgctxt "shortcut window"
 msgid "Display only Loaded Units"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:146
+#: data/interfaces/shortcuts.ui:152
 msgctxt "shortcut window"
 msgid "Display Loaded Units"
 msgstr ""
 
 #. subtitle
-#: data/interfaces/shortcuts.ui:152
+#: data/interfaces/shortcuts.ui:158
 msgctxt "shortcut window"
 msgid "Display only Unit Files"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:153
+#: data/interfaces/shortcuts.ui:159
 msgctxt "shortcut window"
 msgid "Display Unit Files"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:159
+#: data/interfaces/shortcuts.ui:165
 msgctxt "shortcut window"
 msgid "Display User Customised Units list"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:165
+#: data/interfaces/shortcuts.ui:171
 msgctxt "shortcut window"
 msgid "Display Favorite Units"
 msgstr ""
 
 #. Section name
-#: data/interfaces/shortcuts.ui:172
+#: data/interfaces/shortcuts.ui:178
 msgctxt "shortcut window"
 msgid "Special Lists"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:176
+#: data/interfaces/shortcuts.ui:182
 msgctxt "shortcut window"
 msgid "Display Timers"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:182
+#: data/interfaces/shortcuts.ui:188
 msgctxt "shortcut window"
 msgid "Display Sockets"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:188
+#: data/interfaces/shortcuts.ui:194
 msgctxt "shortcut window"
 msgid "Display Paths"
 msgstr ""
 
-#: data/interfaces/shortcuts.ui:194
+#: data/interfaces/shortcuts.ui:200
 msgctxt "shortcut window"
 msgid "Display Automounts"
 msgstr ""
@@ -1777,8 +1742,64 @@ msgid "Running units"
 msgstr ""
 
 #. Just a simple log that it's all ok. Need to set env RUST_LOG="info" to see it
-#: src/main.rs:113
+#: src/main.rs:116
 msgid "Program starting up"
+msgstr ""
+
+#: src/widget/app_window/imp.rs:264
+msgctxt "menu"
+msgid "Analyze Blame"
+msgstr ""
+
+#: src/widget/app_window/imp.rs:269
+msgctxt "menu"
+msgid "Daemon Reload"
+msgstr ""
+
+#: src/widget/app_window/imp.rs:274
+msgctxt "menu"
+msgid "Systemd Info"
+msgstr ""
+
+#: src/widget/app_window/imp.rs:279
+msgctxt "menu"
+msgid "List Boots"
+msgstr ""
+
+#: src/widget/app_window/imp.rs:284
+msgctxt "menu"
+msgid "Watch Signals"
+msgstr ""
+
+#: src/widget/app_window/imp.rs:289
+msgctxt "menu"
+msgid "Create Unit"
+msgstr ""
+
+#: src/widget/app_window/imp.rs:296
+msgctxt "menu"
+msgid "Preferences"
+msgstr "Налаштування"
+
+#: src/widget/app_window/imp.rs:302
+#, fuzzy
+msgctxt "menu"
+msgid "Proxy Preferences"
+msgstr "Налаштування"
+
+#: src/widget/app_window/imp.rs:307
+msgctxt "menu"
+msgid "Keyboard Shortcuts"
+msgstr "Клавіатурні скорочення"
+
+#: src/widget/app_window/imp.rs:311
+msgctxt "menu"
+msgid "About"
+msgstr "Про програму"
+
+#: src/widget/app_window/imp.rs:689
+msgctxt "toast"
+msgid "Check Proxy"
 msgstr ""
 
 #: src/widget/app_window/menu.rs:320
@@ -2460,60 +2481,67 @@ msgctxt "text_find"
 msgid "Toggle Find in Text"
 msgstr ""
 
-#: src/widget/unit_control_panel/controls.rs:63
-#: src/widget/unit_control_panel/controls.rs:183
+#. toast message on success
+#: src/widget/unit_control_panel/controls.rs:59
+#, rust-format
 msgctxt "toast"
-msgid ""
-"Unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> has "
-"been successfully <span fgcolor='{0}'>{}</span>"
+msgid "Unit {} has been successfully {}"
 msgstr ""
 
 #. toast message action on fail
-#: src/widget/unit_control_panel/controls.rs:88
+#: src/widget/unit_control_panel/controls.rs:77
 msgctxt "toast"
 msgid "Disabling"
 msgstr ""
 
 #. toast message action on fail
-#: src/widget/unit_control_panel/controls.rs:92
+#: src/widget/unit_control_panel/controls.rs:81
 msgctxt "toast"
 msgid "Enabling"
 msgstr ""
 
-#. toast message on fail, arg0 : Enabling/Disabling, arg1 : unit name
-#: src/widget/unit_control_panel/controls.rs:101
+#. Toast Ablement Unit status
+#: src/widget/unit_control_panel/controls.rs:89
 #, rust-format
 msgctxt "toast"
-msgid "{} unit {} has failed!"
+msgid ""
+"{} unit {} has failed!\n"
+"Because: {}"
 msgstr ""
 
 #. Toast message action on Reenable, in the rentance: ... has been successfully "Reenable"
-#: src/widget/unit_control_panel/controls.rs:177
+#: src/widget/unit_control_panel/controls.rs:162
 msgctxt "toast"
 msgid "Reenable"
 msgstr ""
 
+#: src/widget/unit_control_panel/controls.rs:168
+#, rust-format
+msgctxt "toast"
+msgid "Unit <unit>{}</unit> has been successfully <span fgcolor='{}'>{}</span>"
+msgstr ""
+
 #. toast message action on fail
-#: src/widget/unit_control_panel/controls.rs:206
+#: src/widget/unit_control_panel/controls.rs:186
 msgctxt "toast"
 msgid "Reenabling"
 msgstr ""
 
-#: src/widget/unit_control_panel/controls.rs:214
+#. Toast reenable Unit status
+#: src/widget/unit_control_panel/controls.rs:191
+#, rust-format
 msgctxt "toast"
-msgid ""
-"{} unit <span fgcolor='{0}' font_family='monospace' size='larger'>{}</span> "
-"has failed!"
+msgid "{} unit {} has failed! {}"
 msgstr ""
 
-#: src/widget/unit_control_panel/controls.rs:238
+#: src/widget/unit_control_panel/controls.rs:217
 #: src/widget/unit_list/imp/pop_menu.rs:190
 #, rust-format
 msgctxt "controls"
 msgid "Disable unit {}"
 msgstr ""
 
-#: src/widget/unit_control_panel/controls.rs:240
+#: src/widget/unit_control_panel/controls.rs:219
 #: src/widget/unit_list/imp/pop_menu.rs:184
 #, rust-format
 msgctxt "controls"
@@ -2569,63 +2597,65 @@ msgid "reloaded"
 msgstr ""
 
 #. toast message
-#: src/widget/unit_control_panel/imp.rs:463
+#: src/widget/unit_control_panel/imp.rs:471
 #, rust-format
 msgctxt "toast"
 msgid "Unit {} has been {} with the mode {}"
 msgstr ""
 
 #. toast message error --  "Can't {ACTION} the unit <unit>{UNITNAME}</unit>, because: {SYSTEMD HUMAN ERROR (english)}"),
-#: src/widget/unit_control_panel/imp.rs:484
+#: src/widget/unit_control_panel/imp.rs:497
 #, rust-format
 msgctxt "toast"
-msgid "Can't {} the unit {}, because: {}"
+msgid ""
+"Can't {} the unit {}!\n"
+"Because: {}"
 msgstr ""
 
-#: src/widget/unit_control_panel/imp.rs:786
+#: src/widget/unit_control_panel/imp.rs:814
 #, rust-format
 msgctxt "toast"
 msgid "{} unit <unit>{}</unit> is <green>successful</green>"
 msgstr ""
 
 #. toast message success (no unit) -- "{ACTION} successful."
-#: src/widget/unit_control_panel/imp.rs:793
+#: src/widget/unit_control_panel/imp.rs:821
 #, rust-format
 msgctxt "toast"
 msgid "{} successful."
 msgstr ""
 
-#: src/widget/unit_control_panel/imp.rs:803
+#: src/widget/unit_control_panel/imp.rs:831
 #, rust-format
 msgctxt "toast"
 msgid "{} unit <unit>{}</unit> failed. Reason: <red>{}</red>."
 msgstr ""
 
 #. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
-#: src/widget/unit_control_panel/imp.rs:814
+#: src/widget/unit_control_panel/imp.rs:842
 #, rust-format
 msgctxt "toast"
 msgid "{} failed. Reason: <red>{}</red>."
 msgstr ""
 
-#: src/widget/unit_control_panel/mod.rs:119
+#: src/widget/unit_control_panel/mod.rs:136
 #, rust-format
 msgctxt "workaround"
 msgid "Unfortunately <b>SysD Manager</b> can't perfom <b>{}</b> action."
 msgstr ""
 
-#: src/widget/unit_control_panel/mod.rs:132
+#: src/widget/unit_control_panel/mod.rs:149
 msgctxt "workaround"
 msgid "The authorisation can be configured in the following file :"
 msgstr ""
 
-#: src/widget/unit_control_panel/mod.rs:152
+#: src/widget/unit_control_panel/mod.rs:169
 msgctxt "workaround"
 msgid "Otherwise, you can try the bellow command line in your terminal"
 msgstr ""
 
 #. workaround dialog title -- "Fail! {SYSTEMD HUMAN ERROR (English)}"
-#: src/widget/unit_control_panel/mod.rs:174
+#: src/widget/unit_control_panel/mod.rs:191
 #, rust-format
 msgctxt "workaround"
 msgid "Fail! {}"
@@ -2740,53 +2770,56 @@ msgid "File {} saved successfully!"
 msgstr ""
 
 #. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:280 src/widget/unit_file_panel/imp.rs:1036
+#: src/widget/unit_file_panel/imp.rs:280 src/widget/unit_file_panel/imp.rs:1035
 msgid "Daemon Reload"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:295 src/widget/unit_file_panel/imp.rs:312
-#: src/widget/unit_file_panel/imp.rs:1052
+#: src/widget/unit_file_panel/imp.rs:297 src/widget/unit_file_panel/imp.rs:311
+#: src/widget/unit_file_panel/imp.rs:1051
 msgctxt "file"
 msgid "Not able to save file, permission not granted!"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:324
+#: src/widget/unit_file_panel/imp.rs:319
 msgctxt "file"
 msgid "Not able to save file, Flatpak permission not granted!"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:332
+#: src/widget/unit_file_panel/imp.rs:325
+#, rust-format
 msgctxt "file"
-msgid "Not able to save file, an error happened!"
+msgid ""
+"Not able to save file!\n"
+" Because: {}"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:506
+#: src/widget/unit_file_panel/imp.rs:505
 msgctxt "file"
 msgid "File not found! You may need to perform \"Daemon Reload\""
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:598
+#: src/widget/unit_file_panel/imp.rs:597
 msgctxt "file"
 msgid "Unit File"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:600
+#: src/widget/unit_file_panel/imp.rs:599
 msgctxt "file"
 msgid "Drop In"
 msgstr ""
 
 #. Create Drop in file name
-#: src/widget/unit_file_panel/imp.rs:911
+#: src/widget/unit_file_panel/imp.rs:910
 msgctxt "file"
 msgid "Editing"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:921
+#: src/widget/unit_file_panel/imp.rs:920
 msgctxt "file"
 msgid "Note: you can change the drop-in file name by modifying the above line"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:931
+#: src/widget/unit_file_panel/imp.rs:930
 msgctxt "file"
 msgid ""
 "Anything between here and the comment below will become the contents of the "
@@ -2794,30 +2827,30 @@ msgid ""
 msgstr ""
 
 #. Create Drop in file footer
-#: src/widget/unit_file_panel/imp.rs:940
+#: src/widget/unit_file_panel/imp.rs:939
 msgctxt "file"
 msgid "Edits below this comment will be discarded"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:1028
+#: src/widget/unit_file_panel/imp.rs:1027
 #, rust-format
 msgctxt "file"
 msgid "Unit {} reverted successfully!"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:1073
+#: src/widget/unit_file_panel/imp.rs:1072
 msgctxt "file"
 msgid "Not able to revert unit, permission not granted!"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:1081
+#: src/widget/unit_file_panel/imp.rs:1080
 msgctxt "file"
 msgid "Not able to revert unit, an error happened!"
 msgstr ""
 
 #. Menu item label for status menu
 #. Show Line Number Menu Item
-#: src/widget/unit_file_panel/imp.rs:1189
+#: src/widget/unit_file_panel/imp.rs:1188
 msgctxt "file"
 msgid "Display Line Numbers"
 msgstr ""
