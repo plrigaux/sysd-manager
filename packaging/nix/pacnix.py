@@ -4,14 +4,17 @@ import tempfile
 import shutil
 import build_aux.build_common as bc
 from build_aux.build_common import color
+import subprocess
+import re
 
 TEMPLATE_DIR = "packaging/nix"
 TEMPLATE_FILE = "package_template.nix"
-
+DEFAULT_NIX = "default.nix"
 
 
 def main():
-    os.chdir("..")
+    #os.chdir("..")
+    bc.position_on_root()
 
     parser = argparse.ArgumentParser(
         description="Nix builder",
@@ -21,7 +24,7 @@ def main():
     parser.add_argument(
         "action",
         choices=[
-            "create",
+            "create","path"
         ],
         help="action to perform",
     )
@@ -45,114 +48,111 @@ def create():
     version = bc.get_version_cargo()
     print(f"Version {color.BOLD}{color.CYAN}{version}{color.END}")
 
-    secure_temp = tempfile.mkdtemp(prefix="sysd-manager-nix")
+    secure_temp = tempfile.mkdtemp(prefix="sysd-manager-nix_")
     print(secure_temp)
 
-    shutil.copy(f'{TEMPLATE_DIR}/{TEMPLATE_FILE}', secure_temp)
-
+    shutil.copy(f'{TEMPLATE_DIR}/{TEMPLATE_FILE}', f'{secure_temp}/{DEFAULT_NIX}')
     
-    with open(f"{secure_temp}/{TEMPLATE_FILE}", "r") as pkgbuild_file:
-        print("WRITE Version ")
+    with open(f"{secure_temp}/{DEFAULT_NIX}", "r") as pkgbuild_file:
         pkgbuild_text = pkgbuild_file.read()
         # set the version
 
     pkgbuild_text = pkgbuild_text.replace("{VERSION}", version)
 
-    with open(f"{secure_temp}/{TEMPLATE_FILE}", "w") as pkgbuild_file:
-        print(f"WRITE VERSION {version}")
-        
+    with open(f"{secure_temp}/{DEFAULT_NIX}", "w") as pkgbuild_file:
+        print(f"Write VERSION {color.YELLOW}{version}{color.END}")
         pkgbuild_file.write(pkgbuild_text)
 
+    file = f"{secure_temp}/{DEFAULT_NIX}"
+    replace_in_file(file, "{VERSION}", version)
+    
+    print(f"{color.BOLD}Build to find SHA{color.END}")
+    out_lines = nix_build(secure_temp)
 
-def do_check_sum():
+    pattern = r"got:\s+(sha256-\S+)"
 
-    cmd = ["makepkg", "--geninteg", "--clean", "--cleanbuild"]
-    checksum = bc.cmd_run_str(cmd, cwd=f"{AUR_OUT_DIR}")
+    sha = None
+    for line in out_lines:
+        match = re.search(pattern, line)
+        if match:
+            sha = match.group(1)
+            print(f"git sha: {color.BLUE}{sha}{color.END}")
+            break
 
-    # checksum = checksum.replace("'","\"")
-    print("OUT: ", checksum)
+    if not sha:        
+        print(f"{color.RED}Sha not found{color.END}")
+        return
 
-    pkgbuild_text = ""
+    print(f"Write SHA {color.YELLOW}{sha}{color.END}")    
+    replace_in_file(file,
+        "hash = \"sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        f"hash = \"{sha}")
+    
+    out_lines = nix_build(secure_temp)
+    
+    sha = None
+    for line in out_lines:
+        match = re.search(pattern, line)
+        if match:
+            sha = match.group(1)
+            print(f"cargo sha: {color.BLUE}{sha}{color.END}")
+            break
 
-    with open(f"{AUR_OUT_DIR}/{PKGBUILD}", "r") as pkgbuild_file:
-        print("WRITE SUM on ")
+    if not sha:        
+        print(f"{color.RED}Sha not found{color.END}")
+        return
+
+    print(f"Write Cargo SHA {color.YELLOW}{sha}{color.END}")
+    replace_in_file(file,
+        "cargoHash = \"sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        f"cargoHash = \"{sha}")
+
+    
+    print(f"{color.BOLD}Uploading to Release{color.END}")
+    bc.publish_upload(file)
+    
+def replace_in_file(path, pattern, replace):
+    
+    with open(path, "r") as pkgbuild_file:
         pkgbuild_text = pkgbuild_file.read()
-        # set the version
 
-    pkgbuild_text = pkgbuild_text.replace("sha256sums=()\n", checksum)
+    pkgbuild_text = pkgbuild_text.replace(pattern, replace)
 
-    with open(f"{AUR_OUT_DIR}/{PKGBUILD}", "w") as pkgbuild_file:
-        print("WRITE SUM ")
-
+    with open(path, "w") as pkgbuild_file:
         pkgbuild_file.write(pkgbuild_text)
+        
+def nix_build(dir):
+        
+    command = ["nix-build", "-E", 'with import <nixpkgs> {}; callPackage ./default.nix {}']
+    
+    print(f"{color.GREEN}Change Working Dir to: {dir}{color.END}")
+    cmd_str = " ".join(command)
 
+    print(f"{color.DARKCYAN}{cmd_str}{color.END}")
+        
+    try:
+        proc = subprocess.Popen(
+            command, 
+            #capture_output=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,  
+            text=True,            # Returns output as a string instead of bytes
+            bufsize=1,
+            cwd=dir,
+        )
 
-def check_package():
-    cmd = ["namcap", "--info", "PKGBUILD"]
-    bc.cmd_run_str(cmd, cwd=f"{AUR_OUT_DIR}")
+        captured_output = []
+    
+        # Read line-by-line until EOF
+        for line in proc.stdout:
+            #line = line.strip()
+            #print(line)              # Display in real-time
+            captured_output.append(line)  # Capture for later use
+    
+        proc.wait()
+        return captured_output         
 
-
-def generate_sourceinfo():
-    cmd = ["makepkg", "--printsrcinfo"]
-    printsrcinfo = bc.cmd_run_str(cmd, cwd=f"{AUR_OUT_DIR}")
-
-    with open(f"{AUR_OUT_DIR}/.SRCINFO", "w") as srcinfo_file:
-        print("WRITE .SRCINFO")
-        srcinfo_file.write(printsrcinfo)
-
-
-def install():
-    cmd = ["makepkg", "--install"]
-    printsrcinfo = bc.cmd_run_str(cmd, cwd=f"{AUR_OUT_DIR}")
-
-    with open(f"{AUR_OUT_DIR}/.SRCINFO", "w") as srcinfo_file:
-        print("WRITE .SRCINFO")
-        srcinfo_file.write(printsrcinfo)
-
-
-def gen_pkfile(release=None):    
-    create_pkgbuild(release)
-    do_check_sum()
-    generate_sourceinfo()
-
-
-def generate_and_push(release=None):
-    gen_pkfile(release)
-
-    push()
-
-
-def push():
-    tag_name = bc.get_version_tag()
-
-    print(f"Commit {color.BOLD}{color.CYAN}{tag_name}{color.END}")
-
-    bc.cmd_run(["git", "commit", "-a", "-m", f'"{tag_name}"'], cwd=f"{AUR_OUT_DIR}")
-
-    print(f"{color.BOLD}{color.CYAN}Push on AUR{color.END}")
-
-    bc.cmd_run(["git", "push"], cwd=f"{AUR_OUT_DIR}")
-
-
-def make(release=None):
-    gen_pkfile(release)
-
-    bc.cmd_run(["makepkg"], cwd=f"{AUR_OUT_DIR}")
-
-
-def clean():
-    list_dir = [
-        "*",
-    ]
-
-    for f in list_dir:
-        print(f"{color.BOLD}Deleting{color.END} {color.YELLOW}{f}{color.END}")
-        # x = " ".join(["rm", "-fr", f])
-        bc.cmd_run(["rm", "-fr", f], cwd=f"{AUR_OUT_DIR}", shell=True)
-
-def local():
-    print(f"{color.BOLD}{color.CYAN}Local install{color.END}")
-
-    bc.cmd_run(["makepkg", "-si"], cwd=f"{AUR_OUT_DIR}")
-
-
+    except subprocess.CalledProcessError as e:
+        print(f"Command failed with exit code {e.returncode}")
+        print("Error output:\n", e.stderr)
+    

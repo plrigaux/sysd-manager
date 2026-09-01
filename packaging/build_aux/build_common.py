@@ -2,6 +2,8 @@ import subprocess
 import pprint
 import git
 import tomllib
+import os
+from pathlib import Path
 from typing import Optional
 
 
@@ -215,9 +217,34 @@ def just_publish(version, file=None):
     cmd_run(cmd)
 
 
-def publish_upload(version, file):
-    print(f"{color.CYAN}Publishing Upload version {color.BOLD}{version}{color.END}")
-
-    cmd = ["gh", "release", "upload", version, file, "--clobber"]
+def publish_upload(file):
+    file_name = Path(file).name
+    
+    tag_label = get_version_tag()
+    version = get_version_cargo()
+    
+    print(f"{color.CYAN}Publishing Upload on Version {color.BOLD}{version}{color.END} file {color.UNDERLINE}{file_name}{color.END}")
+     
+    cmd = ["gh", "release", "upload", tag_label, file, "--clobber"]
 
     cmd_run(cmd)
+
+
+def position_on_root():
+
+    cur_path = Path.cwd()
+    print(Path.cwd())
+
+    while True:
+        cargo_file_path = cur_path  / 'Cargo.toml'
+        cargo = Path(cargo_file_path)
+
+        if cargo.exists():
+            print(f"change current working dir to {cur_path}")
+            os.chdir(cur_path)
+            break;
+        else:
+            print(f"file {cargo} does not exist, look for parent")
+            cur_path = cur_path.parent
+
+    

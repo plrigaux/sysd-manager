@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
 import build_aux.tag_version as tag
 
-tag.main()
+
+tag.create_release()

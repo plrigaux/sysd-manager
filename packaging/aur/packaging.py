@@ -12,7 +12,8 @@ TEMPLATE_DIR = "packaging/aur"
 
 
 def main():
-    os.chdir("..")
+    # os.chdir("..")
+    bc.position_on_root()
 
     parser = argparse.ArgumentParser(
         description="Aur builder",

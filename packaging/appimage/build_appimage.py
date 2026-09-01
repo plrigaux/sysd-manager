@@ -395,7 +395,8 @@ def just_publish():
 
     file = f"{APP_IMAGE_DIR}/{app_image_file_name(version)}"
     
-    bc.just_publish(version, file)
+    #bc.just_publish(version, file)
+    bc.publish_upload(file)
 
 
 def publish_upload():
@@ -403,7 +404,7 @@ def publish_upload():
 
     file = app_image_file_name(version)
 
-    bc.publish_upload(version, f"{APP_IMAGE_DIR}/{file}")
+    bc.publish_upload(f"{APP_IMAGE_DIR}/{file}")
 
 
 def publish():
@@ -427,7 +428,8 @@ def main():
 
     args = parser.parse_args()
 
-    os.chdir("..")
+
+    bc.position_on_root()
 
     curdir = os.getcwd()
     print(f"{color.BLUE}{color.BOLD}current working dir:{color.END} ", curdir)
