@@ -12,13 +12,12 @@ pub const ERROR_CSS: &str = "error";
 
 pub const APP: &str = "app.";
 
-pub const ACTION_LIST_BOOT: &str = "list_boots";
-pub const APP_ACTION_LIST_BOOT: &str = concat!(APP, ACTION_LIST_BOOT);
+pub const ACTION_APP_LIST_BOOT: &str = "app.list_boots";
+pub const ACTION_APP_ANALYZE_BLAME: &str = "app.analyze_blame";
 pub const ACTION_APP_CREATE_UNIT: &str = "app.create-unit";
 
-pub const APP_ACTION_SEARCH_UNITS: &str = "app.search_units";
-pub const ACTION_DAEMON_RELOAD: &str = "app.daemon-reload";
-//pub const APP_ACTION_DAEMON_RELOAD: &str = concat!(APP, ACTION_DAEMON_RELOAD);
+pub const ACTION_APP_SEARCH_UNITS: &str = "app.search_units";
+pub const ACTION_APP_DAEMON_RELOAD: &str = "app.daemon-reload";
 
 pub const ACTION_DAEMON_RELOAD_BUS: &str = "daemon-reload-bus";
 pub const APP_ACTION_DAEMON_RELOAD_BUS: &str = concat!(APP, ACTION_DAEMON_RELOAD_BUS);

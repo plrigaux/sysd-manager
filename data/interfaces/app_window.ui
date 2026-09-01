@@ -5,35 +5,6 @@
   <requires lib="gio" version="2.0"/>
   <requires lib="gtk" version="4.16"/>
   <requires lib="libadwaita" version="1.6"/>
-  <menu id="main-menu">
-    <section>
-      <attribute name="label">Create Unit</attribute>
-      <item>
-        <attribute name="action">app.analyze_blame</attribute>
-        <attribute name="label" translatable="yes" context="menu">Analyze Blame</attribute>
-      </item>
-      <item>
-        <attribute name="action">app.daemon-reload</attribute>
-        <attribute name="label" translatable="yes" context="menu">Daemon Reload</attribute>
-      </item>
-      <item>
-        <attribute name="action">app.systemd_info</attribute>
-        <attribute name="label" translatable="yes" context="menu">Systemd Info</attribute>
-      </item>
-      <item>
-        <attribute name="action">app.list_boots</attribute>
-        <attribute name="label" translatable="yes" context="menu">List Boots</attribute>
-      </item>
-      <item>
-        <attribute name="action">app.signals</attribute>
-        <attribute name="label" translatable="yes" context="menu">Watch Signals</attribute>
-      </item>
-      <item>
-        <attribute name="action">app.create-unit</attribute>
-        <attribute name="label">Create Unit</attribute>
-      </item>
-    </section>
-  </menu>
   <template class="SysdMainAppWindow" parent="AdwApplicationWindow">
     <property name="default-height">720</property>
     <property name="default-width">1280</property>
@@ -76,7 +47,6 @@
                 <child type="end">
                   <object class="GtkMenuButton" id="menu_button">
                     <property name="icon-name">open-menu-symbolic</property>
-                    <property name="menu-model">main-menu</property>
                   </object>
                 </child>
                 <child type="start">

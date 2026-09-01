@@ -2,11 +2,11 @@ use std::collections::BTreeSet;
 use std::env;
 use std::fmt::Write;
 
-use crate::consts::ACTION_DAEMON_RELOAD_BUS;
+use crate::consts::{ACTION_APP_ANALYZE_BLAME, ACTION_DAEMON_RELOAD_BUS};
 use crate::widget::close_window_shortcut;
 use crate::{
     analyze::build_analyze_window,
-    consts::ACTION_DAEMON_RELOAD,
+    consts::ACTION_APP_DAEMON_RELOAD,
     systemd,
     widget::{
         app_window::AppWindow,
@@ -43,7 +43,7 @@ pub fn on_startup(app: &adw::Application) {
         })
         .build();
 
-    let analyze_blame = gio::ActionEntry::builder("analyze_blame")
+    let analyze_blame = gio::ActionEntry::builder(&ACTION_APP_ANALYZE_BLAME[4..])
         .activate(|application: &adw::Application, _b, _c| {
             let wins = application.windows();
             match build_analyze_window() {
@@ -159,7 +159,7 @@ pub fn on_startup(app: &adw::Application) {
     app.set_accels_for_action(ACTION_NAME_PROXY_MANAGEMENT, &["<Ctrl>period"]);
 
     let daemon_reload_all_units: gio::ActionEntry<adw::Application> =
-        gio::ActionEntry::builder(&ACTION_DAEMON_RELOAD[4..])
+        gio::ActionEntry::builder(&ACTION_APP_DAEMON_RELOAD[4..])
             .activate(|application: &adw::Application, simple_action, _variant| {
                 let simple_action = simple_action.clone();
                 let application = application.clone();
