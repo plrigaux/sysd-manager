@@ -83,14 +83,7 @@ pub(super) fn switch_ablement_state_set(
                     _ => (expected_new_status.label().to_owned(), "???"),
                 };
 
-                let error_message = &error.human_error_type();
-                let toast_info = format2!(
-                    //Toast Ablement Unit status
-                    pgettext("toast", "{} unit {} has failed!\nBecause: {}"),
-                    action_str,
-                    format!("<unit>{}</unit> ", unit.primary()),
-                    error_message
-                );
+                let toast_info = make_toast_message(&unit, error, &action_str);
 
                 warn!(
                     "{action_log} unit {} has Failed! : {error:?}",
@@ -105,6 +98,22 @@ pub(super) fn switch_ablement_state_set(
 
         call_back()
     });
+}
+
+fn make_toast_message(
+    unit: &UnitInfo,
+    error: &systemd::errors::SystemdErrors,
+    action_str: &str,
+) -> String {
+    let error_message = &error.human_error_type();
+    let toast_info = format2!(
+        //Toast Message on fail action {Action} {UnitName} {ErrorMessage}
+        pgettext("toast", "{} unit {} has failed!\nBecause: {}"),
+        action_str,
+        format!("<unit>{}</unit> ", unit.primary()),
+        error_message
+    );
+    toast_info
 }
 
 pub(super) fn reenable_unit(
@@ -185,14 +194,7 @@ pub(super) fn reenable_unit(
                 //toast message action on fail
                 let action_str = pgettext("toast", "Reenabling");
 
-                let error_message = &error.human_error_type();
-                let toast_info = format2!(
-                    //Toast reenable Unit status
-                    pgettext("toast", "{} unit {} has failed! {}"),
-                    action_str,
-                    format!("<unit>{}</unit> ", unit.primary()),
-                    error_message
-                );
+                let toast_info = make_toast_message(&unit, error, &action_str);
 
                 warn!(
                     "{action_str} unit {:?} has failed! Error: {error:?}",

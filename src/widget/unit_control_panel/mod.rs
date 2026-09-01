@@ -146,7 +146,7 @@ pub fn work_around_dialog(cmd: &str, err: &SystemdErrors, method: &str, window: 
                 // workaround text line
                 pgettext(
                     "workaround",
-                    "The authorisation can be configured in the following file :",
+                    "The authorisation can be configured in the following file:",
                 ),
             )
             .build(),
@@ -166,7 +166,7 @@ pub fn work_around_dialog(cmd: &str, err: &SystemdErrors, method: &str, window: 
                 // workaround text line
                 pgettext(
                     "workaround",
-                    "Otherwise, you can try the bellow command line in your terminal",
+                    "Otherwise, you can try the bellow command line in your terminal.",
                 ),
             )
             .margin_top(10)
