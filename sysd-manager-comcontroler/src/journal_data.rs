@@ -200,7 +200,7 @@ impl BootCol {
     }
 
     pub fn neg_offset(&self) -> i32 {
-        -(self.total - self.index)
+        self.total + self.index
     }
 
     pub fn index(&self) -> i32 {

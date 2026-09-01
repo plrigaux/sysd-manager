@@ -780,7 +780,7 @@ pub fn get_unit_journal_continuous(
 }
 
 pub fn list_boots() -> Result<Vec<Boot>, SystemdErrors> {
-    boots::list_boots()
+    boots::list_boots_new_to_old()
 }
 
 pub fn fetch_last_time() -> Result<u64, SystemdErrors> {

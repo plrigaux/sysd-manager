@@ -137,17 +137,17 @@ mod imp {
                 } else {
                     //TODO find the last log
 
-                    let last_time = gio::spawn_blocking(systemd::fetch_last_time)
-                        .await
-                        .expect("Task needs to finish successfully.");
+                    // let last_time = gio::spawn_blocking(systemd::fetch_last_time)
+                    //     .await
+                    //     .expect("Task needs to finish successfully.");
 
-                    let last_time = match last_time {
-                        Ok(last_time) => last_time,
-                        Err(error) => {
-                            warn!("Fetch_last_time  Error {error:?}");
-                            return;
-                        }
-                    };
+                    // let last_time = match last_time {
+                    //     Ok(last_time) => last_time,
+                    //     Err(error) => {
+                    //         warn!("Fetch_last_time  Error {error:?}");
+                    //         return;
+                    //     }
+                    // };
 
                     let mut binding = app_window.imp().cached_list_boots_mut();
                     if let Some(boots) = binding.deref_mut()
@@ -293,7 +293,7 @@ mod imp {
                 let boxed = obj2.downcast_ref::<BoxedAnyObject>().unwrap();
                 let boot2: Ref<Rc<BootCol>> = boxed.borrow();
 
-                compare_boots!(boot2, boot1, $($func),+)
+                compare_boots!(boot1, boot2, $($func),+)
             })
         }};
     }
@@ -396,6 +396,7 @@ mod imp {
     ) {
         let (col1factory, col1) = setup(column_view_column_map, "pos_offset");
         column_view_column_set_sorter!(col1, index);
+
         let (col1bfactory, col1b) = setup(column_view_column_map, "neg_offset");
         column_view_column_set_sorter!(col1b, neg_offset);
         let (col2factory, _) = setup(column_view_column_map, "boot_id");
@@ -425,7 +426,11 @@ mod imp {
         bind!(col3factory, bada);
 
         let bada = move |child: gtk::Label, boot: Ref<Rc<BootCol>>| {
-            let time = systemd::time_handling::get_since_time(boot.last, timestamp_style);
+            let time = if boot.index == 0 {
+                "".to_string()
+            } else {
+                systemd::time_handling::get_since_time(boot.last, timestamp_style)
+            };
             child.set_text(&time);
         };
 
@@ -436,6 +441,11 @@ mod imp {
             child.set_text(&duration);
         };
         bind!(col5factory, bada);
+
+        list_boots_windows
+            .imp()
+            .boots_browser
+            .sort_by_column(Some(col1), gtk::SortType::Ascending);
     }
 
     impl WidgetImpl for ListBootsWindowImp {}

@@ -1,6 +1,6 @@
 use crate::{
     consts::{
-        ACTION_WIN_KEY_JOURNAL_WRAP_WORD, APP_ACTION_LIST_BOOT, CLASS_ERROR, CLASS_SUCCESS,
+        ACTION_APP_LIST_BOOT, ACTION_WIN_KEY_JOURNAL_WRAP_WORD, CLASS_ERROR, CLASS_SUCCESS,
         CLASS_WARNING, SETTING_FIND_IN_TEXT,
     },
     systemd::{
@@ -281,7 +281,7 @@ impl JournalPanelImp {
 
     #[template_callback]
     fn list_boots_clicked(&self, button: gtk::Button) {
-        if let Err(e) = button.activate_action(APP_ACTION_LIST_BOOT, None) {
+        if let Err(e) = button.activate_action(ACTION_APP_LIST_BOOT, None) {
             warn!("Send action Error : {e:?}");
         }
     }

@@ -1,10 +1,11 @@
 use crate::{
     consts::{
-        ACTION_APP_CREATE_UNIT, ACTION_APP_DISPLAY_UNIT, ACTION_APP_PROPERTIES_SELECTOR,
-        ACTION_DAEMON_RELOAD, ACTION_FIND_IN_TEXT_OPEN, ACTION_LIST_BOOT,
-        ACTION_PROPERTIES_SELECTOR_GENERAL, ACTION_UNIT_PROPERTIES_DISPLAY, ACTION_WIN_CHANGE_BUS,
-        APP_ACTION_LIST_BOOT, APP_ACTION_PROPERTIES_SELECTOR_GENERAL, APP_ACTION_SEARCH_UNITS,
-        APP_ACTION_UNIT_PROPERTIES_DISPLAY, WIN_ACTION_SAVE_UNIT_FILE,
+        ACTION_APP_ANALYZE_BLAME, ACTION_APP_CREATE_UNIT, ACTION_APP_DAEMON_RELOAD,
+        ACTION_APP_DISPLAY_UNIT, ACTION_APP_LIST_BOOT, ACTION_APP_PROPERTIES_SELECTOR,
+        ACTION_APP_SEARCH_UNITS, ACTION_FIND_IN_TEXT_OPEN, ACTION_PROPERTIES_SELECTOR_GENERAL,
+        ACTION_UNIT_PROPERTIES_DISPLAY, ACTION_WIN_CHANGE_BUS,
+        APP_ACTION_PROPERTIES_SELECTOR_GENERAL, APP_ACTION_UNIT_PROPERTIES_DISPLAY,
+        WIN_ACTION_SAVE_UNIT_FILE,
     },
     systemd::{data::UnitInfo, journal_data::Boot},
     systemd_gui::{self},
@@ -257,29 +258,61 @@ impl ObjectImpl for AppWindowImpl {
             })
             .build();
 
-        if let Some(menu) = self.menu_button.menu_model().and_downcast::<gio::Menu>() {
-            let menu_section = gio::Menu::new();
+        let main_menu = gio::Menu::new();
 
-            menu_section.append(
-                Some(&pgettext("menu", "Preferences")),
-                Some("app.preferences"),
-            );
+        main_menu.append(
+            Some(&pgettext("menu", "Analyze Blame")),
+            Some(ACTION_APP_ANALYZE_BLAME),
+        );
 
-            #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
-            menu_section.append(
-                Some(&pgettext("menu", "Proxy Preferences")),
-                Some("app.proxy-management"),
-            );
+        main_menu.append(
+            Some(&pgettext("menu", "Daemon Reload")),
+            Some(ACTION_APP_DAEMON_RELOAD),
+        );
 
-            menu_section.append(
-                Some(&pgettext("menu", "Keyboard Shortcuts")),
-                Some("app.shortcuts"),
-            );
+        main_menu.append(
+            Some(&pgettext("menu", "Systemd Info")),
+            Some("app.systemd_info"),
+        );
 
-            menu_section.append(Some(&pgettext("menu", "About")), Some("app.about"));
+        main_menu.append(
+            Some(&pgettext("menu", "List Boots")),
+            Some(ACTION_APP_LIST_BOOT),
+        );
 
-            menu.append_section(None, &menu_section);
-        }
+        main_menu.append(
+            Some(&pgettext("menu", "Watch Signals")),
+            Some("app.signals"),
+        );
+
+        main_menu.append(
+            Some(&pgettext("menu", "Create Unit")),
+            Some(ACTION_APP_CREATE_UNIT),
+        );
+
+        let menu_section = gio::Menu::new();
+
+        menu_section.append(
+            Some(&pgettext("menu", "Preferences")),
+            Some("app.preferences"),
+        );
+
+        #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
+        menu_section.append(
+            Some(&pgettext("menu", "Proxy Preferences")),
+            Some("app.proxy-management"),
+        );
+
+        menu_section.append(
+            Some(&pgettext("menu", "Keyboard Shortcuts")),
+            Some("app.shortcuts"),
+        );
+
+        menu_section.append(Some(&pgettext("menu", "About")), Some("app.about"));
+
+        main_menu.append_section(None, &menu_section);
+
+        self.menu_button.set_menu_model(Some(&main_menu));
     }
 }
 
@@ -411,7 +444,7 @@ impl AppWindowImpl {
         let search_toggle_button = self.search_toggle_button.clone();
         let unit_list_panel = self.unit_list_panel.clone();
         let search_units: gio::ActionEntry<adw::Application> =
-            gio::ActionEntry::builder(&APP_ACTION_SEARCH_UNITS[4..])
+            gio::ActionEntry::builder(&ACTION_APP_SEARCH_UNITS[4..])
                 .activate(move |_, _, _| {
                     if !search_toggle_button.is_active() {
                         search_toggle_button.activate();
@@ -470,7 +503,7 @@ impl AppWindowImpl {
         let list_boots = {
             let app_window = self.obj().clone();
 
-            gio::ActionEntry::builder(ACTION_LIST_BOOT)
+            gio::ActionEntry::builder(&ACTION_APP_LIST_BOOT[4..])
                 .activate(move |_, _, _| {
                     let list_boots_window = ListBootsWindow::new(&app_window);
                     //    list_boots_window.set_transient_for(Some(&list_boots_window));
@@ -610,20 +643,21 @@ impl AppWindowImpl {
             display_unit,
         ]);
 
-        application.set_accels_for_action(APP_ACTION_SEARCH_UNITS, &["<Ctrl>f"]);
+        application.set_accels_for_action(ACTION_APP_SEARCH_UNITS, &["<Ctrl>f"]);
         application.set_accels_for_action("app.open_info", &["<Ctrl>t"]);
         application.set_accels_for_action("app.open_dependencies", &["<Ctrl>d"]);
         application.set_accels_for_action("app.open_journal", &["<Ctrl>j"]);
         application.set_accels_for_action("app.open_file", &["<Ctrl>u"]);
         application.set_accels_for_action("win.unit_list_filter_blank", &["<Ctrl><Alt>f"]);
-        application.set_accels_for_action(APP_ACTION_LIST_BOOT, &["<Ctrl>b"]);
+        application.set_accels_for_action(ACTION_APP_LIST_BOOT, &["<Ctrl>b"]);
+        application.set_accels_for_action(ACTION_APP_ANALYZE_BLAME, &["<Ctrl>m"]);
         application.set_accels_for_action("app.signals", &["<Ctrl>g"]);
         application.set_accels_for_action(APP_ACTION_PROPERTIES_SELECTOR_GENERAL, &["<Ctrl>l"]);
         application.set_accels_for_action(ACTION_APP_QUIT, &["<Ctrl>q"]);
         application.set_accels_for_action("app.debug", &["<Ctrl>1"]);
         application.set_accels_for_action(APP_ACTION_UNIT_PROPERTIES_DISPLAY, &["<Ctrl>p"]);
         application.set_accels_for_action(WIN_ACTION_SAVE_UNIT_FILE, &["<Ctrl>s"]);
-        application.set_accels_for_action(ACTION_DAEMON_RELOAD, &["<Ctrl>r"]);
+        application.set_accels_for_action(ACTION_APP_DAEMON_RELOAD, &["<Ctrl>r"]);
         application.set_accels_for_action(ACTION_FIND_IN_TEXT_OPEN, &["<Shift><Ctrl>f"]);
         application.set_accels_for_action(ACTION_APP_CREATE_UNIT, &["<Shift><Ctrl>c"]);
         application.set_accels_for_action("win.close", &["<Ctrl>w"]);
@@ -709,7 +743,8 @@ impl AppWindowImpl {
         let mut new_boots = Vec::with_capacity(boots.len());
         let total = boots.len() as i32;
         for (index, boot) in boots.into_iter().enumerate() {
-            let col = BootCol::new(boot, index as i32, total);
+            let index = -(index as i32);
+            let col = BootCol::new(boot, index, total);
             new_boots.push(Rc::new(col));
         }
 

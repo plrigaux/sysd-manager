@@ -2,6 +2,8 @@ import subprocess
 import pprint
 import git
 import tomllib
+import os
+from pathlib import Path
 from typing import Optional
 
 
@@ -190,7 +192,7 @@ def version(allow_dirty: bool, message: str, force: bool):
     cmd_run(git_push)
 
 
-def just_publish(version, file):
+def just_publish(version, file=None):
     print(f"{color.CYAN}Publishing version {color.BOLD}{version}{color.END}")
 
     title = f"Release {version}"
@@ -207,15 +209,42 @@ def just_publish(version, file):
         title,
         "--notes",
         "See https://github.com/plrigaux/sysd-manager/blob/main/CHANGELOG.md",
-        file,
     ]
 
+    if file:
+        cmd.append(file) 
+
+    cmd_run(cmd)
+
+
+def publish_upload(file):
+    file_name = Path(file).name
+    
+    tag_label = get_version_tag()
+    version = get_version_cargo()
+    
+    print(f"{color.CYAN}Publishing Upload on Version {color.BOLD}{version}{color.END} file {color.UNDERLINE}{file_name}{color.END}")
+     
+    cmd = ["gh", "release", "upload", tag_label, file, "--clobber"]
+
     cmd_run(cmd)
 
 
-def publish_upload(version, file):
-    print(f"{color.CYAN}Publishing Upload version {color.BOLD}{version}{color.END}")
+def position_on_root():
 
-    cmd = ["gh", "release", "upload", version, file, "--clobber"]
+    cur_path = Path.cwd()
+    print(Path.cwd())
 
-    cmd_run(cmd)
+    while True:
+        cargo_file_path = cur_path  / 'Cargo.toml'
+        cargo = Path(cargo_file_path)
+
+        if cargo.exists():
+            print(f"change current working dir to {cur_path}")
+            os.chdir(cur_path)
+            break;
+        else:
+            print(f"file {cargo} does not exist, look for parent")
+            cur_path = cur_path.parent
+
+    

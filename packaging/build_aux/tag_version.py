@@ -4,8 +4,9 @@ from  build_aux.build_common import color
 import argparse
 import os
 
-def main():
-    os.chdir("..")
+def tag():
+    # os.chdir("..")
+    bc.position_on_root()
 
     parser = argparse.ArgumentParser(
         description="Tag git version",
@@ -41,3 +42,13 @@ def main():
         bc.cmd_run(["git", "push"], on_fail_exit=False)
 
     bc.version(False, None, args.force)
+
+
+def create_release():
+    print("Create release")
+    #os.chdir("..")
+    bc.position_on_root()
+
+    version = bc.get_version_cargo()
+    print(f"Create release for version {version}")
+    bc.just_publish(version)
