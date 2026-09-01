@@ -217,11 +217,14 @@ def just_publish(version, file=None):
     cmd_run(cmd)
 
 
-def publish_upload(version, file):
-    print(f"{color.CYAN}Publishing Upload version {color.BOLD}{version}{color.END}")
- 
-    tag_label = get_version_tag()
+def publish_upload(file):
+    file_name = Path(file).name
     
+    tag_label = get_version_tag()
+    version = get_version_cargo()
+    
+    print(f"{color.CYAN}Publishing Upload on Version {color.BOLD}{version}{color.END} file {color.UNDERLINE}{file_name}{color.END}")
+     
     cmd = ["gh", "release", "upload", tag_label, file, "--clobber"]
 
     cmd_run(cmd)
