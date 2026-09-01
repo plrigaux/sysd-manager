@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-01 09:36-0400\n"
+"POT-Creation-Date: 2026-09-01 13:55-0400\n"
 "PO-Revision-Date: 2026-04-10 23:09+0000\n"
 "Last-Translator: Priit Jõerüüt <jrthwlate@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/sysd-manager/"
@@ -308,7 +308,7 @@ msgctxt "journal"
 msgid "Clear journal events and refetch them"
 msgstr "Kustuta kuvatud süsteemipäeviku kirjed ja laadi nad uuesti"
 
-#. checkbox to foillow logs
+#. checkbox to follow logs
 #: data/interfaces/journal_panel.ui:39
 msgctxt "journal"
 msgid "Follow"
@@ -2538,8 +2538,8 @@ msgctxt "toast"
 msgid "Enabling"
 msgstr "Sisselülitamisel"
 
-#. Toast Ablement Unit status
-#: src/widget/unit_control_panel/controls.rs:89
+#. Toast Message on fail action {Action} {UnitName} {ErrorMessage}
+#: src/widget/unit_control_panel/controls.rs:111
 #, rust-format
 msgctxt "toast"
 msgid ""
@@ -2548,38 +2548,31 @@ msgid ""
 msgstr ""
 
 #. Toast message action on Reenable, in the rentance: ... has been successfully "Reenable"
-#: src/widget/unit_control_panel/controls.rs:162
+#: src/widget/unit_control_panel/controls.rs:171
 msgctxt "toast"
 msgid "Reenable"
 msgstr "Lülita uuesti sisse"
 
-#: src/widget/unit_control_panel/controls.rs:168
+#: src/widget/unit_control_panel/controls.rs:177
 #, rust-format
 msgctxt "toast"
 msgid "Unit <unit>{}</unit> has been successfully <span fgcolor='{}'>{}</span>"
 msgstr ""
 
 #. toast message action on fail
-#: src/widget/unit_control_panel/controls.rs:186
+#: src/widget/unit_control_panel/controls.rs:195
 msgctxt "toast"
 msgid "Reenabling"
 msgstr "Uuesti sisselülitamisel"
 
-#. Toast reenable Unit status
-#: src/widget/unit_control_panel/controls.rs:191
-#, rust-format
-msgctxt "toast"
-msgid "{} unit {} has failed! {}"
-msgstr ""
-
-#: src/widget/unit_control_panel/controls.rs:217
+#: src/widget/unit_control_panel/controls.rs:219
 #: src/widget/unit_list/imp/pop_menu.rs:190
 #, rust-format
 msgctxt "controls"
 msgid "Disable unit {}"
 msgstr "Lülita üksus välja: {}"
 
-#: src/widget/unit_control_panel/controls.rs:219
+#: src/widget/unit_control_panel/controls.rs:221
 #: src/widget/unit_list/imp/pop_menu.rs:184
 #, rust-format
 msgctxt "controls"
@@ -2666,14 +2659,18 @@ msgstr ""
 #: src/widget/unit_control_panel/imp.rs:831
 #, rust-format
 msgctxt "toast"
-msgid "{} unit <unit>{}</unit> failed. Reason: <red>{}</red>."
+msgid ""
+"{} unit <unit>{}</unit> failed.\n"
+"Reason: <red>{}</red>."
 msgstr ""
 
 #. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
 #: src/widget/unit_control_panel/imp.rs:842
 #, rust-format
 msgctxt "toast"
-msgid "{} failed. Reason: <red>{}</red>."
+msgid ""
+"{} failed.\n"
+"Reason: <red>{}</red>."
 msgstr ""
 
 #: src/widget/unit_control_panel/mod.rs:136
@@ -2684,12 +2681,12 @@ msgstr ""
 
 #: src/widget/unit_control_panel/mod.rs:149
 msgctxt "workaround"
-msgid "The authorisation can be configured in the following file :"
+msgid "The authorisation can be configured in the following file:"
 msgstr ""
 
 #: src/widget/unit_control_panel/mod.rs:169
 msgctxt "workaround"
-msgid "Otherwise, you can try the bellow command line in your terminal"
+msgid "Otherwise, you can try the bellow command line in your terminal."
 msgstr ""
 
 #. workaround dialog title -- "Fail! {SYSTEMD HUMAN ERROR (English)}"
