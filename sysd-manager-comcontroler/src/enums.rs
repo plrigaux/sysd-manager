@@ -81,12 +81,11 @@ impl From<String> for Preset {
 #[enum_type(name = "EnablementStatus")]
 pub enum UnitFileStatus {
     #[default]
-    Unknown,
-    Alias,
-    Bad,
-    Disabled,
     Enabled,
     EnabledRuntime,
+    Alias,
+    Disabled,
+    Bad,
     Generated,
     Indirect,
     Linked,
@@ -95,6 +94,7 @@ pub enum UnitFileStatus {
     MaskedRuntime,
     Static,
     Transient,
+    Unknown,
 }
 
 impl UnitFileStatus {
@@ -357,7 +357,6 @@ impl FromStr for UnitFileStatus {
 )]
 #[enum_type(name = "ActiveState")]
 pub enum ActiveState {
-    Unknown,
     Active,
     Activating,
     Reloading,
@@ -367,6 +366,7 @@ pub enum ActiveState {
     Deactivating,
     Maintenance,
     Refreshing,
+    Unknown,
 }
 
 impl ActiveState {
