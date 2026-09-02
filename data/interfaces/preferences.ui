@@ -101,6 +101,12 @@ You can set the application's Dbus level to &lt;u&gt;System&lt;/u&gt; if you wan
                 <property name="title" translatable="yes" context="preference" comments="title">Case Insensitive</property>
               </object>
             </child>
+            <child>
+              <object class="AdwSwitchRow" id="list_active_status_as_icon">
+                <property name="subtitle" translatable="yes" context="preference" comments="subtitle">Display Unit's Active Status as an icon rather than text</property>
+                <property name="title" translatable="yes" context="preference" comments="title">Active State as Icon</property>
+              </object>
+            </child>
           </object>
         </child>
         <child>

@@ -23,7 +23,8 @@ use crate::{
         InterPanelMessage,
         app_window::AppWindow,
         preferences::data::{
-            DbusLevel, KEY_PREF_CASE_INSENSITIVE_DEFAULT, KEY_PREF_UNIT_LIST_DISPLAY_COLORS,
+            DbusLevel, KEY_PREF_CASE_INSENSITIVE_DEFAULT,
+            KEY_PREF_UNIT_LIST_ACTIVE_STAUTUS_AS_ICON, KEY_PREF_UNIT_LIST_DISPLAY_COLORS,
             PREFERENCES,
         },
         unit_list::{
@@ -39,7 +40,7 @@ use crate::{
                 },
             },
             get_clean_col_title,
-            imp::favorites::save_favorites,
+            imp::{column_factories::get_factory_by_id, favorites::save_favorites},
             search_controls::UnitListSearchControls,
         },
         unit_properties_selector::{
@@ -558,6 +559,23 @@ impl UnitListPanelImp {
 
         let action = settings.create_action(&KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY[4..]);
         app_window.add_action(&action);
+
+        let action = settings.create_action(KEY_PREF_UNIT_LIST_ACTIVE_STAUTUS_AS_ICON);
+        app_window.add_action(&action);
+
+        let unit_list_panel = self.obj().clone();
+        action.connect_state_notify(move |_a| {
+            //find the column
+            if let Some(col_active) = unit_list_panel
+                .imp()
+                .current_columns_mut()
+                .get(SysdColumn::Active.id())
+            {
+                let display_color = unit_list_panel.display_color();
+                let factory = get_factory_by_id(&SysdColumn::Active, display_color);
+                col_active.column().set_factory(factory.as_ref());
+            }
+        });
     }
 
     fn generate_column_list(&self) -> Vec<gtk::ColumnViewColumn> {
@@ -1085,6 +1103,18 @@ impl UnitListPanelImp {
             let first_column = first_col.and_downcast_ref::<gtk::ColumnViewColumn>();
 
             units_browser.sort_by_column(first_column, gtk::SortType::Ascending);
+        }
+        // units_browser.con
+
+        if let Some(col_sorter) = sorter.and_downcast_ref::<gtk::ColumnViewSorter>() {
+            col_sorter.connect_primary_sort_order_notify(|cvs| {
+                info!(
+                    "column sorter {:?} {} {:?}",
+                    cvs.primary_sort_column(),
+                    cvs.n_sort_columns(),
+                    cvs.primary_sort_order()
+                )
+            });
         }
     }
 

@@ -448,7 +448,7 @@ macro_rules! column_sorter_lambda {
  }}
 }
 
-macro_rules! create_column_filter {
+macro_rules! create_column_sorter {
     ($($func:ident),+) => {{
         gtk::CustomSorter::new(column_sorter_lambda!( $($func),+))
     }};
@@ -512,16 +512,16 @@ pub fn set_column_factory_and_sorter(
 
 pub fn get_sorter_by_id(id: &SysdColumn) -> Option<gtk::CustomSorter> {
     match id {
-        SysdColumn::Name => Some(create_column_filter!(primary, dbus_level)),
-        SysdColumn::FullName => Some(create_column_filter!(primary, dbus_level)),
-        SysdColumn::Type => Some(create_column_filter!(unit_type)),
-        SysdColumn::Bus => Some(create_column_filter!(dbus_level)),
-        SysdColumn::State => Some(create_column_filter!(enable_status)),
-        SysdColumn::Preset => Some(create_column_filter!(preset)),
-        SysdColumn::Load => Some(create_column_filter!(load_state)),
-        SysdColumn::Active => Some(create_column_filter!(active_state)),
-        SysdColumn::SubState => Some(create_column_filter!(sub_state)),
-        SysdColumn::Description => Some(create_column_filter!(description)),
+        SysdColumn::Name => Some(create_column_sorter!(primary, dbus_level)),
+        SysdColumn::FullName => Some(create_column_sorter!(primary, dbus_level)),
+        SysdColumn::Type => Some(create_column_sorter!(unit_type)),
+        SysdColumn::Bus => Some(create_column_sorter!(dbus_level)),
+        SysdColumn::State => Some(create_column_sorter!(enable_status)),
+        SysdColumn::Preset => Some(create_column_sorter!(preset)),
+        SysdColumn::Load => Some(create_column_sorter!(load_state)),
+        SysdColumn::Active => Some(create_column_sorter!(active_state)),
+        SysdColumn::SubState => Some(create_column_sorter!(sub_state)),
+        SysdColumn::Description => Some(create_column_sorter!(description)),
         SysdColumn::TimerTimeNextElapseRT | SysdColumn::TimerTimeLeftElapseMono => {
             create_next_elapse_column_filter()
         }
@@ -659,7 +659,7 @@ fn generate_default_columns(
 
 fn create_sub_state_column(display_color: bool) -> UnitPropertySelection {
     let sysd_col = SysdColumn::SubState;
-    let sorter = create_column_filter!(sub_state);
+    let sorter = create_column_sorter!(sub_state);
     let column_menu = create_col_menu(&sysd_col);
     let factory = fac_sub_state(display_color);
     let sub_col = gtk::ColumnViewColumn::builder()
@@ -677,7 +677,7 @@ fn create_sub_state_column(display_color: bool) -> UnitPropertySelection {
 
 fn create_load_column(display_color: bool) -> UnitPropertySelection {
     let sysd_col = SysdColumn::Load;
-    let sorter = create_column_filter!(load_state);
+    let sorter = create_column_sorter!(load_state);
     let column_menu = create_col_menu(&sysd_col);
     let factory = fac_load_state(display_color);
     let load_col = gtk::ColumnViewColumn::builder()
@@ -695,7 +695,7 @@ fn create_load_column(display_color: bool) -> UnitPropertySelection {
 
 fn create_bus_column(display_color: bool, _show_dbus_level: bool) -> UnitPropertySelection {
     let sysd_col = SysdColumn::Bus;
-    let sorter = create_column_filter!(dbus_level);
+    let sorter = create_column_sorter!(dbus_level);
     let column_menu = create_col_menu(&sysd_col);
     let factory = fac_bus(display_color);
     let bus_col = gtk::ColumnViewColumn::builder()
@@ -713,7 +713,7 @@ fn create_bus_column(display_color: bool, _show_dbus_level: bool) -> UnitPropert
 
 fn create_unit_file_preset_column(display_color: bool) -> UnitPropertySelection {
     let sysd_col = SysdColumn::Preset;
-    let sorter = create_column_filter!(preset);
+    let sorter = create_column_sorter!(preset);
     let column_menu = create_col_menu(&sysd_col);
     let factory = fac_preset(display_color);
 
@@ -732,7 +732,7 @@ fn create_unit_file_preset_column(display_color: bool) -> UnitPropertySelection 
 
 fn create_unit_file_state(display_color: bool) -> UnitPropertySelection {
     let sysd_col = SysdColumn::State;
-    let sorter = create_column_filter!(enable_status);
+    let sorter = create_column_sorter!(enable_status);
     let column_menu = create_col_menu(&sysd_col);
     let factory = fac_enable_status(display_color);
 
@@ -751,7 +751,7 @@ fn create_unit_file_state(display_color: bool) -> UnitPropertySelection {
 
 fn create_unit_active_status_columun(display_color: bool) -> UnitPropertySelection {
     let sysd_col = SysdColumn::Active;
-    let sorter = create_column_filter!(active_state);
+    let sorter = create_column_sorter!(active_state);
     let column_menu = create_col_menu(&sysd_col);
     let factory = fac_active(display_color);
 
@@ -770,7 +770,7 @@ fn create_unit_active_status_columun(display_color: bool) -> UnitPropertySelecti
 
 fn create_unit_description_column(display_color: bool) -> UnitPropertySelection {
     let sysd_col = SysdColumn::Description;
-    let sorter = create_column_filter!(description);
+    let sorter = create_column_sorter!(description);
     let column_menu = create_col_menu(&sysd_col);
     let factory = fac_descrition(display_color);
 
@@ -789,7 +789,7 @@ fn create_unit_description_column(display_color: bool) -> UnitPropertySelection 
 
 fn create_unit_display_name_column(display_color: bool) -> UnitPropertySelection {
     let sysd_col = SysdColumn::Name;
-    let sorter = create_column_filter!(primary, dbus_level);
+    let sorter = create_column_sorter!(primary, dbus_level);
     let column_menu = create_col_menu(&sysd_col);
     let factory = fac_unit_name(display_color);
 
@@ -809,7 +809,7 @@ fn create_unit_display_name_column(display_color: bool) -> UnitPropertySelection
 
 fn create_unit_display_full_name_column(display_color: bool) -> UnitPropertySelection {
     let sysd_col = SysdColumn::FullName;
-    let sorter = create_column_filter!(primary, dbus_level);
+    let sorter = create_column_sorter!(primary, dbus_level);
     let column_menu = create_col_menu(&sysd_col);
     let factory = fac_unit_name_full(display_color);
 
@@ -828,7 +828,7 @@ fn create_unit_display_full_name_column(display_color: bool) -> UnitPropertySele
 
 fn create_unit_type_column(display_color: bool) -> UnitPropertySelection {
     let sysd_col = SysdColumn::Type;
-    let sorter = create_column_filter!(unit_type);
+    let sorter = create_column_sorter!(unit_type);
     let column_menu = create_col_menu(&sysd_col);
     let factory = fac_unit_type(display_color);
 

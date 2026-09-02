@@ -370,7 +370,7 @@ pub enum ActiveState {
 }
 
 impl ActiveState {
-    pub fn as_str(&self) -> &str {
+    pub fn as_str(&self) -> &'static str {
         match self {
             ActiveState::Unknown => "unknown",
             ActiveState::Active => "active",

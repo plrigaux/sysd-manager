@@ -19,7 +19,8 @@ use crate::{
         preferences::{
             data::{
                 KEY_PREF_CASE_INSENSITIVE_DEFAULT, KEY_PREF_CONTROLS_ALWAYS_SHOWS_START_STOP,
-                KEY_PREF_UNIT_DESCRIPTION_WRAP, KEY_PREF_UNIT_LIST_DISPLAY_COLORS,
+                KEY_PREF_UNIT_DESCRIPTION_WRAP, KEY_PREF_UNIT_LIST_ACTIVE_STAUTUS_AS_ICON,
+                KEY_PREF_UNIT_LIST_DISPLAY_COLORS,
             },
             drop_down_elem::{build_pane_orientation_selector, build_preferred_color_scheme},
             style_scheme::style_schemes,
@@ -136,6 +137,9 @@ pub struct PreferencesDialogImpl {
 
     #[template_child]
     filter_case_insensitive_default_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    list_active_status_as_icon: TemplateChild<adw::SwitchRow>,
 
     #[template_child]
     proxy_banner: TemplateChild<adw::Banner>,
@@ -510,6 +514,14 @@ impl ObjectImpl for PreferencesDialogImpl {
             .bind::<adw::SwitchRow>(
                 KEY_PREF_CONTROLS_ALWAYS_SHOWS_START_STOP,
                 self.unit_always_show_start_stop_switch.as_ref(),
+                "active",
+            )
+            .build();
+
+        settings
+            .bind::<adw::SwitchRow>(
+                KEY_PREF_UNIT_LIST_ACTIVE_STAUTUS_AS_ICON,
+                self.list_active_status_as_icon.as_ref(),
                 "active",
             )
             .build();

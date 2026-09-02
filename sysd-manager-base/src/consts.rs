@@ -27,4 +27,5 @@ pub const SYSTEMD_ANALYZE: &str = "systemd-analyze";
 
 pub const GREEN: &str = "green";
 pub const RED: &str = "red";
+pub const YELLOW: &str = "yellow";
 pub const BOLD: &str = "bold";

@@ -1,7 +1,17 @@
-use std::sync::LazyLock;
-
+use crate::{
+    consts::*,
+    systemd::{
+        data::UnitInfo,
+        enums::{ActiveState, LoadState, Preset, UnitFileStatus},
+    },
+    widget::{
+        preferences::data::{KEY_PREF_UNIT_LIST_ACTIVE_STAUTUS_AS_ICON, PREFERENCES},
+        unit_list::{UnitListPanel, column::SysdColumn},
+        unit_properties_selector::data_selection::UnitPropertySelection,
+    },
+};
 use base::{
-    consts::{BOLD, GREEN, RED},
+    consts::{APP_ID, BOLD, GREEN, RED, YELLOW},
     enums::UnitDBusLevel,
 };
 use gtk::{
@@ -9,6 +19,7 @@ use gtk::{
     prelude::*,
 };
 use indexmap::IndexMap;
+use std::sync::LazyLock;
 use systemd::{
     data::get_custom_property_typed_raw,
     enums::UnitType,
@@ -18,21 +29,6 @@ use systemd::{
     timestamp_is_set,
 };
 use tracing::{error, warn};
-
-use crate::{
-    consts::*,
-    widget::{
-        preferences::data::PREFERENCES, unit_list::column::SysdColumn,
-        unit_properties_selector::data_selection::UnitPropertySelection,
-    },
-};
-use crate::{
-    systemd::{
-        data::UnitInfo,
-        enums::{ActiveState, LoadState, Preset, UnitFileStatus},
-    },
-    widget::unit_list::UnitListPanel,
-};
 
 static BIND_INFO: LazyLock<Quark> = LazyLock::new(|| Quark::from_str("I"));
 static BIND_CSS: LazyLock<Quark> = LazyLock::new(|| Quark::from_str("C"));
@@ -223,26 +219,86 @@ pub fn fac_bus(display_color: bool) -> gtk::SignalListItemFactory {
 pub fn fac_active(display_color: bool) -> gtk::SignalListItemFactory {
     let fac_active = gtk::SignalListItemFactory::new();
 
-    fac_active.connect_setup(|_factory, object| {
-        let item = downcast_list_item!(object);
-        let image = gtk::Image::new();
-        item.set_child(Some(&image));
-    });
+    let settings = gio::Settings::new(APP_ID);
 
-    if display_color {
-        fac_active.connect_bind(|_factory, object| {
-            let (icon_image, unit) = active_icon(object);
-            inactive_display(&icon_image, &unit)
+    if settings.boolean(KEY_PREF_UNIT_LIST_ACTIVE_STAUTUS_AS_ICON) {
+        fac_active.connect_setup(|_factory, object| {
+            let item = downcast_list_item!(object);
+            let image = gtk::Image::new();
+            item.set_child(Some(&image));
         });
 
-        factory_connect_unbind!(&fac_active, *BIND_INFO, *BIND_CSS);
+        if display_color {
+            fac_active.connect_bind(|_factory, object| {
+                let (icon_image, unit) = active_icon(object);
+                inactive_display(&icon_image, &unit)
+            });
+
+            factory_connect_unbind!(&fac_active, *BIND_INFO, *BIND_CSS);
+        } else {
+            fac_active.connect_bind(|_factory, object| {
+                active_icon(object);
+            });
+            factory_connect_unbind!(&fac_active, *BIND_INFO);
+        }
     } else {
-        fac_active.connect_bind(|_factory, object| {
-            active_icon(object);
-        });
-        factory_connect_unbind!(&fac_active, *BIND_INFO);
+        fac_active.connect_setup(factory_setup);
+
+        if display_color {
+            fac_active.connect_bind(move |_factory, object| {
+                let (inscription, unit) = factory_bind_enum!(object, active_state);
+                inactive_display(&inscription, &unit);
+
+                active_state_text_binding(&inscription, &unit);
+
+                let binding = unit
+                    .bind_property(ACTIVE_STATE, &inscription, CSS_CLASSES)
+                    .transform_to(|_, active_state: ActiveState| {
+                        let css_classes = active_state_css_classes(active_state);
+                        css_classes.map(|css| css.to_value())
+                    })
+                    .build();
+
+                store_binding(&inscription, *BIND_CSS, binding);
+
+                let active_state = unit.active_state();
+                // inscription.set_text(Some(load_state.as_str()));
+
+                let css_classes = active_state_css_classes(active_state);
+
+                if let Some(css) = css_classes {
+                    inscription.set_css_classes(&css);
+                } else {
+                    display_inactive!(inscription, unit);
+                }
+            });
+            factory_connect_unbind!(fac_active, *BIND_CSS);
+        } else {
+            fac_active.connect_bind(move |_factory, object| {
+                factory_bind_enum!(object, active_state);
+            });
+        }
     }
     fac_active
+}
+
+fn active_state_text_binding(inscription: &gtk::Inscription, unit: &UnitInfo) {
+    let binding = unit
+        .bind_property(ACTIVE_STATE, inscription, TEXT)
+        .transform_to(|_, active_state: ActiveState| Some(active_state.as_str()))
+        .build();
+    store_binding(inscription, *BIND_INFO, binding);
+}
+
+fn active_state_css_classes<'a>(active_state: ActiveState) -> Option<[&'a str; 2]> {
+    match active_state {
+        ActiveState::Failed => Some([RED, BOLD]),
+
+        ActiveState::Activating | ActiveState::Active => Some([GREEN, BOLD]),
+
+        // _ => Some([CSS_GREY]),
+        _ => None,
+    }
 }
 
 fn active_icon(object: &glib::Object) -> (gtk::Image, UnitInfo) {
@@ -256,7 +312,7 @@ fn active_icon(object: &glib::Object) -> (gtk::Image, UnitInfo) {
     icon_image.set_tooltip_text(Some(state.as_str()));
 
     let binding = unit
-        .bind_property("active_state", &icon_image, "icon-name")
+        .bind_property(ACTIVE_STATE, &icon_image, "icon-name")
         .transform_to(|_, state: ActiveState| state.icon_name())
         .build();
 
@@ -416,7 +472,7 @@ fn load_state_text_binding(inscription: &gtk::Inscription, unit: &UnitInfo) {
 
 fn load_state_css_classes<'a>(load_state: LoadState) -> Option<[&'a str; 2]> {
     match load_state {
-        LoadState::NotFound => Some(["yellow", BOLD]),
+        LoadState::NotFound => Some([YELLOW, BOLD]),
         LoadState::BadSetting | LoadState::Error | LoadState::Masked => Some([RED, BOLD]),
         _ => None,
     }
@@ -544,7 +600,7 @@ fn preset_css_classes(preset_value: Preset) -> Option<[&'static str; 2]> {
     match preset_value {
         Preset::Disabled => Some([RED, BOLD]),
         Preset::Enabled => Some([GREEN, BOLD]),
-        Preset::Ignore => Some(["yellow", BOLD]),
+        Preset::Ignore => Some([YELLOW, BOLD]),
         _ => None,
     }
 }
