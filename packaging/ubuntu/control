@@ -1,12 +1,14 @@
-Package: sysd-manager
+Source: sysd-manager
 Priority: optional
 Section: utils
 Maintainer: Pierre-Luc Rigaux <plrigaux@users.noreply.github.com>
+Build-Depends: debhelper-compat (= 13), cargo, rustc, libgtk-4-dev(>=4.21), libadwaita-1-dev (>=1.8), libgtextutils-dev, libgtksourceview-5-dev (>=5.18)
+Standards-Version: {VERSION}
+
+Package: sysd-manager
 Architecture: amd64 arm64
-Version: {VERSION}
 Homepage: https://github.com/plrigaux/sysd-manager
 # Depends: libgtk-4-1 (>=4.21), libadwaita-1-0 (>=1.8), libsystemd0 (>=257), libgtksourceview-5-0 (>=5.16), libgtextutils0v5
-Build-Depends: debhelper-compat (= 13), cargo, rustc, libgtk-4-dev(>=4.21), libadwaita-1-dev (>=1.8), libgtextutils-dev, libgtksourceview-5-dev (=>5.18)
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Graphical SystemD Manager
   An application to empower user to manage their systemd units via a

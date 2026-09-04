@@ -16,5 +16,5 @@ __pycache__/
 data/schemas/gschemas.compiled
 /po/*.mo
 .claude
-
+/debian
 
