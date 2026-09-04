@@ -18,7 +18,7 @@ class color:
     BOLD = "\033[1m"
     UNDERLINE = "\033[4m"
     END = "\033[0m"
-
+    DARK_ORANGE = "\033[38;5;208m"
 
 def cmd_run(
     cmd: list, shell=False, cwd=None, on_fail_exit=True, verbose=True, env=None
