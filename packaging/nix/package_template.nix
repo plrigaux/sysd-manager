@@ -48,6 +48,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   nativeCheckInputs = [ systemd ];
 
   cargoBuildFlags = [
+    "--release"
     "--features"
     "default"
     "--package"
