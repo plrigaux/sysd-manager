@@ -6,11 +6,11 @@ pub mod pop_menu;
 
 use crate::{
     consts::{
-        ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR, ACTION_WIN_CHANGE_BUS,
-        ACTION_WIN_FAVORITE_SET, ACTION_WIN_FAVORITE_TOGGLE, ACTION_WIN_HIDE_UNIT_COL,
-        ACTION_WIN_REFRESH_POP_MENU, ACTION_WIN_REFRESH_UNIT_LIST, ACTION_WIN_RESET_ALL_COLUMNS,
-        ALL_FILTER_KEY, FILTER_MARK, KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY,
-        WIN_ACTION_INCLUDE_UNIT_FILES,
+        ACTION_WIN_KEY_PREF_UNIT_LIST_ACTIVE_STAUTUS_AS_ICON, ACTION_UNIT_LIST_FILTER,
+        ACTION_UNIT_LIST_FILTER_CLEAR, ACTION_WIN_CHANGE_BUS, ACTION_WIN_FAVORITE_SET,
+        ACTION_WIN_FAVORITE_TOGGLE, ACTION_WIN_HIDE_UNIT_COL, ACTION_WIN_REFRESH_POP_MENU,
+        ACTION_WIN_REFRESH_UNIT_LIST, ACTION_WIN_RESET_ALL_COLUMNS, ALL_FILTER_KEY, FILTER_MARK,
+        KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY, WIN_ACTION_INCLUDE_UNIT_FILES,
     },
     systemd::{
         ListUnitResponse, UnitProperties, UnitPropertiesFlags,
@@ -23,8 +23,7 @@ use crate::{
         InterPanelMessage,
         app_window::AppWindow,
         preferences::data::{
-            DbusLevel, KEY_PREF_CASE_INSENSITIVE_DEFAULT,
-            KEY_PREF_UNIT_LIST_ACTIVE_STAUTUS_AS_ICON, KEY_PREF_UNIT_LIST_DISPLAY_COLORS,
+            DbusLevel, KEY_PREF_CASE_INSENSITIVE_DEFAULT, KEY_PREF_UNIT_LIST_DISPLAY_COLORS,
             PREFERENCES,
         },
         unit_list::{
@@ -560,7 +559,7 @@ impl UnitListPanelImp {
         let action = settings.create_action(&KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY[4..]);
         app_window.add_action(&action);
 
-        let action = settings.create_action(KEY_PREF_UNIT_LIST_ACTIVE_STAUTUS_AS_ICON);
+        let action = settings.create_action(&ACTION_WIN_KEY_PREF_UNIT_LIST_ACTIVE_STAUTUS_AS_ICON[4..]);
         app_window.add_action(&action);
 
         let unit_list_panel = self.obj().clone();

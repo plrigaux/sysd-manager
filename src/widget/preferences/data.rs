@@ -35,7 +35,6 @@ pub const KEY_PREF_PROP_ORIENTATION_MODE: &str = "pref-window-properties-orienta
 pub const KEY_PREF_CASE_INSENSITIVE_DEFAULT: &str = "pref-case-insensitive-default";
 pub const KEY_PREF_CONTROLS_ALWAYS_SHOWS_START_STOP: &str =
     "pref-proxy-controls-always-shows-start-stop";
-pub const KEY_PREF_UNIT_LIST_ACTIVE_STAUTUS_AS_ICON: &str = "pref-unit-list-active-status-as-icon";
 const SIDE_BY_SIDE: &str = "side-by-side";
 const TOP_DOWN: &str = "top-down";
 const AUTO: &str = "auto";

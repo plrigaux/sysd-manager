@@ -5,7 +5,7 @@ use crate::{
         enums::{ActiveState, LoadState, Preset, UnitFileStatus},
     },
     widget::{
-        preferences::data::{KEY_PREF_UNIT_LIST_ACTIVE_STAUTUS_AS_ICON, PREFERENCES},
+        preferences::data::PREFERENCES,
         unit_list::{UnitListPanel, column::SysdColumn},
         unit_properties_selector::data_selection::UnitPropertySelection,
     },
@@ -221,7 +221,7 @@ pub fn fac_active(display_color: bool) -> gtk::SignalListItemFactory {
 
     let settings = gio::Settings::new(APP_ID);
 
-    if settings.boolean(KEY_PREF_UNIT_LIST_ACTIVE_STAUTUS_AS_ICON) {
+    if settings.boolean(&ACTION_WIN_KEY_PREF_UNIT_LIST_ACTIVE_STAUTUS_AS_ICON[4..]) {
         fac_active.connect_setup(|_factory, object| {
             let item = downcast_list_item!(object);
             let image = gtk::Image::new();

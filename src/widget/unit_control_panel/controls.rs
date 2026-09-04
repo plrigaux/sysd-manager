@@ -106,14 +106,14 @@ fn make_toast_message(
     action_str: &str,
 ) -> String {
     let error_message = &error.human_error_type();
-    let toast_info = format2!(
+
+    format2!(
         //Toast Message on fail action {Action} {UnitName} {ErrorMessage}
         pgettext("toast", "{} unit {} has failed!\nBecause: {}"),
         action_str,
         format!("<unit>{}</unit> ", unit.primary()),
         error_message
-    );
-    toast_info
+    )
 }
 
 pub(super) fn reenable_unit(

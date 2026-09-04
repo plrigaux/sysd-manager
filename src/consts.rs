@@ -94,3 +94,5 @@ pub const KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY: &str = "win.pref-unit-list-display
 pub const ACTION_WIN_KEY_JOURNAL_WRAP_WORD: &str = "win.pref-journal-wrap-word";
 pub const UNIT_FILE_LINE_NUMBER_ACTION: &str = "win.unit-file-line-number";
 pub const ACTION_APP_DISPLAY_UNIT: &str = "app.display_unit";
+pub const ACTION_WIN_KEY_PREF_UNIT_LIST_ACTIVE_STAUTUS_AS_ICON: &str =
+    "win.pref-unit-list-active-status-as-icon";
