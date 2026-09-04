@@ -1,0 +1,14 @@
+Package: sysd-manager
+Priority: extra
+Section: base
+Maintainer: Pierre-Luc Rigaux <plrigaux@users.noreply.github.com>
+Architecture: amd64 arm64
+Version: {VERSION}
+Pre-Depends: libc6 (>= 2.0.105)
+Homepage: https://github.com/plrigaux/sysd-manager
+Description: Graphical SystemD Manager
+  An application to empower user to manage their systemd units via a
+  Graphical User Interface. Not only are you able to make changes to
+  the enablement and running status of each of the units, but you
+  will also be able to view and modify their unit files and check
+  the journal logs.

@@ -9,6 +9,9 @@ If this project saves you or your company time, consider [sponsoring](https://gi
 
 ## [Unreleased]
 
+## [2.21.3] - 2026-08-30
+## [2.21.2] - 2026-08-30
+## [2.21.1] - 2026-08-30
 ## [2.21.0] - 2026-08-30
 
 ### Changed
