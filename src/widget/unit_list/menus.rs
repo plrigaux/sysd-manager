@@ -22,14 +22,6 @@ pub fn create_col_menu(key: &SysdColumn) -> gio::MenuModel {
         &variant,
     );
 
-    append_item_variant(
-        &menu,
-        //column header menu
-        &pgettext("menu", "Configure columns"),
-        ACTION_APP_PROPERTIES_SELECTOR,
-        &variant,
-    );
-
     if &SysdColumn::Active == key {
         let item = gio::MenuItem::new(
             Some(&pgettext("menu", "Display as Icon")),
@@ -38,11 +30,23 @@ pub fn create_col_menu(key: &SysdColumn) -> gio::MenuModel {
         menu.append_item(&item);
     }
 
+    let section = gio::Menu::new();
+
+    append_item_variant(
+        &section,
+        //column header menu
+        &pgettext("menu", "Configure columns"),
+        ACTION_APP_PROPERTIES_SELECTOR,
+        &variant,
+    );
+
     let item = gio::MenuItem::new(
         Some(&pgettext("menu", "Reset all columns")),
         Some(ACTION_WIN_RESET_ALL_COLUMNS),
     );
-    menu.append_item(&item);
+    section.append_item(&item);
+
+    menu.append_section(None, &section);
 
     if key.is_custom() {
         let sub_menu = gio::Menu::new();
