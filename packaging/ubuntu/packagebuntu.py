@@ -6,9 +6,10 @@ from pathlib import Path
 import build_aux.build_common as bc
 from build_aux.build_common import color
 
+BUILD_DIR = "sysd-manager-deb"
 TEMPLATE_DIR = "packaging/ubuntu"
 DEFAULT_NIX = "default.nix"
-PACKAGE_DIR = "/tmp/sysd-manager-deb"
+PACKAGE_DIR = f"/tmp/{BUILD_DIR}"
 DEB_DIR = f"{PACKAGE_DIR}/debian"
 
 
@@ -23,7 +24,15 @@ def main():
 
     parser.add_argument(
         "action",
-        choices=["create", "changelog", "control", "rules", "copysource"],
+        choices=[
+            "create",
+            "changelog",
+            "control",
+            "rules",
+            "copysource",
+            "upload",
+            "build",
+        ],
         help="action to perform",
     )
 
@@ -35,9 +44,12 @@ def main():
     if args.release:
         release = args.release
 
+    if not isinstance(release, int):
+        release = 1
+
     match args.action:
         case "create":
-            create()
+            create(release)
         case "changelog":
             write_changelog(release)
         case "control":
@@ -46,16 +58,22 @@ def main():
             write_rules()
         case "copysource":
             copy_source()
+        case "upload":
+            upload_package()
+        case "build":
+            build_package()
 
 
-def create():
+def create(release):
     print(f"{color.BOLD}{color.DARK_ORANGE}Create Unbuntu Package{color.END}")
     set_up_dir()
     copy_source()
     vendor_dep()
-    write_changelog()
-    write_control()
+    write_changelog(release)
+    write_control(release)
     write_rules()
+    build_package()
+    upload_package(release)
 
 
 def set_up_dir():
@@ -96,6 +114,13 @@ directory = "vendor"
     vendor_dir = Path(PACKAGE_DIR) / "vendor"
     bc.cmd_run(["cargo", "vendor", "-q", str(vendor_dir)])
 
+    bc.cmd_run(
+        ["tar", "-cJf", "vendor.tar.xz", "../vendor"],
+        cwd=DEB_DIR,
+        env={"XZ_OPT": str(-9)},
+    )
+    bc.cmd_run(["rm", "-r", "vendor"], cwd=PACKAGE_DIR)
+
 
 def ubuntu_version(version_raw, release):
     # return f"{version_raw}-{release}ubuntu{release}"
@@ -108,18 +133,20 @@ def write_changelog(release=None):
     urgency = "medium"
     distribution = "resolute"
     package = "sysd-manager"
-    version = bc.get_version_cargo()
 
     if not isinstance(release, int):
         release = 1
 
+    version = bc.get_version_cargo()
     version = ubuntu_version(version, release)
     print(f"Version {color.BOLD}{color.DARK_ORANGE}{version}{color.END}")
 
     headerline = f"{package} ({version}) {distribution}; urgency={urgency}"
 
     rfc2822_date = formatdate()
-    trailline = f" -- Pierre-Luc Rigaux <plrigaux@plrigaux@users.noreply.github.com>  {rfc2822_date}"
+    trailline = (
+        f" -- Pierre-Luc Rigaux <plrigaux@users.noreply.github.com>  {rfc2822_date}"
+    )
 
     content = headerline + "\n\n" + "   * See CHANGELOG.md" + "\n\n" + trailline
 
@@ -128,7 +155,7 @@ def write_changelog(release=None):
         changelog_file.write(content)
 
 
-def write_control(release=1):
+def write_control(release):
     version = bc.get_version_cargo()
     print(f"Write {color.BOLD}control{color.END} file. Version {version}")
 
@@ -136,8 +163,6 @@ def write_control(release=1):
         pkgbuild_text = pkgbuild_file.read()
 
     version = bc.get_version_cargo()
-    if not isinstance(release, int):
-        release = 1
 
     version = ubuntu_version(version, release)
     pkgbuild_text = pkgbuild_text.replace("{VERSION}", version)
@@ -171,20 +196,56 @@ def copy_source():
     if not deb_dir.exists():
         deb_dir.mkdir()
 
-    Path(f"{PACKAGE_DIR}/src").symlink_to(Path("src").resolve())
-    # shutil.copytree("src", f"{PACKAGE_DIR}/src" , dirs_exist_ok=True)
-    Path(f"{PACKAGE_DIR}/data").symlink_to(Path("data").resolve())
-    Path(f"{PACKAGE_DIR}/po").symlink_to(Path("po").resolve())
-    Path(f"{PACKAGE_DIR}/sysd-manager-comcontroler").symlink_to(
-        Path("sysd-manager-comcontroler").resolve()
+    dirs = [
+        "src",
+        "data",
+        "po",
+        "tiny_daemon",
+        "transtools",
+        "sysd-manager-proxy",
+        "sysd-manager-translating",
+        "sysd-manager-comcontroler",
+        "sysd-manager-test-base",
+        "sysd-manager-base",
+        "tool",
+        # "vendor",
+    ]
+
+    for dir in dirs:
+        shutil.copytree(dir, f"{PACKAGE_DIR}/{dir}", dirs_exist_ok=True)
+
+    files = ["Cargo.lock", "CHANGELOG.md", "README.md", "Cargo.toml", "build.rs"]
+    for file in files:
+        shutil.copy(file, PACKAGE_DIR)
+
+
+def build_package():
+    print(f"Build {color.BOLD}Package{color.END}")
+    bc.cmd_run(
+        [
+            "dpkg-buildpackage",
+            "-S",
+            "-sa",
+            "-d",
+            "-nc",
+            "-kplrigaux@gmail.com",
+            BUILD_DIR,
+        ],
+        cwd=PACKAGE_DIR,
     )
-    Path(f"{PACKAGE_DIR}/sysd-manager-base").symlink_to(
-        Path("sysd-manager-base").resolve()
+
+
+def upload_package(release):
+    print(
+        f"Upload {color.BOLD}Package{color.END} to {color.BOLD}{color.DARK_ORANGE}PPA{color.END}"
     )
-    Path(f"{PACKAGE_DIR}/sysd-manager-proxy").symlink_to(
-        Path("sysd-manager-proxy").resolve()
+    version = bc.get_version_cargo()
+    version = ubuntu_version(version, release)
+    bc.cmd_run(
+        [
+            "dput",
+            "ppa::plrigaux/ppa",
+            f"sysd-manager_{version}_source.changes",
+        ],
+        cwd="/tmp",
     )
-    Path(f"{PACKAGE_DIR}/Cargo.lock").symlink_to(Path("Cargo.lock").resolve())
-    Path(f"{PACKAGE_DIR}/Cargo.toml").symlink_to(Path("Cargo.toml").resolve())
-    Path(f"{PACKAGE_DIR}/README.md").symlink_to(Path("README.md").resolve())
-    Path(f"{PACKAGE_DIR}/CHANGELOG.md").symlink_to(Path("CHANGELOG.md").resolve())

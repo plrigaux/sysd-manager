@@ -107,7 +107,14 @@ impl UnitCreatorWindowImp {
         let creation_type = self.creation_type.get();
 
         let valid = match self.page_type.get() {
-            PageType::Start if let Some(page) = self.start_page.get() => page.validate(),
+            //TODO use let guard rust 1.95
+            PageType::Start => {
+                if let Some(page) = self.start_page.get() {
+                    page.validate()
+                } else {
+                    true
+                }
+            }
             PageType::Service => true,
             PageType::Timer => true,
             _ => true,

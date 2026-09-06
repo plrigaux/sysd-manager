@@ -12,7 +12,7 @@ members = [
 
 [workspace.package]
 edition = "2024"
-rust-version = "1.95"
+rust-version = "1.93"
 authors = ["Pierre-Luc Rigaux <plrigaux@users.noreply.github.com>"]
 license = "GPL-3.0-or-later"
 repository = "https://github.com/plrigaux/sysd-manager"
@@ -125,3 +125,37 @@ test-base.workspace = true
 #cargo-generate-rpm = "0.14.1"
 quick-xml = "0.42"
 translating = { version = "0.4.2", path = "./sysd-manager-translating", package = "sysd-manager-translating" }
+
+[package.metadata.deb]
+section = "utils"
+maintainer = "Pierre-Luc Rigaux <plrigaux@users.noreply.github.com>"
+depends = "&auto"
+assets = [
+
+  [
+    "target/release/sysd-manager",
+    "usr/bin",
+    "755",
+  ],
+  [
+    "data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg",
+    "usr/share/icons/hicolor/scalable/apps/",
+    "644",
+  ],
+  [
+    "data/schemas/io.github.plrigaux.sysd-manager.gschema.xml",
+    "usr/share/glib-2.0/schemas",
+    "644",
+  ],
+  [
+    "./target/loc/io.github.plrigaux.sysd-manager.desktop",
+    "usr/share/applications",
+    "644",
+  ],
+  [
+    "./target/loc/io.github.plrigaux.sysd-manager.metainfo.xml",
+    "usr/share/metainfo",
+    "644",
+  ],
+
+]

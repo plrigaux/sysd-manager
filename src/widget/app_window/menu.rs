@@ -393,10 +393,19 @@ fn generate_debug_info() -> String {
     let version = VERSION.to_string();
 
     let _ = writeln!(&mut info, "SysD Manager:  {}", version);
-    let package_format = cfg_select! {
-        feature ="flatpak"=> {"Flatpak"}
-        feature="appimage" => {"AppImage"}
-        _ => {"Other"}
+
+    //COMMENTED BECASUSE UBUNTU LTS is on rust 1.93
+    // let package_format = cfg_select! {
+    //     feature ="flatpak"=> {"Flatpak"}
+    //     feature="appimage" => {"AppImage"}
+    //     _ => {"Other"}
+    // };
+    let package_format = if cfg!(feature = "flatpak") {
+        "Flatpak"
+    } else if cfg!(feature = "appimage") {
+        "AppImage"
+    } else {
+        "Other"
     };
 
     let _ = writeln!(&mut info, "Packaging:  {}", package_format);

@@ -1,8 +1,8 @@
 Source: sysd-manager
 Priority: optional
 Section: utils
-Maintainer: Pierre-Luc Rigaux <plrigaux@plrigaux@users.noreply.github.com>
-Build-Depends: debhelper-compat (= 13), cargo, rustc, libgtk-4-dev(>=4.21), libadwaita-1-dev (>=1.8), libgtextutils-dev, libgtksourceview-5-dev (>=5.18)
+Maintainer: Pierre-Luc Rigaux <plrigaux@users.noreply.github.com>
+Build-Depends: debhelper-compat (= 13), cargo, rustc, libgtk-4-dev(>=4.21), libadwaita-1-dev (>=1.8), libgtextutils-dev, libgtksourceview-5-dev (>=5.18), libsystemd-dev (>=2.21)
 Standards-Version: {VERSION}
 
 Package: sysd-manager

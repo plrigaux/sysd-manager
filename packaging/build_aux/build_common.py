@@ -1,10 +1,12 @@
-import subprocess
-import pprint
-import git
-import tomllib
 import os
+import pprint
+import subprocess
+import sys
 from pathlib import Path
 from typing import Optional
+
+import git
+import tomllib
 
 
 class color:
@@ -20,6 +22,7 @@ class color:
     END = "\033[0m"
     DARK_ORANGE = "\033[38;5;208m"
 
+
 def cmd_run(
     cmd: list, shell=False, cwd=None, on_fail_exit=True, verbose=True, env=None
 ) -> int:
@@ -33,8 +36,11 @@ def cmd_run(
             cmd_str = " ".join(cmd)
         else:
             cmd_str = cmd
+        str_env = ""
+        if not env:
+            str_env = f"env: {env}"
 
-        print(f"{color.DARKCYAN}{cmd_str}{color.END}")
+        print(f"{color.DARKCYAN}{cmd_str}{color.END} {str_env}")
 
     cmd1 = ""
     if shell:
@@ -42,7 +48,7 @@ def cmd_run(
     else:
         cmd1 = cmd
 
-    ret = subprocess.run(cmd1, shell=shell, cwd=cwd, env=env)
+    ret = subprocess.run(cmd1, check=False, shell=shell, cwd=cwd, env=env)
 
     try:
         ret.check_returncode()
@@ -53,7 +59,7 @@ def cmd_run(
             print(f"{color.YELLOW}{cmd_str}{color.END}")
             pprint.pp(err)
             print(f"{color.RED}Exit program{color.END}")
-            exit(ret.returncode)
+            sys.exit(ret.returncode)
         else:
             print(f"{color.YELLOW}Continue program, but {err}{color.YELLOW}")
 
@@ -82,7 +88,7 @@ def cmd_run_str(
             print(f"{color.YELLOW}{cmd_str}{color.END}")
             pprint.pp(err)
             print(f"{color.RED}Exit program{color.END}")
-            exit(1)
+            sys.exit(1)
 
     return ""
 
@@ -197,9 +203,8 @@ def just_publish(version, file=None):
 
     title = f"Release {version}"
 
-
     tag_label = get_version_tag()
-    
+
     cmd = [
         "gh",
         "release",
@@ -212,19 +217,21 @@ def just_publish(version, file=None):
     ]
 
     if file:
-        cmd.append(file) 
+        cmd.append(file)
 
     cmd_run(cmd)
 
 
 def publish_upload(file):
     file_name = Path(file).name
-    
+
     tag_label = get_version_tag()
     version = get_version_cargo()
-    
-    print(f"{color.CYAN}Publishing Upload on Version {color.BOLD}{version}{color.END} file {color.UNDERLINE}{file_name}{color.END}")
-     
+
+    print(
+        f"{color.CYAN}Publishing Upload on Version {color.BOLD}{version}{color.END} file {color.UNDERLINE}{file_name}{color.END}"
+    )
+
     cmd = ["gh", "release", "upload", tag_label, file, "--clobber"]
 
     cmd_run(cmd)
@@ -236,15 +243,13 @@ def position_on_root():
     print(Path.cwd())
 
     while True:
-        cargo_file_path = cur_path  / 'Cargo.toml'
+        cargo_file_path = cur_path / "Cargo.toml"
         cargo = Path(cargo_file_path)
 
         if cargo.exists():
             print(f"change current working dir to {cur_path}")
             os.chdir(cur_path)
-            break;
+            break
         else:
             print(f"file {cargo} does not exist, look for parent")
             cur_path = cur_path.parent
-
-    

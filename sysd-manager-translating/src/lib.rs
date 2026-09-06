@@ -160,6 +160,7 @@ pub fn generate_desktop() -> Result<(), TransError> {
     fs::create_dir_all(PACK_FILE_DIR)?;
     let out_file = format!("{PACK_FILE_DIR}/{DESKTOP_FILE}");
 
+    info!("Generating desktop file to {out_file}");
     let mut command = Command::new("msgfmt");
     let output = command
         .arg("--check")

@@ -6,12 +6,16 @@
 %:
 	dh $@
 
+override_dh_clean:
+	dh_clean -X vendor
+
 override_dh_auto_configure:
 	# Skip standard configure
 
 override_dh_auto_build:
 	echo "Building with cargo"
 	# Force offline build using the vendored directory
+	tar xJf debian/vendor.tar.xz
 	cargo build --frozen --release --features default --package sysd-manager --package sysd-manager-proxy
 
 override_dh_auto_install:
@@ -19,7 +23,7 @@ override_dh_auto_install:
 	pwd
 	# echo Generating translation files
 	# echo ""
-	# cargo run -p transtools -- packfiles
+	cargo run -p transtools -- packfiles
 	echo ""
 	pkgdir="debian/sysd-manager"
 	
