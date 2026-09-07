@@ -15,6 +15,7 @@ use tracing_subscriber::filter::LevelFilter;
 use translating::DESKTOP_FILE_PATH;
 use translating::MAIN_PROG;
 use translating::METAINFO_FILE_PATH;
+use translating::PACK_FILE_DIR;
 use translating::PO_DIR;
 use translating::POLICY_FILE_PATH;
 use translating::error::TransError;
@@ -168,6 +169,24 @@ fn generate_pack() -> Result<(), TransError> {
     translating::generate_desktop()?;
     translating::generate_metainfo()?;
     translating::generate_policy()?;
+
+    const GENERATED: &str = "generated";
+
+    let generated = PathBuf::from(GENERATED);
+
+    if !generated.exists() {
+        fs::create_dir(&generated)?;
+    }
+
+    let entries = fs::read_dir(PACK_FILE_DIR)?;
+
+    for entry in entries {
+        let entry = entry?;
+        let path = entry.path();
+        let file_name = path.file_name().unwrap();
+
+        fs::copy(&path, generated.join(file_name))?;
+    }
 
     Ok(())
 }

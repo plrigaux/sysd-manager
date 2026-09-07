@@ -2595,14 +2595,14 @@ msgstr "Réactivation"
 #, rust-format
 msgctxt "controls"
 msgid "Disable unit {}"
-msgstr "Désactiver l'unité"
+msgstr "Désactiver l'unité {}"
 
 #: src/widget/unit_control_panel/controls.rs:221
 #: src/widget/unit_list/imp/pop_menu.rs:184
 #, rust-format
 msgctxt "controls"
 msgid "Enable unit {}"
-msgstr "Activer l'unité"
+msgstr "Activer l'unité {}"
 
 #. unit action in toast message
 #: src/widget/unit_control_panel/enums.rs:24
@@ -3134,7 +3134,7 @@ msgstr "Active"
 #, rust-format
 msgctxt "controls"
 msgid "Start unit {}"
-msgstr "Démarrer l'unité"
+msgstr "Démarrer l'unité {}"
 
 #: src/widget/unit_list/imp/pop_menu.rs:172
 #, rust-format
