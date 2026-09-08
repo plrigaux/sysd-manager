@@ -36,6 +36,8 @@ def main():
             "logs",
             "cargologs",
             "cargo",
+            "publish",
+            "cargo_publish",
         ],
         help="action to perform",
     )
@@ -74,6 +76,10 @@ def main():
             cargo_changelog()
         case "cargo":
             cargo_deb()
+        case "publish":
+            publish()
+        case "cargo_publish":
+            cargo_publish()
 
 
 def create(release):
@@ -384,3 +390,24 @@ def cargo_changelog(release=None):
 
     with open("generated/changelog", "w") as changelog_file:
         changelog_file.write(content)
+
+
+def publish():
+    print(f"{color.BOLD}Uploading to Release{color.END}")
+
+    dir_path = Path("target/debian")
+
+    files = [f for f in dir_path.iterdir() if f.is_file() and f.suffix == ".deb"]
+
+    if files:
+        newest_file = max(files, key=lambda f: f.stat().st_mtime)
+        print(f"Newest deb file: {newest_file}")
+
+        bc.publish_upload(newest_file)
+    else:
+        print(f"{color.RED}No files found in the directory: {dir_path}.{color.RED}")
+
+
+def cargo_publish():
+    cargo_deb()
+    publish()
