@@ -942,13 +942,13 @@ impl CleanOption {
 )]
 #[enum_type(name = "LoadState")]
 pub enum LoadState {
-    #[default]
-    Unknown,
     Loaded,
-    NotFound,
     BadSetting,
     Error,
     Masked,
+    NotFound,
+    #[default]
+    Unknown,
 }
 
 impl LoadState {
