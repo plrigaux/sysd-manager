@@ -238,13 +238,14 @@ fn generate_notes() -> Result<(), ScriptError> {
 }
 
 fn generate_release_notes_rs(release_notes: &[Release]) -> Result<(), ScriptError> {
-    let (version, description) = if let Some(first) = release_notes.first() {
+    let (version, date, description) = if let Some(first) = release_notes.first() {
         (
             format!("Some(r###\"{}\"###)", first.version),
+            format!("Some(r###\"{}\"###)", first.date),
             format!("Some(r###\"{}\"###)", first.description),
         )
     } else {
-        ("None".to_owned(), "None".to_owned())
+        ("None".to_owned(), "None".to_owned(), "None".to_owned())
     };
 
     let Some(out_dir) = env::var_os("OUT_DIR") else {
@@ -260,6 +261,12 @@ fn generate_release_notes_rs(release_notes: &[Release]) -> Result<(), ScriptErro
         &mut w,
         "pub const RELEASE_NOTES_VERSION : Option<&str> = {};",
         version
+    )?;
+
+    writeln!(
+        &mut w,
+        "pub const RELEASE_NOTES_DATE : Option<&str> = {};",
+        date
     )?;
 
     writeln!(

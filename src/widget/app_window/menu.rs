@@ -375,9 +375,13 @@ Priit Jõerüüt <hwlate@joeruut.com>",
     }
 
     if let Some(release_notes) = RELEASE_NOTES {
-        let mut release_notes = String::from(release_notes);
-        release_notes.push_str("<p>_________________________</p><p>Full release notes:</p><p>https://github.com/plrigaux/sysd-manager/blob/main/CHANGELOG.md</p>");
-        about.set_release_notes(&release_notes);
+        let mut release_notes_out = String::with_capacity(release_notes.len() + 50);
+        if let Some(date) = RELEASE_NOTES_DATE {
+            release_notes_out.push_str(&format!("<p>{}</p>", date));
+        }
+        release_notes_out.push_str(release_notes);
+        release_notes_out.push_str("<p>_________________________</p><p>Full release notes:</p><p>https://github.com/plrigaux/sysd-manager/blob/main/CHANGELOG.md</p>");
+        about.set_release_notes(&release_notes_out);
     }
 
     close_window_shortcut(&about);
