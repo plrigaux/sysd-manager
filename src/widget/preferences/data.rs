@@ -42,12 +42,13 @@ const AUTO: &str = "auto";
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default, EnumIter, glib::Enum)]
 #[enum_type(name = "DbusLevel")]
 pub enum DbusLevel {
-    #[default]
     #[enum_value(name = "session")]
     UserSession,
 
     #[enum_value(name = "system")]
     System,
+
+    #[default]
     #[enum_value(name = "system_session")]
     SystemAndSession,
 }

@@ -6,9 +6,9 @@ pub mod pop_menu;
 
 use crate::{
     consts::{
-        ACTION_WIN_KEY_PREF_UNIT_LIST_ACTIVE_STAUTUS_AS_ICON, ACTION_UNIT_LIST_FILTER,
-        ACTION_UNIT_LIST_FILTER_CLEAR, ACTION_WIN_CHANGE_BUS, ACTION_WIN_FAVORITE_SET,
-        ACTION_WIN_FAVORITE_TOGGLE, ACTION_WIN_HIDE_UNIT_COL, ACTION_WIN_REFRESH_POP_MENU,
+        ACTION_UNIT_LIST_FILTER, ACTION_UNIT_LIST_FILTER_CLEAR, ACTION_WIN_CHANGE_BUS,
+        ACTION_WIN_FAVORITE_SET, ACTION_WIN_FAVORITE_TOGGLE, ACTION_WIN_HIDE_UNIT_COL,
+        ACTION_WIN_KEY_PREF_UNIT_LIST_ACTIVE_STAUTUS_AS_ICON, ACTION_WIN_REFRESH_POP_MENU,
         ACTION_WIN_REFRESH_UNIT_LIST, ACTION_WIN_RESET_ALL_COLUMNS, ALL_FILTER_KEY, FILTER_MARK,
         KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY, WIN_ACTION_INCLUDE_UNIT_FILES,
     },
@@ -559,7 +559,8 @@ impl UnitListPanelImp {
         let action = settings.create_action(&KEY_PREF_UNIT_LIST_DISPLAY_SUMMARY[4..]);
         app_window.add_action(&action);
 
-        let action = settings.create_action(&ACTION_WIN_KEY_PREF_UNIT_LIST_ACTIVE_STAUTUS_AS_ICON[4..]);
+        let action =
+            settings.create_action(&ACTION_WIN_KEY_PREF_UNIT_LIST_ACTIVE_STAUTUS_AS_ICON[4..]);
         app_window.add_action(&action);
 
         let unit_list_panel = self.obj().clone();
@@ -1107,12 +1108,21 @@ impl UnitListPanelImp {
 
         if let Some(col_sorter) = sorter.and_downcast_ref::<gtk::ColumnViewSorter>() {
             col_sorter.connect_primary_sort_order_notify(|cvs| {
-                info!(
-                    "column sorter {:?} {} {:?}",
-                    cvs.primary_sort_column(),
-                    cvs.n_sort_columns(),
-                    cvs.primary_sort_order()
-                )
+                let col = cvs.primary_sort_column();
+                if let Some(col) = col {
+                    info!(
+                        "Column view sorter {:?} {} {:?}",
+                        col.id(),
+                        cvs.n_sort_columns(),
+                        cvs.primary_sort_order()
+                    );
+                    //col.set_sorter(sorter);
+                    //sysdm-state
+                    // sysdm-load
+                    if let Some(sorter) = col.sorter().and_downcast_ref::<gtk::CustomSorter>() {
+                        //sorter.set_sort_func(sort_func);
+                    }
+                }
             });
         }
     }

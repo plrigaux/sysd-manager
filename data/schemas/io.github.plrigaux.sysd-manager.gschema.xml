@@ -58,7 +58,7 @@
         <choice value="system"/>
         <choice value="system_session"/>
       </choices>
-      <default>'session'</default>
+      <default>'system_session'</default>
       <summary>The dbus level scope</summary>
     </key>
     <key name="pref-journal-colors" type="b">
