@@ -17,4 +17,4 @@ data/schemas/gschemas.compiled
 /po/*.mo
 .claude
 /debian
-
+/generated

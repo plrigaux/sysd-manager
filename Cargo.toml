@@ -12,9 +12,9 @@ members = [
 
 [workspace.package]
 edition = "2024"
-rust-version = "1.93"
+rust-version = "1.95"
 authors = ["Pierre-Luc Rigaux <plrigaux@users.noreply.github.com>"]
-license = "GPL-3.0-or-later"
+license = "GPL-3+"
 repository = "https://github.com/plrigaux/sysd-manager"
 
 [package]
@@ -129,12 +129,19 @@ translating = { version = "0.4.2", path = "./sysd-manager-translating", package 
 [package.metadata.deb]
 section = "utils"
 maintainer = "Pierre-Luc Rigaux <plrigaux@users.noreply.github.com>"
-depends = "&auto"
+depends = "libgtk-4-1 (>=4.21), libadwaita-1-0 (>=1.8), libsystemd0 (>=257), libgtksourceview-5-0 (>=5.16), libgtextutils0v5"
+systemd-units = { unit-name = "sysd-manager-proxy", unit-scripts = "generated", enable = false }
+changelog = "generated/changelog"
 assets = [
 
   [
     "target/release/sysd-manager",
-    "usr/bin",
+    "usr/bin/",
+    "755",
+  ],
+  [
+    "target/release/sysd-manager-proxy",
+    "usr/bin/",
     "755",
   ],
   [
@@ -144,17 +151,27 @@ assets = [
   ],
   [
     "data/schemas/io.github.plrigaux.sysd-manager.gschema.xml",
-    "usr/share/glib-2.0/schemas",
+    "usr/share/glib-2.0/schemas/",
     "644",
   ],
   [
-    "./target/loc/io.github.plrigaux.sysd-manager.desktop",
-    "usr/share/applications",
+    "generated/io.github.plrigaux.sysd-manager.desktop",
+    "usr/share/applications/",
     "644",
   ],
   [
-    "./target/loc/io.github.plrigaux.sysd-manager.metainfo.xml",
-    "usr/share/metainfo",
+    "generated/io.github.plrigaux.sysd-manager.metainfo.xml",
+    "usr/share/metainfo/",
+    "644",
+  ],
+  [
+    "generated/io.github.plrigaux.SysDManager.policy",
+    "usr/share/polkit-1/actions/",
+    "644",
+  ],
+  [
+    "sysd-manager-proxy/data/50-io.github.plrigaux.SysDManager.rules",
+    "usr/share/polkit-1/rules.d/",
     "644",
   ],
 

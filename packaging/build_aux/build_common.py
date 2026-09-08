@@ -253,3 +253,24 @@ def position_on_root():
         else:
             print(f"file {cargo} does not exist, look for parent")
             cur_path = cur_path.parent
+
+
+def replace_in_file(path, replaces, dest=None):
+
+    with open(path, "r") as pkgbuild_file:
+        pkgbuild_text = pkgbuild_file.read()
+
+    for pattern, replace in replaces:
+        pkgbuild_text = pkgbuild_text.replace(pattern, replace)
+
+    if not dest:
+        dest = path
+    else:
+        d = Path(dest).resolve()
+        if d.is_dir():
+            d = d / Path(path).name
+            dest = str(d)
+
+    print(f"replace stings in file {dest}")
+    with open(dest, "w") as pkgbuild_file:
+        pkgbuild_file.write(pkgbuild_text)
