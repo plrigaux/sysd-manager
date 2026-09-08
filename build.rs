@@ -240,8 +240,8 @@ fn generate_notes() -> Result<(), ScriptError> {
 fn generate_release_notes_rs(release_notes: &[Release]) -> Result<(), ScriptError> {
     let (version, description) = if let Some(first) = release_notes.first() {
         (
-            format!("Some(\"{}\")", first.version),
-            format!("Some(\"{}\")", first.description),
+            format!("Some(r###\"{}\"###)", first.version),
+            format!("Some(r###\"{}\"###)", first.description),
         )
     } else {
         ("None".to_owned(), "None".to_owned())
