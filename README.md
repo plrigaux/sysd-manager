@@ -152,7 +152,15 @@ Before you can download SysD Manager directly from NixO, you can find a build fi
   <img width="100" alt="Download AppImage" src="data/icons/NixOS.svg"/>
 </a>
 
-### Method 6: Build from Source
+### Method 6: Deb package
+
+A Deb package is generated and can be found [here](https://github.com/plrigaux/sysd-manager/releases/latest)
+
+> **Status:** Deb has been succesfully tested on Ubuntu 26.04
+
+> **Note** There is no PPA yet, because the distro's Rust version is too old.
+
+### Method 7: Build from Source
 
 For developers and users who prefer building from source.
 
