@@ -9,14 +9,17 @@ If this project saves you or your company time, consider [sponsoring](https://gi
 
 ## [Unreleased]
 
-## [2.21.4] - 2026-09-04
+## [2.22.0] - 2026-09-08
 
 ### Added
-- Option to display active state as text or icon
+- Option to toggle display unit's active state between text or icon
 
 ### Changed
-- Change the order of
+- [Issue 70](https://github.com/plrigaux/sysd-manager/issues/70) Change sort order of columns "Unit File State" and "Load State"
+- Set default bus selection to "System & User session Bus"
 
+### Fixed
+- Translation integration
 
 ## [2.21.3] - 2026-08-30
 ## [2.21.2] - 2026-08-30
@@ -24,8 +27,8 @@ If this project saves you or your company time, consider [sponsoring](https://gi
 ## [2.21.0] - 2026-08-30
 
 ### Changed
-- Better Proxy error hanling
-- Remove Proxy preference if you pacakaging doesn't have access to it
+- Better Proxy error handling
+- Remove Proxy preference if your packaged version doesn't have access to it (Flatpack, ...)
 - Improve boot list fetch by a factor 10
 
 ### Fixed

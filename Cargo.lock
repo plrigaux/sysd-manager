@@ -1974,7 +1974,7 @@ checksum = "0bf256ce5efdfa370213c1dabab5935a12e49f2c58d15e9eac2870d3b4f27263"
 
 [[package]]
 name = "sysd-manager"
-version = "2.21.4"
+version = "2.22.0"
 dependencies = [
  "chrono",
  "clap",
@@ -2019,7 +2019,7 @@ dependencies = [
 
 [[package]]
 name = "sysd-manager-base"
-version = "2.21.0"
+version = "2.22.0"
 dependencies = [
  "constcat",
  "gettext-rs",
@@ -2037,7 +2037,7 @@ dependencies = [
 
 [[package]]
 name = "sysd-manager-comcontroler"
-version = "2.21.0"
+version = "2.22.0"
 dependencies = [
  "chrono",
  "enumflags2",
@@ -2066,7 +2066,7 @@ dependencies = [
 
 [[package]]
 name = "sysd-manager-proxy"
-version = "2.21.0"
+version = "2.22.0"
 dependencies = [
  "clap",
  "dotenv",
@@ -2095,7 +2095,7 @@ dependencies = [
 
 [[package]]
 name = "sysd-manager-translating"
-version = "0.4.2"
+version = "0.4.3"
 dependencies = [
  "constcat",
  "tracing",
@@ -2425,7 +2425,7 @@ dependencies = [
 
 [[package]]
 name = "transtools"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "clap",
  "dotenv",
