@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-01 13:55-0400\n"
+"POT-Creation-Date: 2026-09-08 09:48-0400\n"
 "PO-Revision-Date: 2026-02-07 01:52+0000\n"
 "Last-Translator: 09277632 <3056538209@qq.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
@@ -21,7 +21,6 @@ msgstr ""
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:9
 msgid "SysD Manager"
 msgstr "SysD 管理器"
 
@@ -32,7 +31,6 @@ msgstr "服务管理器"
 
 #. Desktop File Comment
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:9
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:10
 msgid "A user-friendly application to manage systemd's units"
 msgstr "一个用于管理 systemd 单元，用户友好的应用程序"
 
@@ -40,35 +38,6 @@ msgstr "一个用于管理 systemd 单元，用户友好的应用程序"
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:12
 msgid "Systemd;Systemctl;Services;log;"
 msgstr "Systemd;Systemctl;服务;日志;"
-
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:13
-msgid ""
-"Manage your Services, Timers, Sockets and other units. You can enable, "
-"disable, stop and start them. Also, you can view their config file and peak "
-"at their journal logs."
-msgstr ""
-"管理您的服务、定时器、套接字和其他单元。您可以启用、禁用、停止和启动它们。此"
-"外，您还可以查看它们的配置文件并查看它们的日志。"
-
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:40
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:45
-msgid "Unit Files"
-msgstr "单元文件"
-
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:50
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:55
-msgid "Unit Dependencies"
-msgstr "单元依赖"
-
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:60
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:65
-msgid "Unit File"
-msgstr "单元文件"
-
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:70
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:75
-msgid "Unit Journal"
-msgstr "单元日志"
 
 #: sysd-manager-proxy/data/io.github.plrigaux.SysDManager.policy:6
 msgid ""
@@ -647,89 +616,102 @@ msgctxt "preference"
 msgid "Case Insensitive"
 msgstr ""
 
+#. subtitle
+#: data/interfaces/preferences.ui:106
+msgctxt "preference"
+msgid "Display Unit's Active Status as an icon rather than text"
+msgstr ""
+
+#. title
+#: data/interfaces/preferences.ui:107
+#, fuzzy
+msgctxt "preference"
+msgid "Active State as Icon"
+msgstr "操作"
+
 #. group
-#: data/interfaces/preferences.ui:108
+#: data/interfaces/preferences.ui:114
 #, fuzzy
 msgctxt "preference"
 msgid "Unit Status"
 msgstr "停用单元文件"
 
 #. subtitle
-#: data/interfaces/preferences.ui:111
+#: data/interfaces/preferences.ui:117
 #, fuzzy
 msgctxt "preference"
 msgid "Wrap the unit status long text lines"
 msgstr "自动换行单元描述的长文本行"
 
 #. title
-#: data/interfaces/preferences.ui:112
+#: data/interfaces/preferences.ui:118
 #, fuzzy
 msgctxt "preference"
 msgid "Wrap unit status text"
 msgstr "自动换行单元描述"
 
 #. subtitle
-#: data/interfaces/preferences.ui:117
+#: data/interfaces/preferences.ui:123
 msgctxt "preference"
 msgid "Otherwise those buttons are displayed according to context"
 msgstr ""
 
 #. title
-#: data/interfaces/preferences.ui:118
+#: data/interfaces/preferences.ui:124
 msgctxt "preference"
 msgid "Always shows Start and Stop Buttons"
 msgstr ""
 
 #. group
-#: data/interfaces/preferences.ui:125
+#: data/interfaces/preferences.ui:131
 msgctxt "preference"
 msgid "Unit File"
 msgstr "单元文件显示配置"
 
 #. subtitle
-#: data/interfaces/preferences.ui:128
+#: data/interfaces/preferences.ui:134
 msgctxt "preference"
 msgid "Display unit file line number"
 msgstr "显示单元文件行数"
 
 #. title
-#: data/interfaces/preferences.ui:129
+#: data/interfaces/preferences.ui:135
 msgctxt "preference"
 msgid "Line number"
 msgstr "显示行号"
 
 #. subtitle
-#: data/interfaces/preferences.ui:134
+#: data/interfaces/preferences.ui:140
 msgctxt "preference"
 msgid "Unit file highlight style"
 msgstr "单元文件高亮样式"
 
 #. title
-#: data/interfaces/preferences.ui:135
+#: data/interfaces/preferences.ui:141
 msgctxt "preference"
 msgid "Text Highlight"
 msgstr "文本高亮"
 
 #. subtitle
-#: data/interfaces/preferences.ui:145
+#: data/interfaces/preferences.ui:151
 msgctxt "preference"
 msgid "To see the logs in color"
 msgstr "以彩色显示日志"
 
 #. title
-#: data/interfaces/preferences.ui:146
+#: data/interfaces/preferences.ui:152
 msgctxt "preference"
 msgid "Journal colors"
 msgstr "日志条目颜色"
 
 #. title
-#: data/interfaces/preferences.ui:167
+#: data/interfaces/preferences.ui:173
 msgctxt "preference"
 msgid "Journal's events batch size"
 msgstr "日志事件批次大小"
 
 #. subtitle
-#: data/interfaces/preferences.ui:180
+#: data/interfaces/preferences.ui:186
 msgctxt "preference"
 msgid ""
 "Journal's event maximum characters\n"
@@ -739,206 +721,206 @@ msgstr ""
 "<i>0 表示无限制</i>"
 
 #. title
-#: data/interfaces/preferences.ui:183
+#: data/interfaces/preferences.ui:189
 msgctxt "preference"
 msgid "Journal's event max size"
 msgstr "日志事件最大长度"
 
-#: data/interfaces/preferences.ui:210
+#: data/interfaces/preferences.ui:216
 #, fuzzy
 msgctxt "preference"
 msgid "_Proxy Preferences"
 msgstr "首选项"
 
-#: data/interfaces/preferences.ui:216
+#: data/interfaces/preferences.ui:222
 msgid "Switch that controls other switches"
 msgstr "控制其他开关的总开关"
 
 #. group title
-#: data/interfaces/preferences.ui:224
+#: data/interfaces/preferences.ui:230
 msgctxt "preference"
 msgid "Systemd Manager Method Calls"
 msgstr "Systemd Manager方法调用"
 
-#: data/interfaces/preferences.ui:227
+#: data/interfaces/preferences.ui:233
 #, fuzzy
 msgctxt "preference"
 msgid "<b>Start</b> method call through the Proxy"
 msgstr "通过代理调用 <b>解冻</b> 方法"
 
-#: data/interfaces/preferences.ui:228
+#: data/interfaces/preferences.ui:234
 msgctxt "preference"
 msgid "Start"
 msgstr ""
 
-#: data/interfaces/preferences.ui:233
+#: data/interfaces/preferences.ui:239
 #, fuzzy
 msgctxt "preference"
 msgid "<b>Stop</b> method call through the Proxy"
 msgstr "通过代理调用 <b>解冻</b> 方法"
 
-#: data/interfaces/preferences.ui:234
+#: data/interfaces/preferences.ui:240
 #, fuzzy
 msgctxt "preference"
 msgid "Stop"
 msgstr "立即停止"
 
-#: data/interfaces/preferences.ui:239
+#: data/interfaces/preferences.ui:245
 #, fuzzy
 msgctxt "preference"
 msgid "<b>Restart</b> method call through the Proxy"
 msgstr "通过代理调用 <b>清空</b> 方法"
 
-#: data/interfaces/preferences.ui:240
+#: data/interfaces/preferences.ui:246
 msgctxt "preference"
 msgid "Restart"
 msgstr ""
 
-#: data/interfaces/preferences.ui:245
+#: data/interfaces/preferences.ui:251
 #, fuzzy
 msgctxt "preference"
 msgid "<b>Reload Unit</b> method call through the Proxy"
 msgstr "通过代理调用 <b>清空</b> 方法"
 
-#: data/interfaces/preferences.ui:246
+#: data/interfaces/preferences.ui:252
 #, fuzzy
 msgctxt "preference"
 msgid "Reload Unit"
 msgstr "重新加载所有服务单元"
 
-#: data/interfaces/preferences.ui:251
+#: data/interfaces/preferences.ui:257
 msgctxt "preference"
 msgid "<b>Clean</b> method call through the Proxy"
 msgstr "通过代理调用 <b>清空</b> 方法"
 
-#: data/interfaces/preferences.ui:252
+#: data/interfaces/preferences.ui:258
 msgctxt "preference"
 msgid "Clean"
 msgstr "清空"
 
-#: data/interfaces/preferences.ui:257
+#: data/interfaces/preferences.ui:263
 msgctxt "preference"
 msgid "<b>Freeze</b> method call through the Proxy"
 msgstr "通过代理调用 <b>冻结</b> 方法"
 
-#: data/interfaces/preferences.ui:258
+#: data/interfaces/preferences.ui:264
 msgctxt "preference"
 msgid "Freeze"
 msgstr "冻结"
 
-#: data/interfaces/preferences.ui:263
+#: data/interfaces/preferences.ui:269
 msgctxt "preference"
 msgid "<b>Thaw</b> method call through the Proxy"
 msgstr "通过代理调用 <b>解冻</b> 方法"
 
-#: data/interfaces/preferences.ui:264
+#: data/interfaces/preferences.ui:270
 msgctxt "preference"
 msgid "Thaw"
 msgstr "解冻"
 
-#: data/interfaces/preferences.ui:269
+#: data/interfaces/preferences.ui:275
 msgctxt "preference"
 msgid "<b>Enable Unit File</b> method call through the Proxy"
 msgstr "通过代理调用来<b>启用单元文件</b>"
 
-#: data/interfaces/preferences.ui:270
+#: data/interfaces/preferences.ui:276
 msgctxt "preference"
 msgid "Enable Unit File"
 msgstr "启用单元文件"
 
-#: data/interfaces/preferences.ui:275
+#: data/interfaces/preferences.ui:281
 msgctxt "preference"
 msgid "<b>Disable Unit File</b> method call through the Proxy"
 msgstr "通过代理调用来<b>停用单元文件</b>"
 
-#: data/interfaces/preferences.ui:276
+#: data/interfaces/preferences.ui:282
 msgctxt "preference"
 msgid "Disable Unit File"
 msgstr "停用单元文件"
 
-#: data/interfaces/preferences.ui:281
+#: data/interfaces/preferences.ui:287
 msgctxt "preference"
 msgid ""
 "<b>Reload</b> Systemd Manager configuration method call through the Proxy"
 msgstr "通过代理调用来<b>重载</b>所有单元配置"
 
-#: data/interfaces/preferences.ui:282
+#: data/interfaces/preferences.ui:288
 #, fuzzy
 msgctxt "preference"
 msgid "Daemon Reload"
 msgstr "重载所有单元配置"
 
-#: data/interfaces/preferences.ui:287
+#: data/interfaces/preferences.ui:293
 msgctxt "preference"
 msgid ""
 "<b>Revert Unit Files</b> to their vendor versions method call through the "
 "Proxy"
 msgstr "通过代理调用 来<b>恢复单元文件</b> 到其供应商版本"
 
-#: data/interfaces/preferences.ui:288
+#: data/interfaces/preferences.ui:294
 msgctxt "preference"
 msgid "Revert Unit Files"
 msgstr "恢复单元文件"
 
-#: data/interfaces/preferences.ui:295
+#: data/interfaces/preferences.ui:301
 msgctxt "preference"
 msgid "Actions"
 msgstr "操作"
 
-#: data/interfaces/preferences.ui:298
+#: data/interfaces/preferences.ui:304
 msgctxt "preference"
 msgid "Create a <b>Drop-in</b> file through the Proxy"
 msgstr "通过代理创建 <b>Drop-in</b> 文件"
 
-#: data/interfaces/preferences.ui:299
+#: data/interfaces/preferences.ui:305
 msgctxt "preference"
 msgid "Create Drop-in"
 msgstr "创建Drop-in 文件"
 
-#: data/interfaces/preferences.ui:304
+#: data/interfaces/preferences.ui:310
 msgctxt "preference"
 msgid "<b>Save file</b> through the Proxy"
 msgstr "通过代理<b>保存文件</b>"
 
-#: data/interfaces/preferences.ui:305
+#: data/interfaces/preferences.ui:311
 msgctxt "preference"
 msgid "Save file"
 msgstr "保存文件"
 
-#: data/interfaces/preferences.ui:310
+#: data/interfaces/preferences.ui:316
 #, fuzzy
 msgctxt "preference"
 msgid "<b>Create file</b> through the Proxy"
 msgstr "通过代理<b>保存文件</b>"
 
-#: data/interfaces/preferences.ui:311
+#: data/interfaces/preferences.ui:317
 #, fuzzy
 msgctxt "preference"
 msgid "Create file"
 msgstr "保存文件"
 
-#: data/interfaces/preferences.ui:319
+#: data/interfaces/preferences.ui:325
 msgctxt "preference"
 msgid "Proxy Behaviors"
 msgstr "代理运行行为"
 
-#: data/interfaces/preferences.ui:322
+#: data/interfaces/preferences.ui:328
 #, fuzzy
 msgid "Start the Proxy when starting SysD Manager"
 msgstr "启动 Sysd Manager 时启动代理"
 
-#: data/interfaces/preferences.ui:323
+#: data/interfaces/preferences.ui:329
 msgctxt "preference"
 msgid "Start Proxy at Start up"
 msgstr "在软件启动时启动代理"
 
-#: data/interfaces/preferences.ui:328
+#: data/interfaces/preferences.ui:334
 #, fuzzy
 msgctxt "preference"
 msgid "Stop the Proxy when closing SysD Manager"
 msgstr "启动 Sysd Manager 时启动代理"
 
-#: data/interfaces/preferences.ui:329
+#: data/interfaces/preferences.ui:335
 msgctxt "preference"
 msgid "Stop Proxy at Close"
 msgstr ""
@@ -2444,73 +2426,73 @@ msgid "Add {} to Favorites"
 msgstr ""
 
 #. browser dbus option
-#: src/widget/preferences/data.rs:67
+#: src/widget/preferences/data.rs:68
 msgctxt "dbus"
 msgid "User Session Bus"
 msgstr ""
 
 #. browser dbus option
-#: src/widget/preferences/data.rs:69
+#: src/widget/preferences/data.rs:70
 msgctxt "dbus"
 msgid "System Bus"
 msgstr ""
 
 #. browser dbus option
-#: src/widget/preferences/data.rs:71
+#: src/widget/preferences/data.rs:72
 msgctxt "dbus"
 msgid "System & User Session Bus"
 msgstr ""
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:164
+#: src/widget/preferences/data.rs:165
 msgctxt "color scheme"
 msgid "No Preference"
 msgstr ""
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:166
+#: src/widget/preferences/data.rs:167
 msgctxt "color scheme"
 msgid "Prefer Dark"
 msgstr ""
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:168
+#: src/widget/preferences/data.rs:169
 msgctxt "color scheme"
 msgid "Prefer Light"
 msgstr ""
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:170
+#: src/widget/preferences/data.rs:171
 msgctxt "color scheme"
 msgid "Force Dark"
 msgstr ""
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:172
+#: src/widget/preferences/data.rs:173
 msgctxt "color scheme"
 msgid "Force Light"
 msgstr ""
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:218
+#: src/widget/preferences/data.rs:219
 msgctxt "pref orientation"
 msgid "Automatic"
 msgstr ""
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:220
+#: src/widget/preferences/data.rs:221
 msgctxt "pref orientation"
 msgid "Side by Side"
 msgstr ""
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:222
+#: src/widget/preferences/data.rs:223
 msgctxt "pref orientation"
 msgid "Top Bottom"
 msgstr ""
 
 #. unit file no preference style selected
-#: src/widget/preferences/imp.rs:452
+#: src/widget/preferences/imp.rs:458
 msgctxt "pref file style"
 msgid "None"
 msgstr ""
@@ -2549,7 +2531,7 @@ msgid "Enabling"
 msgstr ""
 
 #. Toast Message on fail action {Action} {UnitName} {ErrorMessage}
-#: src/widget/unit_control_panel/controls.rs:111
+#: src/widget/unit_control_panel/controls.rs:112
 #, rust-format
 msgctxt "toast"
 msgid ""
@@ -3124,36 +3106,42 @@ msgid ""
 msgstr ""
 
 #. column header menu
-#: src/widget/unit_list/menus.rs:19
+#: src/widget/unit_list/menus.rs:20
 msgctxt "menu"
 msgid "Hide this Column"
 msgstr ""
 
-#. column header menu
 #: src/widget/unit_list/menus.rs:27
+#, fuzzy
+msgctxt "menu"
+msgid "Display as Icon"
+msgstr "颜色指示"
+
+#. column header menu
+#: src/widget/unit_list/menus.rs:38
 msgctxt "menu"
 msgid "Configure columns"
 msgstr ""
 
-#: src/widget/unit_list/menus.rs:33
+#: src/widget/unit_list/menus.rs:44
 msgctxt "menu"
 msgid "Reset all columns"
 msgstr ""
 
 #. column header menu
-#: src/widget/unit_list/menus.rs:44
+#: src/widget/unit_list/menus.rs:57
 msgctxt "menu"
 msgid "Configure Filters"
 msgstr ""
 
 #. column header menu
-#: src/widget/unit_list/menus.rs:52
+#: src/widget/unit_list/menus.rs:65
 msgctxt "menu"
 msgid "Clear Column Filter"
 msgstr ""
 
 #. column header menu section
-#: src/widget/unit_list/menus.rs:58
+#: src/widget/unit_list/menus.rs:71
 msgctxt "menu"
 msgid "Filtering"
 msgstr ""
@@ -3228,6 +3216,26 @@ msgstr ""
 msgctxt "menu"
 msgid "Favorites"
 msgstr ""
+
+#~ msgid ""
+#~ "Manage your Services, Timers, Sockets and other units. You can enable, "
+#~ "disable, stop and start them. Also, you can view their config file and "
+#~ "peak at their journal logs."
+#~ msgstr ""
+#~ "管理您的服务、定时器、套接字和其他单元。您可以启用、禁用、停止和启动它们。"
+#~ "此外，您还可以查看它们的配置文件并查看它们的日志。"
+
+#~ msgid "Unit Files"
+#~ msgstr "单元文件"
+
+#~ msgid "Unit Dependencies"
+#~ msgstr "单元依赖"
+
+#~ msgid "Unit File"
+#~ msgstr "单元文件"
+
+#~ msgid "Unit Journal"
+#~ msgstr "单元日志"
 
 #~ msgctxt "preference"
 #~ msgid "Unit Description"

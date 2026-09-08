@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-01 13:55-0400\n"
+"POT-Creation-Date: 2026-09-08 09:48-0400\n"
 "PO-Revision-Date: 2026-05-01 02:09+0000\n"
 "Last-Translator: John Peter Sa <johnppetersa@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/sysd-"
@@ -21,7 +21,6 @@ msgstr ""
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:9
 msgid "SysD Manager"
 msgstr "Gerenciador SysD"
 
@@ -32,7 +31,6 @@ msgstr "Gerente de serviço"
 
 #. Desktop File Comment
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:9
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:10
 msgid "A user-friendly application to manage systemd's units"
 msgstr "Um aplicativo amigável para gerenciar unidades systemd"
 
@@ -40,37 +38,6 @@ msgstr "Um aplicativo amigável para gerenciar unidades systemd"
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:12
 msgid "Systemd;Systemctl;Services;log;"
 msgstr "Systemd;Systemctl;Serviços;log;"
-
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:13
-msgid ""
-"Manage your Services, Timers, Sockets and other units. You can enable, "
-"disable, stop and start them. Also, you can view their config file and peak "
-"at their journal logs."
-msgstr ""
-"Gerencie seus serviços, temporizadores, soquetes e outras unidades. Você "
-"pode habilitá-los, desabilitá-los, pará-los e iniciá-los. Além disso, você "
-"pode visualizar seus arquivos de configuração e conferir seus registros de "
-"diário."
-
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:40
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:45
-msgid "Unit Files"
-msgstr "Arquivos de unidade"
-
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:50
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:55
-msgid "Unit Dependencies"
-msgstr "Dependências de Unidade"
-
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:60
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:65
-msgid "Unit File"
-msgstr "Arquivo de unidade"
-
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:70
-#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:75
-msgid "Unit Journal"
-msgstr "Diário da Unidade"
 
 #: sysd-manager-proxy/data/io.github.plrigaux.SysDManager.policy:6
 msgid ""
@@ -664,89 +631,102 @@ msgctxt "preference"
 msgid "Case Insensitive"
 msgstr "Sem distinção entre maiúsculas e minúsculas"
 
+#. subtitle
+#: data/interfaces/preferences.ui:106
+msgctxt "preference"
+msgid "Display Unit's Active Status as an icon rather than text"
+msgstr ""
+
+#. title
+#: data/interfaces/preferences.ui:107
+#, fuzzy
+msgctxt "preference"
+msgid "Active State as Icon"
+msgstr "Ativa"
+
 #. group
-#: data/interfaces/preferences.ui:108
+#: data/interfaces/preferences.ui:114
 #, fuzzy
 msgctxt "preference"
 msgid "Unit Status"
 msgstr "Desativar arquivo de unidade"
 
 #. subtitle
-#: data/interfaces/preferences.ui:111
+#: data/interfaces/preferences.ui:117
 #, fuzzy
 msgctxt "preference"
 msgid "Wrap the unit status long text lines"
 msgstr "Quebrar linhas de texto longas da descrição da unidade"
 
 #. title
-#: data/interfaces/preferences.ui:112
+#: data/interfaces/preferences.ui:118
 #, fuzzy
 msgctxt "preference"
 msgid "Wrap unit status text"
 msgstr "Envolver texto descritivo da unidade"
 
 #. subtitle
-#: data/interfaces/preferences.ui:117
+#: data/interfaces/preferences.ui:123
 msgctxt "preference"
 msgid "Otherwise those buttons are displayed according to context"
 msgstr "Caso contrário, esses botões são exibidos de acordo com o contexto"
 
 #. title
-#: data/interfaces/preferences.ui:118
+#: data/interfaces/preferences.ui:124
 msgctxt "preference"
 msgid "Always shows Start and Stop Buttons"
 msgstr "Sempre mostra os botões Iniciar e Parar"
 
 #. group
-#: data/interfaces/preferences.ui:125
+#: data/interfaces/preferences.ui:131
 msgctxt "preference"
 msgid "Unit File"
 msgstr "Arquivo de unidade"
 
 #. subtitle
-#: data/interfaces/preferences.ui:128
+#: data/interfaces/preferences.ui:134
 msgctxt "preference"
 msgid "Display unit file line number"
 msgstr "Exibir o número da linha do arquivo da unidade"
 
 #. title
-#: data/interfaces/preferences.ui:129
+#: data/interfaces/preferences.ui:135
 msgctxt "preference"
 msgid "Line number"
 msgstr "Número da linha"
 
 #. subtitle
-#: data/interfaces/preferences.ui:134
+#: data/interfaces/preferences.ui:140
 msgctxt "preference"
 msgid "Unit file highlight style"
 msgstr "Estilo de destaque do arquivo de unidade"
 
 #. title
-#: data/interfaces/preferences.ui:135
+#: data/interfaces/preferences.ui:141
 msgctxt "preference"
 msgid "Text Highlight"
 msgstr "Destaque de texto"
 
 #. subtitle
-#: data/interfaces/preferences.ui:145
+#: data/interfaces/preferences.ui:151
 msgctxt "preference"
 msgid "To see the logs in color"
 msgstr "Para ver os registros em cores"
 
 #. title
-#: data/interfaces/preferences.ui:146
+#: data/interfaces/preferences.ui:152
 msgctxt "preference"
 msgid "Journal colors"
 msgstr "Cores do jornal"
 
 #. title
-#: data/interfaces/preferences.ui:167
+#: data/interfaces/preferences.ui:173
 msgctxt "preference"
 msgid "Journal's events batch size"
 msgstr "Tamanho do lote de eventos do periódico"
 
 #. subtitle
-#: data/interfaces/preferences.ui:180
+#: data/interfaces/preferences.ui:186
 msgctxt "preference"
 msgid ""
 "Journal's event maximum characters\n"
@@ -756,207 +736,207 @@ msgstr ""
 "<i>0 a nenhum limite</i>"
 
 #. title
-#: data/interfaces/preferences.ui:183
+#: data/interfaces/preferences.ui:189
 msgctxt "preference"
 msgid "Journal's event max size"
 msgstr "Tamanho máximo do evento do periódico"
 
-#: data/interfaces/preferences.ui:210
+#: data/interfaces/preferences.ui:216
 msgctxt "preference"
 msgid "_Proxy Preferences"
 msgstr "_Preferências de proxy"
 
-#: data/interfaces/preferences.ui:216
+#: data/interfaces/preferences.ui:222
 msgid "Switch that controls other switches"
 msgstr "Interruptor que controla outros interruptores"
 
 #. group title
-#: data/interfaces/preferences.ui:224
+#: data/interfaces/preferences.ui:230
 msgctxt "preference"
 msgid "Systemd Manager Method Calls"
 msgstr "Chamadas de método do gerenciador Systemd"
 
-#: data/interfaces/preferences.ui:227
+#: data/interfaces/preferences.ui:233
 msgctxt "preference"
 msgid "<b>Start</b> method call through the Proxy"
 msgstr "<b>Start</b> chamada de método através do Proxy"
 
-#: data/interfaces/preferences.ui:228
+#: data/interfaces/preferences.ui:234
 msgctxt "preference"
 msgid "Start"
 msgstr "Iniciar"
 
-#: data/interfaces/preferences.ui:233
+#: data/interfaces/preferences.ui:239
 msgctxt "preference"
 msgid "<b>Stop</b> method call through the Proxy"
 msgstr "Chamada do método <b>Stop</b> através do Proxy"
 
-#: data/interfaces/preferences.ui:234
+#: data/interfaces/preferences.ui:240
 msgctxt "preference"
 msgid "Stop"
 msgstr "Pare"
 
-#: data/interfaces/preferences.ui:239
+#: data/interfaces/preferences.ui:245
 msgctxt "preference"
 msgid "<b>Restart</b> method call through the Proxy"
 msgstr "Chamada do método <b>Restart</b> através do Proxy"
 
-#: data/interfaces/preferences.ui:240
+#: data/interfaces/preferences.ui:246
 msgctxt "preference"
 msgid "Restart"
 msgstr "Reiniciar"
 
-#: data/interfaces/preferences.ui:245
-msgctxt "preference"
-msgid "<b>Reload Unit</b> method call through the Proxy"
-msgstr ""
-
-#: data/interfaces/preferences.ui:246
-#, fuzzy
-msgctxt "preference"
-msgid "Reload Unit"
-msgstr "Unidade de recarga"
-
 #: data/interfaces/preferences.ui:251
 msgctxt "preference"
-msgid "<b>Clean</b> method call through the Proxy"
+msgid "<b>Reload Unit</b> method call through the Proxy"
 msgstr ""
 
 #: data/interfaces/preferences.ui:252
 #, fuzzy
 msgctxt "preference"
-msgid "Clean"
-msgstr "Limpar"
+msgid "Reload Unit"
+msgstr "Unidade de recarga"
 
 #: data/interfaces/preferences.ui:257
 msgctxt "preference"
-msgid "<b>Freeze</b> method call through the Proxy"
+msgid "<b>Clean</b> method call through the Proxy"
 msgstr ""
 
 #: data/interfaces/preferences.ui:258
 #, fuzzy
 msgctxt "preference"
-msgid "Freeze"
-msgstr "Congelar"
+msgid "Clean"
+msgstr "Limpar"
 
 #: data/interfaces/preferences.ui:263
 msgctxt "preference"
-msgid "<b>Thaw</b> method call through the Proxy"
+msgid "<b>Freeze</b> method call through the Proxy"
 msgstr ""
 
 #: data/interfaces/preferences.ui:264
 #, fuzzy
 msgctxt "preference"
-msgid "Thaw"
-msgstr "Descongelamento"
+msgid "Freeze"
+msgstr "Congelar"
 
 #: data/interfaces/preferences.ui:269
 msgctxt "preference"
-msgid "<b>Enable Unit File</b> method call through the Proxy"
+msgid "<b>Thaw</b> method call through the Proxy"
 msgstr ""
 
 #: data/interfaces/preferences.ui:270
 #, fuzzy
 msgctxt "preference"
-msgid "Enable Unit File"
-msgstr "Habilitar arquivo de unidade"
+msgid "Thaw"
+msgstr "Descongelamento"
 
 #: data/interfaces/preferences.ui:275
 msgctxt "preference"
-msgid "<b>Disable Unit File</b> method call through the Proxy"
+msgid "<b>Enable Unit File</b> method call through the Proxy"
 msgstr ""
 
 #: data/interfaces/preferences.ui:276
 #, fuzzy
 msgctxt "preference"
-msgid "Disable Unit File"
-msgstr "Desativar arquivo de unidade"
+msgid "Enable Unit File"
+msgstr "Habilitar arquivo de unidade"
 
 #: data/interfaces/preferences.ui:281
 msgctxt "preference"
-msgid ""
-"<b>Reload</b> Systemd Manager configuration method call through the Proxy"
+msgid "<b>Disable Unit File</b> method call through the Proxy"
 msgstr ""
 
 #: data/interfaces/preferences.ui:282
 #, fuzzy
 msgctxt "preference"
+msgid "Disable Unit File"
+msgstr "Desativar arquivo de unidade"
+
+#: data/interfaces/preferences.ui:287
+msgctxt "preference"
+msgid ""
+"<b>Reload</b> Systemd Manager configuration method call through the Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:288
+#, fuzzy
+msgctxt "preference"
 msgid "Daemon Reload"
 msgstr "Recarregar Daemon"
 
-#: data/interfaces/preferences.ui:287
+#: data/interfaces/preferences.ui:293
 msgctxt "preference"
 msgid ""
 "<b>Revert Unit Files</b> to their vendor versions method call through the "
 "Proxy"
 msgstr ""
 
-#: data/interfaces/preferences.ui:288
+#: data/interfaces/preferences.ui:294
 #, fuzzy
 msgctxt "preference"
 msgid "Revert Unit Files"
 msgstr "Arquivo de unidade predefinida"
 
-#: data/interfaces/preferences.ui:295
+#: data/interfaces/preferences.ui:301
 #, fuzzy
 msgctxt "preference"
 msgid "Actions"
 msgstr "Ativa"
 
-#: data/interfaces/preferences.ui:298
-msgctxt "preference"
-msgid "Create a <b>Drop-in</b> file through the Proxy"
-msgstr ""
-
-#: data/interfaces/preferences.ui:299
-#, fuzzy
-msgctxt "preference"
-msgid "Create Drop-in"
-msgstr "Criar Drop-in"
-
 #: data/interfaces/preferences.ui:304
 msgctxt "preference"
-msgid "<b>Save file</b> through the Proxy"
+msgid "Create a <b>Drop-in</b> file through the Proxy"
 msgstr ""
 
 #: data/interfaces/preferences.ui:305
 #, fuzzy
 msgctxt "preference"
+msgid "Create Drop-in"
+msgstr "Criar Drop-in"
+
+#: data/interfaces/preferences.ui:310
+msgctxt "preference"
+msgid "<b>Save file</b> through the Proxy"
+msgstr ""
+
+#: data/interfaces/preferences.ui:311
+#, fuzzy
+msgctxt "preference"
 msgid "Save file"
 msgstr "Salvar"
 
-#: data/interfaces/preferences.ui:310
+#: data/interfaces/preferences.ui:316
 #, fuzzy
 msgctxt "preference"
 msgid "<b>Create file</b> through the Proxy"
 msgstr "Chamada do método <b>Restart</b> através do Proxy"
 
-#: data/interfaces/preferences.ui:311
+#: data/interfaces/preferences.ui:317
 #, fuzzy
 msgctxt "preference"
 msgid "Create file"
 msgstr "Salvar"
 
-#: data/interfaces/preferences.ui:319
+#: data/interfaces/preferences.ui:325
 msgctxt "preference"
 msgid "Proxy Behaviors"
 msgstr ""
 
-#: data/interfaces/preferences.ui:322
+#: data/interfaces/preferences.ui:328
 msgid "Start the Proxy when starting SysD Manager"
 msgstr ""
 
-#: data/interfaces/preferences.ui:323
+#: data/interfaces/preferences.ui:329
 msgctxt "preference"
 msgid "Start Proxy at Start up"
 msgstr ""
 
-#: data/interfaces/preferences.ui:328
+#: data/interfaces/preferences.ui:334
 msgctxt "preference"
 msgid "Stop the Proxy when closing SysD Manager"
 msgstr ""
 
-#: data/interfaces/preferences.ui:329
+#: data/interfaces/preferences.ui:335
 msgctxt "preference"
 msgid "Stop Proxy at Close"
 msgstr ""
@@ -2498,73 +2478,73 @@ msgid "Add {} to Favorites"
 msgstr ""
 
 #. browser dbus option
-#: src/widget/preferences/data.rs:67
+#: src/widget/preferences/data.rs:68
 msgctxt "dbus"
 msgid "User Session Bus"
 msgstr "Barramento de Sessão do Usuário"
 
 #. browser dbus option
-#: src/widget/preferences/data.rs:69
+#: src/widget/preferences/data.rs:70
 msgctxt "dbus"
 msgid "System Bus"
 msgstr "Barramento do sistema"
 
 #. browser dbus option
-#: src/widget/preferences/data.rs:71
+#: src/widget/preferences/data.rs:72
 msgctxt "dbus"
 msgid "System & User Session Bus"
 msgstr "Barramento de sessão de sistema e usuário"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:164
+#: src/widget/preferences/data.rs:165
 msgctxt "color scheme"
 msgid "No Preference"
 msgstr "Sem preferência"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:166
+#: src/widget/preferences/data.rs:167
 msgctxt "color scheme"
 msgid "Prefer Dark"
 msgstr "Prefiro escuro"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:168
+#: src/widget/preferences/data.rs:169
 msgctxt "color scheme"
 msgid "Prefer Light"
 msgstr "Prefiro Claro"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:170
+#: src/widget/preferences/data.rs:171
 msgctxt "color scheme"
 msgid "Force Dark"
 msgstr "Força modo Escuro"
 
 #. preference color scheme option
-#: src/widget/preferences/data.rs:172
+#: src/widget/preferences/data.rs:173
 msgctxt "color scheme"
 msgid "Force Light"
 msgstr "Força modo Claro"
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:218
+#: src/widget/preferences/data.rs:219
 msgctxt "pref orientation"
 msgid "Automatic"
 msgstr ""
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:220
+#: src/widget/preferences/data.rs:221
 msgctxt "pref orientation"
 msgid "Side by Side"
 msgstr ""
 
 #. preference application orientation option
-#: src/widget/preferences/data.rs:222
+#: src/widget/preferences/data.rs:223
 msgctxt "pref orientation"
 msgid "Top Bottom"
 msgstr ""
 
 #. unit file no preference style selected
-#: src/widget/preferences/imp.rs:452
+#: src/widget/preferences/imp.rs:458
 msgctxt "pref file style"
 msgid "None"
 msgstr ""
@@ -2606,7 +2586,7 @@ msgid "Enabling"
 msgstr "Habilitar"
 
 #. Toast Message on fail action {Action} {UnitName} {ErrorMessage}
-#: src/widget/unit_control_panel/controls.rs:111
+#: src/widget/unit_control_panel/controls.rs:112
 #, rust-format
 msgctxt "toast"
 msgid ""
@@ -3208,39 +3188,45 @@ msgid ""
 msgstr ""
 
 #. column header menu
-#: src/widget/unit_list/menus.rs:19
+#: src/widget/unit_list/menus.rs:20
 msgctxt "menu"
 msgid "Hide this Column"
 msgstr ""
 
-#. column header menu
 #: src/widget/unit_list/menus.rs:27
+#, fuzzy
+msgctxt "menu"
+msgid "Display as Icon"
+msgstr "Cores da tela"
+
+#. column header menu
+#: src/widget/unit_list/menus.rs:38
 #, fuzzy
 msgctxt "menu"
 msgid "Configure columns"
 msgstr "Configurar colunas exibidas"
 
-#: src/widget/unit_list/menus.rs:33
+#: src/widget/unit_list/menus.rs:44
 msgctxt "menu"
 msgid "Reset all columns"
 msgstr ""
 
 #. column header menu
-#: src/widget/unit_list/menus.rs:44
+#: src/widget/unit_list/menus.rs:57
 #, fuzzy
 msgctxt "menu"
 msgid "Configure Filters"
 msgstr "Limpar filtros"
 
 #. column header menu
-#: src/widget/unit_list/menus.rs:52
+#: src/widget/unit_list/menus.rs:65
 #, fuzzy
 msgctxt "menu"
 msgid "Clear Column Filter"
 msgstr "Limpar filtros"
 
 #. column header menu section
-#: src/widget/unit_list/menus.rs:58
+#: src/widget/unit_list/menus.rs:71
 #, fuzzy
 msgctxt "menu"
 msgid "Filtering"
@@ -3319,3 +3305,25 @@ msgstr ""
 msgctxt "menu"
 msgid "Favorites"
 msgstr ""
+
+#~ msgid ""
+#~ "Manage your Services, Timers, Sockets and other units. You can enable, "
+#~ "disable, stop and start them. Also, you can view their config file and "
+#~ "peak at their journal logs."
+#~ msgstr ""
+#~ "Gerencie seus serviços, temporizadores, soquetes e outras unidades. Você "
+#~ "pode habilitá-los, desabilitá-los, pará-los e iniciá-los. Além disso, "
+#~ "você pode visualizar seus arquivos de configuração e conferir seus "
+#~ "registros de diário."
+
+#~ msgid "Unit Files"
+#~ msgstr "Arquivos de unidade"
+
+#~ msgid "Unit Dependencies"
+#~ msgstr "Dependências de Unidade"
+
+#~ msgid "Unit File"
+#~ msgstr "Arquivo de unidade"
+
+#~ msgid "Unit Journal"
+#~ msgstr "Diário da Unidade"
