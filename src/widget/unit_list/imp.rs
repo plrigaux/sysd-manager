@@ -1116,12 +1116,13 @@ impl UnitListPanelImp {
                         cvs.n_sort_columns(),
                         cvs.primary_sort_order()
                     );
+                    //TODO see if changind the sorter is needed to ensure tha empty str stays at the bottom
                     //col.set_sorter(sorter);
                     //sysdm-state
                     // sysdm-load
-                    if let Some(sorter) = col.sorter().and_downcast_ref::<gtk::CustomSorter>() {
-                        //sorter.set_sort_func(sort_func);
-                    }
+                    // if let Some(sorter) = col.sorter().and_downcast_ref::<gtk::CustomSorter>() {
+                    //     //sorter.set_sort_func(sort_func);
+                    // }
                 }
             });
         }
