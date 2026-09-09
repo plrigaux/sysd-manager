@@ -156,9 +156,14 @@ Before you can download SysD Manager directly from NixO, you can find a build fi
 
 A Deb package is generated and can be found [here](https://github.com/plrigaux/sysd-manager/releases/latest)
 
+To install run the following
+```bash
+sudo dpkg -i sysd-mangager-<version>_amd64.deb
+```
+
 > **Status:** Deb has been succesfully tested on Ubuntu 26.04
 
-> **Note** There is no PPA yet, because the distro's Rust version is too old.
+> **Note** There is no PPA yet, because the distro's Rust version is too old :(.
 
 ### Method 7: Build from Source
 
