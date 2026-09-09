@@ -154,7 +154,7 @@ Before you can download SysD Manager directly from NixO, you can find a build fi
 
 ### Method 6: Deb package
 
-A Deb package is generated and can be found [here](https://github.com/plrigaux/sysd-manager/releases/latest)
+An amd64 Deb package is generated and can be found here on [Latest Release](https://github.com/plrigaux/sysd-manager/releases/latest)
 
 To install run the following
 ```bash
