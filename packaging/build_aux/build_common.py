@@ -2,7 +2,6 @@ import os
 import pprint
 import subprocess
 import sys
-from email.utils import formatdate
 from pathlib import Path
 from typing import Optional
 
@@ -38,7 +37,7 @@ def cmd_run(
         else:
             cmd_str = cmd
         str_env = ""
-        if not env:
+        if env:
             str_env = f"env: {env}"
 
         print(f"{color.DARKCYAN}{cmd_str}{color.END} {str_env}")

@@ -1,9 +1,10 @@
+import argparse
+import os
+import re
+import subprocess
+
 import build_aux.build_common as bc
 from build_aux.build_common import color
-import os
-import subprocess
-import argparse
-import re
 
 APP_IMAGE_DIR = "../AppImage"
 APP_DIR = f"{APP_IMAGE_DIR}/SysDManager.AppDir"
@@ -384,7 +385,7 @@ def just_publish():
     file = f"{APP_IMAGE_DIR}/{app_image_file_name(version)}"
 
     # bc.just_publish(version, file)
-    bc.publish_upload(file)
+    bc.release_upload_file(f"{APP_IMAGE_DIR}/{file}")
 
 
 def publish_upload():
