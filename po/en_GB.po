@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-08 10:37-0400\n"
+"POT-Creation-Date: 2026-09-09 08:51-0400\n"
 "PO-Revision-Date: 2025-08-14 23:57+0000\n"
 "Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: English (United Kingdom) <https://hosted.weblate.org/projects/"
@@ -1506,7 +1506,7 @@ msgstr "Reload All Units"
 
 #: data/interfaces/unit_control_panel.ui:145
 msgctxt "controls menu"
-msgid "_More ..."
+msgid "_More…"
 msgstr ""
 
 #. aka Unit Info

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-08 10:37-0400\n"
+"POT-Creation-Date: 2026-09-09 08:51-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1425,7 +1425,7 @@ msgstr ""
 
 #: data/interfaces/unit_control_panel.ui:145
 msgctxt "controls menu"
-msgid "_More ..."
+msgid "_More…"
 msgstr ""
 
 #. aka Unit Info

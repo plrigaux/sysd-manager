@@ -142,7 +142,7 @@
                   <object class="AdwButtonContent">
                     <property name="can-shrink">True</property>
                     <property name="icon-name">dock-right-symbolic</property>
-                    <property name="label" translatable="yes" context="controls menu">_More ...</property>
+                    <property name="label" translatable="yes" context="controls menu">_More…</property>
                     <property name="use-underline">True</property>
                   </object>
                 </child>

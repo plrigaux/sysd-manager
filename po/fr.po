@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-08 10:37-0400\n"
+"POT-Creation-Date: 2026-09-09 08:51-0400\n"
 "PO-Revision-Date: 2026-09-01 18:14+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
@@ -1489,8 +1489,8 @@ msgstr "Recharger l'unité"
 
 #: data/interfaces/unit_control_panel.ui:145
 msgctxt "controls menu"
-msgid "_More ..."
-msgstr "_Plus ..."
+msgid "_More…"
+msgstr ""
 
 #. aka Unit Info
 #: data/interfaces/unit_control_panel.ui:187
@@ -3283,6 +3283,10 @@ msgstr "Personnalisé"
 msgctxt "menu"
 msgid "Favorites"
 msgstr "Favoris"
+
+#~ msgctxt "controls menu"
+#~ msgid "_More ..."
+#~ msgstr "_Plus ..."
 
 #, rust-format
 #~ msgctxt "toast"
