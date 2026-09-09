@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-09 08:56-0400\n"
-"PO-Revision-Date: 2026-09-01 18:14+0000\n"
+"PO-Revision-Date: 2026-09-09 13:08+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2026.9.dev0\n"
+"X-Generator: Weblate 2026.9.1\n"
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -671,14 +671,13 @@ msgstr "Insensible à la casse"
 #: data/interfaces/preferences.ui:106
 msgctxt "preference"
 msgid "Display Unit's Active Status as an icon rather than text"
-msgstr ""
+msgstr "Afficher l'état actif de l'unité sous forme d'icône plutôt que de texte"
 
 #. title
 #: data/interfaces/preferences.ui:107
-#, fuzzy
 msgctxt "preference"
 msgid "Active State as Icon"
-msgstr "Active"
+msgstr "État actif sous forme d'icône"
 
 #. group
 #: data/interfaces/preferences.ui:114
@@ -1490,7 +1489,7 @@ msgstr "Recharger l'unité"
 #: data/interfaces/unit_control_panel.ui:145
 msgctxt "controls menu"
 msgid "_More…"
-msgstr ""
+msgstr "_Plus…"
 
 #. aka Unit Info
 #: data/interfaces/unit_control_panel.ui:187
@@ -1796,10 +1795,9 @@ msgstr "Temps total :"
 
 #. place holder, lees likely to be displaied
 #: src/analyze/mod.rs:76
-#, fuzzy
 msgctxt "analyze blame"
 msgid "seconds…"
-msgstr "seconds ..."
+msgstr "secondes…"
 
 #. column header
 #: src/analyze/mod.rs:153
@@ -3185,10 +3183,9 @@ msgid "Hide this Column"
 msgstr "Masquer cette colonne"
 
 #: src/widget/unit_list/menus.rs:27
-#, fuzzy
 msgctxt "menu"
 msgid "Display as Icon"
-msgstr "Afficher les paths"
+msgstr "Afficher sous forme d'icône"
 
 #. column header menu
 #: src/widget/unit_list/menus.rs:38
