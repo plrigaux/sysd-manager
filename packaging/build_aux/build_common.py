@@ -223,6 +223,7 @@ def just_publish(version, file=None):
 
 
 def publish_upload(file):
+    file = str(file)
     file_name = Path(file).name
 
     tag_label = get_version_tag()
