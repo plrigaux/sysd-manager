@@ -582,13 +582,17 @@ impl ObjectImpl for UnitCreatorWindowImp {
 
         self.load_window_size();
 
-        let window = self.obj().clone();
-        glib::spawn_future_local(async move {
-            if let Err(err) = systemd::test_flatpak_spawn() {
-                warn!("Flatpak Spawn fail {err:?}");
-                window.imp().banner.set_revealed(true);
-            }
-        });
+        #[cfg(feature = "flatpak")]
+        {
+            let window = self.obj().clone();
+
+            glib::spawn_future_local(async move {
+                if let Err(err) = systemd::test_flatpak_spawn() {
+                    warn!("Flatpak Spawn fail {err:?}");
+                    window.imp().banner.set_revealed(true);
+                }
+            });
+        }
     }
 }
 
