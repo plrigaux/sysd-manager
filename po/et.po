@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-08 09:48-0400\n"
+"POT-Creation-Date: 2026-09-08 10:37-0400\n"
 "PO-Revision-Date: 2026-04-10 23:09+0000\n"
 "Last-Translator: Priit Jõerüüt <jrthwlate@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/sysd-manager/"
@@ -21,6 +21,7 @@ msgstr ""
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:9
 msgid "SysD Manager"
 msgstr "SysD haldur"
 
@@ -31,6 +32,7 @@ msgstr "Teenusehaldur"
 
 #. Desktop File Comment
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:9
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:10
 msgid "A user-friendly application to manage systemd's units"
 msgstr "Kasutajasõbralik rakendus systemd teenuseüksuste haldamiseks"
 
@@ -38,6 +40,37 @@ msgstr "Kasutajasõbralik rakendus systemd teenuseüksuste haldamiseks"
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:12
 msgid "Systemd;Systemctl;Services;log;"
 msgstr "Systemd;Systemctl;Services;log;teenus;teenused;deemon;deemonid;daemon;ühik;ühikud;mask;süsteem;süsteemilogi;"
+
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:13
+msgid ""
+"Manage your Services, Timers, Sockets and other units. You can enable, "
+"disable, stop and start them. Also, you can view their config file and peak "
+"at their journal logs."
+msgstr ""
+"Halda oma arvuti teenuseid, taimereid, sokleid ja muid systemd üksusi. Sa "
+"võid neid sisse lülitada ja kasutusel eemaldada, peatada ja käivitada. "
+"Lisaks võid vaadata nende seadistusfaili ning kiigata süsteemipäeviku "
+"logidesse."
+
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:40
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:45
+msgid "Unit Files"
+msgstr "Üksusefailid"
+
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:50
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:55
+msgid "Unit Dependencies"
+msgstr "Üksuse sõltuvused"
+
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:60
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:65
+msgid "Unit File"
+msgstr "Üksuse fail"
+
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:70
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:75
+msgid "Unit Journal"
+msgstr "Üksuse päevik"
 
 #: sysd-manager-proxy/data/io.github.plrigaux.SysDManager.policy:6
 msgid ""
@@ -3198,28 +3231,6 @@ msgstr "Kohandatud"
 msgctxt "menu"
 msgid "Favorites"
 msgstr "Lemmikud"
-
-#~ msgid ""
-#~ "Manage your Services, Timers, Sockets and other units. You can enable, "
-#~ "disable, stop and start them. Also, you can view their config file and "
-#~ "peak at their journal logs."
-#~ msgstr ""
-#~ "Halda oma arvuti teenuseid, taimereid, sokleid ja muid systemd üksusi. Sa "
-#~ "võid neid sisse lülitada ja kasutusel eemaldada, peatada ja käivitada. "
-#~ "Lisaks võid vaadata nende seadistusfaili ning kiigata süsteemipäeviku "
-#~ "logidesse."
-
-#~ msgid "Unit Files"
-#~ msgstr "Üksusefailid"
-
-#~ msgid "Unit Dependencies"
-#~ msgstr "Üksuse sõltuvused"
-
-#~ msgid "Unit File"
-#~ msgstr "Üksuse fail"
-
-#~ msgid "Unit Journal"
-#~ msgstr "Üksuse päevik"
 
 #~ msgctxt "text_find"
 #~ msgid "Open Find in Text"

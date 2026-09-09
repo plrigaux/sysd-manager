@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-08 09:48-0400\n"
+"POT-Creation-Date: 2026-09-08 10:37-0400\n"
 "PO-Revision-Date: 2025-08-14 23:57+0000\n"
 "Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: English (United Kingdom) <https://hosted.weblate.org/projects/"
@@ -21,6 +21,7 @@ msgstr ""
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:9
 msgid "SysD Manager"
 msgstr ""
 
@@ -31,6 +32,7 @@ msgstr ""
 
 #. Desktop File Comment
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:9
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:10
 msgid "A user-friendly application to manage systemd's units"
 msgstr ""
 
@@ -38,6 +40,37 @@ msgstr ""
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:12
 msgid "Systemd;Systemctl;Services;log;"
 msgstr ""
+
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:13
+msgid ""
+"Manage your Services, Timers, Sockets and other units. You can enable, "
+"disable, stop and start them. Also, you can view their config file and peak "
+"at their journal logs."
+msgstr ""
+
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:40
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:45
+#, fuzzy
+msgid "Unit Files"
+msgstr "Enable Unit File"
+
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:50
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:55
+#, fuzzy
+msgid "Unit Dependencies"
+msgstr "Display Unit Dependencies"
+
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:60
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:65
+#, fuzzy
+msgid "Unit File"
+msgstr "Enable Unit File"
+
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:70
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:75
+#, fuzzy
+msgid "Unit Journal"
+msgstr "Display Unit Journal Events"
 
 #: sysd-manager-proxy/data/io.github.plrigaux.SysDManager.policy:6
 msgid ""
@@ -3294,22 +3327,6 @@ msgstr ""
 msgctxt "menu"
 msgid "Favorites"
 msgstr ""
-
-#, fuzzy
-#~ msgid "Unit Files"
-#~ msgstr "Enable Unit File"
-
-#, fuzzy
-#~ msgid "Unit Dependencies"
-#~ msgstr "Display Unit Dependencies"
-
-#, fuzzy
-#~ msgid "Unit File"
-#~ msgstr "Enable Unit File"
-
-#, fuzzy
-#~ msgid "Unit Journal"
-#~ msgstr "Display Unit Journal Events"
 
 #, fuzzy
 #~ msgctxt "analyse blame"

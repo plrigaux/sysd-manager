@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-08 09:48-0400\n"
+"POT-Creation-Date: 2026-09-08 10:37-0400\n"
 "PO-Revision-Date: 2025-08-14 23:57+0000\n"
 "Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/sysd-manager/"
@@ -21,6 +21,7 @@ msgstr ""
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:9
 msgid "SysD Manager"
 msgstr "Administrador de SysD"
 
@@ -31,6 +32,7 @@ msgstr "Gerente de servicio"
 
 #. Desktop File Comment
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:9
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:10
 msgid "A user-friendly application to manage systemd's units"
 msgstr "Una aplicación fácil de usar para administrar unidades systemd"
 
@@ -38,6 +40,36 @@ msgstr "Una aplicación fácil de usar para administrar unidades systemd"
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:12
 msgid "Systemd;Systemctl;Services;log;"
 msgstr "Systemd;Systemctl;Servicios;registro;"
+
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:13
+msgid ""
+"Manage your Services, Timers, Sockets and other units. You can enable, "
+"disable, stop and start them. Also, you can view their config file and peak "
+"at their journal logs."
+msgstr ""
+"Administra tus servicios, temporizadores, sockets y otras unidades. Puedes "
+"activarlos, desactivarlos, detenerlos e iniciarlos. También puedes ver su "
+"archivo de configuración y consultar sus registros."
+
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:40
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:45
+msgid "Unit Files"
+msgstr "Archivo de unidad"
+
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:50
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:55
+msgid "Unit Dependencies"
+msgstr "Dependencias de la unidad"
+
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:60
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:65
+msgid "Unit File"
+msgstr "Archivo de unidad"
+
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:70
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:75
+msgid "Unit Journal"
+msgstr "Diario de la unidad"
 
 #: sysd-manager-proxy/data/io.github.plrigaux.SysDManager.policy:6
 msgid ""
@@ -3285,27 +3317,6 @@ msgstr ""
 msgctxt "menu"
 msgid "Favorites"
 msgstr ""
-
-#~ msgid ""
-#~ "Manage your Services, Timers, Sockets and other units. You can enable, "
-#~ "disable, stop and start them. Also, you can view their config file and "
-#~ "peak at their journal logs."
-#~ msgstr ""
-#~ "Administra tus servicios, temporizadores, sockets y otras unidades. "
-#~ "Puedes activarlos, desactivarlos, detenerlos e iniciarlos. También puedes "
-#~ "ver su archivo de configuración y consultar sus registros."
-
-#~ msgid "Unit Files"
-#~ msgstr "Archivo de unidad"
-
-#~ msgid "Unit Dependencies"
-#~ msgstr "Dependencias de la unidad"
-
-#~ msgid "Unit File"
-#~ msgstr "Archivo de unidad"
-
-#~ msgid "Unit Journal"
-#~ msgstr "Diario de la unidad"
 
 #~ msgctxt "analyse blame"
 #~ msgid "Analyse Blame"

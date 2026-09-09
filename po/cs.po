@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-08 09:48-0400\n"
+"POT-Creation-Date: 2026-09-08 10:37-0400\n"
 "PO-Revision-Date: 2026-08-03 07:02+0000\n"
 "Last-Translator: Pavel Borecki <pavel.borecki@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/sysd-manager/"
@@ -21,6 +21,7 @@ msgstr ""
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:9
 msgid "SysD Manager"
 msgstr "SysD Manager"
 
@@ -31,6 +32,7 @@ msgstr "Správce služeb"
 
 #. Desktop File Comment
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:9
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:10
 msgid "A user-friendly application to manage systemd's units"
 msgstr "Uživatelsky přívětivá aplikace pro správu systemd jednotek"
 
@@ -38,6 +40,36 @@ msgstr "Uživatelsky přívětivá aplikace pro správu systemd jednotek"
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:12
 msgid "Systemd;Systemctl;Services;log;"
 msgstr "Systemd;Systemctl;Služby;log;záznam;"
+
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:13
+msgid ""
+"Manage your Services, Timers, Sockets and other units. You can enable, "
+"disable, stop and start them. Also, you can view their config file and peak "
+"at their journal logs."
+msgstr ""
+"Spravujte služby, časovače, sokety a další jednotky. Je možné je povolovat, "
+"zakazovat, zastavovat a spouštět. Také je možné si zobrazovat jejich soubory "
+"s nastaveními a záznamy v žurnálu."
+
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:40
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:45
+msgid "Unit Files"
+msgstr "Soubory jednotek"
+
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:50
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:55
+msgid "Unit Dependencies"
+msgstr "Závislosti jednotek"
+
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:60
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:65
+msgid "Unit File"
+msgstr "Soubor jednotky"
+
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:70
+#: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:75
+msgid "Unit Journal"
+msgstr "Žurnál jednotky"
 
 #: sysd-manager-proxy/data/io.github.plrigaux.SysDManager.policy:6
 msgid ""
@@ -3268,24 +3300,3 @@ msgstr "Uživatelsky určené"
 msgctxt "menu"
 msgid "Favorites"
 msgstr "Přidat do oblíbených"
-
-#~ msgid ""
-#~ "Manage your Services, Timers, Sockets and other units. You can enable, "
-#~ "disable, stop and start them. Also, you can view their config file and "
-#~ "peak at their journal logs."
-#~ msgstr ""
-#~ "Spravujte služby, časovače, sokety a další jednotky. Je možné je "
-#~ "povolovat, zakazovat, zastavovat a spouštět. Také je možné si zobrazovat "
-#~ "jejich soubory s nastaveními a záznamy v žurnálu."
-
-#~ msgid "Unit Files"
-#~ msgstr "Soubory jednotek"
-
-#~ msgid "Unit Dependencies"
-#~ msgstr "Závislosti jednotek"
-
-#~ msgid "Unit File"
-#~ msgstr "Soubor jednotky"
-
-#~ msgid "Unit Journal"
-#~ msgstr "Žurnál jednotky"
