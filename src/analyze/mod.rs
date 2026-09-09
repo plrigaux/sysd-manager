@@ -73,7 +73,7 @@ fn build_analyze() -> Result<(gtk::Box, gio::ListStore, gtk::Label, adw::ViewSta
     attribute_list.insert(AttrInt::new_weight(Weight::Medium));
     let total_time_label = gtk::Label::builder()
         //place holder, lees likely to be displaied
-        .label(pgettext("analyze blame", "seconds ..."))
+        .label(pgettext("analyze blame", "seconds…"))
         .attributes(&attribute_list)
         .selectable(true)
         .focusable(false)
