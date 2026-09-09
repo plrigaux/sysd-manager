@@ -61,14 +61,7 @@ def linux_deploy():
         ],
         on_fail_exit=False,
     )
-    bc.cmd_run(
-        [
-            "cp",
-            "-v",
-            "/lib/libc.so",
-            f"{APP_DIR}/usr/lib"
-        ]
-    )
+    bc.cmd_run(["cp", "-v", "/lib/libc.so", f"{APP_DIR}/usr/lib"])
 
     print(f"{color.CYAN}{color.BOLD}Copy LD{color.END} ")
 
@@ -76,19 +69,13 @@ def linux_deploy():
 
     # make_appimage()
 
+
 def copyld():
-    
 
     print(f"{color.CYAN}{color.BOLD}Copy LD{color.END} ")
     bc.cmd_run(["mkdir", "-p", f"{APP_DIR}/usr/lib64"])
-    bc.cmd_run(
-        [
-            "cp",
-            "-v",
-            "/lib64/ld-linux-x86-64.so.2",
-            f"{APP_DIR}/usr/lib64"
-        ]
-    )
+    bc.cmd_run(["cp", "-v", "/lib64/ld-linux-x86-64.so.2", f"{APP_DIR}/usr/lib64"])
+
 
 def create_appdir(create_apprun=True):
     print(f"{color.CYAN}{color.BOLD}Create AppDir{color.END} ")
@@ -354,7 +341,8 @@ def pack_libs():
             bc.cmd_run(["install", "-Dm755", value, "-t", f"{APP_DIR}/usr/lib"])
 
     copyld()
-    
+
+
 def build():
     print(f"{color.GREEN}{color.BOLD}--------------------{color.END}")
     print(f"{color.GREEN}{color.BOLD}Creating an AppImage{color.END}")
@@ -394,8 +382,8 @@ def just_publish():
     print(f"{color.CYAN}Publishing version {color.BOLD}{version}{color.END}")
 
     file = f"{APP_IMAGE_DIR}/{app_image_file_name(version)}"
-    
-    #bc.just_publish(version, file)
+
+    # bc.just_publish(version, file)
     bc.publish_upload(file)
 
 
@@ -404,7 +392,7 @@ def publish_upload():
 
     file = app_image_file_name(version)
 
-    bc.publish_upload(f"{APP_IMAGE_DIR}/{file}")
+    bc.release_upload_file(f"{APP_IMAGE_DIR}/{file}")
 
 
 def publish():
@@ -427,7 +415,6 @@ def main():
     )
 
     args = parser.parse_args()
-
 
     bc.position_on_root()
 

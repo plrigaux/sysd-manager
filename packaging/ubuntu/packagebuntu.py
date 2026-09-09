@@ -336,30 +336,6 @@ def generate_file():
     )
 
 
-def get_logs():
-    version = bc.get_version_cargo()
-
-    start = f"## [{version}]"
-    logs = ""
-    in_section = False
-
-    with open("CHANGELOG.md", "r", encoding="utf-8") as file:
-        for line in file:
-            if line.startswith(start):
-                in_section = True
-                continue
-            elif in_section:
-                if line.startswith("## ["):
-                    break
-                else:
-                    logs += "  " + line
-
-    logs = logs.rstrip()
-    print(logs)
-
-    return logs
-
-
 def cargo_changelog(release=None):
     print(f"Write {color.BOLD}changelog{color.END} file")
 
@@ -381,7 +357,7 @@ def cargo_changelog(release=None):
         f" -- Pierre-Luc Rigaux <plrigaux@users.noreply.github.com>  {rfc2822_date}"
     )
 
-    logs = get_logs()
+    logs = bc.get_version_logs()
 
     if logs == "":
         logs = "   * See CHANGELOG.md"
@@ -403,7 +379,7 @@ def publish():
         newest_file = max(files, key=lambda f: f.stat().st_mtime)
         print(f"Newest deb file: {newest_file}")
 
-        bc.publish_upload(newest_file)
+        bc.release_upload_file(newest_file)
     else:
         print(f"{color.RED}No files found in the directory: {dir_path}.{color.RED}")
 

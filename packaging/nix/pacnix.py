@@ -111,7 +111,7 @@ def create():
     )
 
     print(f"{color.BOLD}Uploading to Release{color.END}")
-    bc.publish_upload(file)
+    bc.release_upload_file(file)
 
 
 def replace_in_file(path, pattern, replace):

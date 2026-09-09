@@ -245,4 +245,4 @@ def publish_upload():
 
     file = f"{DEB_DIR}/../sysd-manager.deb"
 
-    bc.publish_upload(version, file)
+    bc.release_upload_file(version, file)

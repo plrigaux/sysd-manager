@@ -2,6 +2,7 @@ import os
 import pprint
 import subprocess
 import sys
+from email.utils import formatdate
 from pathlib import Path
 from typing import Optional
 
@@ -205,6 +206,13 @@ def just_publish(version, file=None):
 
     tag_label = get_version_tag()
 
+    logs = get_version_logs()
+
+    if logs != "":
+        logs += "\n\n"
+
+    logs += "See https://github.com/plrigaux/sysd-manager/blob/main/CHANGELOG.md"
+
     cmd = [
         "gh",
         "release",
@@ -213,7 +221,7 @@ def just_publish(version, file=None):
         "--title",
         title,
         "--notes",
-        "See https://github.com/plrigaux/sysd-manager/blob/main/CHANGELOG.md",
+        logs,
     ]
 
     if file:
@@ -222,7 +230,7 @@ def just_publish(version, file=None):
     cmd_run(cmd)
 
 
-def publish_upload(file):
+def release_upload_file(file):
     file = str(file)
     file_name = Path(file).name
 
@@ -275,3 +283,28 @@ def replace_in_file(path, replaces, dest=None):
     print(f"replace stings in file {dest}")
     with open(dest, "w") as pkgbuild_file:
         pkgbuild_file.write(pkgbuild_text)
+
+
+def get_version_logs():
+    version = get_version_cargo()
+
+    start = f"## [{version}]"
+    logs = ""
+    in_section = False
+
+    with open("CHANGELOG.md", "r", encoding="utf-8") as file:
+        for line in file:
+            if line.startswith(start):
+                in_section = True
+                continue
+            elif in_section:
+                if line.startswith("## ["):
+                    break
+                else:
+                    logs += "  " + line
+
+    logs = logs.rstrip()
+
+    print(f"{color.GREEN}{logs}{color.END}")
+
+    return logs
