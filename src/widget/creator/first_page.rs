@@ -62,6 +62,9 @@ mod imp {
     pub struct UnitCreatorFirstPageImp {
         #[template_child]
         pub(super) unit_name_prefix: TemplateChild<adw::EntryRow>,
+
+        #[template_child]
+        radio_button_boot: TemplateChild<adw::ActionRow>,
         #[template_child]
         radio_button_service: TemplateChild<adw::ActionRow>,
         #[template_child]
@@ -87,7 +90,7 @@ mod imp {
                 CreateUnitErr::Empty
             } else {
                 let window = upgrade_opt!(self.window.get(), false);
-                if window.creation_type().max_sufix_len() + text.len() > 255 {
+                if window.creation_type().max_suffix_len() + text.len() > 255 {
                     CreateUnitErr::Limit255
                 } else if !self
                     .re
@@ -226,12 +229,11 @@ mod imp {
                 };
 
                 match window.creation_type() {
-                    UnitCreateType::Service => set.contains(&format!("{unit_prefix}.service")),
-                    UnitCreateType::Timer => set.contains(&format!("{unit_prefix}.timer")),
                     UnitCreateType::TimerService => {
-                        set.contains(&format!("{unit_prefix}.service"))
-                            || set.contains(&format!("{unit_prefix}.timer"))
+                        set.contains(&UnitCreateType::Service.full_name(unit_prefix))
+                            || set.contains(&UnitCreateType::Timer.full_name(unit_prefix))
                     }
+                    create_type => set.contains(&create_type.full_name(unit_prefix)),
                 }
             } else {
                 false

@@ -5,8 +5,8 @@ use std::cmp::Ordering::{Equal, Greater, Less};
 use std::fmt::Write;
 use tracing::warn;
 
-use crate::widget::creator::service_creator_page::ENVIRONMENT;
-use crate::widget::creator::timer_creator_page::MonotonicTimer;
+use crate::widget::creator::creator_page_service::ENVIRONMENT;
+use crate::widget::creator::creator_page_timer::MonotonicTimer;
 
 pub const STANDARD_OUTPUT: &str = "StandardOutput";
 pub const STANDARD_ERROR: &str = "StandardError";

@@ -312,6 +312,24 @@ impl ObjectImpl for AppWindowImpl {
 
         main_menu.append_section(None, &menu_section);
 
+        let create_unit_section = gio::Menu::new();
+
+        create_unit_section.append(
+            Some(&pgettext("menu", "Create Boot")),
+            Some("app.create_boot"),
+        );
+
+        create_unit_section.append(
+            Some(&pgettext("menu", "Create Timer")),
+            Some("app.create_boot"),
+        );
+        create_unit_section.append(
+            Some(&pgettext("menu", "Create Service")),
+            Some("app.create_boot"),
+        );
+
+        main_menu.append_section(Some(&pgettext("menu", "Create Unit")), &create_unit_section);
+
         self.menu_button.set_menu_model(Some(&main_menu));
     }
 }

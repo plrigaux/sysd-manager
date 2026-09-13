@@ -1,4 +1,4 @@
-use super::TimerCreatorPage;
+use super::CreatorPageTimer;
 use crate::{
     consts::WARNING_CSS,
     upgrade, upgrade_opt,
@@ -37,8 +37,8 @@ const ACTION_CREATOR_REALTIME_ADD: &str = "creator.realtime-add";
 
 #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/creator_page_timer.ui")]
-#[properties(wrapper_type = creator_page_timer::TimerCreatorPage)]
-pub struct TimerCreatorPageImp {
+#[properties(wrapper_type = super::CreatorPageTimer)]
+pub struct CreatorPageTimerImp {
     #[property(get, set, default)]
     creation_type: Cell<UnitCreateType>,
 
@@ -75,9 +75,9 @@ pub struct TimerCreatorPageImp {
 }
 
 #[glib::object_subclass]
-impl ObjectSubclass for TimerCreatorPageImp {
+impl ObjectSubclass for CreatorPageTimerImp {
     const NAME: &'static str = "CreatorPageTimer";
-    type Type = TimerCreatorPage;
+    type Type = CreatorPageTimer;
     type ParentType = adw::NavigationPage;
 
     fn class_init(klass: &mut Self::Class) {
@@ -93,7 +93,7 @@ impl ObjectSubclass for TimerCreatorPageImp {
 }
 
 #[glib::derived_properties]
-impl ObjectImpl for TimerCreatorPageImp {
+impl ObjectImpl for CreatorPageTimerImp {
     fn constructed(&self) {
         self.parent_constructed();
 
@@ -143,7 +143,7 @@ impl ObjectImpl for TimerCreatorPageImp {
     }
 }
 
-impl TimerCreatorPageImp {
+impl CreatorPageTimerImp {
     pub(super) fn update_from_unit_info(&self) {
         let window = upgrade_opt!(self.window.get());
 
@@ -519,9 +519,9 @@ fn add_menu_item(menu: &gio::Menu, label: &str, action: &str, param: Option<&str
     menu.append_item(&item);
 }
 
-impl WidgetImpl for TimerCreatorPageImp {}
+impl WidgetImpl for CreatorPageTimerImp {}
 
-impl NavigationPageImpl for TimerCreatorPageImp {}
+impl NavigationPageImpl for CreatorPageTimerImp {}
 
 #[derive(Debug, Copy, Clone, Default, EnumIter)]
 enum RealTimeTimer {

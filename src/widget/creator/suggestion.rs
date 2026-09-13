@@ -35,7 +35,7 @@ impl Default for SuggestionRow {
 
 mod imp {
     use crate::widget::{
-        creator::service_creator_page::standard_output::StandardOutput, find_child_by_name,
+        creator::creator_page_service::standard_output::StandardOutput, find_child_by_name,
     };
     use adw::subclass::prelude::*;
     use glib::{

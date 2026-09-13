@@ -10,14 +10,14 @@ use gtk::glib::{self};
 use strum::{EnumIter, IntoEnumIterator};
 
 glib::wrapper! {
-    pub struct TimerCreatorPage(ObjectSubclass<imp::TimerCreatorPageImp>)
+    pub struct CreatorPageTimer(ObjectSubclass<imp::CreatorPageTimerImp>)
     @extends adw::NavigationPage, gtk::Widget,
     @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget ;
 }
 
-impl TimerCreatorPage {
+impl CreatorPageTimer {
     pub fn new(window: WeakRef<UnitCreatorWindow>, page: PageType) -> Self {
-        let obj: TimerCreatorPage = glib::Object::new();
+        let obj: CreatorPageTimer = glib::Object::new();
         obj.set_tag(Some(page.id()));
         let _ = obj.imp().window.set(window);
         obj.imp().update_from_unit_info();

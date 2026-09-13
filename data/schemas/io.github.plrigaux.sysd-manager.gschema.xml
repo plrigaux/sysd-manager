@@ -237,6 +237,7 @@
         <choice value="service"/>
         <choice value="timer"/>
         <choice value="timer_service"/>
+        <choice value="mount"/>
       </choices>
       <default>'service'</default>
       <summary>The type of unit to create</summary>

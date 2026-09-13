@@ -1,0 +1,181 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 1.0.3 -->
+<interface>
+  <!-- interface-name boot_creator_page.ui -->
+  <requires lib="gtk" version="4.18"/>
+  <requires lib="libadwaita" version="1.6"/>
+  <template class="CreatorPageMount" parent="AdwNavigationPage">
+    <property name="child">
+      <object class="GtkScrolledWindow">
+        <property name="child">
+          <object class="AdwClamp">
+            <property name="child">
+              <object class="GtkBox">
+                <property name="margin-bottom">12</property>
+                <property name="margin-top">12</property>
+                <property name="orientation">vertical</property>
+                <property name="spacing">13</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="css-classes">title-2
+</property>
+                    <property name="hexpand">True</property>
+                    <property name="hexpand-set">True</property>
+                    <property name="label">Mount</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwPreferencesGroup">
+                    <property name="header-suffix">
+                      <object class="GtkLinkButton">
+                        <property name="css-classes">flat
+circular</property>
+                        <property name="icon-name">dialog-information-symbolic</property>
+                        <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html</property>
+                      </object>
+                    </property>
+                    <property name="title">Unit</property>
+                    <child>
+                      <object class="AdwEntryRow" id="description_entry">
+                        <property name="title">Description</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwPreferencesGroup" id="service_group">
+                    <property name="header-suffix">
+                      <object class="GtkLinkButton">
+                        <property name="css-classes">circular
+flat</property>
+                        <property name="icon-name">dialog-information-symbolic</property>
+                        <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html</property>
+                      </object>
+                    </property>
+                    <property name="title">Boot</property>
+                    <child>
+                      <object class="AdwEntryRow" id="what_entry">
+                        <property name="title">What</property>
+                        <property name="title-selectable">True</property>
+                        <property name="use-underline">True</property>
+                        <child>
+                          <object class="GtkButton">
+                            <property name="css-classes">flat
+circular</property>
+                            <property name="icon-name">list-add-symbolic</property>
+                            <signal name="clicked" handler="environment_add_clicked" swapped="True"/>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwEntryRow" id="where_entry">
+                        <property name="title">Where</property>
+                        <property name="title-selectable">True</property>
+                        <property name="use-underline">True</property>
+                        <child>
+                          <object class="GtkButton">
+                            <property name="css-classes">flat</property>
+                            <property name="icon-name">folder-open-symbolic</property>
+                            <signal name="clicked" handler="exec_start_dialog_clicked" swapped="True"/>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwEntryRow" id="mount_type_edit">
+                        <property name="title">Type</property>
+                        <property name="title-selectable">True</property>
+                        <property name="use-underline">True</property>
+                        <child>
+                          <object class="GtkDropDown">
+                            <property name="enable-search">True</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwEntryRow">
+                        <property name="title">Options</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwPreferencesGroup" id="exec_group">
+                    <property name="header-suffix">
+                      <object class="GtkLinkButton">
+                        <property name="css-classes">circular
+flat</property>
+                        <property name="icon-name">dialog-information-symbolic</property>
+                        <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html</property>
+                      </object>
+                    </property>
+                    <property name="title">Exec</property>
+                    <child>
+                      <object class="AdwComboRow" id="user_combo">
+                        <property name="enable-search">True</property>
+                        <property name="expression">
+                          <lookup name="string" type="GtkStringObject"/>
+                        </property>
+                        <property name="title">User</property>
+                        <property name="use-subtitle">True</property>
+                        <property name="use-underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwComboRow" id="group_combo">
+                        <property name="enable-search">True</property>
+                        <property name="expression">
+                          <lookup name="string" type="GtkStringObject"/>
+                        </property>
+                        <property name="title">Group</property>
+                        <property name="use-subtitle">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="SuggestionRow" id="standard_output_entry">
+                        <property name="title">StandardOutput</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="SuggestionRow" id="standard_error_entry">
+                        <property name="title">StandardError</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwPreferencesGroup">
+                    <property name="header-suffix">
+                      <object class="GtkLinkButton">
+                        <property name="css-classes">circular
+flat</property>
+                        <property name="icon-name">dialog-information-symbolic</property>
+                        <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.resource-control.html</property>
+                      </object>
+                    </property>
+                    <property name="title">Ressource Control</property>
+                    <child>
+                      <object class="AdwEntryRow" id="cpu_quota_entry">
+                        <property name="title">CPUQuota</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwEntryRow" id="memory_high_entry">
+                        <property name="title">MemoryHigh</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </property>
+          </object>
+        </property>
+      </object>
+    </property>
+    <property name="tag">service_base</property>
+    <property name="title">Service Creation</property>
+  </template>
+  <object class="GtkDropTarget"/>
+</interface>

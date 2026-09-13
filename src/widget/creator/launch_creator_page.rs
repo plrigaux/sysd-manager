@@ -43,10 +43,7 @@ mod imp {
     use enumflags2::BitFlag;
     use gettextrs::gettext;
     use gtk::{glib, prelude::*};
-    use std::{
-        cell::{Cell, OnceCell},
-        path::PathBuf,
-    };
+    use std::cell::{Cell, OnceCell};
     use systemd::enums::{DisEnableFlags, StartStopMode};
     use tracing::{error, info, warn};
 
@@ -193,15 +190,12 @@ mod imp {
 
         fn enable_unit(&self, window: &UnitCreatorWindow, level: UnitDBusLevel) {
             match window.creation_type() {
-                UnitCreateType::Service => {
-                    self.enable_unit_call(window, level, UnitCreatorWindowImp::service_unit_name);
-                }
-                UnitCreateType::Timer => {
-                    self.enable_unit_call(window, level, UnitCreatorWindowImp::timer_unit_name);
-                }
                 UnitCreateType::TimerService => {
-                    self.enable_unit_call(window, level, UnitCreatorWindowImp::service_unit_name);
-                    self.enable_unit_call(window, level, UnitCreatorWindowImp::timer_unit_name);
+                    self.enable_unit_call(window, level, UnitCreateType::Service);
+                    self.enable_unit_call(window, level, UnitCreateType::Timer);
+                }
+                ct => {
+                    self.enable_unit_call(window, level, ct);
                 }
             }
         }
@@ -210,9 +204,10 @@ mod imp {
             &self,
             window: &UnitCreatorWindow,
             level: UnitDBusLevel,
-            call: fn(&UnitCreatorWindowImp) -> Option<String>,
+            ct: UnitCreateType,
         ) {
-            let unit_name = call(window.imp());
+            let unit_name = UnitCreatorWindowImp::unit_name(window.imp(), ct);
+
             info!("enabling unit {:?}", unit_name);
 
             let flags = DisEnableFlags::empty();
@@ -227,16 +222,11 @@ mod imp {
 
         fn start_unit(&self, window: &UnitCreatorWindow, level: UnitDBusLevel) {
             match window.creation_type() {
-                UnitCreateType::Service => {
-                    self.start_unit_call(window, level, UnitCreatorWindowImp::service_unit_name);
-                }
-                UnitCreateType::Timer => {
-                    self.start_unit_call(window, level, UnitCreatorWindowImp::timer_unit_name);
-                }
                 UnitCreateType::TimerService => {
-                    self.start_unit_call(window, level, UnitCreatorWindowImp::service_unit_name);
-                    self.start_unit_call(window, level, UnitCreatorWindowImp::timer_unit_name);
+                    self.start_unit_call(window, level, UnitCreateType::Service);
+                    self.start_unit_call(window, level, UnitCreateType::Timer);
                 }
+                create_type => self.start_unit_call(window, level, create_type),
             }
         }
 
@@ -244,9 +234,9 @@ mod imp {
             &self,
             window: &UnitCreatorWindow,
             level: UnitDBusLevel,
-            call: fn(&UnitCreatorWindowImp) -> Option<String>,
+            create_type: UnitCreateType,
         ) {
-            let unit_name = call(window.imp());
+            let unit_name = window.imp().unit_name(create_type);
             info!("Starting unit {:?}", unit_name);
 
             glib::spawn_future_local(async move {
@@ -264,12 +254,13 @@ mod imp {
         pub(crate) fn update_page(&self) {
             let window = upgrade_opt!(self.window.get());
 
-            match window.creation_type() {
+            let creation_type = window.creation_type();
+            match creation_type {
                 UnitCreateType::Service => {
                     self.service_file_action.set_visible(true);
                     self.timer_file_action.set_visible(false);
 
-                    if let Some(file_path) = window.imp().service_file_path()
+                    if let Some(file_path) = window.imp().file_path(creation_type)
                         && let Some(file_path) = file_path.to_str()
                     {
                         self.service_file_action.set_subtitle(file_path);
@@ -279,7 +270,7 @@ mod imp {
                     self.service_file_action.set_visible(false);
                     self.timer_file_action.set_visible(true);
 
-                    if let Some(file_path) = window.imp().timer_file_path()
+                    if let Some(file_path) = window.imp().file_path(creation_type)
                         && let Some(file_path) = file_path.to_str()
                     {
                         self.timer_file_action.set_subtitle(file_path);
@@ -289,13 +280,23 @@ mod imp {
                     self.service_file_action.set_visible(true);
                     self.timer_file_action.set_visible(true);
 
-                    if let Some(file_path) = window.imp().service_file_path()
+                    if let Some(file_path) = window.imp().file_path(UnitCreateType::Service)
                         && let Some(file_path) = file_path.to_str()
                     {
                         self.service_file_action.set_subtitle(file_path);
                     }
 
-                    if let Some(file_path) = window.imp().timer_file_path()
+                    if let Some(file_path) = window.imp().file_path(UnitCreateType::Timer)
+                        && let Some(file_path) = file_path.to_str()
+                    {
+                        self.timer_file_action.set_subtitle(file_path);
+                    }
+                }
+                UnitCreateType::Mount => {
+                    self.service_file_action.set_visible(false);
+                    self.timer_file_action.set_visible(false);
+
+                    if let Some(file_path) = window.imp().file_path(creation_type)
                         && let Some(file_path) = file_path.to_str()
                     {
                         self.timer_file_action.set_subtitle(file_path);
@@ -306,27 +307,27 @@ mod imp {
 
         #[template_callback]
         fn show_service_file(&self, _button: &gtk::Button) {
-            self.show_file(UnitCreatorWindowImp::service_file_path);
+            self.show_file(UnitCreateType::Service);
         }
 
         #[template_callback]
         fn show_timer_file(&self, _button: &gtk::Button) {
-            self.show_file(UnitCreatorWindowImp::timer_file_path);
+            self.show_file(UnitCreateType::Timer);
         }
 
         #[template_callback]
         fn show_service_unit(&self, _button: &gtk::Button) {
-            self.show_unit(UnitCreatorWindowImp::service_unit_name);
+            self.show_unit(UnitCreateType::Service);
         }
 
         #[template_callback]
         fn show_timer_unit(&self, _button: &gtk::Button) {
-            self.show_unit(UnitCreatorWindowImp::timer_unit_name);
+            self.show_unit(UnitCreateType::Timer);
         }
 
-        fn show_file(&self, call: fn(&UnitCreatorWindowImp) -> Option<PathBuf>) {
+        fn show_file(&self, create_type: UnitCreateType) {
             let window = upgrade_opt!(self.window.get());
-            if let Some(file_path) = call(window.imp())
+            if let Some(file_path) = window.imp().file_path(create_type)
                 && let Some(file_path) = file_path.to_str()
             {
                 let file_path = file::flatpak_host_file_path(file_path);
@@ -343,9 +344,9 @@ mod imp {
             }
         }
 
-        fn show_unit(&self, call: fn(&UnitCreatorWindowImp) -> Option<String>) {
+        fn show_unit(&self, unit_create_type: UnitCreateType) {
             let window = upgrade_opt!(self.window.get());
-            let Some(unit_name) = call(window.imp()) else {
+            let Some(unit_name) = window.unit_name(unit_create_type) else {
                 return;
             };
 

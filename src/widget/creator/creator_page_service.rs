@@ -10,14 +10,14 @@ use gtk::glib::{self};
 
 glib::wrapper! {
 
-    pub struct ServiceCreatorPage(ObjectSubclass<imp::ServiceCreatorPageImp>)
+    pub struct CreatorPageService(ObjectSubclass<imp::CreatorPageServiceImp>)
     @extends adw::NavigationPage,  gtk::Widget,
     @implements gtk::Accessible,  gtk::Buildable,  gtk::ConstraintTarget ;
 }
 
-impl ServiceCreatorPage {
+impl CreatorPageService {
     pub fn new(window: WeakRef<UnitCreatorWindow>, page: PageType) -> Self {
-        let obj: ServiceCreatorPage = glib::Object::new();
+        let obj: CreatorPageService = glib::Object::new();
         obj.set_tag(Some(page.id()));
         let _ = obj.imp().window.set(window);
         // obj.imp().update_from_unit_info();

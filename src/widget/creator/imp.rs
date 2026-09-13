@@ -9,9 +9,10 @@ use crate::{
         creator::{
             ACTION_CREATOR_CREATE, ACTION_CREATOR_FILE, ACTION_CREATOR_NEXT,
             ACTION_CREATOR_PREVIOUS, ACTION_CREATOR_UNIT_BUS, PageType, SaveUnit, UnitCreateType,
-            first_page::UnitCreatorFirstPage, launch_creator_page::LaunchCreatorPage,
-            navigation_row::NavigationRow, service_creator_page::ServiceCreatorPage,
-            timer_creator_page::TimerCreatorPage, unit_file_creator_page::UnitFileCreatorPage,
+            creator_page_mount::CreatorPageMount, creator_page_service::CreatorPageService,
+            creator_page_timer::CreatorPageTimer, first_page::UnitCreatorFirstPage,
+            launch_creator_page::LaunchCreatorPage, navigation_row::NavigationRow,
+            unit_file_creator_page::UnitFileCreatorPage,
         },
         replace_tags,
     },
@@ -53,10 +54,14 @@ pub struct UnitCreatorWindowImp {
     #[template_child]
     nav_row: TemplateChild<NavigationRow>,
 
+    #[template_child]
+    advanced_mode: TemplateChild<gtk::CheckButton>,
+
     pub(super) app_window: OnceCell<AppWindow>,
     start_page: OnceCell<UnitCreatorFirstPage>,
-    timer_page: OnceCell<TimerCreatorPage>,
-    service_page: OnceCell<ServiceCreatorPage>,
+    timer_page: OnceCell<CreatorPageTimer>,
+    service_page: OnceCell<CreatorPageService>,
+    mount_page: OnceCell<CreatorPageMount>,
     first_page: OnceCell<UnitCreatorFirstPage>,
     last_page: OnceCell<LaunchCreatorPage>,
 
@@ -108,8 +113,6 @@ impl UnitCreatorWindowImp {
 
         let valid = match self.page_type.get() {
             PageType::Start if let Some(page) = self.start_page.get() => page.validate(),
-            PageType::Service => true,
-            PageType::Timer => true,
             _ => true,
         };
 
@@ -217,15 +220,7 @@ impl UnitCreatorWindowImp {
         }
     }
 
-    pub fn service_file_path(&self) -> Option<PathBuf> {
-        self.file_path("service")
-    }
-
-    pub fn timer_file_path(&self) -> Option<PathBuf> {
-        self.file_path("timer")
-    }
-
-    fn file_path(&self, suffix: &str) -> Option<PathBuf> {
+    pub fn file_path(&self, create_type: UnitCreateType) -> Option<PathBuf> {
         let Some(first_page) = self.first_page.get() else {
             error!("first page None");
             return None;
@@ -239,18 +234,10 @@ impl UnitCreatorWindowImp {
             return None;
         };
 
-        Some(dir.join(prefix).with_extension(suffix))
+        Some(dir.join(prefix).with_extension(create_type.suffix()))
     }
 
-    pub fn service_unit_name(&self) -> Option<String> {
-        self.unit_name("service")
-    }
-
-    pub fn timer_unit_name(&self) -> Option<String> {
-        self.unit_name("timer")
-    }
-
-    fn unit_name(&self, suffix: &str) -> Option<String> {
+    pub fn unit_name(&self, create_type: UnitCreateType) -> Option<String> {
         let Some(first_page) = self.first_page.get() else {
             error!("first page None");
             return None;
@@ -258,14 +245,16 @@ impl UnitCreatorWindowImp {
 
         let (_, prefix) = first_page.fetch_settings();
 
-        Some(format!("{prefix}.{suffix}"))
+        Some(create_type.full_name(&prefix))
     }
 
     fn save_unit_files(&self) {
-        let file_contents = match self.creation_type.get() {
+        let create_type = self.creation_type.get();
+
+        let file_contents = match create_type {
             UnitCreateType::Service => {
                 if let Some(service_page) = self.service_page.get() {
-                    let Some(file_path) = self.service_file_path() else {
+                    let Some(file_path) = self.file_path(create_type) else {
                         error!("No file path");
                         return;
                     };
@@ -277,7 +266,7 @@ impl UnitCreatorWindowImp {
             }
             UnitCreateType::Timer => {
                 if let Some(timer_page) = self.timer_page.get() {
-                    let Some(file_path) = self.timer_file_path() else {
+                    let Some(file_path) = self.file_path(create_type) else {
                         error!("No file path");
                         return;
                     };
@@ -291,18 +280,30 @@ impl UnitCreatorWindowImp {
                 if let Some(service_page) = self.service_page.get()
                     && let Some(timer_page) = self.timer_page.get()
                 {
-                    let Some(service_file_path) = self.service_file_path() else {
+                    let Some(service_file_path) = self.file_path(UnitCreateType::Service) else {
                         error!("No file path");
                         return;
                     };
                     let content_s = service_page.file_content();
 
-                    let Some(file_path) = self.timer_file_path() else {
+                    let Some(file_path) = self.file_path(UnitCreateType::Timer) else {
                         error!("No file path");
                         return;
                     };
                     let content = timer_page.file_content();
                     vec![(service_file_path, content_s), (file_path, content)]
+                } else {
+                    Vec::new()
+                }
+            }
+            UnitCreateType::Mount => {
+                if let Some(page) = self.mount_page.get() {
+                    let Some(file_path) = self.file_path(create_type) else {
+                        error!("No file path");
+                        return;
+                    };
+                    let content = page.file_content();
+                    vec![(file_path, content)]
                 } else {
                     Vec::new()
                 }
@@ -428,16 +429,13 @@ impl UnitCreatorWindowImp {
 
         let (_, prefix) = first_page.fetch_settings();
 
-        let suffixes = match self.creation_type.get() {
-            UnitCreateType::Service => vec!["service"],
-            UnitCreateType::Timer => vec!["timer"],
-            UnitCreateType::TimerService => vec!["timer", "service"],
-        };
-
-        suffixes
-            .iter()
-            .map(|suffix| format!("{prefix}.{suffix}"))
-            .collect()
+        match self.creation_type.get() {
+            UnitCreateType::TimerService => vec![
+                UnitCreateType::Service.full_name(&prefix),
+                UnitCreateType::Timer.full_name(&prefix),
+            ],
+            create_type => vec![create_type.full_name(&prefix)],
+        }
     }
 }
 
@@ -515,10 +513,12 @@ impl ObjectImpl for UnitCreatorWindowImp {
         // let s = SimpleActionGroup::new();
         let first_page = UnitCreatorFirstPage::new(self.obj().downgrade(), PageType::Start);
         let last_page = LaunchCreatorPage::new(self.obj().downgrade(), PageType::Launch);
-        let timer_page = TimerCreatorPage::new(self.obj().downgrade(), PageType::Timer);
-        let service_page = ServiceCreatorPage::new(self.obj().downgrade(), PageType::Service);
-        let timer_file_page = UnitFileCreatorPage::new(PageType::TimerFile);
+        let mount_page = CreatorPageMount::new(self.obj().downgrade(), PageType::Mount);
+        let mount_file_page = UnitFileCreatorPage::new(PageType::MountFile);
+        let service_page = CreatorPageService::new(self.obj().downgrade(), PageType::Service);
         let service_file_page = UnitFileCreatorPage::new(PageType::ServiceFile);
+        let timer_page = CreatorPageTimer::new(self.obj().downgrade(), PageType::Timer);
+        let timer_file_page = UnitFileCreatorPage::new(PageType::TimerFile);
 
         self.navigation.push(&first_page);
         self.navigation.add(&last_page);
@@ -526,14 +526,19 @@ impl ObjectImpl for UnitCreatorWindowImp {
         self.navigation.add(&service_page);
         self.navigation.add(&service_file_page);
         self.navigation.add(&timer_file_page);
+        self.navigation.add(&mount_page);
+        self.navigation.add(&mount_file_page);
 
         let _ = self.start_page.set(first_page.clone());
         let _ = self.timer_page.set(timer_page.clone());
         let _ = self.service_page.set(service_page.clone());
+        let _ = self.mount_page.set(mount_page.clone());
         let _ = self.first_page.set(first_page.clone());
         let _ = self.last_page.set(last_page.clone());
         let window = self.obj().downgrade();
         let service_page = service_page.downgrade();
+        let mount_page = mount_page.downgrade();
+        let mount_file_page = mount_file_page.downgrade();
         let service_file_page = service_file_page.downgrade();
         let timer_page = timer_page.downgrade();
         let timer_file_page = timer_file_page.downgrade();
@@ -571,6 +576,16 @@ impl ObjectImpl for UnitCreatorWindowImp {
                     let text = timer_file_page.file_text();
                     timer_page.update_from_file_content(&text);
                 }
+                (PageType::Mount, _) => {
+                    // let mount_page = upgrade!(mount_page);
+                    // mount_page.set_view(window.creation_type());
+                }
+                (_, PageType::MountFile) => {
+                    let mount_file_page = upgrade!(mount_file_page);
+                    let mount_page = upgrade!(mount_page);
+                    let text = mount_file_page.file_text();
+                    mount_page.update_from_file_content(&text);
+                }
                 (PageType::Launch, _) => {
                     let last_page = upgrade!(last_page);
                     last_page.update_page();
@@ -593,6 +608,10 @@ impl ObjectImpl for UnitCreatorWindowImp {
                 }
             });
         }
+
+        self.advanced_mode.connect_toggled(|button| {
+            info!("Advance Mode {}", button.is_active());
+        });
     }
 }
 

@@ -30,8 +30,8 @@ const VALIDATE_MEMORY_HIGH_REGEX: &str = r"^[1-9][0-9]*[%KMGT]?$";
 
 #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/creator_page_service.ui")]
-#[properties(wrapper_type = creator_page_service::ServiceCreatorPage)]
-pub struct ServiceCreatorPageImp {
+#[properties(wrapper_type = super::CreatorPageService)]
+pub struct CreatorPageServiceImp {
     #[property(get, set, default)]
     creation_type: Cell<UnitCreateType>,
 
@@ -88,9 +88,9 @@ pub struct ServiceCreatorPageImp {
 }
 
 #[glib::object_subclass]
-impl ObjectSubclass for ServiceCreatorPageImp {
+impl ObjectSubclass for CreatorPageServiceImp {
     const NAME: &'static str = "CreatorPageService";
-    type Type = ServiceCreatorPage;
+    type Type = CreatorPageService;
     type ParentType = adw::NavigationPage;
 
     fn class_init(klass: &mut Self::Class) {
@@ -106,14 +106,14 @@ impl ObjectSubclass for ServiceCreatorPageImp {
 }
 
 #[glib::derived_properties]
-impl ObjectImpl for ServiceCreatorPageImp {
+impl ObjectImpl for CreatorPageServiceImp {
     fn constructed(&self) {
         self.parent_constructed();
 
         let event_focus = gtk::EventControllerFocus::new();
         event_focus.connect_leave(|event| {
             if let Some(entry) = event.widget().and_downcast_ref::<adw::EntryRow>() {
-                ServiceCreatorPageImp::validate_entry_strat(entry);
+                CreatorPageServiceImp::validate_entry_strat(entry);
             }
         });
         self.exec_start_entry.add_controller(event_focus);
@@ -181,7 +181,7 @@ impl ObjectImpl for ServiceCreatorPageImp {
         let event_focus = gtk::EventControllerFocus::new();
         event_focus.connect_leave(move |event| {
             if let Some(entry) = event.widget().and_downcast_ref::<adw::EntryRow>() {
-                ServiceCreatorPageImp::validate_cpu_quota(this.imp(), entry);
+                CreatorPageServiceImp::validate_cpu_quota(this.imp(), entry);
             }
         });
 
@@ -191,7 +191,7 @@ impl ObjectImpl for ServiceCreatorPageImp {
         let event_focus = gtk::EventControllerFocus::new();
         event_focus.connect_leave(move |event| {
             if let Some(entry) = event.widget().and_downcast_ref::<adw::EntryRow>() {
-                ServiceCreatorPageImp::validate_memory_high(this.imp(), entry);
+                CreatorPageServiceImp::validate_memory_high(this.imp(), entry);
             }
         });
 
@@ -237,7 +237,7 @@ impl ObjectImpl for ServiceCreatorPageImp {
         let this = self.obj().clone();
         event_focus.connect_leave(move |event| {
             if let Some(entry) = event.widget().and_downcast_ref::<adw::EntryRow>() {
-                ServiceCreatorPageImp::validate_standard_output_and_error(
+                CreatorPageServiceImp::validate_standard_output_and_error(
                     this.imp(),
                     entry,
                     STANDARD_OUTPUT,
@@ -250,7 +250,7 @@ impl ObjectImpl for ServiceCreatorPageImp {
         let this = self.obj().clone();
         event_focus.connect_leave(move |event| {
             if let Some(entry) = event.widget().and_downcast_ref::<adw::EntryRow>() {
-                ServiceCreatorPageImp::validate_standard_output_and_error(
+                CreatorPageServiceImp::validate_standard_output_and_error(
                     this.imp(),
                     entry,
                     STANDARD_ERROR,
@@ -261,7 +261,7 @@ impl ObjectImpl for ServiceCreatorPageImp {
     }
 }
 
-impl ServiceCreatorPageImp {
+impl CreatorPageServiceImp {
     fn validate_entry_strat(entry: &adw::EntryRow) {
         let text = entry.text();
 
@@ -471,7 +471,7 @@ fn is_executable(path: &Path) -> bool {
 }
 
 #[gtk::template_callbacks]
-impl ServiceCreatorPageImp {
+impl CreatorPageServiceImp {
     #[template_callback]
     fn working_directory_search_dialog_clicked(&self, _button: gtk::Button) {
         let file_dialog = gtk::FileDialog::builder()
@@ -625,7 +625,7 @@ impl ServiceCreatorPageImp {
     }
 }
 
-impl ServiceCreatorPageImp {
+impl CreatorPageServiceImp {
     pub(super) fn update_view(&self, page: &UnitFileCreatorPage) {
         self.fill_data();
         let data = self.file_data.borrow();
@@ -760,9 +760,9 @@ impl ServiceCreatorPageImp {
     }
 }
 
-impl WidgetImpl for ServiceCreatorPageImp {}
+impl WidgetImpl for CreatorPageServiceImp {}
 
-impl NavigationPageImpl for ServiceCreatorPageImp {}
+impl NavigationPageImpl for CreatorPageServiceImp {}
 
 fn escape(file_path: &mut String) {
     if file_path.contains(char::is_whitespace) {
