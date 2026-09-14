@@ -11,6 +11,13 @@ If this project saves you or your company time, consider [sponsoring](https://gi
 
 - A mount wizard
 
+## [2.22.1] - 2026-09-14
+
+### Changed
+- Norwegian translation
+- Chineese translation
+- Brazil translation
+
 ## [2.22.1] - 2026-09-09
 
 ### Added
