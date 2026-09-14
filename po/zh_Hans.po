@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-09 08:56-0400\n"
-"PO-Revision-Date: 2026-02-07 01:52+0000\n"
-"Last-Translator: 09277632 <3056538209@qq.com>\n"
+"PO-Revision-Date: 2026-09-11 01:51+0000\n"
+"Last-Translator: CGuo <CGuoXYZ@163.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/sysd-manager/translation/zh_Hans/>\n"
 "Language: zh_Hans\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.17-dev\n"
+"X-Generator: Weblate 2026.9.1\n"
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -74,7 +74,7 @@ msgstr "单元日志"
 msgid ""
 "Authentication is required to run privileged systemd calls via the SysD "
 "Manager Proxy"
-msgstr ""
+msgstr "通过SysD管理器代理运行特权 ，Systemd调用需要进行身份验证。"
 
 #: data/interfaces/app_window.ui:43
 msgctxt "top button tooltip"
@@ -83,18 +83,18 @@ msgstr "打开搜索栏"
 
 #: data/interfaces/app_window.ui:54
 msgid "To select system or session bus"
-msgstr ""
+msgstr "选择系统总线或会话总线"
 
 #. selector of differents units list
 #: data/interfaces/app_window.ui:61
 msgctxt "menu"
 msgid "Curated Lists"
-msgstr ""
+msgstr "精选列表"
 
 #: data/interfaces/app_window.ui:62
 msgctxt "tooltip"
 msgid "To display different units' presentation and subset"
-msgstr ""
+msgstr "显示不同单元的呈现方式和子集"
 
 #: data/interfaces/app_window.ui:69
 msgctxt "top button tooltip"
@@ -219,6 +219,10 @@ msgid ""
 "You need to <b>jailbreak</b> your Flatpak application to allow it to run sub-"
 "programs or to save files on the host system."
 msgstr ""
+"“创建单元”功能需要具备一定的访问权限才能正常运行。\n"
+"\n"
+"你需要对 Flatpak 应用程序进行“越狱”，以允许其运行子程序或在宿主系统上保存文件"
+"。"
 
 #. info subtitle
 #: data/interfaces/creator/create_first.ui:33
@@ -236,21 +240,21 @@ msgstr "服务管理器"
 #: data/interfaces/creator/create_first.ui:47
 msgctxt "unit creation"
 msgid "Create a scheduled task"
-msgstr ""
+msgstr "创建计划任务"
 
 #: data/interfaces/creator/create_first.ui:48
 msgid "Timer with Service"
-msgstr ""
+msgstr "带服务的计时器"
 
 #. info subtitle
 #: data/interfaces/creator/create_first.ui:61
 msgctxt "unit creation"
 msgid "Trigger an existing task (service)"
-msgstr ""
+msgstr "触发现有任务（服务）"
 
 #: data/interfaces/creator/create_first.ui:62
 msgid "Timer"
-msgstr ""
+msgstr "计时器"
 
 #: data/interfaces/creator/create_first.ui:81
 #, fuzzy
@@ -259,23 +263,23 @@ msgstr "Systemd 信息"
 
 #: data/interfaces/creator/create_first.ui:94
 msgid "User Session"
-msgstr ""
+msgstr "用户会话"
 
 #. info subtitle
 #: data/interfaces/creator/create_first.ui:111
 msgctxt "unit creation"
 msgid "Runtime units are discarded at next reboot"
-msgstr ""
+msgstr "运行时单元将在下次重启时被丢弃"
 
 #: data/interfaces/creator/nav_row.ui:21
 msgid ""
 "🙏🏻 Please donate — every contribution helps me to prove to my wife that "
 "this project is more than just “another coding hobby”"
-msgstr ""
+msgstr "🙏🏻 请捐赠——您的每一份支持都能帮我向妻子证明，这个项目不仅仅是“又一个编程爱好”"
 
 #: data/interfaces/creator/timer_creator_page.ui:109
 msgid "Catch up missed runs after boot "
-msgstr ""
+msgstr "开机后重启错过的任务 "
 
 #: data/interfaces/ex_menu_button.ui:40
 msgctxt "extented menu button"
@@ -289,7 +293,7 @@ msgstr "清空"
 #: data/interfaces/unit_status_panel.ui:21 src/widget/text_search/mod.rs:60
 msgctxt "text_find"
 msgid "Find in Text"
-msgstr ""
+msgstr "在文本中查找"
 
 #. button
 #: data/interfaces/journal_panel.ui:28
@@ -306,7 +310,7 @@ msgstr "清除并重新加载日志"
 #: data/interfaces/journal_panel.ui:39
 msgctxt "journal"
 msgid "Follow"
-msgstr ""
+msgstr "跟踪"
 
 #: data/interfaces/journal_panel.ui:40
 msgctxt "journal"
@@ -353,7 +357,7 @@ msgstr "引导 id"
 #: data/interfaces/journal_panel.ui:146
 msgctxt "journal"
 msgid "For more information"
-msgstr ""
+msgstr "了解更多信息"
 
 #. description
 #: data/interfaces/journal_panel.ui:150
@@ -361,7 +365,7 @@ msgctxt "journal"
 msgid ""
 "Either there are no log events to display, or you don't have permission to "
 "access them."
-msgstr ""
+msgstr "要么没有日志事件可供显示，要么您没有访问权限。"
 
 #. title
 #: data/interfaces/journal_panel.ui:152
@@ -538,8 +542,7 @@ msgid ""
 "all Systemd units."
 msgstr ""
 "这是您的首次连接\n"
-"如果您想查看所有 Systemd 单元，可以将应用程序的 D-Bus 级别设置为<u>\"系统\"</"
-"u>。"
+"如果您想查看所有 Systemd 单元，可以将应用程序的 D-Bus 级别设置为\"系统\"。"
 
 #: data/interfaces/preferences.ui:19
 msgctxt "preference"
@@ -639,19 +642,19 @@ msgstr "显示统计摘要"
 #: data/interfaces/preferences.ui:100
 msgctxt "preference"
 msgid "Search and filtering case insensitivity default option"
-msgstr ""
+msgstr "搜索与筛选默认不区分大小写"
 
 #. title
 #: data/interfaces/preferences.ui:101
 msgctxt "preference"
 msgid "Case Insensitive"
-msgstr ""
+msgstr "不区分大小写"
 
 #. subtitle
 #: data/interfaces/preferences.ui:106
 msgctxt "preference"
 msgid "Display Unit's Active Status as an icon rather than text"
-msgstr ""
+msgstr "以图标显示单元活动状态，而非文本"
 
 #. title
 #: data/interfaces/preferences.ui:107
@@ -685,13 +688,13 @@ msgstr "自动换行单元描述"
 #: data/interfaces/preferences.ui:123
 msgctxt "preference"
 msgid "Otherwise those buttons are displayed according to context"
-msgstr ""
+msgstr "否则，这些按钮会根据上下文显示"
 
 #. title
 #: data/interfaces/preferences.ui:124
 msgctxt "preference"
 msgid "Always shows Start and Stop Buttons"
-msgstr ""
+msgstr "始终显示“开始”和“停止”按钮"
 
 #. group
 #: data/interfaces/preferences.ui:131
@@ -782,7 +785,7 @@ msgstr "通过代理调用 <b>解冻</b> 方法"
 #: data/interfaces/preferences.ui:234
 msgctxt "preference"
 msgid "Start"
-msgstr ""
+msgstr "启动"
 
 #: data/interfaces/preferences.ui:239
 #, fuzzy
@@ -805,7 +808,7 @@ msgstr "通过代理调用 <b>清空</b> 方法"
 #: data/interfaces/preferences.ui:246
 msgctxt "preference"
 msgid "Restart"
-msgstr ""
+msgstr "重启"
 
 #: data/interfaces/preferences.ui:251
 #, fuzzy
@@ -954,28 +957,28 @@ msgstr "启动 Sysd Manager 时启动代理"
 #: data/interfaces/preferences.ui:335
 msgctxt "preference"
 msgid "Stop Proxy at Close"
-msgstr ""
+msgstr "关闭时停止代理"
 
 #. Section name
 #: data/interfaces/shortcuts.ui:10
 msgctxt "shortcut window"
 msgid "General"
-msgstr ""
+msgstr "一般"
 
 #: data/interfaces/shortcuts.ui:14
 msgctxt "shortcut window"
 msgid "Close the application"
-msgstr ""
+msgstr "关闭应用程序"
 
 #: data/interfaces/shortcuts.ui:20
 msgctxt "shortcut window"
 msgid "Close the window"
-msgstr ""
+msgstr "关闭窗口"
 
 #: data/interfaces/shortcuts.ui:26
 msgctxt "shortcut window"
 msgid "Show Preferences"
-msgstr ""
+msgstr "显示偏好设置"
 
 #. Section name
 #: data/interfaces/shortcuts.ui:33
@@ -988,7 +991,7 @@ msgstr "SysD 管理器"
 #: data/interfaces/shortcuts.ui:37
 msgctxt "shortcut window"
 msgid "Allow configuring each proxy operation individually"
-msgstr ""
+msgstr "允许单独配置每个代理操作"
 
 #: data/interfaces/shortcuts.ui:38
 #, fuzzy
@@ -999,12 +1002,12 @@ msgstr "首选项"
 #: data/interfaces/shortcuts.ui:44
 msgctxt "shortcut window"
 msgid "Open Search Unit"
-msgstr ""
+msgstr "打开搜索单元"
 
 #: data/interfaces/shortcuts.ui:50
 msgctxt "shortcut window"
 msgid "Open Unit Property Filter"
-msgstr ""
+msgstr "打开单元属性筛选器"
 
 #: data/interfaces/shortcuts.ui:56
 #, fuzzy
@@ -1015,12 +1018,12 @@ msgstr "分析启动耗时"
 #: data/interfaces/shortcuts.ui:62
 msgctxt "shortcut window"
 msgid "Open List Boots"
-msgstr ""
+msgstr "列出启动项"
 
 #: data/interfaces/shortcuts.ui:68
 msgctxt "shortcut window"
 msgid "Open columns manager"
-msgstr ""
+msgstr "打开列管理器"
 
 #: data/interfaces/shortcuts.ui:74
 #, fuzzy
@@ -1031,13 +1034,13 @@ msgstr "重载所有单元配置"
 #: data/interfaces/shortcuts.ui:80
 msgctxt "shortcut window"
 msgid "Open Find in Text"
-msgstr ""
+msgstr "打开“在文本中查找”"
 
 #. subtitle
 #: data/interfaces/shortcuts.ui:86
 msgctxt "shortcut window"
 msgid "Create Timer or Service Unit Type"
-msgstr ""
+msgstr "创建计时器或服务单元类型"
 
 #: data/interfaces/shortcuts.ui:87
 #, fuzzy
@@ -1049,7 +1052,7 @@ msgstr "创建Drop-in 文件"
 #: data/interfaces/shortcuts.ui:94
 msgctxt "shortcut window"
 msgid "Pages"
-msgstr ""
+msgstr "页面"
 
 #: data/interfaces/shortcuts.ui:98
 #, fuzzy
