@@ -7,6 +7,10 @@ authors.workspace = true
 license.workspace = true
 repository.workspace = true
 
+[lib]
+name = "tool_lib"
+path = "src/lib.rs"
+
 [[bin]]
 name = "tool"
 path = "src/main.rs"
