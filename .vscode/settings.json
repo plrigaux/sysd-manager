@@ -14,5 +14,6 @@
     },
     "[json]": {
         "editor.formatOnSave": true
-    }
+    },
+    "xml.downloadExternalResources.enabled": true
 }
