@@ -20,5 +20,5 @@ libc.workspace = true
 signal-hook = "0.4"
 tokio.workspace = true
 tracing.workspace = true
-tracing-subscriber = "0.3"
+tracing-subscriber.workspace = true
 tracing-journald = "0.3"

@@ -15,3 +15,7 @@ path = "src/main.rs"
 default = []
 
 [dependencies]
+tracing.workspace = true
+tracing-subscriber.workspace = true
+regex.workspace = true
+quick-xml = "0.42"

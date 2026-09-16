@@ -32,7 +32,8 @@ If this project saves you or your company time, consider [sponsoring](https://gi
 - Option to toggle display unit's active state between text or icon
 
 ### Changed
-- [Issue 70](https://github.com/plrigaux/sysd-manager/issues/70) Change sort order of columns "Unit File State" and "Load State"
+- [Issue 70](https://github.com/plrigaux/sysd-manager/issues/70) Change sort order of columns "Unit File State" and
+"Load State"
 - Set default bus selection to "System & User session Bus"
 
 ### Fixed
@@ -55,13 +56,15 @@ If this project saves you or your company time, consider [sponsoring](https://gi
 - Improve boot list fetch by a factor 10
 
 ### Fixed
-- [Issue 78](https://github.com/plrigaux/sysd-manager/issues/78) Now display journal events when new events arrives and when originally there were no displayed events
+- [Issue 78](https://github.com/plrigaux/sysd-manager/issues/78) Now display journal events when new events
+arrives and when originally there were no displayed events
 - Fixed some toast messages
 
 ## [2.20.11] - 2026-08-22
 
 ### Fixed
-- [Issue 76](https://github.com/plrigaux/sysd-manager/issues/76) Use the checkbox's label for the Follow option and improve UX
+- [Issue 76](https://github.com/plrigaux/sysd-manager/issues/76) Use the checkbox's label for the Follow option and
+improve UX
 
 ## [2.20.9] - 2026-08-04
 
@@ -537,25 +540,25 @@ when switching Color Scheme Mode (Light and Dark)
 
 - Missing Icon in "More..." Button Issue https://github.com/plrigaux/sysd-manager/issues/27
 
-## [2.6.4] - 2025-11-5
+## [2.6.4] - 2025-11-05
 
 ### Fixed
 
 - Unit journal events displayed twice. Issue https://github.com/plrigaux/sysd-manager/issues/26
 
-## [2.6.3] - 2025-11-4
+## [2.6.3] - 2025-11-04
 
 ### Fixed
 
 - System unit takes precedence on User Session units. Issue https://github.com/plrigaux/sysd-manager/issues/25
 
-## [2.6.2] - 2025-11-4
+## [2.6.2] - 2025-11-04
 
 ### Fixed
 
 - UX, extra controls side panel now scrolls
 
-## [2.6.1] - 2025-11-3
+## [2.6.1] - 2025-11-03
 
 ### Added
 
@@ -1121,7 +1124,7 @@ This release worked on unit information
 - Fix Unit info: CGroup now displays all processes
 - Fix Unit dependencies hyperlinks
 
-## [1.8] - 2025-01-08
+## [1.8.0] - 2025-01-08
 
 - New information page "Dependencies" to be able to view and navigate unit's
   dependencies
@@ -1129,7 +1132,7 @@ This release worked on unit information
 - Lazy load journal event
 - Lazy load unit configuration file
 
-## [1.7] - 2025-01-03
+## [1.7.0] - 2025-01-03
 
 ### Added
 
@@ -1137,7 +1140,7 @@ This release worked on unit information
   argument
   (see --help)
 
-## [1.6] - 2024-12-30
+## [1.6.0] - 2024-12-30
 
 - Improve User Experience for the Save file button
 - Reduce needed Flatpak file permissions
@@ -1152,7 +1155,7 @@ This release worked on unit information
 - Unit info now displays Invocation
 - Unit info now displays some gray shade
 
-## [1.4] - 2024-12-19
+## [1.4.0] - 2024-12-19
 
 - Add invocation Id on unit info file
 - Add a filter base on "boot id" for journal events

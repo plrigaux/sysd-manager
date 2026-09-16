@@ -1,3 +1,316 @@
-fn main() {
+mod errors;
+use quick_xml::{Writer, events::BytesText};
+use regex::Regex;
+use std::{
+    borrow::Cow,
+    cell::OnceCell,
+    env,
+    fmt::Display,
+    fs::File,
+    io::{self, BufRead, Cursor},
+    path::{Path, PathBuf},
+    sync::{LazyLock, Mutex, OnceLock},
+};
+use tracing::{debug, info, level_filters::LevelFilter, warn};
+
+use crate::errors::ToolError;
+
+const CHANGELOG: &str = "CHANGELOG.md";
+
+fn main() -> Result<(), ToolError> {
     println!("Hello, Sysd!");
+
+    tracing_subscriber::fmt()
+        .with_max_level(LevelFilter::DEBUG)
+        .init();
+
+    let dir = env::current_dir()?;
+
+    let changelog_path = find_change_log_file(&dir)?;
+
+    info!("File path {:?}", changelog_path);
+
+    //Read Changelog
+    read_file(&changelog_path)?;
+    // Extract cahnges
+    //
+    // test
+    //
+    //
+    // write in meta
+    Ok(())
+}
+
+fn find_change_log_file(dir_path: &Path) -> Result<PathBuf, ToolError> {
+    let path = dir_path.join(CHANGELOG);
+
+    if !path.exists() {
+        if let Some(parent_dir) = dir_path.parent() {
+            find_change_log_file(parent_dir)
+        } else {
+            Err(ToolError::FileNotFound)
+        }
+    } else {
+        Ok(path)
+    }
+}
+
+#[derive(Debug, Default)]
+struct Version {
+    major: u16,
+    minor: u16,
+    patch: u16,
+}
+
+impl Version {
+    fn new(major: &str, minor: &str, patch: &str) -> Self {
+        Self {
+            major: major.parse::<u16>().unwrap(),
+            minor: minor.parse::<u16>().unwrap(),
+            patch: patch.parse::<u16>().unwrap(),
+        }
+    }
+}
+
+impl Display for Version {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}.{}.{}", self.major, self.minor, self.patch)
+    }
+}
+
+#[derive(Debug, Default)]
+struct VersionLog {
+    date: String,
+    version: Version,
+    logs: Vec<LogToken>,
+}
+
+impl VersionLog {
+    fn new(version: Version, date: &str) -> Self {
+        Self {
+            version,
+            date: date.to_owned(),
+            ..Default::default()
+        }
+    }
+}
+
+#[derive(Debug)]
+enum LogToken {
+    Item(String),
+    Section(String),
+}
+
+fn read_file(file_path: &Path) -> Result<(), ToolError> {
+    let file = File::open(file_path)?;
+    let reader = io::BufReader::new(file);
+
+    let re_str = r#"## \[([0-9\.]+)\] - ([0-9\-]+)"#;
+    let versionline_re = Regex::new(re_str).expect("Valid RegEx");
+    let version_re = Regex::new(r"(\d+)\.(\d+)\.(\d+)").expect("Valid RegEx");
+    let date_re = Regex::new(r"\d{4}-\d{2}-\d{2}").expect("Valid RegEx");
+
+    let title_re = Regex::new(r"###\s*(.+)").expect("Valid RegEx");
+    let item_re = Regex::new(r"^- (.+)\s*").expect("Valid RegEx");
+    let follow_line_re = Regex::new(r"^\s*\S+").expect("Valid RegEx");
+
+    let mut vlogs = Vec::new();
+
+    let mut item_row = false;
+    for line in reader.lines() {
+        let line = line?;
+
+        if let Some(cap) = versionline_re.captures(&line) {
+            let date = &cap[2];
+            let version = &cap[1];
+            info!("version {} date {}", version, date);
+
+            let Some(vcap) = version_re.captures(version) else {
+                warn!("Invalid version {}", version);
+                continue;
+            };
+
+            let ver = Version::new(&vcap[1], &vcap[2], &vcap[3]);
+
+            let Some(_dcap) = date_re.captures(date) else {
+                warn!("Invalid date {}", date);
+                continue;
+            };
+
+            let vlog = VersionLog::new(ver, date);
+            vlogs.push(vlog);
+        } else if let Some(tcap) = title_re.captures(&line) {
+            info!("Section {}", &tcap[1]);
+            if let Some(vlog) = vlogs.last_mut() {
+                vlog.logs.push(LogToken::Section(tcap[1].to_owned()))
+            }
+            item_row = false;
+        } else if let Some(capture) = item_re.captures(&line) {
+            debug!("Item {}", &capture[1]);
+            if let Some(vlog) = vlogs.last_mut() {
+                vlog.logs.push(LogToken::Item(capture[1].to_owned()))
+            }
+            item_row = true;
+        } else if item_row && follow_line_re.is_match(&line) {
+            warn!("LINE:{}", line);
+            if let Some(vlog) = vlogs.last_mut()
+                && let Some(LogToken::Item(pizza)) = vlog.logs.last_mut()
+            {
+                pizza.push(' ');
+                pizza.push_str(line.trim_ascii());
+            };
+        }
+    }
+
+    write_xml(file_path.parent().unwrap(), &vlogs)?;
+    Ok(())
+}
+
+fn write_xml(dir: &Path, logs: &[VersionLog]) -> Result<(), ToolError> {
+    // let vec = Vec::new();
+
+    let file_path = dir.join("data/metainfo/io.github.plrigaux.sysd-manager.releases.xml");
+    let file = File::create(file_path)?;
+
+    let mut writer = Writer::new_with_indent(file, b'\t', 1);
+
+    for release in logs {
+        writer
+            .create_element("release")
+            .with_attributes([
+                ("version", release.version.to_string().as_str()),
+                ("date", release.date.as_str()),
+            ])
+            // .write_empty()?;
+            // .write_text_content(BytesText::new("test test"))?
+            .write_inner_content(|writer| {
+                writer
+                    .create_element("description")
+                    .with_attribute(("translate", "no"))
+                    .write_inner_content(|writer| {
+                        let mut it = release.logs.iter().peekable();
+                        while let Some(token) = it.next() {
+                            match token {
+                                LogToken::Section(title) => {
+                                    writer
+                                        .create_element("header")
+                                        .write_text_content(BytesText::new(title))?;
+                                    // Ok(())
+                                }
+                                LogToken::Item(li) => {
+                                    let mut items = Vec::new();
+                                    items.push(li);
+                                    while let Some(LogToken::Item(li)) = it.peek() {
+                                        items.push(li);
+                                        it.next();
+                                    }
+
+                                    writer
+                                        .create_element("ul")
+                                        .write_inner_content(move |writer| {
+                                            for li in items {
+                                                let li = clean_li(li);
+                                                writer
+                                                    .create_element("li")
+                                                    .write_text_content(BytesText::new(&li))?;
+                                            }
+
+                                            Ok(())
+                                        })
+                                        .ok();
+                                }
+                            };
+                        }
+                        Ok(())
+                    })?;
+
+                if let Ok(mut issues) = ISSUES.lock()
+                    && !issues.is_empty()
+                {
+                    writer
+                        .create_element("issues")
+                        .write_inner_content(|writer| {
+                            for (label, url) in issues.iter() {
+                                writer
+                                    .create_element("issue")
+                                    .with_attribute(("url", url.as_str()))
+                                    .write_text_content(BytesText::new(label))?;
+                            }
+
+                            Ok(())
+                        })?;
+                    issues.clear();
+                }
+
+                Ok(())
+            })?;
+    }
+    // let bytes = writer.into_inner().into_inner();
+
+    // let string_slice = std::str::from_utf8(&bytes).expect("Invalid UTF-8");
+
+    // info!("{}", string_slice);
+    Ok(())
+}
+
+static LI_RE: OnceLock<Regex> = OnceLock::new();
+
+fn get_config() -> &'static Regex {
+    LI_RE.get_or_init(|| Regex::new(r#"\[(.*)\]\((.*?)\)"#).expect("Valid RegEx"))
+}
+
+static ISSUES: LazyLock<Mutex<Vec<(String, String)>>> = LazyLock::new(|| Mutex::new(Vec::new()));
+
+fn add_issues(label: &str, url: &str) {
+    if let Ok(mut issues) = ISSUES.lock() {
+        issues.push((label.to_owned(), url.to_owned()))
+    }
+}
+
+fn clean_li<'a>(li: &'a str) -> Cow<'a, str> {
+    let mut it = get_config().captures_iter(li).peekable();
+
+    if it.peek().is_none() {
+        return Cow::Borrowed(li);
+    }
+
+    let mut out_string = String::with_capacity(li.len());
+    let mut start = 0;
+    for capture in it {
+        let m = capture.get_match();
+        let m1 = capture.get(1).unwrap();
+        out_string.push_str(&li[start..m1.end() + 1]);
+        start = m.end();
+
+        let label = &capture[1];
+        let url = &capture[2];
+
+        add_issues(label, url);
+    }
+    out_string.push_str(&li[start..]);
+
+    debug!("-- {}", out_string);
+    Cow::Owned(out_string)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{clean_li, get_config};
+
+    #[test]
+    fn li_re_matches_markdown_links() {
+        let re = get_config();
+        let text = "some text [Fix crash](https://example.com/issues/1) otehr text";
+        let caps = re.captures(text).expect("regex should match markdown link");
+
+        assert_eq!(&caps[1], "Fix crash");
+        assert_eq!(&caps[2], "https://example.com/issues/1");
+    }
+
+    #[test]
+    fn clean_li_replaces_each_markdown_link_with_label() {
+        let input = "Fix [crash](https://example.com/1) and [ui](https://example.com/2)";
+
+        assert_eq!(clean_li(input), "Fix crash and ui");
+    }
 }
