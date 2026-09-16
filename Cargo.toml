@@ -123,8 +123,9 @@ test-base.workspace = true
 [build-dependencies]
 #glib-build-tools = "0.19.0"
 #cargo-generate-rpm = "0.14.1"
-quick-xml = "0.42"
+# quick-xml = "0.42"ll
 translating = { version = "0.4.2", path = "./sysd-manager-translating", package = "sysd-manager-translating" }
+tool = { version = "0.1.0", path = "./tool", package = "tool" }
 
 [package.metadata.deb]
 section = "utils"

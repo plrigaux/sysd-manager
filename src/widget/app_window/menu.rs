@@ -370,15 +370,13 @@ Priit Jõerüüt <hwlate@joeruut.com>",
         &["AsciiWolf", "Justin Searle", "Damglador", "p-bo"],
     );
 
-    if let Some(rn_version) = RELEASE_NOTES_VERSION {
-        about.set_release_notes_version(rn_version);
+    if let Some(release_notes_version) = RELEASE_NOTES_VERSION {
+        let date = RELEASE_NOTES_DATE.unwrap_or_default();
+        about.set_release_notes_version(&format!("{release_notes_version} {date}"));
     }
 
     if let Some(release_notes) = RELEASE_NOTES {
         let mut release_notes_out = String::with_capacity(release_notes.len() + 50);
-        if let Some(date) = RELEASE_NOTES_DATE {
-            release_notes_out.push_str(&format!("<p>{}</p>", date));
-        }
         release_notes_out.push_str(release_notes);
         release_notes_out.push_str("<p>_________________________</p><p>Full release notes:</p><p>https://github.com/plrigaux/sysd-manager/blob/main/CHANGELOG.md</p>");
         about.set_release_notes(&release_notes_out);

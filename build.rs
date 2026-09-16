@@ -1,14 +1,6 @@
-#![allow(clippy::uninlined_format_args)]
-use quick_xml::{
-    Reader, Writer,
-    events::{BytesStart, Event},
-};
-use std::{
-    env, fs,
-    io::{BufRead, Write},
-    path::Path,
-    process::Command,
-};
+//#![allow(clippy::uninlined_format_args)]
+use std::{env, fs, io::Write, path::Path, process::Command};
+use tool::{Release, errors::ToolError, find_change_log_file};
 use translating::PO_DIR;
 use translating::error::TransError;
 
@@ -201,48 +193,47 @@ fn compile_schema() {
     }
 }
 
-#[derive(Debug)]
-pub enum ScriptError {
-    FtmError(std::fmt::Error),
-    IoError(std::io::Error),
-    XmlError(quick_xml::Error),
-}
+fn generate_notes() -> Result<(), ToolError> {
+    // const METAINFO: &str = "data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml";
+    const CHANGELOG: &str = "CHANGELOG.md";
+    println!("cargo::rerun-if-changed={CHANGELOG}");
 
-impl From<std::io::Error> for ScriptError {
-    fn from(error: std::io::Error) -> Self {
-        ScriptError::IoError(error)
-    }
-}
+    let dir = env::current_dir()?;
 
-impl From<quick_xml::Error> for ScriptError {
-    fn from(error: quick_xml::Error) -> Self {
-        ScriptError::XmlError(error)
-    }
-}
+    let changelog_path = tool::find_change_log_file(&dir, CHANGELOG)?;
 
-fn generate_notes() -> Result<(), ScriptError> {
-    const METAINFO: &str = "data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml";
-    println!("cargo::rerun-if-changed={METAINFO}");
+    // info!("File path {:?}", changelog_path);
 
-    let release_notes = match get_release_notes(METAINFO) {
-        Ok(list) => list,
-        Err(error) => {
-            script_error!("Error parsing metainfo: {:?}", error);
-            return Ok(());
-        }
-    };
+    //Read Changelog
 
-    generate_release_notes_rs(&release_notes)?;
+    let releases = tool::extract_changelog(&changelog_path)?;
+
+    let file_path = find_change_log_file(
+        &dir,
+        "data/metainfo/io.github.plrigaux.sysd-manager.releases.xml",
+    )?;
+
+    tool::write_releases_to_xml(&file_path, &releases)?;
+    // let release_notes = match get_release_notes(METAINFO) {
+    //     Ok(list) => list,
+    //     Err(error) => {
+    //         script_error!("Error parsing metainfo: {:?}", error);
+    //         return Ok(());
+    //     }
+    // };
+
+    generate_release_notes_rs(&releases)?;
 
     Ok(())
 }
 
-fn generate_release_notes_rs(release_notes: &[Release]) -> Result<(), ScriptError> {
+fn generate_release_notes_rs(release_notes: &[Release]) -> Result<(), ToolError> {
     let (version, date, description) = if let Some(first) = release_notes.first() {
+        let notes = tool::get_about_what_change(first)?;
         (
             format!("Some(r###\"{}\"###)", first.version),
             format!("Some(r###\"{}\"###)", first.date),
-            format!("Some(r###\"{}\"###)", first.description),
+            format!("Some(r###\"{}\"###)", notes),
         )
     } else {
         ("None".to_owned(), "None".to_owned(), "None".to_owned())
@@ -278,110 +269,4 @@ fn generate_release_notes_rs(release_notes: &[Release]) -> Result<(), ScriptErro
     fs::write(&dest_path, w)?;
 
     Ok(())
-}
-
-#[derive(Debug, Default, Clone)]
-struct Release {
-    version: String,
-    date: String,
-    description: String,
-}
-
-fn get_release_notes(metainfo: &str) -> Result<Vec<Release>, quick_xml::Error> {
-    let mut reader = Reader::from_file(metainfo)?;
-    reader.config_mut().trim_text(true);
-
-    let mut buf = Vec::new();
-    let mut junk_buf: Vec<u8> = Vec::new();
-
-    let mut release = Release::default();
-    let mut in_release = false;
-    let mut release_notes = Vec::new();
-    loop {
-        match reader.read_event_into(&mut buf) {
-            Err(e) => panic!("Error at position {}: {:?}", reader.error_position(), e),
-            // exits the loop when reaching end of file
-            Ok(Event::Start(e)) => match e.name().as_ref() {
-                "release" => {
-                    in_release = true;
-                    release = Release::default();
-
-                    for attr in e.attributes() {
-                        let attr = attr.unwrap();
-
-                        match attr.key.local_name().as_ref() {
-                            "version" => release.version = attr.value.to_string(),
-                            "date" => release.date = attr.value.to_string(),
-                            _ => (),
-                        }
-                    }
-                }
-                "description" => {
-                    if !in_release {
-                        continue;
-                    }
-
-                    let content =
-                        read_to_end_into_buffer_inner(&mut reader, e, &mut junk_buf).unwrap();
-
-                    release.description = content;
-
-                    println!("Release: {:?}", release);
-                }
-
-                _ => (),
-            },
-            Ok(Event::End(e)) if e.name().as_ref() == "release" => {
-                release_notes.push(release.clone());
-                in_release = false
-            }
-            Ok(Event::Eof) => break,
-            _ => (),
-        }
-    }
-    Ok(release_notes)
-}
-
-fn read_to_end_into_buffer_inner<R: BufRead>(
-    reader: &mut Reader<R>,
-    start_tag: BytesStart,
-    junk_buf: &mut Vec<u8>,
-) -> Result<String, quick_xml::Error> {
-    let mut depth = 0;
-    let mut output_buf: Vec<u8> = Vec::new();
-    let mut w = Writer::new(&mut output_buf);
-    let tag_name = start_tag.name();
-
-    loop {
-        junk_buf.clear();
-        let event = reader.read_event_into(junk_buf)?;
-        match event {
-            Event::Start(ref e) => {
-                if e.name() == tag_name {
-                    depth += 1
-                }
-                w.write_event(event.borrow())?;
-            }
-            Event::End(ref e) => {
-                if e.name() == tag_name {
-                    if depth == 0 {
-                        break;
-                    }
-                    depth -= 1;
-                } else {
-                    w.write_event(event.borrow())?;
-                }
-            }
-            Event::Text(ref _e) => {
-                w.write_event(event)?;
-            }
-            Event::Eof => {
-                panic!("oh no")
-            }
-            _ => {}
-        }
-    }
-
-    let s = String::from_utf8_lossy(&output_buf);
-    Ok(s.to_string())
 }

@@ -4,12 +4,15 @@ use std::{
     borrow::Cow,
     fmt::Display,
     fs::File,
-    io::{self, BufRead},
+    io::{self, BufRead, Cursor},
     path::{Path, PathBuf},
     sync::{LazyLock, Mutex, OnceLock},
 };
 
-use quick_xml::{Writer, events::BytesText};
+use quick_xml::{
+    Writer,
+    events::{BytesDecl, BytesText, Event},
+};
 use regex::Regex;
 use tracing::{debug, info, warn};
 
@@ -34,7 +37,7 @@ pub fn find_change_log_file(dir_path: &Path, file_name: &str) -> Result<PathBuf,
 }
 
 #[derive(Debug, Default)]
-struct Version {
+pub struct Version {
     major: u16,
     minor: u16,
     patch: u16,
@@ -58,8 +61,8 @@ impl Display for Version {
 
 #[derive(Debug, Default)]
 pub struct Release {
-    date: String,
-    version: Version,
+    pub date: String,
+    pub version: Version,
     logs: Vec<LogToken>,
 }
 
@@ -151,76 +154,51 @@ pub fn write_releases_to_xml(file_path: &Path, logs: &[Release]) -> Result<(), T
 
     let mut writer = Writer::new_with_indent(file, b'\t', 1);
 
-    for release in logs {
-        writer
-            .create_element("release")
-            .with_attributes([
-                ("version", release.version.to_string().as_str()),
-                ("date", release.date.as_str()),
-            ])
-            // .write_empty()?;
-            // .write_text_content(BytesText::new("test test"))?
-            .write_inner_content(|writer| {
+    writer.write_event(Event::Decl(BytesDecl::new("1.0", Some("UTF-8"), None)))?;
+    writer.write_event(Event::Comment(BytesText::new(
+        "File generated from CHANGELOG.md",
+    )))?;
+    writer
+        .create_element("releases")
+        .write_inner_content(|writer| {
+            for release in logs {
                 writer
-                    .create_element("description")
-                    .with_attribute(("translate", "no"))
+                    .create_element("release")
+                    .with_attributes([
+                        ("version", release.version.to_string().as_str()),
+                        ("date", release.date.as_str()),
+                    ])
+                    // .write_empty()?;
+                    // .write_text_content(BytesText::new("test test"))?
                     .write_inner_content(|writer| {
-                        let mut it = release.logs.iter().peekable();
-                        while let Some(token) = it.next() {
-                            match token {
-                                LogToken::Section(title) => {
-                                    writer
-                                        .create_element("header")
-                                        .write_text_content(BytesText::new(title))?;
-                                }
-                                LogToken::Item(li) => {
-                                    let mut items = Vec::new();
-                                    items.push(li);
-                                    while let Some(LogToken::Item(li)) = it.peek() {
-                                        items.push(li);
-                                        it.next();
+                        writer
+                            .create_element("description")
+                            .with_attribute(("translate", "no"))
+                            .write_inner_content(|writer| {
+                                inner_release(writer, release, "header")
+                            })?;
+
+                        if let Ok(mut issues) = ISSUES.lock()
+                            && !issues.is_empty()
+                        {
+                            writer
+                                .create_element("issues")
+                                .write_inner_content(|writer| {
+                                    for (label, url) in issues.iter() {
+                                        writer
+                                            .create_element("issue")
+                                            .with_attribute(("url", url.as_str()))
+                                            .write_text_content(BytesText::new(label))?;
                                     }
-
-                                    writer
-                                        .create_element("ul")
-                                        .write_inner_content(move |writer| {
-                                            for li in items {
-                                                let li = clean_li(li);
-                                                writer
-                                                    .create_element("li")
-                                                    .write_text_content(BytesText::new(&li))?;
-                                            }
-
-                                            Ok(())
-                                        })
-                                        .ok();
-                                }
-                            };
+                                    Ok(())
+                                })?;
+                            issues.clear();
                         }
                         Ok(())
                     })?;
-
-                if let Ok(mut issues) = ISSUES.lock()
-                    && !issues.is_empty()
-                {
-                    writer
-                        .create_element("issues")
-                        .write_inner_content(|writer| {
-                            for (label, url) in issues.iter() {
-                                writer
-                                    .create_element("issue")
-                                    .with_attribute(("url", url.as_str()))
-                                    .write_text_content(BytesText::new(label))?;
-                            }
-
-                            Ok(())
-                        })?;
-                    issues.clear();
-                }
-
-                Ok(())
-            })?;
-    }
+            }
+            Ok(())
+        })?;
     Ok(())
 }
 
@@ -262,6 +240,60 @@ fn clean_li<'a>(li: &'a str) -> Cow<'a, str> {
 
     debug!("-- {}", out_string);
     Cow::Owned(out_string)
+}
+
+pub fn get_about_what_change(last_release: &Release) -> Result<String, ToolError> {
+    let mut writer = Writer::new(Cursor::new(Vec::new()));
+    inner_release(&mut writer, last_release, "p")?;
+
+    let bytes = writer.into_inner().into_inner();
+
+    let string = String::from_utf8(bytes)?;
+    Ok(string)
+}
+
+fn inner_release<T>(
+    writer: &mut Writer<T>,
+    release: &Release,
+    header_tag: &str,
+) -> Result<(), io::Error>
+where
+    T: std::io::Write,
+{
+    let mut it = release.logs.iter().peekable();
+    while let Some(token) = it.next() {
+        match token {
+            LogToken::Section(title) => {
+                writer
+                    .create_element(header_tag)
+                    .write_text_content(BytesText::new(title))?;
+            }
+            LogToken::Item(li) => {
+                let mut items = Vec::new();
+                items.push(li);
+                while let Some(LogToken::Item(li)) = it.peek() {
+                    items.push(li);
+                    it.next();
+                }
+
+                writer
+                    .create_element("ul")
+                    .write_inner_content(move |writer| {
+                        for li in items {
+                            let li = clean_li(li);
+                            writer
+                                .create_element("li")
+                                .write_text_content(BytesText::new(&li))?;
+                        }
+
+                        Ok(())
+                    })
+                    .ok();
+            }
+        };
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]
