@@ -718,10 +718,13 @@ Enable/Disable, Daemon Reload, etc.) [Issue 37]</li>
 			</ul>
 			<p>Fixed</p>
 			<ul>
-				<li>UI consistency https://github.com/plrigaux/sysd-manager/issues/28</li>
+				<li>UI consistency [Issue 28]</li>
 				<li>Show no unit file when unit isn&apos;t selected</li>
 			</ul>
 		</description>
+		<issues>
+			<issue url="https://github.com/plrigaux/sysd-manager/issues/28">Issue 28</issue>
+		</issues>
 	</release>
 	<release version="2.9.0" date="2025-11-18">
 		<description>
