@@ -173,7 +173,7 @@ pub fn write_releases_to_xml(file_path: &Path, logs: &[Release]) -> Result<(), T
                     .write_inner_content(|writer| {
                         writer
                             .create_element("description")
-                            .with_attribute(("translate", "no"))
+                            // .with_attribute(("translate", "no"))
                             .write_inner_content(|writer| {
                                 inner_release(writer, release, "header")
                             })?;
@@ -205,7 +205,7 @@ pub fn write_releases_to_xml(file_path: &Path, logs: &[Release]) -> Result<(), T
 static LI_RE: OnceLock<Regex> = OnceLock::new();
 
 fn get_config() -> &'static Regex {
-    LI_RE.get_or_init(|| Regex::new(r#"\[(.*)\]\((.*?)\)"#).expect("Valid RegEx"))
+    LI_RE.get_or_init(|| Regex::new(r#"\[(.*?)\]\((.*?)\)"#).expect("Valid RegEx"))
 }
 
 static ISSUES: LazyLock<Mutex<Vec<(String, String)>>> = LazyLock::new(|| Mutex::new(Vec::new()));
@@ -281,6 +281,7 @@ where
                     .write_inner_content(move |writer| {
                         for li in items {
                             let li = clean_li(li);
+                            let li = collapse_line(&li);
                             writer
                                 .create_element("li")
                                 .write_text_content(BytesText::new(&li))?;
@@ -296,8 +297,42 @@ where
     Ok(())
 }
 
+fn collapse_line<'a>(line: &'a str) -> Cow<'a, str> {
+    const LINE_SIZE: usize = 80;
+
+    if line.len() <= LINE_SIZE {
+        return Cow::Borrowed(line);
+    }
+
+    let mut out = String::from(line);
+
+    let mut last_wsb = 0;
+    let b = unsafe { out.as_bytes_mut() };
+
+    let mut i = 0;
+    let mut offset = 0;
+    while i < b.len() {
+        let bc = b[i];
+        if matches!(bc, b' ' | b'\t') {
+            last_wsb = i;
+        }
+
+        if offset > LINE_SIZE {
+            b[last_wsb] = b'\n';
+            offset = 0;
+        }
+
+        i += 1;
+        offset += 1;
+    }
+
+    Cow::Owned(out)
+}
+
 #[cfg(test)]
 mod tests {
+    use crate::collapse_line;
+
     use super::{clean_li, get_config};
 
     #[test]
@@ -315,5 +350,13 @@ mod tests {
         let input = "Fix [crash](https://example.com/1) and [ui](https://example.com/2)";
 
         assert_eq!(clean_li(input), "Fix crash and ui");
+    }
+
+    #[test]
+    fn test_callapse_line() {
+        let line = "[32] Sed ut perspiciatis, unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam eaque ipsa, quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt, explicabo. Nemo enim ipsam voluptatem, quia voluptas sit, aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos, qui ratione voluptatem sequi nesciunt, neque porro quisquam est, qui dolorem ipsum, quia dolor sit amet consectetur adipisci[ng] velit, sed quia non numquam [do] eius modi tempora inci[di]dunt, ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum[d] exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? [D]Quis autem vel eum i[r]ure reprehenderit, qui in ea voluptate velit esse, quam nihil molestiae consequatur, vel illum, qui dolorem eum fugiat, quo voluptas nulla pariatur?";
+        let out = collapse_line(line);
+
+        println!("{}", out);
     }
 }
