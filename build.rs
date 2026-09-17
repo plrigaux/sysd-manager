@@ -202,10 +202,6 @@ fn generate_notes() -> Result<(), ToolError> {
 
     let changelog_path = tool::find_change_log_file(&dir, CHANGELOG)?;
 
-    // info!("File path {:?}", changelog_path);
-
-    //Read Changelog
-
     let releases = tool::extract_changelog(&changelog_path)?;
 
     let file_path = find_change_log_file(

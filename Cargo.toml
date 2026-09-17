@@ -166,6 +166,11 @@ assets = [
     "644",
   ],
   [
+    "data/metainfo/io.github.plrigaux.sysd-manager.releases.xml",
+    "usr/share/metainfo/releases",
+    "644",
+  ],
+  [
     "generated/io.github.plrigaux.SysDManager.policy",
     "usr/share/polkit-1/actions/",
     "644",

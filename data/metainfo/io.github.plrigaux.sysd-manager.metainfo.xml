@@ -29,10 +29,10 @@
     <keyword translate="no">rust</keyword>
     <keyword translate="no">Systemd</keyword>
   </keywords>
-  <requires>
+  <recommends>
     <control>keyboard</control>
     <control>pointing</control>
-  </requires>
+  </recommends>
   <screenshots>
     <screenshot type="default">
       <image type="source">

@@ -175,7 +175,8 @@ pub fn write_releases_to_xml(file_path: &Path, logs: &[Release]) -> Result<(), T
                             .create_element("description")
                             // .with_attribute(("translate", "no"))
                             .write_inner_content(|writer| {
-                                inner_release(writer, release, "header")
+                                // inner_release(writer, release, "heading")
+                                inner_release(writer, release, "p")
                             })?;
 
                         if let Ok(mut issues) = ISSUES.lock()

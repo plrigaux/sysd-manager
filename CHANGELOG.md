@@ -493,7 +493,7 @@ when switching Color Scheme Mode (Light and Dark)
 
 ### Fixed
 
-- UI consistency https://github.com/plrigaux/sysd-manager/issues/28
+- UI consistency [Issue 28](https://github.com/plrigaux/sysd-manager/issues/28)
 - Show no unit file when unit isn't selected
 
 ## [2.9.0] - 2025-11-18
@@ -538,19 +538,19 @@ when switching Color Scheme Mode (Light and Dark)
 
 ### Fixed
 
-- Missing Icon in "More..." Button Issue https://github.com/plrigaux/sysd-manager/issues/27
+- Missing Icon in "More..." Button Issue [Issue 27](https://github.com/plrigaux/sysd-manager/issues/27)
 
 ## [2.6.4] - 2025-11-05
 
 ### Fixed
 
-- Unit journal events displayed twice. Issue https://github.com/plrigaux/sysd-manager/issues/26
+- Unit journal events displayed twice. Issue [Issue 26](https://github.com/plrigaux/sysd-manager/issues/26)
 
 ## [2.6.3] - 2025-11-04
 
 ### Fixed
 
-- System unit takes precedence on User Session units. Issue https://github.com/plrigaux/sysd-manager/issues/25
+- System unit takes precedence on User Session units. Issue [Issue 25](https://github.com/plrigaux/sysd-manager/issues/25)
 
 ## [2.6.2] - 2025-11-04
 
@@ -633,7 +633,7 @@ when switching Color Scheme Mode (Light and Dark)
 
 ### Added
 
-- Journal ANSI color codes parsing and rendering https://github.com/plrigaux/sysd-manager/issues/23
+- Journal ANSI color codes parsing and rendering [Issue 23](https://github.com/plrigaux/sysd-manager/issues/23)
 - Save full browser column context in a user config file
 
 ## [2.0.0] - 2025-10-07
@@ -657,7 +657,7 @@ when switching Color Scheme Mode (Light and Dark)
 
 ### Fixed
 
-- Saving file (without privilege elevation) doesn't overwrite completely the old file. https://github.com/plrigaux/sysd-manager/issues/21
+- Saving file (without privilege elevation) doesn't overwrite completely the old file. [Issue 21](https://github.com/plrigaux/sysd-manager/issues/21)
 
 ## [1.32.2] - 2025-09-11
 
@@ -1229,22 +1229,21 @@ This release worked on unit information
 
 ## [0.1.7] - 2024-10-03
 
-Update the unit information panel
+- Update the unit information panel
 
 ## [0.1.6] - 2024-08-02
 
-Add a proto preference panel
-
-Release attempt on Flathub
+- Add a proto preference panel
+- Release attempt on Flathub
 
 ## [0.1.3] - 2024-07-15
 
-Make the sub windows modal. i.e. not separated form the main window
+- Make the sub windows modal. i.e. not separated form the main window
 
 ## [0.1.2] - 2024-07-07
 
-Allow filtering on unit type
+- Allow filtering on unit type
 
 ## [0.0.2] - 2024-06-21
 
-First release of Rust Flatpak App
+- First release of Rust Flatpak App
