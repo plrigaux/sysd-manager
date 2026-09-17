@@ -3,7 +3,7 @@
 <releases>
 	<release version="2.22.1" date="2026-09-14">
 		<description>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Norwegian translation</li>
 				<li>Chineese translation</li>
@@ -13,11 +13,11 @@
 	</release>
 	<release version="2.22.1" date="2026-09-09">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Norwegian translation</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>french translation</li>
 			</ul>
@@ -25,16 +25,16 @@
 	</release>
 	<release version="2.22.0" date="2026-09-08">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Option to toggle display unit&apos;s active state between text or icon</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>[Issue 70] Change sort order of columns &quot;Unit File State&quot; and &quot;Load State&quot;</li>
 				<li>Set default bus selection to &quot;System &amp; User session Bus&quot;</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Translation integration</li>
 			</ul>
@@ -66,14 +66,14 @@
 	</release>
 	<release version="2.21.0" date="2026-08-30">
 		<description>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Better Proxy error handling</li>
 				<li>Remove Proxy preference if your packaged version doesn&apos;t have access to it
 (Flatpack, ...)</li>
 				<li>Improve boot list fetch by a factor 10</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>[Issue 78] Now display journal events when new events arrives and when originally
 there were no displayed events</li>
@@ -86,7 +86,7 @@ there were no displayed events</li>
 	</release>
 	<release version="2.20.11" date="2026-08-22">
 		<description>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>[Issue 76] Use the checkbox&apos;s label for the Follow option and improve UX</li>
 			</ul>
@@ -97,11 +97,11 @@ there were no displayed events</li>
 	</release>
 	<release version="2.20.9" date="2026-08-04">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Mention __p-bo__  in the acknowledgements</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>CS translation</li>
 			</ul>
@@ -109,7 +109,7 @@ there were no displayed events</li>
 	</release>
 	<release version="2.20.8" date="2026-08-01">
 		<description>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Find in text improvement</li>
 				<li>CS translation</li>
@@ -118,17 +118,17 @@ there were no displayed events</li>
 	</release>
 	<release version="2.20.7" date="2026-07-31">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Unit Status context menu option wrap word</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Journal&apos;s follow switch has been replaced by a checkbox. This fixes [Issue 48]</li>
 				<li>Unit Info tab changed to Status</li>
 				<li>Find in text improvement</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>[Issue 71] Application Freeze</li>
 				<li>[Issue 69] Message toast color contrast for better visibility</li>
@@ -145,7 +145,7 @@ enabled </li>
 	</release>
 	<release version="2.20.4" date="2026-06-17">
 		<description>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>PARTIAL FIX Follow does not auto-scroll to new journal entries when Descending is
 enabled [Issue 67]</li>
@@ -157,7 +157,7 @@ enabled [Issue 67]</li>
 	</release>
 	<release version="2.20.3" date="2026-06-17">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Unit Creation Wizard: Add Standard Output and Error on Service</li>
 				<li>Unit Creation Wizard: Add CPUQuota and MemoryHigh on Service</li>
@@ -166,7 +166,7 @@ enabled [Issue 67]</li>
 	</release>
 	<release version="2.20.2" date="2026-06-13">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Unit Creation Wizard: Add time validators [Issue 44]</li>
 			</ul>
@@ -177,7 +177,7 @@ enabled [Issue 67]</li>
 	</release>
 	<release version="2.20.1" date="2026-06-11">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Create Unit Wizard new options [Issue 44]</li>
 			</ul>
@@ -188,11 +188,11 @@ enabled [Issue 67]</li>
 	</release>
 	<release version="2.20.0" date="2026-06-06">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Wizard to create Timer and Service Units as requested by [Issue 44]</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>[Issue 56] Laggy filtering, delay set at 350ms</li>
 			</ul>
@@ -204,7 +204,7 @@ enabled [Issue 67]</li>
 	</release>
 	<release version="2.19.6" date="2026-05-20">
 		<description>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>About dialog crash</li>
 			</ul>
@@ -212,11 +212,11 @@ enabled [Issue 67]</li>
 	</release>
 	<release version="2.19.5" date="2026-05-20">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Column sizes are preserved between list refresh</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>[Issue 56] Remember the sorting column order</li>
 				<li>[Issue 65] Journal events was always displaying horizontal scrollbar</li>
@@ -229,11 +229,11 @@ enabled [Issue 67]</li>
 	</release>
 	<release version="2.19.4" date="2026-05-14">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>[Issue 62] Add word wrap option for the journal events</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>[Issue 58] Services in currated list - Fix include unit files</li>
 				<li>[Issue 64] Unit File Color palette when switching Color Scheme Mode (Light and
@@ -251,14 +251,14 @@ switching Color Scheme Mode (Light and Dark)</li>
 	</release>
 	<release version="2.19.3" date="2026-05-12">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Create Unit wizard (under construction)</li>
 				<li>[Issue 59] Keyboard shortcuts Ctrl+W and Esc to close sub-windows, and Ctrl+Q to
 quit the application</li>
 				<li>[Issue 58] Add Services in currated list (Shift+Ctrl+S)</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>[Issue 49] Put focus on search entry when appearing</li>
 				<li>[Issue 60] Fixed analyze behavior blame in Flatpak</li>
@@ -275,11 +275,11 @@ quit the application</li>
 	</release>
 	<release version="2.19.2" date="2026-04-24">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Add Open Find in Text shortcut</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Fix Unit File List</li>
 				<li>UX Review space ratio between the unit browser and the content to persist in all
@@ -293,17 +293,17 @@ time [Issue 52] and [Issue 53]</li>
 	</release>
 	<release version="2.19.1" date="2026-04-24">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Esc key to clear Text Search and Unit Search Entries [Issue 46] and [Issue 49]</li>
 				<li>Unit browser add or remove units when loaded in systemd</li>
 				<li>Translation strings</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Hide Start, Stop and Restart buttons according to unit active state [Issue 50]</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>UX Ellipsize File Link [Issue 51]</li>
 				<li>UX better separation between tab navigator and bellow context [Issue 47]</li>
@@ -324,12 +324,12 @@ time [Issue 52]</li>
 	</release>
 	<release version="2.18.0" date="2026-04-16">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>The reload unit button</li>
 				<li>New shortcuts in Shortcuts Dialog</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Fixed the Start, Stop ... Unit sporadic first call lag</li>
 			</ul>
@@ -337,15 +337,15 @@ time [Issue 52]</li>
 	</release>
 	<release version="2.17.2" date="2026-04-11">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Signal Watcher Window Bus Column</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Estonian translation</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Start, Stop, Restart Unser Session Units delay</li>
 			</ul>
@@ -353,7 +353,7 @@ time [Issue 52]</li>
 	</release>
 	<release version="2.17.1" date="2026-04-09">
 		<description>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Favorite toggle UX</li>
 			</ul>
@@ -361,15 +361,15 @@ time [Issue 52]</li>
 	</release>
 	<release version="2.17.0" date="2026-04-08">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Favorites Unit List</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>New GTK4</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>The Bus column title</li>
 			</ul>
@@ -377,7 +377,7 @@ time [Issue 52]</li>
 	</release>
 	<release version="2.16.0" date="2026-04-02">
 		<description>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Unit browser right click select the unit</li>
 				<li>Start Unit, Stop Unit, Restart Unit now check the action result (signal)</li>
@@ -385,7 +385,7 @@ time [Issue 52]</li>
 				<li>Proxy have a better Hart Beat handling</li>
 				<li>Reload Unit can now goes trough Proxy</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Start Unit, Stop Unit, Restart Unit Modes are now taken care</li>
 			</ul>
@@ -393,18 +393,18 @@ time [Issue 52]</li>
 	</release>
 	<release version="2.15.0" date="2026-03-26">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Case insensitive search option</li>
 				<li>For Socket Unit, add the Activated and Connected (if relevant) in the Unit Info
 panel</li>
 				<li>Proxy heart beat</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Add a safe write location for unit files (/lib/systemd/system)</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Fix duplicate lines in Socket View</li>
 			</ul>
@@ -412,7 +412,7 @@ panel</li>
 	</release>
 	<release version="2.14.8" date="2026-03-19">
 		<description>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Fix missing BusName</li>
 			</ul>
@@ -420,7 +420,7 @@ panel</li>
 	</release>
 	<release version="2.14.7" date="2026-03-18">
 		<description>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Fix preferences show summary</li>
 			</ul>
@@ -428,16 +428,16 @@ panel</li>
 	</release>
 	<release version="2.14.6" date="2026-03-15">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Save the show line number context</li>
 				<li>Save find in text context</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>translation</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Safe degradation of some code part</li>
 				<li>Better text change detection for unit file editing</li>
@@ -446,11 +446,11 @@ panel</li>
 	</release>
 	<release version="2.14.5" date="2026-03-13">
 		<description>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Security: limit the directories where a file can be created or modified</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Deamon reload on proxy</li>
 				<li>Create drop-in UX</li>
@@ -459,7 +459,7 @@ panel</li>
 	</release>
 	<release version="2.14.4" date="2026-03-11">
 		<description>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Start option icon missing [Issue 41]</li>
 			</ul>
@@ -470,7 +470,7 @@ panel</li>
 	</release>
 	<release version="2.14.3" date="2026-03-11">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>translations</li>
 			</ul>
@@ -478,7 +478,7 @@ panel</li>
 	</release>
 	<release version="2.14.0" date="2026-03-01">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Creation of deb package</li>
 				<li>Add polkit rule to start or stop proxy</li>
@@ -488,14 +488,14 @@ panel</li>
 				<li>New &quot;Include Unit files&quot; option</li>
 				<li>Shortcut for proxy preferences</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Move reload button to the right</li>
 				<li>Better polkit authentication message</li>
 				<li>Streamline install script</li>
 				<li>Filter out template unit files in property fetching</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Proxy now starts automatically when a privileged operation is triggered (Save,
 Enable/Disable, Daemon Reload, etc.) [Issue 37]</li>
@@ -512,11 +512,11 @@ Enable/Disable, Daemon Reload, etc.) [Issue 37]</li>
 	</release>
 	<release version="2.13.3" date="2026-02-22">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Display list of Automounts</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Save unit files with privilege elevation on a Flatpack build [Issue 38]</li>
 			</ul>
@@ -527,11 +527,11 @@ Enable/Disable, Daemon Reload, etc.) [Issue 37]</li>
 	</release>
 	<release version="2.13.2" date="2026-02-20">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Display list of Paths</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Fetching units is cancellable</li>
 				<li>Stopping the Sysd Proxy is only haapening when the proxy is running</li>
@@ -540,12 +540,12 @@ Enable/Disable, Daemon Reload, etc.) [Issue 37]</li>
 	</release>
 	<release version="2.13.1" date="2026-02-19">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Shortcuts on curated lists</li>
 				<li>Shortcut on save file</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Flatpak compilation</li>
 			</ul>
@@ -553,14 +553,14 @@ Enable/Disable, Daemon Reload, etc.) [Issue 37]</li>
 	</release>
 	<release version="2.13.0" date="2026-02-18">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Add curated lists switcher</li>
 				<li>Display list of Timers</li>
 				<li>Display list of Sockets</li>
 				<li>Display list of Unit files</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Chineese translation</li>
 				<li>Czech translation</li>
@@ -570,7 +570,7 @@ Enable/Disable, Daemon Reload, etc.) [Issue 37]</li>
 	</release>
 	<release version="2.12.5" date="2026-02-05">
 		<description>
-			<header>Fix</header>
+			<heading>Fix</heading>
 			<ul>
 				<li>Unit description, in some cases, was not displayed in the browser</li>
 			</ul>
@@ -578,7 +578,7 @@ Enable/Disable, Daemon Reload, etc.) [Issue 37]</li>
 	</release>
 	<release version="2.12.4" date="2026-01-29">
 		<description>
-			<header>Fix</header>
+			<heading>Fix</heading>
 			<ul>
 				<li>Dark and Light Style for Unit File</li>
 			</ul>
@@ -586,7 +586,7 @@ Enable/Disable, Daemon Reload, etc.) [Issue 37]</li>
 	</release>
 	<release version="2.12.3" date="2026-01-28">
 		<description>
-			<header>Fix</header>
+			<heading>Fix</heading>
 			<ul>
 				<li>Dark and Light Style</li>
 				<li>Delay proxy startup</li>
@@ -595,7 +595,7 @@ Enable/Disable, Daemon Reload, etc.) [Issue 37]</li>
 	</release>
 	<release version="2.12.1" date="2026-01-27">
 		<description>
-			<header>Fix</header>
+			<heading>Fix</heading>
 			<ul>
 				<li>Translations</li>
 			</ul>
@@ -603,13 +603,13 @@ Enable/Disable, Daemon Reload, etc.) [Issue 37]</li>
 	</release>
 	<release version="2.12.0" date="2026-01-27">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Fine tune the Proxy Method Calls and Actions through the Preferences</li>
 				<li>Lazy Start the Proxy</li>
 				<li>Refresh the Unit Status on selection</li>
 			</ul>
-			<header>Fix</header>
+			<heading>Fix</heading>
 			<ul>
 				<li>Fix Flatpak save file in home directory (make a warning)</li>
 				<li>Password dialog gets overlapped by Sysd Manager on every start [Issue 35]</li>
@@ -621,7 +621,7 @@ Enable/Disable, Daemon Reload, etc.) [Issue 37]</li>
 	</release>
 	<release version="2.11.5" date="2026-01-15">
 		<description>
-			<header>Fix</header>
+			<heading>Fix</heading>
 			<ul>
 				<li>Show line number menu option sync with preference.</li>
 			</ul>
@@ -629,7 +629,7 @@ Enable/Disable, Daemon Reload, etc.) [Issue 37]</li>
 	</release>
 	<release version="2.11.4" date="2026-01-14">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Menu item to toggle Show Line Numbers on unit file panel.</li>
 			</ul>
@@ -637,11 +637,11 @@ Enable/Disable, Daemon Reload, etc.) [Issue 37]</li>
 	</release>
 	<release version="2.11.3" date="2026-01-13">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Toggle display total summary option in the unit list popup menu</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Improve Spacing in Top-Bottom Layout [Issue 31]</li>
 			</ul>
@@ -652,7 +652,7 @@ Enable/Disable, Daemon Reload, etc.) [Issue 37]</li>
 	</release>
 	<release version="2.11.2" date="2026-01-13">
 		<description>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>metainfo add vsc browser url</li>
 				<li>Unit search bar UX improvements (tooltips, icons, sensitivity, ...)</li>
@@ -661,11 +661,11 @@ Enable/Disable, Daemon Reload, etc.) [Issue 37]</li>
 	</release>
 	<release version="2.11.1" date="2026-01-12">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Find in text can constrain on whole word</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Find in text feature handle text update optimizations (e.g. for the journal)</li>
 			</ul>
@@ -673,11 +673,11 @@ Enable/Disable, Daemon Reload, etc.) [Issue 37]</li>
 	</release>
 	<release version="2.11.0" date="2026-01-10">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Find in text feature on the Unit&apos;s Description, File, Dependencies and Journal</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>The AUR package build</li>
 			</ul>
@@ -685,7 +685,7 @@ Enable/Disable, Daemon Reload, etc.) [Issue 37]</li>
 	</release>
 	<release version="2.10.5" date="2025-12-20">
 		<description>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>More actions side panel become a pop-up</li>
 			</ul>
@@ -693,7 +693,7 @@ Enable/Disable, Daemon Reload, etc.) [Issue 37]</li>
 	</release>
 	<release version="2.10.0" date="2025-12-18">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Can create drop-in files</li>
 				<li>Can remove drop-in files</li>
@@ -704,7 +704,7 @@ Enable/Disable, Daemon Reload, etc.) [Issue 37]</li>
 	</release>
 	<release version="2.9.2" date="2025-11-22">
 		<description>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Fix column filter clean menu option</li>
 			</ul>
@@ -712,11 +712,11 @@ Enable/Disable, Daemon Reload, etc.) [Issue 37]</li>
 	</release>
 	<release version="2.9.1" date="2025-11-20">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Translation languages cs and it</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>UI consistency https://github.com/plrigaux/sysd-manager/issues/28</li>
 				<li>Show no unit file when unit isn&apos;t selected</li>
@@ -725,7 +725,7 @@ Enable/Disable, Daemon Reload, etc.) [Issue 37]</li>
 	</release>
 	<release version="2.9.0" date="2025-11-18">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Can see and edit current unit&apos; drop-ins</li>
 			</ul>
@@ -733,11 +733,11 @@ Enable/Disable, Daemon Reload, etc.) [Issue 37]</li>
 	</release>
 	<release version="2.8.1" date="2025-11-13">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Unit description wrap text preference option</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Version description</li>
 			</ul>
@@ -745,11 +745,11 @@ Enable/Disable, Daemon Reload, etc.) [Issue 37]</li>
 	</release>
 	<release version="2.8.0" date="2025-11-13">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Can filter on unset values</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Column button in the preferences panel</li>
 			</ul>
@@ -757,7 +757,7 @@ Enable/Disable, Daemon Reload, etc.) [Issue 37]</li>
 	</release>
 	<release version="2.7.2" date="2025-11-11">
 		<description>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Column title that removed continuously first letter each time, it stop the issue
 but don&apos;t recover the damage. To fix, manually edit the title Ctrl+R in the
@@ -768,13 +768,13 @@ Property Selector or wipe out the config file
 	</release>
 	<release version="2.7.1" date="2025-11-10">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Allow filtering on all other unit properties</li>
 				<li>Add a filter marker on browser column</li>
 				<li>Allow string filter to filter on start, end or middle</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Missing Icon in &quot;More...&quot; Button Issue
 https://github.com/plrigaux/sysd-manager/issues/27</li>
@@ -783,7 +783,7 @@ https://github.com/plrigaux/sysd-manager/issues/27</li>
 	</release>
 	<release version="2.6.4" date="2025-11-05">
 		<description>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Unit journal events displayed twice. Issue
 https://github.com/plrigaux/sysd-manager/issues/26</li>
@@ -792,7 +792,7 @@ https://github.com/plrigaux/sysd-manager/issues/26</li>
 	</release>
 	<release version="2.6.3" date="2025-11-04">
 		<description>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>System unit takes precedence on User Session units. Issue
 https://github.com/plrigaux/sysd-manager/issues/25</li>
@@ -801,7 +801,7 @@ https://github.com/plrigaux/sysd-manager/issues/25</li>
 	</release>
 	<release version="2.6.2" date="2025-11-04">
 		<description>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>UX, extra controls side panel now scrolls</li>
 			</ul>
@@ -809,11 +809,11 @@ https://github.com/plrigaux/sysd-manager/issues/25</li>
 	</release>
 	<release version="2.6.1" date="2025-11-03">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Display unit properties dialog shortcut (Ctrl+p)</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Translation keys</li>
 				<li>Unit file path handling</li>
@@ -822,11 +822,11 @@ https://github.com/plrigaux/sysd-manager/issues/25</li>
 	</release>
 	<release version="2.6.0" date="2025-10-24">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Popup menu reenable option</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Sorting on user defined unit&apos;s property columns wasn&apos;t working at initiation time</li>
 			</ul>
@@ -834,12 +834,12 @@ https://github.com/plrigaux/sysd-manager/issues/25</li>
 	</release>
 	<release version="2.5.2" date="2025-10-23">
 		<description>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>pt_BR translation</li>
 				<li>zh_Hans translation</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Multiple scrolled windows behavior regarding the vertical height (second try)</li>
 			</ul>
@@ -847,11 +847,11 @@ https://github.com/plrigaux/sysd-manager/issues/25</li>
 	</release>
 	<release version="2.5.0" date="2025-10-21">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Reload option in the unit popup menu</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Multiple scrolled windows behavior regarding the vertical height</li>
 			</ul>
@@ -859,11 +859,11 @@ https://github.com/plrigaux/sysd-manager/issues/25</li>
 	</release>
 	<release version="2.4.0" date="2025-10-18">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Disable &amp; Enable option in the popup menu</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Popup menu appearance issues</li>
 				<li>Inactive unit display style behavior</li>
@@ -872,7 +872,7 @@ https://github.com/plrigaux/sysd-manager/issues/25</li>
 	</release>
 	<release version="2.3.0" date="2025-10-17">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Sorting on user defined unit&apos;s property columns</li>
 			</ul>
@@ -880,7 +880,7 @@ https://github.com/plrigaux/sysd-manager/issues/25</li>
 	</release>
 	<release version="2.2.0" date="2025-10-15">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Column manager UX improvements - Focus on added property - Focus on property&apos;s
 column when open from browser - Show a Toast on added property - Keep track of
@@ -892,7 +892,7 @@ column order</li>
 	</release>
 	<release version="2.1.0" date="2025-10-13">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Journal ANSI color codes parsing and rendering
 https://github.com/plrigaux/sysd-manager/issues/23</li>
@@ -902,18 +902,18 @@ https://github.com/plrigaux/sysd-manager/issues/23</li>
 	</release>
 	<release version="2.0.0" date="2025-10-07">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Customize unit properties display in the browser</li>
 				<li>Make the inactive units browser style change in real time</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Improve some memory management</li>
 				<li>Refactor some multi-thread locks</li>
 				<li>Support GTK 4.20 (Gnome 49)</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Flatpak version to be able to read and save in home directory</li>
 			</ul>
@@ -921,7 +921,7 @@ https://github.com/plrigaux/sysd-manager/issues/23</li>
 	</release>
 	<release version="1.32.3" date="2025-09-12">
 		<description>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Saving file (without privilege elevation) doesn&apos;t overwrite completely the old
 file. https://github.com/plrigaux/sysd-manager/issues/21</li>
@@ -930,7 +930,7 @@ file. https://github.com/plrigaux/sysd-manager/issues/21</li>
 	</release>
 	<release version="1.32.2" date="2025-09-11">
 		<description>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Translations</li>
 				<li>Improve some unit properties retrieving</li>
@@ -939,7 +939,7 @@ file. https://github.com/plrigaux/sysd-manager/issues/21</li>
 	</release>
 	<release version="1.32.1" date="2025-08-30">
 		<description>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Unit browser right click popup menu look and feel</li>
 			</ul>
@@ -947,11 +947,11 @@ file. https://github.com/plrigaux/sysd-manager/issues/21</li>
 	</release>
 	<release version="1.32.0" date="2025-08-29">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Unit browser right click popup menu</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Translations</li>
 			</ul>
@@ -959,7 +959,7 @@ file. https://github.com/plrigaux/sysd-manager/issues/21</li>
 	</release>
 	<release version="1.31.4" date="2025-08-20">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Uk Translations</li>
 				<li>Testing dbus command lines</li>
@@ -968,7 +968,7 @@ file. https://github.com/plrigaux/sysd-manager/issues/21</li>
 	</release>
 	<release version="1.31.3" date="2025-08-18">
 		<description>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Translations</li>
 			</ul>
@@ -976,7 +976,7 @@ file. https://github.com/plrigaux/sysd-manager/issues/21</li>
 	</release>
 	<release version="1.31.1" date="2025-08-14">
 		<description>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Filter UI behavior</li>
 			</ul>
@@ -984,7 +984,7 @@ file. https://github.com/plrigaux/sysd-manager/issues/21</li>
 	</release>
 	<release version="1.31.0" date="2025-08-13">
 		<description>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Sub state filter</li>
 			</ul>
@@ -992,11 +992,11 @@ file. https://github.com/plrigaux/sysd-manager/issues/21</li>
 	</release>
 	<release version="1.30.5" date="2025-06-19">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Translation of desktop file</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Transient typo</li>
 			</ul>
@@ -1004,7 +1004,7 @@ file. https://github.com/plrigaux/sysd-manager/issues/21</li>
 	</release>
 	<release version="1.30.1" date="2025-06-18">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>New unit file controls : Preset, Disable, Reenable and Link</li>
 				<li>Portuguese Brazil translation strings</li>
@@ -1015,7 +1015,7 @@ file. https://github.com/plrigaux/sysd-manager/issues/21</li>
 	</release>
 	<release version="1.29.2" date="2025-06-13">
 		<description>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Translation making application to crash</li>
 			</ul>
@@ -1023,7 +1023,7 @@ file. https://github.com/plrigaux/sysd-manager/issues/21</li>
 	</release>
 	<release version="1.29.0" date="2025-06-09">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Ability to start unit after enabling it</li>
 				<li>French translation</li>
@@ -1033,7 +1033,7 @@ file. https://github.com/plrigaux/sysd-manager/issues/21</li>
 	</release>
 	<release version="1.28.0" date="2025-06-01">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>New menu option: Watch Systemd signals</li>
 			</ul>
@@ -1041,7 +1041,7 @@ file. https://github.com/plrigaux/sysd-manager/issues/21</li>
 	</release>
 	<release version="1.27.2" date="2025-05-30">
 		<description>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Unit dependencies navigation crash</li>
 				<li>Action result message</li>
@@ -1050,11 +1050,11 @@ file. https://github.com/plrigaux/sysd-manager/issues/21</li>
 	</release>
 	<release version="1.27.0" date="2025-05-29">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Add Mask unit more options</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Enable unit file Dialog save context mixed up</li>
 				<li>1.27.1 Mask unit dialog behavior malfunction</li>
@@ -1063,11 +1063,11 @@ file. https://github.com/plrigaux/sysd-manager/issues/21</li>
 	</release>
 	<release version="1.26.0" date="2025-05-28">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Enable unit file</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Remove button destructive style for clear filter</li>
 			</ul>
@@ -1075,12 +1075,12 @@ file. https://github.com/plrigaux/sysd-manager/issues/21</li>
 	</release>
 	<release version="1.25.0" date="2025-05-22">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Feature to enable new journal entries continuous print as they are appended to
 the journal</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>UX Better error dialog message on not authorized for actions: clean, freeze and
 thaw</li>
@@ -1090,7 +1090,7 @@ thaw</li>
 	</release>
 	<release version="1.24.2" date="2025-05-10">
 		<description>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Application crash when the preference for the unit file browser «Display
 colors» is set to Off</li>
@@ -1099,11 +1099,11 @@ colors» is set to Off</li>
 	</release>
 	<release version="1.24.1" date="2025-04-28">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>A clear all filters button on the filter panel</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>A possible starting crash</li>
 			</ul>
@@ -1111,7 +1111,7 @@ colors» is set to Off</li>
 	</release>
 	<release version="1.24.0" date="2025-04-18">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Mask and Unmask a Unit functionnality</li>
 			</ul>
@@ -1119,15 +1119,15 @@ colors» is set to Off</li>
 	</release>
 	<release version="1.23.0" date="2025-04-14">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>List the Journal Boots</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>UX Journal Entries Filtered on Boot Direct Selection</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Clear Filters Menu option</li>
 				<li>UX Unit search entry got focus when appearing</li>
@@ -1136,7 +1136,7 @@ colors» is set to Off</li>
 	</release>
 	<release version="1.22.4" date="2025-04-11">
 		<description>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Unit Filter Entry get focus when appearing</li>
 			</ul>
@@ -1144,11 +1144,11 @@ colors» is set to Off</li>
 	</release>
 	<release version="1.22.1" date="2025-04-10">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Unit List Summary Totals</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Panel navigator look and feel</li>
 			</ul>
@@ -1156,15 +1156,15 @@ colors» is set to Off</li>
 	</release>
 	<release version="1.21.1" date="2025-04-09">
 		<description>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Unit search entry input</li>
 			</ul>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Clear filter button</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Some unit list optimizations</li>
 			</ul>
@@ -1172,11 +1172,11 @@ colors» is set to Off</li>
 	</release>
 	<release version="1.21.0" date="2025-04-08">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Fine column filter</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Some title capitalized</li>
 			</ul>
@@ -1184,11 +1184,11 @@ colors» is set to Off</li>
 	</release>
 	<release version="1.20.0" date="2025-03-29">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Adaptive panes orientation</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Default height an width values</li>
 			</ul>
@@ -1196,7 +1196,7 @@ colors» is set to Off</li>
 	</release>
 	<release version="1.19.2" date="2025-03-27">
 		<description>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Application title capitalization</li>
 			</ul>
@@ -1204,20 +1204,20 @@ colors» is set to Off</li>
 	</release>
 	<release version="1.19.0" date="2025-03-26">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>New button Freeze</li>
 				<li>New button Thaw</li>
 				<li>New button reload unit</li>
 				<li>Preference to change the color scheme</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Move to Gnome 48 dependencies</li>
 				<li>Named 4nyNoob as artist in the Credit section</li>
 				<li>Named AsciiWolf and Justin Searle in the Acknowledgements section</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Unit list scroll focus</li>
 				<li>Unit list grey out line if unit is inactive</li>
@@ -1226,17 +1226,17 @@ colors» is set to Off</li>
 	</release>
 	<release version="1.18.2" date="2025-03-19">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>The possibility to sort the Description column</li>
 				<li>Add acknowledgements section in About Dialog</li>
 				<li>Add artist in credits section</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>New application icon</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Remove duplicates in the unit list</li>
 				<li>Fix failing to retrieve file path for some units</li>
@@ -1245,7 +1245,7 @@ colors» is set to Off</li>
 	</release>
 	<release version="1.18.1" date="2025-03-18">
 		<description>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Possible application crashes</li>
 			</ul>
@@ -1253,7 +1253,7 @@ colors» is set to Off</li>
 	</release>
 	<release version="1.18.0" date="2025-03-17">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>New columns: bus, preset, load and sub</li>
 				<li>Grey out inactive unit row</li>
@@ -1261,12 +1261,12 @@ colors» is set to Off</li>
 				<li>Toggle unit browser column visibility</li>
 				<li>Save unit browser column visibility and width</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Side menu to control unit</li>
 				<li>Send kill signal interface improved</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Unit list value realtime update</li>
 				<li>Saving bus level context</li>
@@ -1275,12 +1275,12 @@ colors» is set to Off</li>
 	</release>
 	<release version="1.17.0" date="2025-03-06">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Feature: Queue signal (sigqueue)</li>
 				<li>Feature: Clean unit (access rights not working, but provide workaround)</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Side menu to control unit</li>
 				<li>Send kill signal interface improved</li>
@@ -1289,22 +1289,22 @@ colors» is set to Off</li>
 	</release>
 	<release version="1.16.0" date="2025-02-24">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Preference option to display unit file line number</li>
 				<li>Filtering (search) option on all unit properties</li>
 				<li>Possibility to hide empty unit properties</li>
 				<li>Mnemonics to start and stop an unit</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Faster journal events time processing</li>
 			</ul>
-			<header>Removed</header>
+			<heading>Removed</heading>
 			<ul>
 				<li>Independent preference option to highlight unit text file (now in the combo box)</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Unit file enable realtime status</li>
 			</ul>
@@ -1312,17 +1312,17 @@ colors» is set to Off</li>
 	</release>
 	<release version="1.15.0" date="2025-02-19">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Tooltips for enable status</li>
 				<li>Possibility to change unit file highlight style</li>
 				<li>Row number for unit file</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Display a message if the unit has no unit file on the &quot;unit file&quot; tab</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Some unit files were not displayed</li>
 			</ul>
@@ -1330,13 +1330,13 @@ colors» is set to Off</li>
 	</release>
 	<release version="1.14.0" date="2025-02-17">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Retrieve the description of unloaded units for the list display</li>
 				<li>Provide the possibility to list units from the system bus and from the user
 session bus at the same time</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>The list of all units is now fetched asynchronously</li>
 			</ul>
@@ -1344,7 +1344,7 @@ session bus at the same time</li>
 	</release>
 	<release version="1.13.2" date="2025-02-11">
 		<description>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Change logs</li>
 			</ul>
@@ -1352,11 +1352,11 @@ session bus at the same time</li>
 	</release>
 	<release version="1.13.1" date="2025-02-11">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Different toast messages have color</li>
 			</ul>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Button start is now non-blocking</li>
 				<li>Button stop is now non-blocking</li>
@@ -1369,7 +1369,7 @@ session bus at the same time</li>
 	</release>
 	<release version="1.12.4" date="2025-02-08">
 		<description>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Make flatpak-linter pass on metainfo.xml</li>
 			</ul>
@@ -1377,11 +1377,11 @@ session bus at the same time</li>
 	</release>
 	<release version="1.12.3" date="2025-02-08">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Add a CHANGELOG file</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>LICENSE file name</li>
 			</ul>
@@ -1389,7 +1389,7 @@ session bus at the same time</li>
 	</release>
 	<release version="1.12.2" date="2025-02-08">
 		<description>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Fix time_t conversion on 32bit architecture</li>
 			</ul>
@@ -1397,11 +1397,11 @@ session bus at the same time</li>
 	</release>
 	<release version="1.12.1" date="2025-02-07">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Journal preferences batch size</li>
 			</ul>
-			<header>Removed</header>
+			<heading>Removed</heading>
 			<ul>
 				<li>Journal preferences maximum events</li>
 			</ul>
@@ -1409,7 +1409,7 @@ session bus at the same time</li>
 	</release>
 	<release version="1.12.0" date="2025-02-07">
 		<description>
-			<header>Changed</header>
+			<heading>Changed</heading>
 			<ul>
 				<li>Redo journal handling and display</li>
 				<li>Lazy acquire journal events</li>
@@ -1418,11 +1418,11 @@ session bus at the same time</li>
 	</release>
 	<release version="1.11.0" date="2025-01-30">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Possibility to select Monospace Font for the different views</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Fix unit conversion</li>
 			</ul>
@@ -1430,7 +1430,7 @@ session bus at the same time</li>
 	</release>
 	<release version="1.10.3" date="2025-01-27">
 		<description>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Fix text style</li>
 			</ul>
@@ -1438,7 +1438,7 @@ session bus at the same time</li>
 	</release>
 	<release version="1.10.0" date="2025-01-22">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Start and stop buttons are highlighted according to the unit state</li>
 				<li>You can choose the timestamp style between : Pretty, UTC and Unix</li>
@@ -1447,7 +1447,7 @@ session bus at the same time</li>
 	</release>
 	<release version="1.9.4" date="2025-01-21">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Add &quot;Error&quot; Section</li>
 				<li>Add hyperlink on units described by &quot;Trigger&quot;</li>
@@ -1456,7 +1456,7 @@ session bus at the same time</li>
 				<li>Display active status on units described by &quot;TriggeredBy&quot;</li>
 				<li>Complete the &quot;Memory&quot; information section</li>
 			</ul>
-			<header>Fixed</header>
+			<heading>Fixed</heading>
 			<ul>
 				<li>Fix the &quot;Drop in&quot; section</li>
 				<li>Fix the &quot;CPU&quot; section</li>
@@ -1507,7 +1507,7 @@ dependencies</li>
 	</release>
 	<release version="1.7.0" date="2025-01-03">
 		<description>
-			<header>Added</header>
+			<heading>Added</heading>
 			<ul>
 				<li>Select a unit at program opening by passing a unit name as cli argument (see
 --help)</li>
