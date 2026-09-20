@@ -170,7 +170,7 @@ flat</property>
                   </object>
                 </child>
                 <child>
-                  <object class="AdwPreferencesGroup">
+                  <object class="AdwPreferencesGroup" id="resource_control_group">
                     <property name="header-suffix">
                       <object class="GtkLinkButton">
                         <property name="css-classes">circular
@@ -179,7 +179,7 @@ flat</property>
                         <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.resource-control.html</property>
                       </object>
                     </property>
-                    <property name="title">Ressource Control</property>
+                    <property name="title" translatable="yes">Resource Control</property>
                     <child>
                       <object class="AdwEntryRow" id="cpu_quota_entry">
                         <property name="title">CPUQuota</property>

@@ -1,22 +1,9 @@
 use super::*;
-use crate::{
-    upgrade, upgrade_opt,
-    widget::creator::{
-        CreateUnitErr, creator_page_mount::standard_output::output_file_descriptor,
-        suggestion::SuggestionRow, unit_file::UnitFileData,
-    },
-};
-use adw::{
-    prelude::{ActionRowExt, PreferencesGroupExt, PreferencesRowExt},
-    subclass::prelude::*,
-};
-use glib::object::Cast;
-use indexmap::{IndexMap, map::Entry};
+use crate::widget::creator::{CreateUnitErr, suggestion::SuggestionRow, unit_file::UnitFileData};
+use adw::subclass::prelude::*;
 use regex::Regex;
 use std::{
     cell::{OnceCell, RefCell},
-    fs,
-    os::unix::fs::PermissionsExt,
     path::Path,
 };
 use tracing::info;
@@ -28,11 +15,6 @@ pub struct CreatorPageMountImp {
     pub(super) window: OnceCell<WeakRef<UnitCreatorWindow>>,
 
     pub(super) file_data: RefCell<UnitFileData>,
-
-    pub(super) widget_track: RefCell<IndexMap<String, Vec<gtk::Widget>>>,
-
-    validate_cpu_quota_regex: OnceCell<Regex>,
-    validate_memory_high_regex: OnceCell<Regex>,
 }
 
 #[glib::object_subclass]
@@ -57,8 +39,6 @@ impl ObjectSubclass for CreatorPageMountImp {
 impl ObjectImpl for CreatorPageMountImp {
     fn constructed(&self) {
         self.parent_constructed();
-
-        let event_focus = gtk::EventControllerFocus::new();
     }
 }
 
@@ -105,51 +85,80 @@ impl WidgetImpl for CreatorPageMountImp {}
 
 impl NavigationPageImpl for CreatorPageMountImp {}
 
-fn escape(file_path: &mut String) {
-    if file_path.contains(char::is_whitespace) {
-        file_path.insert(0, '"');
-        file_path.push('"');
-    }
-}
-
-fn set_initial_folder(file_dialog: &gtk::FileDialog) {
-    if let Ok(home) = std::env::var("HOME") {
-        let path = Path::new(&home);
-        let dir = gio::File::for_path(path);
-        file_dialog.set_initial_folder(Some(&dir));
-    }
-}
-
-fn get_file_path(text: &str) -> Result<&str, CreateUnitErr> {
-    let text = text.trim_start();
-    let mut begin = 0;
-    let mut end = text.len();
-    let mut in_quotes = false;
-
-    for (idx, char) in text.char_indices() {
-        if char.is_whitespace() && !in_quotes {
-            end = idx;
-            break;
-        } else if char == '"' {
-            if idx == 0 {
-                in_quotes = true;
-                begin = 1;
-            } else {
-                end = idx;
-                in_quotes = false;
-                break;
-            }
-        }
-    }
-    if in_quotes {
-        return Err(CreateUnitErr::Malformed);
-    }
-    Ok(&text[begin..end])
-}
-
 #[cfg(test)]
 mod tests {
-    use test_base::init_logs;
+    use regex::Regex;
+    use systemd::errors::SystemdErrors;
+    use tokio::{
+        fs::{self, File},
+        io::{AsyncBufReadExt, BufReader},
+        process::Command,
+    };
+    use tracing::{info, warn};
 
-    use super::*;
+    #[tokio::test]
+    async fn test_kernel_filesystem() -> Result<(), SystemdErrors> {
+        test_base::init_logs();
+        let file_path = "/proc/filesystems";
+        // let file = File::open("/proc/filesystems").await?;
+
+        let out = fs::read_to_string(file_path).await?;
+
+        println!("filesystems\n{}", out);
+
+        let file = File::open(file_path).await?;
+        let reader = BufReader::new(file);
+
+        let mut lines = reader.lines(); // Iterates over lines efficiently without loading the whole file into RAM
+
+        let re = Regex::new(r"(\w*)\t(\w*)").unwrap();
+
+        let mut file_systems_names = Vec::new();
+        while let Some(line) = lines.next_line().await? {
+            if let Some(cap) = re.captures(&line) {
+                info!("cap {} fs {}", &cap[1], &cap[2]);
+                file_systems_names.push(cap[2].to_owned());
+            } else {
+                warn!("Not capture")
+            };
+            // println!("{}", line);
+        }
+
+        file_systems_names.sort();
+
+        info!("{:?}", file_systems_names);
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_module_filesystem() -> Result<(), SystemdErrors> {
+        test_base::init_logs();
+        let output = Command::new("uname")
+            .arg("-r")
+            .output()
+            .await
+            .expect("Failed to execute command");
+
+        let kernel_release = String::from_utf8_lossy(&output.stdout);
+        let kernel_release = kernel_release.trim();
+
+        let dir_path = format!("/lib/modules/{}/kernel/fs", kernel_release);
+
+        info!("dir_path {dir_path}");
+
+        let mut rd = fs::read_dir(dir_path).await?;
+
+        let mut file_systems_names = Vec::new();
+        while let Some(entry) = rd.next_entry().await? {
+            let s = entry.file_name();
+            let s = s.to_string_lossy().into_owned();
+            info!("s {s}");
+            file_systems_names.push(s);
+        }
+
+        file_systems_names.sort();
+        info!("{:?}", file_systems_names);
+
+        Ok(())
+    }
 }

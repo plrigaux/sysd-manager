@@ -7,12 +7,12 @@ use crate::{
         app_window::AppWindow,
         close_window_shortcut_no_escape,
         creator::{
-            ACTION_CREATOR_CREATE, ACTION_CREATOR_FILE, ACTION_CREATOR_NEXT,
-            ACTION_CREATOR_PREVIOUS, ACTION_CREATOR_UNIT_BUS, PageType, SaveUnit, UnitCreateType,
-            creator_page_mount::CreatorPageMount, creator_page_service::CreatorPageService,
-            creator_page_timer::CreatorPageTimer, first_page::UnitCreatorFirstPage,
-            launch_creator_page::LaunchCreatorPage, navigation_row::NavigationRow,
-            unit_file_creator_page::UnitFileCreatorPage,
+            ACTION_CREATOR_AVANCED_MODE, ACTION_CREATOR_CREATE, ACTION_CREATOR_FILE,
+            ACTION_CREATOR_NEXT, ACTION_CREATOR_PREVIOUS, ACTION_CREATOR_UNIT_BUS, PageType,
+            SaveUnit, UnitCreateType, creator_page_mount::CreatorPageMount,
+            creator_page_service::CreatorPageService, creator_page_timer::CreatorPageTimer,
+            first_page::UnitCreatorFirstPage, launch_creator_page::LaunchCreatorPage,
+            navigation_row::NavigationRow, unit_file_creator_page::UnitFileCreatorPage,
         },
         replace_tags,
     },
@@ -609,9 +609,30 @@ impl ObjectImpl for UnitCreatorWindowImp {
             });
         }
 
-        self.advanced_mode.connect_toggled(|button| {
-            info!("Advance Mode {}", button.is_active());
+        let settings = new_settings();
+
+        let advanced_mode = settings.boolean(&ACTION_CREATOR_AVANCED_MODE[8..]);
+        let service_page = self.service_page.get().unwrap().clone();
+        service_page.advanced_mode(advanced_mode);
+        let action = settings.create_action(&ACTION_CREATOR_AVANCED_MODE[8..]);
+        action.connect_state_notify(move |action| {
+            let advanced = action
+                .state()
+                .and_then(|v| v.get::<bool>())
+                .unwrap_or_default();
+            info!("Advance Mode {}", advanced);
+            service_page.advanced_mode(advanced);
         });
+
+        settings
+            .bind(
+                &ACTION_CREATOR_AVANCED_MODE[8..],
+                &self.advanced_mode.get(),
+                "active",
+            )
+            .build();
+
+        self.action_group.borrow().add_action(&action);
     }
 }
 

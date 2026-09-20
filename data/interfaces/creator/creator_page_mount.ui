@@ -43,7 +43,7 @@ circular</property>
                   </object>
                 </child>
                 <child>
-                  <object class="AdwPreferencesGroup" id="service_group">
+                  <object class="AdwPreferencesGroup" id="mount_group">
                     <property name="header-suffix">
                       <object class="GtkLinkButton">
                         <property name="css-classes">circular
@@ -52,7 +52,7 @@ flat</property>
                         <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html</property>
                       </object>
                     </property>
-                    <property name="title">Boot</property>
+                    <property name="title">Mount</property>
                     <child>
                       <object class="AdwEntryRow" id="what_entry">
                         <property name="title">What</property>
@@ -97,73 +97,6 @@ circular</property>
                     <child>
                       <object class="AdwEntryRow">
                         <property name="title">Options</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="AdwPreferencesGroup" id="exec_group">
-                    <property name="header-suffix">
-                      <object class="GtkLinkButton">
-                        <property name="css-classes">circular
-flat</property>
-                        <property name="icon-name">dialog-information-symbolic</property>
-                        <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html</property>
-                      </object>
-                    </property>
-                    <property name="title">Exec</property>
-                    <child>
-                      <object class="AdwComboRow" id="user_combo">
-                        <property name="enable-search">True</property>
-                        <property name="expression">
-                          <lookup name="string" type="GtkStringObject"/>
-                        </property>
-                        <property name="title">User</property>
-                        <property name="use-subtitle">True</property>
-                        <property name="use-underline">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="AdwComboRow" id="group_combo">
-                        <property name="enable-search">True</property>
-                        <property name="expression">
-                          <lookup name="string" type="GtkStringObject"/>
-                        </property>
-                        <property name="title">Group</property>
-                        <property name="use-subtitle">True</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="SuggestionRow" id="standard_output_entry">
-                        <property name="title">StandardOutput</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="SuggestionRow" id="standard_error_entry">
-                        <property name="title">StandardError</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="AdwPreferencesGroup">
-                    <property name="header-suffix">
-                      <object class="GtkLinkButton">
-                        <property name="css-classes">circular
-flat</property>
-                        <property name="icon-name">dialog-information-symbolic</property>
-                        <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.resource-control.html</property>
-                      </object>
-                    </property>
-                    <property name="title">Ressource Control</property>
-                    <child>
-                      <object class="AdwEntryRow" id="cpu_quota_entry">
-                        <property name="title">CPUQuota</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="AdwEntryRow" id="memory_high_entry">
-                        <property name="title">MemoryHigh</property>
                       </object>
                     </child>
                   </object>

@@ -382,5 +382,9 @@
       <default>false</default>
       <summary>Warp word on journal</summary>
     </key>
+    <key name="creator-advanced-mode" type="b">
+      <default>false</default>
+      <summary>Avanced mode for create units</summary>
+    </key>
   </schema>
 </schemalist>

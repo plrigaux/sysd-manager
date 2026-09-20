@@ -39,6 +39,10 @@ impl CreatorPageService {
     pub fn update_from_unit_info(&self) {
         self.imp().update_from_unit_info();
     }
+
+    pub fn advanced_mode(&self, advanced: bool) {
+        self.imp().advanced_mode(advanced);
+    }
 }
 
 pub const ENVIRONMENT: &str = "Environment";

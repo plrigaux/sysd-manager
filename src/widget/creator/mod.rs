@@ -74,6 +74,7 @@ pub const ACTION_CREATOR_NEXT: &str = "creator.next";
 pub const ACTION_CREATOR_FILE: &str = "creator.file";
 pub const ACTION_CREATOR_CREATE: &str = "creator.create";
 pub const ACTION_CREATOR_PREVIOUS: &str = "creator.previous";
+pub const ACTION_CREATOR_AVANCED_MODE: &str = "creator.creator-advanced-mode";
 pub const PAGE_FIRST: &str = "first-page";
 pub const PAGE_LAUNCH: &str = "launch-page";
 pub const PAGE_TIMER: &str = "timer-page";

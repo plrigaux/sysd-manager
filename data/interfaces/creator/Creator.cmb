@@ -14,10 +14,8 @@
   <ui template-class="CreatorPageTimer" filename="creator_page_timer.ui" sha256="9abef396034b635737c1072b5fa64644d59c6cc100d2df335b79d655e2d150b8">
     <requires>SysDDropDown</requires>
   </ui>
-  <ui template-class="CreatorPageService" filename="creator_page_service.ui" sha256="f49ea3c3dd90dd7346b18e76a317ae9b25be3643a77dfdde1143a69a8cdc9b51">
+  <ui template-class="CreatorPageService" filename="creator_page_service.ui" sha256="5eef159ac22a13908856d458c5851dcbc357bcd0f3a829b6cbe8fddc88a07cce">
     <requires>SuggestionRow</requires>
   </ui>
-  <ui template-class="CreatorPageMount" filename="creator_page_mount.ui" sha256="dec32993881e1cddbe560aff29597cf05729824f9826b336600768a1ba7b054a">
-    <requires>SuggestionRow</requires>
-  </ui>
+  <ui template-class="CreatorPageMount" filename="creator_page_mount.ui" sha256="766d08d67a0a553285c87691d5545b60cd4ddfc7b9012790a717f22c28668b44"/>
 </cambalache-project>

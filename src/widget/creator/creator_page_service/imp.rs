@@ -77,6 +77,9 @@ pub struct CreatorPageServiceImp {
     #[template_child]
     standard_error_entry: TemplateChild<SuggestionRow>,
 
+    #[template_child]
+    resource_control_group: TemplateChild<adw::PreferencesGroup>,
+
     pub(super) window: OnceCell<WeakRef<UnitCreatorWindow>>,
 
     pub(super) file_data: RefCell<UnitFileData>,
@@ -459,6 +462,16 @@ impl CreatorPageServiceImp {
 
         self.unit_wants.set_model(Some(&model));
         self.unit_after.set_model(Some(&model));
+    }
+
+    pub(super) fn advanced_mode(&self, advanced: bool) {
+        self.unit_wants.set_visible(advanced);
+        self.unit_after.set_visible(advanced);
+        self.environment_entry.set_visible(advanced);
+        self.working_directory_entry.set_visible(advanced);
+        self.memory_high_entry.set_visible(advanced);
+        self.cpu_quota_entry.set_visible(advanced);
+        self.resource_control_group.set_visible(advanced);
     }
 }
 
