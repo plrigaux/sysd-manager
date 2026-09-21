@@ -26,7 +26,7 @@ impl Default for SysDDropDown {
 }
 
 mod imp {
-    use std::cell::{OnceCell, RefCell};
+    use std::cell::{Cell, OnceCell, RefCell};
 
     use adw::{prelude::ActionRowExt, subclass::prelude::*};
     use glib::{
@@ -36,21 +36,28 @@ mod imp {
     use gtk::prelude::*;
     use tracing::{debug, error};
 
-    #[derive(Default, gtk::CompositeTemplate)]
+    #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
+    #[properties(wrapper_type = super::SysDDropDown)]
     #[template(resource = "/io/github/plrigaux/sysd-manager/dropdown.ui")]
     // #[properties(wrapper_type = super::SDDropdown)]
     pub struct SysDDropdownImp {
         #[template_child]
-        drop_list_view: TemplateChild<gtk::ListView>,
+        arrow_down_image: TemplateChild<gtk::Image>,
 
-        #[template_child]
-        search_entry: TemplateChild<gtk::SearchEntry>,
+        #[property(get, set)]
+        popup_visible: Cell<bool>,
 
         filter_list_model: OnceCell<gtk::FilterListModel>,
 
         last_filter_string: RefCell<String>,
 
         custom_filter: OnceCell<gtk::CustomFilter>,
+
+        search_entry: OnceCell<gtk::SearchEntry>,
+
+        popover: OnceCell<gtk::Popover>,
+
+        drop_list_view: OnceCell<gtk::ListView>,
     }
 
     #[gtk::template_callbacks]
@@ -91,7 +98,7 @@ mod imp {
         }
 
         fn create_filter(&self) -> gtk::CustomFilter {
-            let search_entry = self.search_entry.clone();
+            let search_entry = self.search_entry().clone();
 
             gtk::CustomFilter::new(move |object| {
                 let text_gs = search_entry.text();
@@ -114,6 +121,59 @@ mod imp {
                 }
             })
         }
+
+        fn popover(&self) -> &gtk::Popover {
+            let this = self.obj().clone();
+            self.popover.get_or_init(|| {
+                let pop = gtk::Popover::builder()
+                    .css_classes(["menu"])
+                    .autohide(false) //for not loosing the focus
+                    // .autohide(true)
+                    .has_arrow(true)
+                    .height_request(300)
+                    .width_request(200)
+                    .position(gtk::PositionType::Bottom)
+                    // .can_focus(false)
+                    .build();
+
+                pop.set_parent(&this.imp().arrow_down_image.get());
+
+                let boxx = gtk::Box::builder()
+                    .orientation(gtk::Orientation::Vertical)
+                    .build();
+                boxx.append(self.search_entry());
+                boxx.append(self.drop_list_view());
+
+                let scroll = gtk::ScrolledWindow::builder().child(&boxx).build();
+
+                pop.set_child(Some(&scroll));
+                pop
+            })
+        }
+
+        fn drop_list_view(&self) -> &gtk::ListView {
+            self.drop_list_view
+                .get_or_init(|| gtk::ListView::builder().build())
+        }
+
+        fn search_entry(&self) -> &gtk::SearchEntry {
+            self.search_entry
+                .get_or_init(|| gtk::SearchEntry::builder().build())
+        }
+
+        fn set_popup_visible(&self, visible: bool) {
+            if visible {
+                // if let Some(single_selection) = self.single_selection.get() {
+                //     single_selection.set_selected(gtk::INVALID_LIST_POSITION);
+                // }
+                self.popover().popup();
+            } else {
+                self.popover().popdown();
+            }
+
+            // Set the porperty indicator
+            self.obj().set_popup_visible(visible);
+        }
     }
 
     #[glib::object_subclass]
@@ -133,7 +193,7 @@ mod imp {
         }
     }
 
-    // #[glib::derived_properties]
+    #[glib::derived_properties]
     impl ObjectImpl for SysDDropdownImp {
         fn constructed(&self) {
             self.parent_constructed();
@@ -162,7 +222,7 @@ mod imp {
                 }
             });
 
-            self.drop_list_view.set_model(Some(&selection_model));
+            self.drop_list_view().set_model(Some(&selection_model));
             let factory = gtk::SignalListItemFactory::new();
             factory.connect_setup(move |_factory, item| {
                 let item = item.downcast_ref::<gtk::ListItem>().unwrap();
@@ -179,7 +239,33 @@ mod imp {
                 child.set_label(&data.string());
             });
 
-            self.drop_list_view.set_factory(Some(&factory));
+            self.drop_list_view().set_factory(Some(&factory));
+
+            // self.obj().connect_activated(|a| info!("asd"));
+
+            let this = self.obj().clone();
+            let gesture = gtk::GestureClick::new();
+            gesture.connect_released(move |_, _, _, _| {
+                let visible = this.popup_visible();
+                this.imp().set_popup_visible(!visible);
+            });
+
+            self.obj().add_controller(gesture);
+
+            let motion = gtk::EventControllerMotion::new();
+
+            const CLASS: &str = "dimmed";
+            let this = self.obj().clone();
+            motion.connect_enter(move |_, _, _| {
+                this.add_css_class(CLASS);
+            });
+
+            let this = self.obj().clone();
+            motion.connect_leave(move |_| {
+                this.remove_css_class(CLASS);
+            });
+
+            self.obj().add_controller(motion);
         }
     }
 

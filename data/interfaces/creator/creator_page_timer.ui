@@ -111,7 +111,9 @@ flat</property>
                       </object>
                     </child>
                     <child>
-                      <object class="SysDDropDown" id="trigger_unit2"/>
+                      <object class="SysDDropDown" id="trigger_unit2">
+                        <property name="title">Unit</property>
+                      </object>
                     </child>
                   </object>
                 </child>

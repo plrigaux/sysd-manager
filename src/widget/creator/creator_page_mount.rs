@@ -1,5 +1,4 @@
 mod imp;
-pub mod standard_output;
 
 use crate::widget::creator::{
     PageType, UnitCreatorWindow, unit_file_creator_page::UnitFileCreatorPage,

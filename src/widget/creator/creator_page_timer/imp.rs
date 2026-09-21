@@ -166,6 +166,7 @@ impl CreatorPageTimerImp {
         let filtered_model = gtk::FilterListModel::new(Some(model2), Some(filter));
         // self.trigger_unit.set_selected(gtk::INVALID_LIST_POSITION);
         self.trigger_unit.set_model(Some(&filtered_model));
+        self.trigger_unit2.set_model(Some(&filtered_model));
 
         self.trigger_unit.set_selected(gtk::INVALID_LIST_POSITION);
         // self.trigger_unit2.set_model(Some(&model3));

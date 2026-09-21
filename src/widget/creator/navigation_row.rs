@@ -25,7 +25,7 @@ mod imp {
     use super::*;
     use adw::subclass::prelude::*;
     use gtk::{glib, prelude::WidgetExt};
-    use tracing::{debug, info};
+    use tracing::debug;
 
     #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
     #[template(resource = "/io/github/plrigaux/sysd-manager/nav_row.ui")]
@@ -44,7 +44,7 @@ mod imp {
     }
 
     impl NavigationRowImp {
-        pub(super) fn set_page_type(&self, page: PageType, creation_type: UnitCreateType) {
+        pub(super) fn set_page_type(&self, page: PageType, _creation_type: UnitCreateType) {
             debug!("Set Page Type {:?}", page);
             match page {
                 PageType::Start => {

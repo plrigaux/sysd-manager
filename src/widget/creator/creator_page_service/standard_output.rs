@@ -60,6 +60,7 @@ mod imp {
         const NAME: &'static str = "StandardOutput";
         type Type = super::StandardOutput;
         type ParentType = glib::Object;
+
         fn new() -> Self {
             Default::default()
         }

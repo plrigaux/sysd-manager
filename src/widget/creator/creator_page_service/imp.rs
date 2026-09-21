@@ -3,7 +3,7 @@ use crate::{
     upgrade, upgrade_opt,
     widget::creator::{
         CreateUnitErr, UnitCreateType,
-        creator_page_service::standard_output::output_file_descriptor,
+        creator_page_service::standard_output::{StandardOutput, output_file_descriptor},
         suggestion::SuggestionRow,
         unit_file::{STANDARD_ERROR, STANDARD_OUTPUT, UnitFileData},
     },
@@ -235,6 +235,16 @@ impl ObjectImpl for CreatorPageServiceImp {
 
         self.standard_output_entry.set_factory(Some(&factory));
         self.standard_error_entry.set_factory(Some(&factory));
+
+        let expression = gtk::PropertyExpression::new(
+            StandardOutput::static_type(),
+            None::<gtk::Expression>,
+            "text",
+        );
+
+        self.standard_output_entry
+            .set_expression(expression.clone());
+        self.standard_error_entry.set_expression(expression);
 
         let event_focus = gtk::EventControllerFocus::new();
         let this = self.obj().clone();

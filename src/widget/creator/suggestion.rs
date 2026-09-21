@@ -1,6 +1,7 @@
 //test
 
 use glib::{object::IsA, subclass::types::ObjectSubclassIsExt};
+use tracing::warn;
 
 glib::wrapper! {
     pub struct SuggestionRow(ObjectSubclass<imp::SuggestionRowImp>)
@@ -25,6 +26,14 @@ impl SuggestionRow {
     pub fn set_text2(&self, text: &str) {
         self.imp().set_text2(text)
     }
+
+    pub fn set_expression(&self, expression: gtk::PropertyExpression) {
+        let _ = self
+            .imp()
+            .expression
+            .set(expression)
+            .inspect_err(|_| warn!("Expression already set!"));
+    }
 }
 
 impl Default for SuggestionRow {
@@ -34,9 +43,6 @@ impl Default for SuggestionRow {
 }
 
 mod imp {
-    use crate::widget::{
-        creator::creator_page_service::standard_output::StandardOutput, find_child_by_name,
-    };
     use adw::subclass::prelude::*;
     use glib::{
         object::IsA,
@@ -47,7 +53,9 @@ mod imp {
         prelude::*,
     };
     use std::cell::{Cell, OnceCell, RefCell};
-    use tracing::{debug, error};
+    use tracing::{debug, error, info, warn};
+
+    use crate::widget::find_child_by_name;
 
     const PAGE_STEP: u32 = 10;
 
@@ -59,6 +67,9 @@ mod imp {
         drop_list_view: OnceCell<gtk::ListView>,
 
         popover: OnceCell<gtk::Popover>,
+
+        #[template_child]
+        arrow_down_image: TemplateChild<gtk::Image>,
 
         #[property(get, set)]
         popup_visible: Cell<bool>,
@@ -73,7 +84,7 @@ mod imp {
 
         custom_filter: OnceCell<gtk::CustomFilter>,
 
-        expression: OnceCell<gtk::PropertyExpression>,
+        pub(super) expression: OnceCell<gtk::PropertyExpression>,
     }
 
     impl SuggestionRowImp {
@@ -86,7 +97,7 @@ mod imp {
         fn create_filter(&self) -> gtk::CustomFilter {
             let this = self.obj().clone();
 
-            let expression = self.expression.get().unwrap().clone();
+            // let expression = self.expression.get().clone();
 
             gtk::CustomFilter::new(move |object| {
                 let text_gs = this.text();
@@ -94,8 +105,13 @@ mod imp {
                     return true;
                 }
 
-                let Some(value) = expression.evaluate(Some(object)).and_then(|v| {
-                    v.get::<String>()
+                let Some(expression) = this.imp().expression.get() else {
+                    return true;
+                };
+
+                let Some(value) = expression.evaluate(Some(object)).and_then(|value| {
+                    value
+                        .get::<String>()
                         .inspect_err(|err| error!("bad convertion {:?}", err))
                         .ok()
                 }) else {
@@ -127,23 +143,30 @@ mod imp {
                 self.popover().popdown();
             }
 
+            // Set the porperty indicator
             self.obj().set_popup_visible(visible);
         }
 
         fn drop_list_view(&self) -> &gtk::ListView {
-            self.drop_list_view.get_or_init(gtk::ListView::default)
+            self.drop_list_view
+                .get_or_init(|| gtk::ListView::builder().build())
         }
 
         fn popover(&self) -> &gtk::Popover {
             let this = self.obj().clone();
             self.popover.get_or_init(|| {
-                let pop = gtk::Popover::new();
-                pop.set_parent(&this);
-                pop.set_autohide(false);
-                pop.set_has_arrow(false);
-                pop.set_height_request(300);
-                pop.set_width_request(200);
-                pop.set_position(gtk::PositionType::Bottom);
+                let pop = gtk::Popover::builder()
+                    .css_classes(["menu"])
+                    .autohide(false) //for not loosing the focus
+                    // .autohide(true)
+                    .has_arrow(true)
+                    .height_request(300)
+                    .width_request(200)
+                    .position(gtk::PositionType::Bottom)
+                    // .can_focus(false)
+                    .build();
+
+                pop.set_parent(&this.imp().arrow_down_image.get());
 
                 let scroll = gtk::ScrolledWindow::new();
                 scroll.set_child(Some(this.imp().drop_list_view()));
@@ -171,8 +194,11 @@ mod imp {
             match key {
                 Key::Return | Key::KP_Enter | Key::ISO_Enter => {
                     self.accept_current_selection();
-                    self.text_changed_idle();
-                    self.set_popup_visible(false);
+                    let visible = self.popup_visible.get();
+                    self.text_changed_idle(false);
+
+                    info!("Enter: {visible}");
+                    self.set_popup_visible(!visible);
                     glib::Propagation::Proceed
                 }
                 Key::Escape => {
@@ -183,6 +209,8 @@ mod imp {
                     this.block_signal(handler_id);
                     this.set_text("");
                     this.set_position(-1);
+                    self.set_popup_visible(false);
+                    self.text_changed_idle(false);
                     this.unblock_signal(handler_id);
                     glib::Propagation::Stop
                 }
@@ -271,7 +299,10 @@ mod imp {
 
             self.obj().block_signal(handler_id);
 
-            let expression = self.expression.get().unwrap();
+            let Some(expression) = self.expression.get() else {
+                error!("Suggestion Expression None");
+                return;
+            };
 
             if let Some(value) = expression
                 .evaluate(Some(&item))
@@ -285,10 +316,8 @@ mod imp {
             self.obj().unblock_signal(handler_id);
         }
 
-        fn text_changed_idle(&self) {
+        fn text_changed_idle(&self, manage_popup: bool) {
             let text = self.obj().text();
-
-            // self.search.replace(text);
 
             let mut last_filter = self.search.borrow_mut();
 
@@ -314,13 +343,15 @@ mod imp {
                 custom_filter.changed(change_type);
             }
 
-            let matches = self
-                .single_selection
-                .get()
-                .map(|s| s.n_items())
-                .unwrap_or_default();
+            if manage_popup {
+                let matches = self
+                    .single_selection
+                    .get()
+                    .map(|s| s.n_items())
+                    .unwrap_or_default();
 
-            self.set_popup_visible(matches > 0);
+                self.set_popup_visible(matches > 0);
+            }
         }
 
         fn text_changed(&self) {
@@ -329,7 +360,7 @@ mod imp {
              */
             let this = self.obj().clone();
             glib::spawn_future_local(async move {
-                this.imp().text_changed_idle();
+                this.imp().text_changed_idle(true);
             });
         }
 
@@ -364,13 +395,6 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
 
-            let expression = gtk::PropertyExpression::new(
-                StandardOutput::static_type(),
-                None::<gtk::Expression>,
-                "text",
-            );
-
-            let _ = self.expression.set(expression);
             let filter = self.create_filter();
 
             self.custom_filter
