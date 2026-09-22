@@ -53,9 +53,9 @@ mod imp {
         prelude::*,
     };
     use std::cell::{Cell, OnceCell, RefCell};
-    use tracing::{debug, error, info, warn};
+    use tracing::{debug, error, info};
 
-    use crate::widget::find_child_by_name;
+    use crate::{upgrade, widget::find_child_by_name};
 
     const PAGE_STEP: u32 = 10;
 
@@ -95,11 +95,12 @@ mod imp {
         }
 
         fn create_filter(&self) -> gtk::CustomFilter {
-            let this = self.obj().clone();
+            let this = self.obj().downgrade();
 
             // let expression = self.expression.get().clone();
 
             gtk::CustomFilter::new(move |object| {
+                let this = upgrade!(this, false);
                 let text_gs = this.text();
                 if text_gs.is_empty() {
                     return true;
@@ -153,7 +154,7 @@ mod imp {
         }
 
         fn popover(&self) -> &gtk::Popover {
-            let this = self.obj().clone();
+            let this_weak = self.obj().downgrade();
             self.popover.get_or_init(|| {
                 let pop = gtk::Popover::builder()
                     .css_classes(["menu"])
@@ -166,6 +167,7 @@ mod imp {
                     // .can_focus(false)
                     .build();
 
+                let this = upgrade!(this_weak, pop);
                 pop.set_parent(&this.imp().arrow_down_image.get());
 
                 let scroll = gtk::ScrolledWindow::new();
@@ -358,8 +360,9 @@ mod imp {
             /* We need to defer to an idle since GtkText sets selection bounds
              * after notify::text
              */
-            let this = self.obj().clone();
+            let this = self.obj().downgrade();
             glib::spawn_future_local(async move {
+                let this = upgrade!(this);
                 this.imp().text_changed_idle(true);
             });
         }
@@ -411,20 +414,22 @@ mod imp {
             let _ = self.single_selection.set(selection_model.clone());
 
             let _ = self.filter_list_model.set(filter_list_model);
-            let this = self.obj().clone();
+            let this = self.obj().downgrade();
 
             let gesture = gtk::GestureClick::new();
             gesture.connect_released(move |_, _, _, _| {
+                let this = upgrade!(this);
                 let visible = this.popup_visible();
                 this.imp().set_popup_visible(!visible);
             });
 
-            let this = self.obj().clone();
-            this.add_controller(gesture);
+            self.obj().add_controller(gesture);
 
             let controller = gtk::EventControllerKey::new();
 
+            let this = self.obj().downgrade();
             controller.connect_key_pressed(move |controller_key, key, code, status| {
+                let this = upgrade!(this, glib::Propagation::Proceed);
                 this.imp().key_pressed(controller_key, key, code, status)
             });
 

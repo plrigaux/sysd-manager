@@ -180,7 +180,6 @@ impl UnitCreatorWindowImp {
                 }
 
                 let mut vec = set.iter().map(|s| s.as_ref()).collect::<Vec<_>>();
-                vec.push(""); //for unselect
                 vec.sort();
 
                 model.splice(0, model.n_items(), &vec);

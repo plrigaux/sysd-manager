@@ -7,8 +7,12 @@
   <template class="SysDDropDown" parent="AdwActionRow">
     <child>
       <object class="GtkImage" id="arrow_down_image">
+        <property name="accessible-role">presentation</property>
+        <property name="css-classes">dropdown-arrow</property>
+        <property name="halign">baseline-center</property>
         <property name="icon-name">pan-down-symbolic</property>
         <property name="icon-size">normal</property>
+        <property name="valign">center</property>
         <property name="width-request">32</property>
       </object>
     </child>

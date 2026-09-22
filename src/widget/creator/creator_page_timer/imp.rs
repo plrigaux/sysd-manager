@@ -163,9 +163,10 @@ impl CreatorPageTimerImp {
             !string_object.string().ends_with(".timer")
         });
 
-        let filtered_model = gtk::FilterListModel::new(Some(model2), Some(filter));
+        let filtered_model = gtk::FilterListModel::new(Some(model2), Some(filter.clone()));
         // self.trigger_unit.set_selected(gtk::INVALID_LIST_POSITION);
         self.trigger_unit.set_model(Some(&filtered_model));
+        let filtered_model = gtk::FilterListModel::new(Some(model), Some(filter));
         self.trigger_unit2.set_model(Some(&filtered_model));
 
         self.trigger_unit.set_selected(gtk::INVALID_LIST_POSITION);
@@ -347,9 +348,10 @@ impl CreatorPageTimerImp {
             }
             UnitCreateType::TimerService => {
                 self.trigger_unit.set_visible(false);
-                self.trigger_unit.set_subtitle("");
-                self.file_data.borrow_mut().remove_trigger_unit();
                 self.trigger_unit2.set_visible(false);
+                self.trigger_unit.set_subtitle("");
+                self.trigger_unit2.set_subtitle("");
+                self.file_data.borrow_mut().remove_trigger_unit();
             }
             UnitCreateType::Mount => {}
         }
@@ -366,7 +368,8 @@ impl CreatorPageTimerImp {
 
         file_data.set_description(self.description.text());
         file_data.set_persistent(self.persistent.is_active());
-        file_data.set_trigger_unit(self.trigger_unit.subtitle());
+        // file_data.set_trigger_unit(self.trigger_unit.subtitle());
+        file_data.set_trigger_unit(self.trigger_unit2.subtitle());
 
         let timers = self
             .monotonic_timers
@@ -421,8 +424,10 @@ impl CreatorPageTimerImp {
 
         if matches!(window.creation_type(), UnitCreateType::Timer) {
             self.trigger_unit.set_subtitle(data.trigger_unit());
+            self.trigger_unit2.set_subtitle(data.trigger_unit());
         } else {
             self.trigger_unit.set_subtitle("");
+            self.trigger_unit2.set_subtitle("");
         }
 
         for (_, entry_row) in self.monotonic_timers.borrow_mut().drain(..) {

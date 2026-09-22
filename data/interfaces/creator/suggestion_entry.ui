@@ -9,6 +9,7 @@
       <object class="GtkImage" id="arrow_down_image">
         <property name="icon-name">pan-down-symbolic</property>
         <property name="icon-size">normal</property>
+        <property name="valign">center</property>
         <property name="width-request">32</property>
       </object>
     </child>
