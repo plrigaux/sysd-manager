@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-09-09 08:56-0400\n"
-"PO-Revision-Date: 2026-03-16 02:06+0000\n"
-"Last-Translator: Димко <Dymkovych@proton.me>\n"
+"PO-Revision-Date: 2026-09-23 17:51+0000\n"
+"Last-Translator: Dmytro Kerest <dmytro.kerest@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/uk/>\n"
 "Language: uk\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.17-dev\n"
+"X-Generator: Weblate 2026.10.dev0\n"
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -35,7 +35,7 @@ msgstr "Менеджер служб"
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:9
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:10
 msgid "A user-friendly application to manage systemd's units"
-msgstr ""
+msgstr "Зручний додаток для керування юнітами systemd"
 
 #. Desktop File Keywords
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:12
@@ -48,16 +48,19 @@ msgid ""
 "disable, stop and start them. Also, you can view their config file and peak "
 "at their journal logs."
 msgstr ""
+"Керуйте своїми службами, таймерами, сокетами та іншими блоками. Ви можете "
+"вмикати, вимикати, зупиняти та запускати їх. Також ви можете переглядати "
+"їхній конфігураційний файл та журнали."
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:40
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:45
 msgid "Unit Files"
-msgstr ""
+msgstr "Файли юнітів"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:50
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:55
 msgid "Unit Dependencies"
-msgstr ""
+msgstr "Залежності юнітів"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:60
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:65
