@@ -41,11 +41,11 @@ mod imp {
 
     use crate::upgrade;
 
-    static BOX: OnceLock<Quark> = OnceLock::new();
+    // static BOX: OnceLock<Quark> = OnceLock::new();
 
-    fn box_quark() -> Quark {
-        *BOX.get_or_init(|| Quark::from_str("Box_h"))
-    }
+    // fn box_quark() -> Quark {
+    //     *BOX.get_or_init(|| Quark::from_str("Box_h"))
+    // }
     static LIST_ITEM: OnceLock<Quark> = OnceLock::new();
 
     fn list_item_quark() -> Quark {
@@ -58,8 +58,6 @@ mod imp {
         #[template_child]
         arrow_down_image: TemplateChild<gtk::Image>,
 
-        // #[template_child]
-        // current: TemplateChild<gtk::ListView>,
         filter_list_model: OnceCell<gtk::FilterListModel>,
 
         selection_model: OnceCell<gtk::SingleSelection>,
@@ -136,10 +134,10 @@ mod imp {
             }
         }
 
-        fn selection_changed(&self, selection: &gtk::SingleSelection) {
+        fn selection_changed(&self, _selection: &gtk::SingleSelection) {
             info!("selection change");
 
-            let selected = selection.selected();
+            let selected = self.selection_model().selected();
 
             self.clear_filter();
 
@@ -257,18 +255,26 @@ mod imp {
                     info!("pop up visible {}", p.is_visible());
 
                     //FIXME UGLY WORK AROUND
-                    if p.get_visible() {
-                        if let Some(f) = this.factory.borrow().as_ref() {
-                            this.drop_list_view().set_factory(Some(f));
-                        }
-                    } else {
-                        if let Some(f) = this.drop_list_view().factory() {
-                            this.factory.replace(Some(f));
-                        };
+                    // if p.get_visible() {
+                    //     if let Some(f) = this.factory.borrow().as_ref() {
+                    //         this.drop_list_view().set_factory(Some(f));
+                    //     }
+                    // } else {
+                    //     if let Some(f) = this.drop_list_view().factory() {
+                    //         this.factory.replace(Some(f));
+                    //     };
 
-                        this.drop_list_view()
-                            .set_factory(None::<&gtk::ListItemFactory>);
-                    }
+                    //     this.drop_list_view()
+                    //         .set_factory(None::<&gtk::ListItemFactory>);
+                    // }
+
+                    // if p.get_visible()
+                    //     && let Some(model) = this.selection_model().model()
+                    // {
+                    //     this.popup_selection_model().set_model(Some(&model));
+                    //     this.popup_selection_model()
+                    //         .set_selected(this.selection_model().selected());
+                    // }
                 });
                 let boxx = gtk::Box::builder()
                     .orientation(gtk::Orientation::Vertical)
@@ -292,8 +298,16 @@ mod imp {
             self.drop_list_view.get_or_init(|| {
                 let drop_list_view = gtk::ListView::builder()
                     .single_click_activate(true)
-                    // .tab_behavior(gtk::ListTabBehavior::Item)
+                    .tab_behavior(gtk::ListTabBehavior::Item)
                     .build();
+
+                let this = self.downgrade();
+                drop_list_view.connect_activate(move |list, active| {
+                    info!("position {}", active);
+                    let this = upgrade!(this);
+
+                    this.row_activated(list, active)
+                });
 
                 let factory = gtk::SignalListItemFactory::new();
                 factory.connect_setup(move |_factory, item| {
@@ -331,6 +345,7 @@ mod imp {
 
                     let handler = list_item.connect_selected_notify(move |list_item| {
                         let value = upgrade!(value);
+                        info!("--selected item change");
                         value.selected_item_changed(list_item);
                     });
                     // let handler = list_item.connect_selectable_notify(move |list_item| {
@@ -341,33 +356,38 @@ mod imp {
                     let this = upgrade!(this);
                     this.selected_item_changed(list_item);
 
-                    let handler = item_box.connect_root_notify(move |d| {
-                        this.root_changed(d);
-                    });
-                    unsafe { item_box.set_qdata(list_item_quark(), handler) };
+                    // let handler =
+                    //     list_item.connect("notify::selected-item", false, move |list_item| {
+                    //         info!("!!!selected item change");
+                    //         None
+                    //     });
+                    // let handler = item_box.connect_root_notify(move |d| {
+                    //     this.root_changed(d);
+                    // });
+                    // unsafe { list_item.set_qdata(box_quark(), handler) };
                 });
 
                 factory.connect_unbind(|_factory, item| {
                     let list_item = item.downcast_ref::<gtk::ListItem>().unwrap();
 
-                    let box_item = list_item.child().and_downcast::<gtk::Box>().unwrap();
+                    // let box_item = list_item.child().and_downcast::<gtk::Box>().unwrap();
 
                     if let Some(handler_id) = unsafe { list_item.steal_qdata(list_item_quark()) } {
                         list_item.disconnect(handler_id);
                     }
 
-                    if let Some(handler_id) = unsafe { box_item.steal_qdata(box_quark()) } {
-                        box_item.disconnect(handler_id);
-                    }
+                    // if let Some(handler_id) = unsafe { box_item.steal_qdata(box_quark()) } {
+                    //     box_item.disconnect(handler_id);
+                    // }
                 });
 
                 drop_list_view.set_factory(Some(&factory));
+                self.factory.replace(Some(factory.into()));
                 drop_list_view
             })
         }
 
         fn selected_item_changed(&self, list_item: &gtk::ListItem) {
-            info!("selectied item change");
             let box_item = list_item.child().and_downcast::<gtk::Box>().unwrap();
             let image = box_item.first_child().and_downcast::<gtk::Image>().unwrap();
 
@@ -379,21 +399,21 @@ mod imp {
             image.set_opacity(opacity);
         }
 
-        fn root_changed(&self, bbox: &gtk::Box) {
-            // info!("root changed");
+        // fn root_changed(&self, bbox: &gtk::Box) {
+        //     // info!("root changed");
 
-            let Some(icon) = bbox.first_child() else {
-                return;
-            };
+        //     let Some(icon) = bbox.first_child() else {
+        //         return;
+        //     };
 
-            if bbox.ancestor(gtk::Popover::static_type()).as_ref()
-                == Some(self.popover().upcast_ref::<gtk::Widget>())
-            {
-                icon.set_visible(true);
-            } else {
-                icon.set_visible(false);
-            }
-        }
+        //     if bbox.ancestor(gtk::Popover::static_type()).as_ref()
+        //         == Some(self.popover().upcast_ref::<gtk::Widget>())
+        //     {
+        //         icon.set_visible(true);
+        //     } else {
+        //         icon.set_visible(false);
+        //     }
+        // }
 
         fn search_entry(&self) -> &gtk::SearchEntry {
             self.search_entry.get_or_init(|| {
@@ -422,6 +442,7 @@ mod imp {
         fn set_popup_visible(&self, visible: bool) {
             if visible {
                 self.popover().popup();
+                // self.drop_list_view().grab_focus();
                 self.search_entry().grab_focus();
             } else {
                 self.popover().popdown();
@@ -429,8 +450,7 @@ mod imp {
         }
 
         fn row_activated(&self, _list: &gtk::ListView, position: u32) {
-            self.popover().popdown();
-
+            self.set_popup_visible(false);
             self.clear_filter();
 
             let popup_position = self.popup_selection_model().selected();
@@ -495,14 +515,6 @@ mod imp {
 
             //to highlight on hover
             self.obj().set_activatable(true);
-
-            let this = self.downgrade();
-            self.drop_list_view().connect_activate(move |list, active| {
-                info!("position {}", active);
-                let this = upgrade!(this);
-
-                this.row_activated(list, active)
-            });
 
             self.obj().connect_activate(|s| {
                 s.imp().popover().popup();
