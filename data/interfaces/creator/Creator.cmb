@@ -3,7 +3,7 @@
 <!-- Created with Cambalache 1.0.3 -->
 <cambalache-project version="1.0.0" target_tk="gtk-4.0" depends="libadwaita-1">
   <ui template-class="NavigationRow" filename="nav_row.ui" sha256="d9fcbae52fa3d574617072a2c088c7894632e0bffa363085a8b60e4ff8877865"/>
-  <ui template-class="SysDDropDown" filename="dropdown.ui" sha256="a1e12db2549f8800619369a72cf68a182612c75e67f8ee71bb39730fe7b6cb82"/>
+  <ui template-class="SysDDropDown" filename="dropdown.ui" sha256="e339ef2815267ba21719abf70065f51c6ec3e9ffb802afc3db456149b9d266eb"/>
   <ui template-class="SuggestionRow" filename="suggestion_entry.ui" sha256="34c3bf7ae109e468a83216dcead05327ae91c6daa63126501eb2170ca1734dc3"/>
   <ui template-class="LaunchCreatorPage" filename="creator_end_page.ui" sha256="0493ed60d57494331bf956e02caf1d4faa5c5fdef68a8bfb1e9e3066c9a60029"/>
   <ui template-class="UnitFileCreatorPage" filename="unit_file_creator_page.ui" sha256="0c20499d7ecb908b18e85b5b32782c4cbccfe5eab05d7dce10bcdbbff8cdc0a5"/>
@@ -11,7 +11,7 @@
   <ui template-class="UnitCreatorWindow" filename="Creator.ui" sha256="d3640f2f9e979fae988c7535aba3c7eecbbdc0c45a96e67854401c630d2e3e85">
     <requires>NavigationRow</requires>
   </ui>
-  <ui template-class="CreatorPageTimer" filename="creator_page_timer.ui" sha256="71e3b2352a21435a45d304e48541aa128b8491c4c3c34c00d1364105ad184455">
+  <ui template-class="CreatorPageTimer" filename="creator_page_timer.ui" sha256="84e23d7f70de943d0eb2ab53227f4b5a10cf8030937f2511b62b6bc026aa40df">
     <requires>SysDDropDown</requires>
   </ui>
   <ui template-class="CreatorPageMount" filename="creator_page_mount.ui" sha256="19d8ce9caf5983314d61522cb11ab7963a3a67131dbde02cf11101c10c00fb23">

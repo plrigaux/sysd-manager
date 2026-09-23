@@ -36,8 +36,8 @@ mod imp {
         object::{Cast, CastNone, IsA},
         subclass::{object::ObjectImpl, types::ObjectSubclass},
     };
-    use gtk::prelude::*;
-    use tracing::{debug, error, info, warn};
+    use gtk::{ffi::GTK_INVALID_LIST_POSITION, prelude::*};
+    use tracing::{debug, error, info};
 
     use crate::upgrade;
 
@@ -58,10 +58,15 @@ mod imp {
         #[template_child]
         arrow_down_image: TemplateChild<gtk::Image>,
 
+        // #[template_child]
+        // current: TemplateChild<gtk::ListView>,
         filter_list_model: OnceCell<gtk::FilterListModel>,
 
         selection_model: OnceCell<gtk::SingleSelection>,
 
+        popup_selection_model: OnceCell<gtk::SingleSelection>,
+
+        // current_model: OnceCell<gtk::NoSelection>,
         last_filter_string: RefCell<String>,
 
         custom_filter: OnceCell<gtk::CustomFilter>,
@@ -71,13 +76,105 @@ mod imp {
         popover: OnceCell<gtk::Popover>,
 
         drop_list_view: OnceCell<gtk::ListView>,
+
+        factory: RefCell<Option<gtk::ListItemFactory>>,
     }
 
     impl SysDDropdownImp {
-        pub fn set_model(&self, model: Option<&impl IsA<gio::ListModel>>) {
-            if let Some(fl) = self.filter_list_model.get() {
-                fl.set_model(model);
+        fn popup_selection_model(&self) -> &gtk::SingleSelection {
+            if let Some(model) = self.popup_selection_model.get() {
+                model
+            } else {
+                let filter_model = self.filter_list_model();
+                let single_selection = gtk::SingleSelection::builder()
+                    .model(filter_model)
+                    .autoselect(false)
+                    .can_unselect(true)
+                    .build();
+                let _ = self.popup_selection_model.set(single_selection);
+                self.popup_selection_model()
             }
+        }
+
+        fn filter_list_model(&self) -> &gtk::FilterListModel {
+            if let Some(model) = self.filter_list_model.get() {
+                model
+            } else {
+                let filter = self.create_filter();
+                let filter_list_model = gtk::FilterListModel::builder().filter(filter).build();
+                let _ = self.filter_list_model.set(filter_list_model);
+                self.filter_list_model()
+            }
+        }
+
+        fn selection_model(&self) -> &gtk::SingleSelection {
+            if let Some(model) = self.selection_model.get() {
+                model
+            } else {
+                let single_selection = gtk::SingleSelection::builder()
+                    .autoselect(false)
+                    .can_unselect(true)
+                    .build();
+                let this = self.downgrade();
+                single_selection.connect_selected_notify(move |selection| {
+                    let this = upgrade!(this);
+                    this.selection_changed(selection);
+                });
+                let this = self.downgrade();
+                single_selection.connect_selected_item_notify(move |selection| {
+                    let this = upgrade!(this);
+                    this.selection_item_changed(selection);
+                });
+                let this = self.downgrade();
+                single_selection.connect_items_changed(move |selection, p, r, a| {
+                    let this = upgrade!(this);
+                    this.model_changed(selection, p, r, a);
+                });
+
+                let _ = self.selection_model.set(single_selection);
+                self.selection_model.get().unwrap()
+            }
+        }
+
+        fn selection_changed(&self, selection: &gtk::SingleSelection) {
+            info!("selection change");
+
+            let selected = selection.selected();
+
+            self.clear_filter();
+
+            self.popup_selection_model().set_selected(selected);
+        }
+
+        fn selection_item_changed(&self, selection: &gtk::SingleSelection) {
+            info!("selection item change");
+
+            let value = selection
+                .selected_item()
+                .and_downcast_ref::<gtk::StringObject>()
+                .map(|so| so.string());
+
+            self.obj().set_subtitle(&value.unwrap_or_default());
+        }
+
+        fn model_changed(
+            &self,
+            selection: &gtk::SingleSelection,
+            position: u32,
+            removed: u32,
+            added: u32,
+        ) {
+            info!(
+                "model change. pos {position} rem {removed} add {added}, total {}",
+                selection.n_items()
+            );
+
+            selection.set_selected(GTK_INVALID_LIST_POSITION);
+        }
+
+        pub fn set_model(&self, model: Option<&impl IsA<gio::ListModel>>) {
+            self.filter_list_model().set_model(model);
+            self.selection_model().set_model(model);
         }
 
         fn search_entry_changed(&self, search_entry: &gtk::SearchEntry) {
@@ -108,33 +205,39 @@ mod imp {
             }
         }
 
-        fn create_filter(&self) -> gtk::CustomFilter {
-            let search_entry = self.search_entry().clone();
+        fn create_filter(&self) -> &gtk::CustomFilter {
+            if let Some(filter) = self.custom_filter.get() {
+                filter
+            } else {
+                let search_entry = self.search_entry().clone();
 
-            gtk::CustomFilter::new(move |object| {
-                let text_gs = search_entry.text();
-                if text_gs.is_empty() {
-                    return true;
-                }
+                let filter = gtk::CustomFilter::new(move |object| {
+                    let text_gs = search_entry.text();
+                    if text_gs.is_empty() {
+                        return true;
+                    }
 
-                let Some(list_item) = object.downcast_ref::<gtk::StringObject>() else {
-                    error!("some wrong downcast_ref {object:?}");
-                    return false;
-                };
+                    let Some(list_item) = object.downcast_ref::<gtk::StringObject>() else {
+                        error!("some wrong downcast_ref {object:?}");
+                        return false;
+                    };
 
-                let texts = text_gs.as_str();
+                    let texts = text_gs.as_str();
 
-                //if an upper case --> filter
-                if text_gs.chars().any(|c| c.is_ascii_uppercase()) {
-                    list_item.string().contains(texts)
-                } else {
-                    list_item.string().to_ascii_lowercase().contains(texts)
-                }
-            })
+                    //if an upper case --> filter
+                    if text_gs.chars().any(|c| c.is_ascii_uppercase()) {
+                        list_item.string().contains(texts)
+                    } else {
+                        list_item.string().to_ascii_lowercase().contains(texts)
+                    }
+                });
+                let _ = self.custom_filter.set(filter);
+                self.custom_filter.get().unwrap()
+            }
         }
 
         fn popover(&self) -> &gtk::Popover {
-            let this = self.obj().downgrade();
+            let this = self.downgrade();
             self.popover.get_or_init(|| {
                 let pop = gtk::Popover::builder()
                     .css_classes(["menu"])
@@ -148,9 +251,25 @@ mod imp {
                     .build();
 
                 let this = upgrade!(this, pop);
-                pop.set_parent(&this.imp().arrow_down_image.get());
+                pop.set_parent(&this.arrow_down_image.get());
 
-                pop.connect_visible_notify(|p| info!("pop up visible {}", p.is_visible()));
+                pop.connect_visible_notify(move |p| {
+                    info!("pop up visible {}", p.is_visible());
+
+                    //FIXME UGLY WORK AROUND
+                    if p.get_visible() {
+                        if let Some(f) = this.factory.borrow().as_ref() {
+                            this.drop_list_view().set_factory(Some(f));
+                        }
+                    } else {
+                        if let Some(f) = this.drop_list_view().factory() {
+                            this.factory.replace(Some(f));
+                        };
+
+                        this.drop_list_view()
+                            .set_factory(None::<&gtk::ListItemFactory>);
+                    }
+                });
                 let boxx = gtk::Box::builder()
                     .orientation(gtk::Orientation::Vertical)
                     .build();
@@ -173,7 +292,7 @@ mod imp {
             self.drop_list_view.get_or_init(|| {
                 let drop_list_view = gtk::ListView::builder()
                     .single_click_activate(true)
-                    .tab_behavior(gtk::ListTabBehavior::Item)
+                    // .tab_behavior(gtk::ListTabBehavior::Item)
                     .build();
 
                 let factory = gtk::SignalListItemFactory::new();
@@ -195,7 +314,7 @@ mod imp {
                     item.set_child(Some(&item_box));
                 });
 
-                let this = self.obj().downgrade();
+                let this = self.downgrade();
                 factory.connect_bind(move |_factory, item| {
                     let list_item = item.downcast_ref::<gtk::ListItem>().unwrap();
                     let data = list_item
@@ -208,38 +327,28 @@ mod imp {
                         label.set_label(&data.string());
                     };
 
-                    // let dd =     item_box.connect(signal_name, after, callback);
-                    //
-                    let this = upgrade!(this);
                     let value = this.clone();
 
-                    let handler = list_item.connect_selected_notify(move |list| {
-                        value.imp().selected_item_changed(list);
+                    let handler = list_item.connect_selected_notify(move |list_item| {
+                        let value = upgrade!(value);
+                        value.selected_item_changed(list_item);
                     });
-
-                    // let list_item2 = list_item.clone();
-                    // let handler = list_item.connect("notify::selected-item", false, move |list| {
-                    //     Self::selected_item_changed(&value, &list_item2);
-                    //     None
+                    // let handler = list_item.connect_selectable_notify(move |list_item| {
+                    //     value.imp().selected_item_changed(list_item);
                     // });
-                    //
-                    // let handler = list_item.connect_closure(
-                    //     "notify::selected-item",
-                    //     false,
-                    //     glib::closure_local!(move || {
-                    //         Self::selected_item_changed(&value, &list_item2);
-                    //     }),
-                    // );
-
                     unsafe { list_item.set_qdata(list_item_quark(), handler) };
-                    // let handler = item_box.connect_root_notify(|boxo| {});
-                    // unsafe { item_box.set_qdata(box_quark(), handler) };
-                    this.imp().selected_item_changed(list_item);
+
+                    let this = upgrade!(this);
+                    this.selected_item_changed(list_item);
+
+                    let handler = item_box.connect_root_notify(move |d| {
+                        this.root_changed(d);
+                    });
+                    unsafe { item_box.set_qdata(list_item_quark(), handler) };
                 });
 
                 factory.connect_unbind(|_factory, item| {
                     let list_item = item.downcast_ref::<gtk::ListItem>().unwrap();
-                    // let data = item.item().and_downcast::<gtk::StringObject>().unwrap();
 
                     let box_item = list_item.child().and_downcast::<gtk::Box>().unwrap();
 
@@ -258,21 +367,32 @@ mod imp {
         }
 
         fn selected_item_changed(&self, list_item: &gtk::ListItem) {
+            info!("selectied item change");
             let box_item = list_item.child().and_downcast::<gtk::Box>().unwrap();
             let image = box_item.first_child().and_downcast::<gtk::Image>().unwrap();
 
-            // let string_object = list_item
-            //     .item()
-            //     .and_downcast::<gtk::StringObject>()
-            //     .unwrap();
-
             let opacity = if self.get_selected_item() == list_item.item() {
-                // let opacity = if this.subtitle() == Some(string_object.string()) {
                 1.0
             } else {
                 0.0
             };
             image.set_opacity(opacity);
+        }
+
+        fn root_changed(&self, bbox: &gtk::Box) {
+            // info!("root changed");
+
+            let Some(icon) = bbox.first_child() else {
+                return;
+            };
+
+            if bbox.ancestor(gtk::Popover::static_type()).as_ref()
+                == Some(self.popover().upcast_ref::<gtk::Widget>())
+            {
+                icon.set_visible(true);
+            } else {
+                icon.set_visible(false);
+            }
         }
 
         fn search_entry(&self) -> &gtk::SearchEntry {
@@ -308,30 +428,34 @@ mod imp {
             }
         }
 
-        fn list_activate(&self, _list: &gtk::ListView, position: u32) {
+        fn row_activated(&self, _list: &gtk::ListView, position: u32) {
             self.popover().popdown();
 
-            let Some(model) = self.filter_list_model.get() else {
-                warn!("No filter model");
-                return;
+            self.clear_filter();
+
+            let popup_position = self.popup_selection_model().selected();
+
+            info!("Item pos filt {} pos pop {}", position, popup_position);
+
+            self.set_selected(popup_position);
+        }
+
+        fn set_selected(&self, position: u32) {
+            let position = if self.selection_model().selected() == position {
+                GTK_INVALID_LIST_POSITION
+            } else {
+                position
             };
 
-            let Some(some) = model.item(position).and_downcast::<gtk::StringObject>() else {
-                warn!("No item at {}", position);
-                return;
-            };
+            self.selection_model().set_selected(position);
+        }
 
-            self.obj().set_subtitle(&some.string());
+        fn clear_filter(&self) {
             self.search_entry().set_text("");
-
-            let x = self.selection_model.get().unwrap().selected();
-
-            info!("Item {} pos f {} x {}", some.string(), position, x);
         }
 
         fn get_selected_item(&self) -> Option<glib::Object> {
-            let single_selection = self.selection_model.get().unwrap();
-            single_selection.selected_item()
+            self.selection_model().selected_item()
         }
     }
 
@@ -356,31 +480,8 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
 
-            let filter = self.create_filter();
-
-            self.custom_filter
-                .set(filter.clone())
-                .expect("custom filter set once");
-
-            let filter_list_model = gtk::FilterListModel::new(None::<gio::ListStore>, Some(filter));
-            let selection_model = gtk::SingleSelection::builder()
-                .can_unselect(true)
-                .autoselect(false)
-                .model(&filter_list_model)
-                .build();
-
-            let _ = self.filter_list_model.set(filter_list_model);
-            self.drop_list_view().set_model(Some(&selection_model));
-            let _ = self.selection_model.set(selection_model);
-
-            // selection_model.connect_selected_notify(move |selection| {
-            //     if let Some(item) = selection
-            //         .selected_item()
-            //         .and_downcast_ref::<gtk::StringObject>()
-            //     {
-            //         info!("select item {}", item.string());
-            //     }
-            // });
+            self.drop_list_view()
+                .set_model(Some(self.popup_selection_model()));
 
             let this = self.obj().downgrade();
             let gesture = gtk::GestureClick::new();
@@ -395,13 +496,18 @@ mod imp {
             //to highlight on hover
             self.obj().set_activatable(true);
 
-            let this = self.obj().downgrade();
+            let this = self.downgrade();
             self.drop_list_view().connect_activate(move |list, active| {
                 info!("position {}", active);
                 let this = upgrade!(this);
 
-                this.imp().list_activate(list, active)
+                this.row_activated(list, active)
             });
+
+            self.obj().connect_activate(|s| {
+                s.imp().popover().popup();
+            });
+            // self.current.set_model(Some(self.current_model()));
         }
     }
 

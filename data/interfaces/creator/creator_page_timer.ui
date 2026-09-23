@@ -101,7 +101,6 @@ flat</property>
                         <property name="search-match-mode">substring</property>
                         <property name="subtitle-selectable">True</property>
                         <property name="title">Unit</property>
-                        <property name="use-subtitle">True</property>
                       </object>
                     </child>
                     <child>

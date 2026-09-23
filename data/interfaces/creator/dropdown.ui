@@ -16,5 +16,8 @@
         <property name="width-request">32</property>
       </object>
     </child>
+    <style>
+      <class name="combo"/>
+    </style>
   </template>
 </interface>
