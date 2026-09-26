@@ -20,9 +20,9 @@ impl UnitCreatorFirstPage {
         obj
     }
 
-    pub fn fetch_settings(&self) -> (bool, glib::GString) {
+    pub fn fetch_settings(&self) -> (bool, String) {
         let runtime = self.imp().runtime_switch.state();
-        let prefix = self.imp().unit_name_prefix.text();
+        let prefix = self.imp().unit_name_prefix.text().trim().to_owned();
         (runtime, prefix)
     }
 
@@ -43,6 +43,7 @@ mod imp {
             creator::{
                 ACTION_CREATOR_UNIT_BUS, ACTION_CREATOR_UNIT_TYPE_SELECTION, CreateUnitErr,
                 UnitCreateType, UnitCreatorWindow, VALID_UNIT_NAME,
+                creator_page_service::ENVIRONMENT,
             },
         },
     };
@@ -263,12 +264,21 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
 
-            self.unit_name_prefix
-                .connect_has_focus_notify(|entry| entry.select_region(0, -1));
-            self.unit_name_prefix
-                .connect_focus_on_click_notify(|entry| entry.select_region(0, -1));
-            self.unit_name_prefix
-                .connect_focusable_notify(|entry| entry.select_region(0, -1));
+            let event_focus = gtk::EventControllerFocus::new();
+            event_focus.connect_leave(move |event| {
+                if let Some(entry) = event.widget().and_downcast_ref::<adw::EntryRow>() {
+                    let text = entry.text();
+                    let text = text.trim();
+                    entry.set_text(text);
+                }
+            });
+            event_focus.connect_enter(move |event| {
+                if let Some(entry) = event.widget().and_downcast_ref::<adw::EntryRow>() {
+                    entry.select_region(0, -1);
+                }
+            });
+
+            self.unit_name_prefix.add_controller(event_focus);
 
             let settings = new_settings();
             settings
@@ -312,5 +322,7 @@ mod tests {
         assert!(!re.is_match("service/"));
         assert!(!re.is_match("service name"));
         assert!(!re.is_match("service\tname"));
+        assert!(re.is_match(" service_name"));
+        assert!(re.is_match("service_name "));
     }
 }
