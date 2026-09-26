@@ -1,5 +1,6 @@
 mod imp;
-
+mod mount_tools;
+mod validator;
 use crate::widget::creator::{
     PageType, UnitCreatorWindow, unit_file_creator_page::UnitFileCreatorPage,
 };
@@ -37,5 +38,13 @@ impl CreatorPageMount {
 
     pub fn update_from_unit_info(&self) {
         // self.imp().update_from_unit_info();
+    }
+
+    pub fn advanced_mode(&self, advanced: bool) {
+        self.imp().advanced_mode(advanced);
+    }
+
+    pub fn validate(&self) -> bool {
+        self.imp().validate()
     }
 }

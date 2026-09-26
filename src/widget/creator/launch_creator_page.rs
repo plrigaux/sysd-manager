@@ -260,7 +260,7 @@ mod imp {
                     self.service_file_action.set_visible(true);
                     self.timer_file_action.set_visible(false);
 
-                    if let Some(file_path) = window.imp().file_path(creation_type)
+                    if let Some(file_path) = window.imp().file_path(None)
                         && let Some(file_path) = file_path.to_str()
                     {
                         self.service_file_action.set_subtitle(file_path);
@@ -270,7 +270,7 @@ mod imp {
                     self.service_file_action.set_visible(false);
                     self.timer_file_action.set_visible(true);
 
-                    if let Some(file_path) = window.imp().file_path(creation_type)
+                    if let Some(file_path) = window.imp().file_path(None)
                         && let Some(file_path) = file_path.to_str()
                     {
                         self.timer_file_action.set_subtitle(file_path);
@@ -280,13 +280,13 @@ mod imp {
                     self.service_file_action.set_visible(true);
                     self.timer_file_action.set_visible(true);
 
-                    if let Some(file_path) = window.imp().file_path(UnitCreateType::Service)
+                    if let Some(file_path) = window.imp().file_path(Some(UnitCreateType::Service))
                         && let Some(file_path) = file_path.to_str()
                     {
                         self.service_file_action.set_subtitle(file_path);
                     }
 
-                    if let Some(file_path) = window.imp().file_path(UnitCreateType::Timer)
+                    if let Some(file_path) = window.imp().file_path(Some(UnitCreateType::Timer))
                         && let Some(file_path) = file_path.to_str()
                     {
                         self.timer_file_action.set_subtitle(file_path);
@@ -296,7 +296,7 @@ mod imp {
                     self.service_file_action.set_visible(false);
                     self.timer_file_action.set_visible(false);
 
-                    if let Some(file_path) = window.imp().file_path(creation_type)
+                    if let Some(file_path) = window.imp().file_path(None)
                         && let Some(file_path) = file_path.to_str()
                     {
                         self.timer_file_action.set_subtitle(file_path);
@@ -327,7 +327,7 @@ mod imp {
 
         fn show_file(&self, create_type: UnitCreateType) {
             let window = upgrade_opt!(self.window.get());
-            if let Some(file_path) = window.imp().file_path(create_type)
+            if let Some(file_path) = window.imp().file_path(Some(create_type))
                 && let Some(file_path) = file_path.to_str()
             {
                 let file_path = file::flatpak_host_file_path(file_path);

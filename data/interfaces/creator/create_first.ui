@@ -16,7 +16,7 @@
             <child>
               <object class="AdwPreferencesGroup">
                 <child>
-                  <object class="AdwEntryRow" id="unit_name_prefix">
+                  <object class="AdwEntryRow" id="unit_name_prefix_entry">
                     <property name="input-hints">lowercase</property>
                     <property name="title">Unit Name Prefix</property>
                     <property name="use-underline">True</property>

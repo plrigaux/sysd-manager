@@ -12,38 +12,38 @@
     <property name="spacing">5</property>
     <child>
       <object class="GtkBox">
-        <property name="halign">baseline-fill</property>
         <property name="hexpand">True</property>
         <property name="hexpand-set">True</property>
         <child>
           <object class="GtkLinkButton" id="donate_button">
             <property name="css-classes">circular</property>
+            <property name="halign">start</property>
             <property name="label">🧡</property>
             <property name="tooltip-markup" translatable="yes">🙏🏻 Please donate — every contribution helps me to prove to my wife that this project is more than just “another coding hobby”</property>
             <property name="uri">https://github.com/sponsors/plrigaux</property>
             <property name="valign">center</property>
           </object>
         </child>
-      </object>
-    </child>
-    <child>
-      <object class="GtkButton" id="prev_button">
-        <property name="action-name">creator.previous</property>
-        <property name="css-classes">pill</property>
-        <property name="halign">end</property>
-        <property name="valign">center</property>
         <child>
-          <object class="AdwButtonContent">
-            <property name="icon-name">go-previous-symbolic</property>
-            <property name="label">Previous</property>
+          <object class="GtkButton" id="prev_button">
+            <property name="action-name">creator.previous</property>
+            <property name="css-classes">pill</property>
+            <property name="halign">start</property>
+            <property name="valign">center</property>
+            <child>
+              <object class="AdwButtonContent">
+                <property name="icon-name">go-previous-symbolic</property>
+                <property name="label">Previous</property>
+              </object>
+            </child>
           </object>
         </child>
       </object>
     </child>
     <child>
       <object class="GtkBox">
-        <property name="css-classes">linked</property>
         <property name="halign">end</property>
+        <property name="spacing">5</property>
         <child>
           <object class="GtkButton" id="file_button">
             <property name="action-name">creator.file</property>

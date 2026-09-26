@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--File generated from CHANGELOG.md-->
 <releases>
+	<release version="2.23.0" date="2026-10-02">
+		<description>
+			<p>Added</p>
+			<ul>
+				<li>Mount Unit Creation Wizard</li>
+			</ul>
+			<p>Fixed</p>
+			<ul>
+				<li>Various Creation Wizard Issues</li>
+			</ul>
+		</description>
+	</release>
 	<release version="2.22.1" date="2026-09-14">
 		<description>
 			<p>Changed</p>

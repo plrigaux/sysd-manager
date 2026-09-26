@@ -73,7 +73,8 @@ mod imp {
 
         #[property(get, set)]
         popup_visible: Cell<bool>,
-
+        #[property(get=Self::popup_height, set=Self::set_popup_height, name = "popup-height", type=i32) ]
+        #[property(get=Self::popup_width, set=Self::set_popup_width, name = "popup-width", type=i32) ]
         filter_list_model: OnceCell<gtk::FilterListModel>,
 
         single_selection: OnceCell<gtk::SingleSelection>,
@@ -299,7 +300,8 @@ mod imp {
 
             let handler_id = self.change_id.get().unwrap();
 
-            self.obj().block_signal(handler_id);
+            let obj = self.obj();
+            obj.block_signal(handler_id);
 
             let Some(expression) = self.expression.get() else {
                 error!("Suggestion Expression None");
@@ -310,12 +312,14 @@ mod imp {
                 .evaluate(Some(&item))
                 .and_then(|v| v.get::<String>().ok())
             {
-                self.obj().set_text(&value);
+                obj.set_text(&value);
             }
 
-            self.obj().set_position(-1);
+            obj.set_position(-1);
 
-            self.obj().unblock_signal(handler_id);
+            obj.unblock_signal(handler_id);
+
+            self.set_popup_visible(false);
         }
 
         fn text_changed_idle(&self, manage_popup: bool) {
@@ -374,6 +378,30 @@ mod imp {
             this.block_signal(handler_id);
             this.set_text(text);
             this.unblock_signal(handler_id);
+        }
+
+        pub fn filter_list_model(&self) -> &OnceCell<gtk::FilterListModel> {
+            &self.filter_list_model
+        }
+
+        pub fn set_filter_list_model(&mut self, filter_list_model: OnceCell<gtk::FilterListModel>) {
+            self.filter_list_model = filter_list_model;
+        }
+
+        fn popup_height(&self) -> i32 {
+            self.popover().height()
+        }
+
+        fn set_popup_height(&self, val: i32) {
+            self.popover().set_height_request(val)
+        }
+
+        fn popup_width(&self) -> i32 {
+            self.popover().width()
+        }
+
+        fn set_popup_width(&self, val: i32) {
+            self.popover().set_width_request(val)
         }
     }
 
@@ -459,6 +487,30 @@ mod imp {
                 this.imp().accept_current_selection();
             });
             self.obj().add_controller(controller);
+
+            let expression = gtk::PropertyExpression::new(
+                gtk::StringObject::static_type(),
+                None::<gtk::Expression>,
+                "string",
+            );
+
+            self.obj().set_expression(expression);
+
+            let factory = gtk::SignalListItemFactory::new();
+            factory.connect_setup(move |_factory, item| {
+                let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+                let row = gtk::Label::builder().xalign(0.0).use_markup(true).build();
+                item.set_child(Some(&row));
+            });
+
+            factory.connect_bind(move |_factory, item| {
+                let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+                let data = item.item().and_downcast::<gtk::StringObject>().unwrap();
+                let child = item.child().and_downcast::<gtk::Label>().unwrap();
+                child.set_label(&data.string());
+            });
+
+            self.obj().set_factory(Some(&factory));
         }
     }
 

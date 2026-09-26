@@ -1,4 +1,4 @@
-use crate::widget::creator::{PageType, UnitCreatorWindow};
+use crate::widget::creator::{PageType, UnitCreateType, UnitCreatorWindow};
 use adw::prelude::NavigationPageExt;
 use glib::{WeakRef, subclass::types::ObjectSubclassIsExt};
 use gtk::{
@@ -22,104 +22,146 @@ impl UnitCreatorFirstPage {
 
     pub fn fetch_settings(&self) -> (bool, String) {
         let runtime = self.imp().runtime_switch.state();
-        let prefix = self.imp().unit_name_prefix.text().trim().to_owned();
+        let prefix = self.imp().unit_name_prefix_entry.text().trim().to_owned();
         (runtime, prefix)
     }
 
     pub fn validate(&self) -> bool {
         self.imp().validate()
     }
+
+    pub fn validate_entry_changed(&self) {
+        self.imp().validate_entry_changed()
+    }
+
+    pub fn set_creation_unit_type(&self, unit_type: UnitCreateType) {
+        self.imp().set_creation_unit_type(unit_type);
+    }
+
+    pub(crate) fn update_unit_prefix(&self, escaped_prefix: String) -> super::CreateUnitErr {
+        self.imp().update_unit_prefix(escaped_prefix)
+    }
 }
 
 mod imp {
 
-    use std::cell::OnceCell;
-
+    use super::*;
     use crate::{
         systemd_gui::new_settings,
         upgrade, upgrade_opt,
         widget::{
             self,
             creator::{
-                ACTION_CREATOR_UNIT_BUS, ACTION_CREATOR_UNIT_TYPE_SELECTION, CreateUnitErr,
-                UnitCreateType, UnitCreatorWindow, VALID_UNIT_NAME,
-                creator_page_service::ENVIRONMENT,
+                ACTION_CREATOR_UNIT_BUS, CreateUnitErr, UnitCreateType, UnitCreatorWindow,
+                VALID_UNIT_NAME,
             },
         },
     };
-
-    use super::*;
-    use adw::{prelude::PreferencesRowExt, subclass::prelude::*};
+    use adw::{prelude::*, subclass::prelude::*};
     use base::enums::UnitDBusLevel;
     use gettextrs::pgettext;
     use glib::WeakRef;
-    use gtk::{glib, prelude::*};
+    use gtk::glib;
     use regex::Regex;
+    use std::cell::{OnceCell, RefCell};
     use tracing::{error, warn};
 
-    #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
+    const CREATE_UNIT_RUNTIME: &str = "create-unit-runtime";
+
+    #[derive(Default, gtk::CompositeTemplate, glib::Properties, Debug)]
     #[template(resource = "/io/github/plrigaux/sysd-manager/create_first.ui")]
     #[properties(wrapper_type = super::UnitCreatorFirstPage)]
     pub struct UnitCreatorFirstPageImp {
         #[template_child]
-        pub(super) unit_name_prefix: TemplateChild<adw::EntryRow>,
+        pub(super) unit_name_prefix_entry: TemplateChild<adw::EntryRow>,
 
-        #[template_child]
-        radio_button_boot: TemplateChild<adw::ActionRow>,
-        #[template_child]
-        radio_button_service: TemplateChild<adw::ActionRow>,
-        #[template_child]
-        radio_button_timer_service: TemplateChild<adw::ActionRow>,
-        #[template_child]
-        radio_button_timer: TemplateChild<adw::ActionRow>,
+        // #[template_child]
+        // radio_button_boot: TemplateChild<adw::ActionRow>,
+        // #[template_child]
+        // radio_button_service: TemplateChild<adw::ActionRow>,
+        // #[template_child]
+        // radio_button_timer_service: TemplateChild<adw::ActionRow>,
+        // #[template_child]
+        // radio_button_timer: TemplateChild<adw::ActionRow>,
         #[template_child]
         pub(super) runtime_switch: TemplateChild<gtk::Switch>,
 
         re: OnceCell<Regex>,
 
         pub(super) window: OnceCell<WeakRef<UnitCreatorWindow>>,
+
+        unit_prefix_name: RefCell<String>,
     }
 
     impl UnitCreatorFirstPageImp {
-        fn validate_entry(&self) -> bool {
-            let entry = self.unit_name_prefix.get();
+        pub(super) fn validate_entry_changed(&self) {
+            let entry = self.unit_name_prefix_entry.get();
             let text = entry.text();
-
             let text = text.as_str();
 
-            let name_err = if text.is_empty() {
-                CreateUnitErr::Empty
+            let name_err = self.global_validation(text, true);
+            let prefix = self.unit_prefix_name.borrow();
+            CreateUnitErr::apply_validation_result_error(&entry, &name_err, &prefix, true);
+        }
+
+        fn validate_entry(&self) -> bool {
+            let entry = self.unit_name_prefix_entry.get();
+            let text = entry.text();
+            let text = text.as_str();
+
+            let name_err = self.global_validation(text, false);
+            let prefix = self.unit_prefix_name.borrow();
+            CreateUnitErr::apply_validation_result_error(&entry, &name_err, &prefix, true)
+        }
+
+        fn global_validation(&self, text: &str, entry_changed: bool) -> CreateUnitErr {
+            const MAX: usize = 255;
+
+            if text.is_empty() {
+                if entry_changed {
+                    CreateUnitErr::NoErr
+                } else {
+                    CreateUnitErr::Empty
+                }
             } else {
-                let window = upgrade_opt!(self.window.get(), false);
-                if window.creation_type().max_suffix_len() + text.len() > 255 {
-                    CreateUnitErr::Limit255
-                } else if !self
-                    .re
-                    .get_or_init(|| regex::Regex::new(VALID_UNIT_NAME).unwrap())
-                    .is_match(text)
-                {
+                let window = upgrade_opt!(self.window.get(), CreateUnitErr::Unknown);
+                if window.creation_type().max_suffix_len() + text.len() > MAX {
+                    CreateUnitErr::TooLong(MAX)
+                } else if !self.unit_name_validator().is_match(text) {
                     CreateUnitErr::WrongChar
                 } else if self.is_fill_exist(text) {
                     CreateUnitErr::FileExits
                 } else {
                     CreateUnitErr::NoErr
                 }
-            };
+            }
+        }
 
-            let valid = match name_err {
-                CreateUnitErr::NoErr => {
-                    entry.remove_css_class("error");
-                    true
+        pub(super) fn set_creation_unit_type(&self, unit_type: UnitCreateType) {
+            //Entry title for unit name prefix
+            let mut title = pgettext("creator", "Unit Name Prefix");
+            match unit_type {
+                UnitCreateType::Mount => {
+                    //Entry title for unit name prefix
+                    let suffix_title = pgettext("creator", "(automatically generated )");
+                    title.push(' ');
+                    title.push_str(&suffix_title);
+                    self.unit_prefix_name.replace(title);
+                    self.unit_name_prefix_entry.set_sensitive(false);
                 }
                 _ => {
-                    entry.add_css_class("error");
-                    false
+                    self.unit_prefix_name.replace(title);
+                    self.unit_name_prefix_entry.set_sensitive(true);
                 }
-            };
+            }
 
-            let prefix = pgettext("creator", "Unit Name Prefix");
-            entry.set_title(&name_err.title_err(&prefix));
-            valid
+            let title = self.unit_prefix_name.borrow();
+            self.unit_name_prefix_entry.set_title(&title);
+        }
+
+        fn unit_name_validator(&self) -> &Regex {
+            self.re
+                .get_or_init(|| regex::Regex::new(VALID_UNIT_NAME).unwrap())
         }
 
         pub(crate) fn validate(&self) -> bool {
@@ -128,36 +170,18 @@ mod imp {
 
         pub(super) fn set_window(&self, window: WeakRef<UnitCreatorWindow>) {
             let _ = self.window.set(window.clone());
-            let event_controller = widget::clear_on_escape();
-            self.unit_name_prefix.add_controller(event_controller);
 
             let window = upgrade!(window);
-            window.set_creation_unit_type(UnitCreateType::Service);
+            // window.set_creation_type(UnitCreateType::Service);
             // window.insert_page(&UnitCreateType::Service);
             {
                 let creator_window = self.obj().downgrade();
-                self.unit_name_prefix.connect_changed(move |_| {
-                    upgrade!(creator_window).imp().validate_entry();
+                self.unit_name_prefix_entry.connect_changed(move |_| {
+                    upgrade!(creator_window).imp().validate_entry_changed();
                 });
             }
 
             let settings = new_settings();
-
-            let creation_type_selection_action =
-                settings.create_action(&ACTION_CREATOR_UNIT_TYPE_SELECTION[8..]);
-            let first_page = self.obj().downgrade();
-            let creation_window = window.downgrade();
-            creation_type_selection_action.connect_state_notify(move |action| {
-                if let Some(state) = action.state().and_then(|state_v| state_v.get::<String>()) {
-                    // let creation_window = upgrade!(unit_creator_window);
-                    let creation_window = upgrade!(creation_window);
-                    let first_page = upgrade!(first_page);
-                    // let creation_window = creation_window.imp();
-                    let unit_creation_type: UnitCreateType = state.into();
-                    creation_window.set_creation_type(unit_creation_type);
-                    first_page.imp().validate_entry();
-                }
-            });
 
             let creation_unit_bus = settings.create_action(&ACTION_CREATOR_UNIT_BUS[8..]);
             let first_page = self.obj().downgrade();
@@ -174,7 +198,7 @@ mod imp {
                 let level: UnitDBusLevel = state.into();
                 first_page.imp().set_level(creation_window, level);
                 glib::spawn_future_local(async move {
-                    first_page.imp().validate();
+                    first_page.imp().validate_entry_changed();
                 });
             });
 
@@ -197,13 +221,8 @@ mod imp {
 
             let action_group = window.imp().action_group.borrow().clone();
             action_group.add_action_entries([jailbreak]);
-            action_group.add_action(&creation_type_selection_action);
             action_group.add_action(&creation_unit_bus);
             window.insert_action_group("creator", Some(&action_group));
-
-            let type_selection = settings.string(&ACTION_CREATOR_UNIT_TYPE_SELECTION[8..]);
-            let unit_creation_type: UnitCreateType = type_selection.into();
-            window.set_creation_type(unit_creation_type);
 
             let bus_level = settings.string(&ACTION_CREATOR_UNIT_BUS[8..]);
             self.set_level(window, bus_level.into());
@@ -240,6 +259,11 @@ mod imp {
                 false
             }
         }
+
+        pub(super) fn update_unit_prefix(&self, escaped_prefix: String) -> CreateUnitErr {
+            self.unit_name_prefix_entry.set_text(&escaped_prefix);
+            self.global_validation(&escaped_prefix, false)
+        }
     }
 
     #[glib::object_subclass]
@@ -265,24 +289,32 @@ mod imp {
             self.parent_constructed();
 
             let event_focus = gtk::EventControllerFocus::new();
+            let this = self.downgrade();
             event_focus.connect_leave(move |event| {
                 if let Some(entry) = event.widget().and_downcast_ref::<adw::EntryRow>() {
                     let text = entry.text();
                     let text = text.trim();
                     entry.set_text(text);
                 }
+
+                let this = upgrade!(this);
+                this.validate();
             });
+
             event_focus.connect_enter(move |event| {
                 if let Some(entry) = event.widget().and_downcast_ref::<adw::EntryRow>() {
                     entry.select_region(0, -1);
                 }
             });
 
-            self.unit_name_prefix.add_controller(event_focus);
+            self.unit_name_prefix_entry.add_controller(event_focus);
+
+            let event_controller = widget::clear_on_escape();
+            self.unit_name_prefix_entry.add_controller(event_controller);
 
             let settings = new_settings();
             settings
-                .bind("create-unit-runtime", &self.runtime_switch.get(), "active")
+                .bind(CREATE_UNIT_RUNTIME, &self.runtime_switch.get(), "active")
                 .build();
         }
     }

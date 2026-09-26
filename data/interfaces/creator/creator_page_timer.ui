@@ -105,6 +105,25 @@ flat</property>
                     </child>
                   </object>
                 </child>
+                <child>
+                  <object class="AdwPreferencesGroup" id="install_group">
+                    <property name="header-suffix">
+                      <object class="GtkLinkButton">
+                        <property name="css-classes">circular
+flat</property>
+                        <property name="icon-name">dialog-information</property>
+                        <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html</property>
+                      </object>
+                    </property>
+                    <property name="title">Install</property>
+                    <child>
+                      <object class="SuggestionRow" id="wanted_by_entry">
+                        <property name="text">timers.target</property>
+                        <property name="title">WantedBy</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
               </object>
             </property>
           </object>

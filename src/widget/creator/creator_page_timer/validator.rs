@@ -1,3 +1,4 @@
+use adw::prelude::*;
 use base::{
     args,
     consts::SYSTEMD_ANALYZE,
@@ -5,14 +6,32 @@ use base::{
 };
 use std::{ffi::OsStr, process::Stdio};
 use tokio::io::{AsyncBufReadExt, BufReader};
-use tracing::{debug, info, warn};
+use tracing::{debug, error, info, warn};
 
-pub async fn validate_calendar(calendar: &str) -> Result<(i32, String, String), SysdBaseError> {
+use crate::{consts::WARNING_CSS, widget::creator::unit_file::ON_CALENDAR};
+
+#[derive(Debug, Default)]
+pub struct TimeSpan {
+    pub exit_status: i32,
+    pub output: String,
+    pub error: String,
+}
+impl TimeSpan {
+    fn new(exit_status: i32, output: String, error: String) -> Self {
+        Self {
+            exit_status,
+            output,
+            error,
+        }
+    }
+}
+
+pub async fn validate_calendar(calendar: &str) -> Result<TimeSpan, SysdBaseError> {
     let cmd = args![SYSTEMD_ANALYZE, "calendar", calendar];
     execute_command(&cmd).await
 }
 
-pub async fn validate_timespan(timespan: &str) -> Result<(i32, String, String), SysdBaseError> {
+pub async fn validate_timespan(timespan: &str) -> Result<TimeSpan, SysdBaseError> {
     let cmd = args![SYSTEMD_ANALYZE, "timespan", timespan];
     execute_command(&cmd).await
 }
@@ -33,9 +52,7 @@ macro_rules! read_std {
     }};
 }
 
-pub async fn execute_command(
-    prog_n_args: &[&OsStr],
-) -> Result<(i32, String, String), SysdBaseError> {
+pub async fn execute_command(prog_n_args: &[&OsStr]) -> Result<TimeSpan, SysdBaseError> {
     let mut cmd = commander(prog_n_args, None);
 
     let mut child = cmd
@@ -83,10 +100,70 @@ pub async fn execute_command(
     debug!("Going to wait");
 
     match handle.await? {
-        Ok(code) => Ok((code, std_out, std_err)),
-        Err(SysdBaseError::ErrorExit(code)) => Ok((code, std_out, std_err)),
+        Ok(code) => Ok(TimeSpan::new(code, std_out, std_err)),
+        Err(SysdBaseError::ErrorExit(code)) => Ok(TimeSpan::new(code, std_out, std_err)),
         Err(err) => Err(err),
     }
+}
+
+pub fn validate_monotonic_entry(label: String, entry_row: &adw::EntryRow) {
+    let entry_row = entry_row.clone();
+    glib::spawn_future_local(async move {
+        let timespan = entry_row.text();
+
+        let ts = if timespan.is_empty() {
+            TimeSpan::default()
+        } else {
+            let Ok(r) = systemd::runtime()
+                .block_on(async move { validate_timespan(timespan.as_str()).await })
+                .inspect_err(|err| error!("{err:?}"))
+            else {
+                return;
+            };
+            r
+        };
+
+        if ts.exit_status == 0 {
+            entry_row.set_tooltip_text(Some(&format!("{}\n{}", label, ts.output)));
+            entry_row.set_title(&label);
+            entry_row.remove_css_class(WARNING_CSS);
+        } else {
+            entry_row.set_title(&format!("{}\n{}", label, ts.error));
+            entry_row.set_tooltip_text(None);
+            entry_row.add_css_class(WARNING_CSS);
+        }
+    });
+}
+
+pub fn validate_calendar_entry(entry_row: &adw::EntryRow) {
+    let entry_row = entry_row.clone();
+    glib::spawn_future_local(async move {
+        let calendar = entry_row.text();
+
+        let ts = if calendar.is_empty() {
+            TimeSpan::default()
+        } else {
+            let Ok(r) = systemd::runtime()
+                .block_on(async move {
+                    super::validator::validate_calendar(calendar.trim_ascii()).await
+                })
+                .inspect_err(|err| error!("{err:?}"))
+            else {
+                return;
+            };
+            r
+        };
+
+        if ts.exit_status == 0 {
+            entry_row.set_tooltip_text(Some(&format!("{}\n{}", ON_CALENDAR, ts.output)));
+            entry_row.set_title(ON_CALENDAR);
+            entry_row.remove_css_class(WARNING_CSS);
+        } else {
+            entry_row.set_title(&format!("{}\n{}", ON_CALENDAR, ts.error));
+            entry_row.set_tooltip_text(None);
+            entry_row.add_css_class(WARNING_CSS);
+        }
+    });
 }
 
 #[cfg(test)]
@@ -96,37 +173,37 @@ mod test {
 
     use super::*;
 
-    fn show_output(code: i32, out: String, err: String) {
-        if code == 0 {
-            info!("\n{}\n", out);
+    fn show_output(ts: TimeSpan) {
+        if ts.exit_status == 0 {
+            info!("\n{:?}\n", ts);
         } else {
-            error!("\n{}\n", err);
+            error!("\n{:?}\n", ts);
         }
     }
 
     #[tokio::test]
     async fn test_calendar1() -> Result<(), SysdBaseError> {
         init_logs();
-        let (code, out, err) = validate_calendar("2027-11-28 23:02:15").await?;
+        let ts = validate_calendar("2027-11-28 23:02:15").await?;
 
-        show_output(code, out, err);
+        show_output(ts);
         Ok(())
     }
 
     #[tokio::test]
     async fn test_timespan() -> Result<(), SysdBaseError> {
         init_logs();
-        let (code, out, err) = validate_timespan("1h").await?;
+        let ts = validate_timespan("1h").await?;
 
-        show_output(code, out, err);
+        show_output(ts);
         Ok(())
     }
 
     #[tokio::test]
     async fn test_timespan_fail() -> Result<(), SysdBaseError> {
         init_logs();
-        let (code, out, err) = validate_timespan("1 fail").await?;
-        show_output(code, out, err);
+        let ts = validate_timespan("1 fail").await?;
+        show_output(ts);
         Ok(())
     }
 }

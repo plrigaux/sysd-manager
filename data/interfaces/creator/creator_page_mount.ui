@@ -49,23 +49,13 @@ circular</property>
                         <property name="css-classes">circular
 flat</property>
                         <property name="icon-name">dialog-information-symbolic</property>
-                        <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html</property>
+                        <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.mount.html</property>
                       </object>
                     </property>
                     <property name="title">Mount</property>
                     <child>
-                      <object class="AdwEntryRow" id="what_entry">
+                      <object class="SuggestionRow" id="what_entry">
                         <property name="title">What</property>
-                        <property name="title-selectable">True</property>
-                        <property name="use-underline">True</property>
-                        <child>
-                          <object class="GtkButton">
-                            <property name="css-classes">flat
-circular</property>
-                            <property name="icon-name">list-add-symbolic</property>
-                            <signal name="clicked" handler="environment_add_clicked" swapped="True"/>
-                          </object>
-                        </child>
                       </object>
                     </child>
                     <child>
@@ -77,19 +67,63 @@ circular</property>
                           <object class="GtkButton">
                             <property name="css-classes">flat</property>
                             <property name="icon-name">folder-open-symbolic</property>
-                            <signal name="clicked" handler="exec_start_dialog_clicked" swapped="True"/>
+                            <property name="valign">center</property>
+                            <signal name="clicked" handler="where_search_dialog_clicked" swapped="True"/>
                           </object>
                         </child>
                       </object>
                     </child>
                     <child>
-                      <object class="AdwEntryRow">
-                        <property name="title">Options</property>
+                      <object class="SuggestionRow" id="mount_type_suggestion">
+                        <property name="title">Type</property>
                       </object>
                     </child>
                     <child>
-                      <object class="SuggestionRow" id="mount_type_suggestion">
-                        <property name="title">Type</property>
+                      <object class="AdwEntryRow" id="mount_options_entry">
+                        <property name="title">Options</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwPreferencesGroup" id="mount_avanced_group">
+                    <property name="header-suffix">
+                      <object class="GtkLinkButton">
+                        <property name="css-classes">circular
+flat</property>
+                        <property name="icon-name">dialog-information-symbolic</property>
+                        <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.mount.html</property>
+                      </object>
+                    </property>
+                    <property name="title">Mount Advanced</property>
+                    <child>
+                      <object class="AdwEntryRow" id="directory_mode_entry">
+                        <property name="title">DirectoryMode</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwEntryRow" id="timeout_sec_entry">
+                        <property name="title">TimeoutSec</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwSwitchRow" id="lazy_unmount_switch">
+                        <property name="title">LazyUnmount</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwSwitchRow" id="sloppy_options_switch">
+                        <property name="title">SloppyOptions</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwSwitchRow" id="read_write_only_switch">
+                        <property name="title">ReadWriteOnly</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwSwitchRow" id="force_unmount_switch">
+                        <property name="title">ForceUnmount</property>
                       </object>
                     </child>
                   </object>

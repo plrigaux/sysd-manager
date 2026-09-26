@@ -1,5 +1,5 @@
 mod imp;
-mod validator;
+pub mod validator;
 use crate::widget::creator::{
     PageType, UnitCreateType, UnitCreatorWindow, unit_file_creator_page::UnitFileCreatorPage,
 };
@@ -43,6 +43,10 @@ impl CreatorPageTimer {
 
     pub fn set_view(&self, creation_type: UnitCreateType) {
         self.imp().set_view(creation_type)
+    }
+
+    pub fn advanced_mode(&self, advanced: bool) {
+        self.imp().advanced_mode(advanced);
     }
 }
 

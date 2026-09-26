@@ -41,27 +41,13 @@ circular</property>
                       </object>
                     </child>
                     <child>
-                      <object class="AdwComboRow" id="unit_after">
-                        <property name="enable-search">True</property>
-                        <property name="expression">
-                          <lookup name="string" type="GtkStringObject"/>
-                        </property>
-                        <property name="search-match-mode">substring</property>
-                        <property name="subtitle-selectable">True</property>
+                      <object class="MyDropDown" id="unit_after">
                         <property name="title">After</property>
-                        <property name="use-subtitle">True</property>
                       </object>
                     </child>
                     <child>
-                      <object class="AdwComboRow" id="unit_wants">
-                        <property name="enable-search">True</property>
-                        <property name="expression">
-                          <lookup name="string" type="GtkStringObject"/>
-                        </property>
-                        <property name="search-match-mode">substring</property>
-                        <property name="subtitle-selectable">True</property>
+                      <object class="MyDropDown" id="unit_wants">
                         <property name="title">Wants</property>
-                        <property name="use-subtitle">True</property>
                       </object>
                     </child>
                   </object>
@@ -87,6 +73,7 @@ flat</property>
                             <property name="css-classes">flat
 circular</property>
                             <property name="icon-name">list-add-symbolic</property>
+                            <property name="valign">center</property>
                             <signal name="clicked" handler="environment_add_clicked" swapped="True"/>
                           </object>
                         </child>
@@ -101,6 +88,7 @@ circular</property>
                           <object class="GtkButton">
                             <property name="css-classes">flat</property>
                             <property name="icon-name">folder-open-symbolic</property>
+                            <property name="valign">center</property>
                             <signal name="clicked" handler="exec_start_dialog_clicked" swapped="True"/>
                           </object>
                         </child>
@@ -131,6 +119,7 @@ flat</property>
                           <object class="GtkButton">
                             <property name="css-classes">flat</property>
                             <property name="icon-name">folder-open-symbolic</property>
+                            <property name="valign">center</property>
                             <signal name="clicked" handler="working_directory_search_dialog_clicked" swapped="True"/>
                           </object>
                         </child>
@@ -188,6 +177,25 @@ flat</property>
                     <child>
                       <object class="AdwEntryRow" id="memory_high_entry">
                         <property name="title">MemoryHigh</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwPreferencesGroup" id="install_group">
+                    <property name="header-suffix">
+                      <object class="GtkLinkButton">
+                        <property name="css-classes">circular
+flat</property>
+                        <property name="icon-name">dialog-information</property>
+                        <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html</property>
+                      </object>
+                    </property>
+                    <property name="title">Install</property>
+                    <child>
+                      <object class="SuggestionRow" id="wanted_by_entry">
+                        <property name="text">multi-user.target</property>
+                        <property name="title">WantedBy</property>
                       </object>
                     </child>
                   </object>
