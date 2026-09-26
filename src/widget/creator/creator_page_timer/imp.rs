@@ -3,11 +3,10 @@ use crate::{
     consts::WARNING_CSS,
     upgrade, upgrade_opt,
     widget::{
-        self,
         creator::{
             UnitCreateType, UnitCreatorWindow,
             creator_page_timer::{MonotonicTimer, validator::validate_timespan},
-            dropdown::SysDDropDown,
+            mydropdown::MyDropDown,
             unit_file::{ON_CALENDAR, TIMER, UnitFileData},
             unit_file_creator_page::UnitFileCreatorPage,
         },
@@ -15,7 +14,7 @@ use crate::{
     },
 };
 use adw::{
-    prelude::{ActionRowExt, ComboRowExt, EntryRowExt, PreferencesGroupExt, PreferencesRowExt},
+    prelude::{ActionRowExt, EntryRowExt, PreferencesGroupExt, PreferencesRowExt},
     subclass::prelude::*,
 };
 use gettextrs::pgettext;
@@ -43,10 +42,7 @@ pub struct CreatorPageTimerImp {
     creation_type: Cell<UnitCreateType>,
 
     #[template_child]
-    trigger_unit: TemplateChild<adw::ComboRow>,
-
-    #[template_child]
-    trigger_unit2: TemplateChild<SysDDropDown>,
+    trigger_unit: TemplateChild<MyDropDown>,
 
     #[template_child]
     description: TemplateChild<adw::EntryRow>,
@@ -82,7 +78,7 @@ impl ObjectSubclass for CreatorPageTimerImp {
 
     fn class_init(klass: &mut Self::Class) {
         //To force the read
-        widget::creator::dropdown::SysDDropDown::default();
+        // widget::creator::dropdown::SysDDropDown::default();
         klass.bind_template();
         //klass.bind_template_callbacks();
     }
@@ -96,10 +92,7 @@ impl ObjectSubclass for CreatorPageTimerImp {
 impl ObjectImpl for CreatorPageTimerImp {
     fn constructed(&self) {
         self.parent_constructed();
-
-        self.trigger_unit.connect_selected_item_notify(|_| {
-            // dbg!("Connect idx {}", a.selected());
-        });
+        self.trigger_unit.set_enable_search(true);
 
         let menu = gio::Menu::new();
 
@@ -149,7 +142,7 @@ impl CreatorPageTimerImp {
 
         let model = window.imp().get_trigger_units_model();
 
-        let model2 = gtk::SingleSelection::builder()
+        let single_selection_model = gtk::SingleSelection::builder()
             .can_unselect(true)
             .autoselect(false)
             .model(&model)
@@ -163,14 +156,10 @@ impl CreatorPageTimerImp {
             !string_object.string().ends_with(".timer")
         });
 
-        let filtered_model = gtk::FilterListModel::new(Some(model2), Some(filter.clone()));
+        let filtered_model =
+            gtk::FilterListModel::new(Some(single_selection_model), Some(filter.clone()));
         // self.trigger_unit.set_selected(gtk::INVALID_LIST_POSITION);
         self.trigger_unit.set_model(Some(&filtered_model));
-        let filtered_model = gtk::FilterListModel::new(Some(model), Some(filter));
-        self.trigger_unit2.set_model(Some(&filtered_model));
-
-        self.trigger_unit.set_selected(gtk::INVALID_LIST_POSITION);
-        // self.trigger_unit2.set_model(Some(&model3));
     }
 
     pub(super) fn create_actions(&self) {
@@ -344,13 +333,10 @@ impl CreatorPageTimerImp {
             UnitCreateType::Service => {}
             UnitCreateType::Timer => {
                 self.trigger_unit.set_visible(true);
-                self.trigger_unit2.set_visible(true);
             }
             UnitCreateType::TimerService => {
                 self.trigger_unit.set_visible(false);
-                self.trigger_unit2.set_visible(false);
                 self.trigger_unit.set_subtitle("");
-                self.trigger_unit2.set_subtitle("");
                 self.file_data.borrow_mut().remove_trigger_unit();
             }
             UnitCreateType::Mount => {}
@@ -369,7 +355,6 @@ impl CreatorPageTimerImp {
         file_data.set_description(self.description.text());
         file_data.set_persistent(self.persistent.is_active());
         // file_data.set_trigger_unit(self.trigger_unit.subtitle());
-        file_data.set_trigger_unit(self.trigger_unit2.subtitle());
 
         let timers = self
             .monotonic_timers
@@ -424,10 +409,8 @@ impl CreatorPageTimerImp {
 
         if matches!(window.creation_type(), UnitCreateType::Timer) {
             self.trigger_unit.set_subtitle(data.trigger_unit());
-            self.trigger_unit2.set_subtitle(data.trigger_unit());
         } else {
             self.trigger_unit.set_subtitle("");
-            self.trigger_unit2.set_subtitle("");
         }
 
         for (_, entry_row) in self.monotonic_timers.borrow_mut().drain(..) {

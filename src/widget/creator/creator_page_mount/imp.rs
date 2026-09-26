@@ -1,7 +1,6 @@
 use crate::widget::creator::{
-    UnitCreatorWindow, creator_page_mount::CreatorPageMount, dropdown::SysDDropDown,
-    suggestion::SuggestionRow, unit_file::UnitFileData,
-    unit_file_creator_page::UnitFileCreatorPage,
+    UnitCreatorWindow, creator_page_mount::CreatorPageMount, suggestion::SuggestionRow,
+    unit_file::UnitFileData, unit_file_creator_page::UnitFileCreatorPage,
 };
 use adw::{prelude::*, subclass::prelude::*};
 use base::file::commander;
@@ -25,12 +24,6 @@ use tracing::{debug, warn};
 #[template(resource = "/io/github/plrigaux/sysd-manager/creator_page_mount.ui")]
 #[properties(wrapper_type = super::CreatorPageMount)]
 pub struct CreatorPageMountImp {
-    #[template_child]
-    file_system_names_drop_down: TemplateChild<gtk::DropDown>,
-
-    #[template_child]
-    file_system_names_drop_down2: TemplateChild<SysDDropDown>,
-
     #[template_child]
     mount_type_suggestion: TemplateChild<SuggestionRow>,
 
@@ -109,19 +102,6 @@ impl ObjectImpl for CreatorPageMountImp {
                 };
                 let vec: Vec<&str> = file_system_names.iter().map(|s| s.as_str()).collect();
                 let string_list = gtk::StringList::new(&vec);
-                page.imp()
-                    .file_system_names_drop_down
-                    .set_model(Some(&string_list));
-
-                page.imp()
-                    .file_system_names_drop_down2
-                    .set_model(Some(&string_list));
-
-                // let list = gio::ListStore::new::<StandardOutput>();
-                // for fd in file_system_names.iter() {
-                //     let out = StandardOutput::new(fd.as_str());
-                //     list.append(&out);
-                // }
 
                 page.imp()
                     .mount_type_suggestion

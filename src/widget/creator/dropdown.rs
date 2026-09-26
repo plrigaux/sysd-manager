@@ -25,32 +25,20 @@ impl Default for SysDDropDown {
 
 mod imp {
     use std::{
-        cell::{OnceCell, RefCell},
-        sync::OnceLock,
+        cell::{Cell, OnceCell, RefCell},
+        collections::HashMap,
     };
 
     use adw::{prelude::ActionRowExt, subclass::prelude::*};
     use gettextrs::gettext;
     use glib::{
-        Quark,
         object::{Cast, CastNone, IsA},
         subclass::{object::ObjectImpl, types::ObjectSubclass},
     };
     use gtk::{ffi::GTK_INVALID_LIST_POSITION, prelude::*};
-    use tracing::{debug, error, info};
+    use tracing::{debug, error, info, warn};
 
     use crate::upgrade;
-
-    // static BOX: OnceLock<Quark> = OnceLock::new();
-
-    // fn box_quark() -> Quark {
-    //     *BOX.get_or_init(|| Quark::from_str("Box_h"))
-    // }
-    static LIST_ITEM: OnceLock<Quark> = OnceLock::new();
-
-    fn list_item_quark() -> Quark {
-        *LIST_ITEM.get_or_init(|| Quark::from_str("li_h"))
-    }
 
     #[derive(Default, gtk::CompositeTemplate)]
     #[template(resource = "/io/github/plrigaux/sysd-manager/dropdown.ui")]
@@ -76,6 +64,10 @@ mod imp {
         drop_list_view: OnceCell<gtk::ListView>,
 
         factory: RefCell<Option<gtk::ListItemFactory>>,
+
+        list_items: RefCell<HashMap<u32, gtk::ListItem>>,
+
+        old_selected: Cell<u32>,
     }
 
     impl SysDDropdownImp {
@@ -86,9 +78,11 @@ mod imp {
                 let filter_model = self.filter_list_model();
                 let single_selection = gtk::SingleSelection::builder()
                     .model(filter_model)
-                    .autoselect(false)
+                    .autoselect(true)
                     .can_unselect(true)
                     .build();
+
+                // single_selection.connect_selected_notify(|_| info!("p sel"));
                 let _ = self.popup_selection_model.set(single_selection);
                 self.popup_selection_model()
             }
@@ -103,6 +97,18 @@ mod imp {
                 let _ = self.filter_list_model.set(filter_list_model);
                 self.filter_list_model()
             }
+        }
+
+        fn add_item(&self, list_item: &gtk::ListItem) {
+            info!("ADD {}", list_item.position());
+            self.list_items
+                .borrow_mut()
+                .insert(list_item.position(), list_item.clone());
+        }
+
+        fn rem_item(&self, list_item: &gtk::ListItem) {
+            info!("REM {}", list_item.position());
+            self.list_items.borrow_mut().remove(&list_item.position());
         }
 
         fn selection_model(&self) -> &gtk::SingleSelection {
@@ -134,14 +140,26 @@ mod imp {
             }
         }
 
-        fn selection_changed(&self, _selection: &gtk::SingleSelection) {
-            info!("selection change");
-
+        fn selection_changed(&self, selection: &gtk::SingleSelection) {
             let selected = self.selection_model().selected();
 
+            info!("selection change {} -- {}", selected, selection.selected());
+
+            //to get 1:1
             self.clear_filter();
 
+            let old = self.old_selected.get();
             self.popup_selection_model().set_selected(selected);
+
+            if let Some(li) = self.list_items.borrow().get(&selected) {
+                self.selected_item_changed(li);
+            }
+
+            if let Some(li) = self.list_items.borrow().get(&old) {
+                self.selected_item_changed(li);
+            }
+
+            self.old_selected.set(selected);
         }
 
         fn selection_item_changed(&self, selection: &gtk::SingleSelection) {
@@ -310,8 +328,9 @@ mod imp {
                 });
 
                 let factory = gtk::SignalListItemFactory::new();
+                // let this = self.downgrade();
                 factory.connect_setup(move |_factory, item| {
-                    let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+                    let list_item = item.downcast_ref::<gtk::ListItem>().unwrap();
                     let row_label = gtk::Label::builder().xalign(0.0).width_chars(1).build();
 
                     let item_box = gtk::Box::builder()
@@ -325,7 +344,16 @@ mod imp {
                     item_box.append(&icon);
                     item_box.append(&row_label);
 
-                    item.set_child(Some(&item_box));
+                    list_item.set_child(Some(&item_box));
+
+                    // list_item.set_selectable(false);
+
+                    // let value = this.clone();
+                    // let handler = list_item.connect_selected_notify(move |list_item| {
+                    //     let value = upgrade!(value);
+                    //     // info!("--selected item change");
+                    //     value.selected_item_changed(list_item);
+                    // });
                 });
 
                 let this = self.downgrade();
@@ -341,21 +369,21 @@ mod imp {
                         label.set_label(&data.string());
                     };
 
-                    let value = this.clone();
-
-                    let handler = list_item.connect_selected_notify(move |list_item| {
-                        let value = upgrade!(value);
-                        info!("--selected item change");
-                        value.selected_item_changed(list_item);
-                    });
+                    // let handler = list_item.connect_selected_notify(move |list_item| {
+                    //     let value = upgrade!(value);
+                    //     // info!("--selected item change");
+                    //     value.selected_item_changed(list_item);
+                    // });
                     // let handler = list_item.connect_selectable_notify(move |list_item| {
                     //     value.imp().selected_item_changed(list_item);
                     // });
-                    unsafe { list_item.set_qdata(list_item_quark(), handler) };
+                    // unsafe { list_item.set_qdata(list_item_quark(), handler) };
 
                     let this = upgrade!(this);
                     this.selected_item_changed(list_item);
 
+                    // info!("li pos {}", list_item.position())
+                    this.add_item(list_item);
                     // let handler =
                     //     list_item.connect("notify::selected-item", false, move |list_item| {
                     //         info!("!!!selected item change");
@@ -367,14 +395,19 @@ mod imp {
                     // unsafe { list_item.set_qdata(box_quark(), handler) };
                 });
 
-                factory.connect_unbind(|_factory, item| {
+                let this = self.downgrade();
+                factory.connect_unbind(move |_factory, item| {
                     let list_item = item.downcast_ref::<gtk::ListItem>().unwrap();
+
+                    let this = upgrade!(this);
+                    this.selected_item_changed(list_item);
+                    this.rem_item(list_item);
 
                     // let box_item = list_item.child().and_downcast::<gtk::Box>().unwrap();
 
-                    if let Some(handler_id) = unsafe { list_item.steal_qdata(list_item_quark()) } {
-                        list_item.disconnect(handler_id);
-                    }
+                    // if let Some(handler_id) = unsafe { list_item.steal_qdata(list_item_quark()) } {
+                    //     list_item.disconnect(handler_id);
+                    // }
 
                     // if let Some(handler_id) = unsafe { box_item.steal_qdata(box_quark()) } {
                     //     box_item.disconnect(handler_id);
@@ -388,7 +421,10 @@ mod imp {
         }
 
         fn selected_item_changed(&self, list_item: &gtk::ListItem) {
-            let box_item = list_item.child().and_downcast::<gtk::Box>().unwrap();
+            let Some(box_item) = list_item.child().and_downcast::<gtk::Box>() else {
+                return;
+            };
+
             let image = box_item.first_child().and_downcast::<gtk::Image>().unwrap();
 
             let opacity = if self.get_selected_item() == list_item.item() {
@@ -441,6 +477,16 @@ mod imp {
 
         fn set_popup_visible(&self, visible: bool) {
             if visible {
+                let old = &self.old_selected.get();
+                if let Some(list_item) = self.list_items.borrow().get(old) {
+                    self.selected_item_changed(list_item);
+                } else {
+                    warn!("Not found {}", old);
+                    let heash = self.list_items.borrow();
+                    let mut vec: Vec<_> = heash.keys().collect();
+                    vec.sort();
+                    warn!("{:?}", vec);
+                }
                 self.popover().popup();
                 // self.drop_list_view().grab_focus();
                 self.search_entry().grab_focus();
@@ -456,6 +502,12 @@ mod imp {
             let popup_position = self.popup_selection_model().selected();
 
             info!("Item pos filt {} pos pop {}", position, popup_position);
+
+            if let Some(li) = self.list_items.borrow().get(&position) {
+                self.selected_item_changed(li);
+            } else {
+                warn!("#$%@#$^#");
+            }
 
             self.set_selected(popup_position);
         }
@@ -520,6 +572,7 @@ mod imp {
                 s.imp().popover().popup();
             });
             // self.current.set_model(Some(self.current_model()));
+            self.old_selected.set(GTK_INVALID_LIST_POSITION)
         }
     }
 

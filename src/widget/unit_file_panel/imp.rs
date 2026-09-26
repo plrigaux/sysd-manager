@@ -134,7 +134,6 @@ macro_rules! get_buffer {
     }};
 }
 
-#[gtk::template_callbacks]
 impl UnitFilePanelImp {
     pub fn set_text_search_entry(&self, text_search_entry: &TextSearchEntry) {
         let _ = self.text_search_entry.set(text_search_entry.clone());
@@ -1107,7 +1106,7 @@ impl ObjectSubclass for UnitFilePanelImp {
     fn class_init(klass: &mut Self::Class) {
         // The layout manager determines how child widgets are laid out.
         klass.bind_template();
-        klass.bind_template_callbacks();
+        // klass.bind_template_callbacks();
 
         klass.install_action("test_pizza", None, |a, b, c| {
             debug!("test a {:?} b {:?} c {:?}", a, b, c)

@@ -93,13 +93,7 @@ flat</property>
                     </property>
                     <property name="title">Timer</property>
                     <child>
-                      <object class="AdwComboRow" id="trigger_unit">
-                        <property name="enable-search">True</property>
-                        <property name="expression">
-                          <lookup name="string" type="GtkStringObject"/>
-                        </property>
-                        <property name="search-match-mode">substring</property>
-                        <property name="subtitle-selectable">True</property>
+                      <object class="MyDropDown" id="trigger_unit">
                         <property name="title">Unit</property>
                       </object>
                     </child>
@@ -107,11 +101,6 @@ flat</property>
                       <object class="AdwSwitchRow" id="persistent">
                         <property name="subtitle" translatable="yes">Catch up missed runs after boot </property>
                         <property name="title">Persistant</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="SysDDropDown" id="trigger_unit2">
-                        <property name="title">Unit</property>
                       </object>
                     </child>
                   </object>

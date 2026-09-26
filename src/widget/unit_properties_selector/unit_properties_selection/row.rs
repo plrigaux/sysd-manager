@@ -39,21 +39,18 @@ impl Default for UnitPropertiesSelectionRow {
 }
 
 mod imp {
-    use std::cell::RefCell;
-
+    use super::UnitPropertiesSelectionRow;
     use crate::widget::unit_properties_selector::{
         data_selection::UnitPropertySelection,
         unit_properties_selection::UnitPropertiesSelectionPanel,
     };
-
-    use super::UnitPropertiesSelectionRow;
     use gio::glib::Binding;
-    use glib::GString;
     use gtk::{
-        glib::{self},
+        glib::{self, GString},
         prelude::*,
         subclass::prelude::*,
     };
+    use std::cell::RefCell;
     use tracing::warn;
 
     #[derive(Default, gtk::CompositeTemplate)]

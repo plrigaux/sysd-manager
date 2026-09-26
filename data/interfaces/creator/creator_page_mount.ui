@@ -83,19 +83,6 @@ circular</property>
                       </object>
                     </child>
                     <child>
-                      <object class="AdwEntryRow" id="mount_type_edit">
-                        <property name="title">Type</property>
-                        <property name="title-selectable">True</property>
-                        <property name="use-underline">True</property>
-                        <child>
-                          <object class="GtkDropDown" id="file_system_names_drop_down">
-                            <property name="enable-search">True</property>
-                            <property name="valign">center</property>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                    <child>
                       <object class="AdwEntryRow">
                         <property name="title">Options</property>
                       </object>
@@ -103,11 +90,6 @@ circular</property>
                     <child>
                       <object class="SuggestionRow" id="mount_type_suggestion">
                         <property name="title">Type</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="SysDDropDown" id="file_system_names_drop_down2">
-                        <property name="title">TypeX</property>
                       </object>
                     </child>
                   </object>

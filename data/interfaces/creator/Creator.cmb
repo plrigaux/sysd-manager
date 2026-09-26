@@ -3,20 +3,24 @@
 <!-- Created with Cambalache 1.0.3 -->
 <cambalache-project version="1.0.0" target_tk="gtk-4.0" depends="libadwaita-1">
   <ui template-class="NavigationRow" filename="nav_row.ui" sha256="d9fcbae52fa3d574617072a2c088c7894632e0bffa363085a8b60e4ff8877865"/>
-  <ui template-class="SysDDropDown" filename="dropdown.ui" sha256="e339ef2815267ba21719abf70065f51c6ec3e9ffb802afc3db456149b9d266eb"/>
+  <ui template-class="SysDDropDown" filename="dropdown.ui" sha256="d36ed1a93c4e757f7eca4aaf37af14627ecc182d97aa3a01f6d8152ebbf058b3"/>
   <ui template-class="SuggestionRow" filename="suggestion_entry.ui" sha256="34c3bf7ae109e468a83216dcead05327ae91c6daa63126501eb2170ca1734dc3"/>
   <ui template-class="LaunchCreatorPage" filename="creator_end_page.ui" sha256="0493ed60d57494331bf956e02caf1d4faa5c5fdef68a8bfb1e9e3066c9a60029"/>
   <ui template-class="UnitFileCreatorPage" filename="unit_file_creator_page.ui" sha256="0c20499d7ecb908b18e85b5b32782c4cbccfe5eab05d7dce10bcdbbff8cdc0a5"/>
   <ui template-class="UnitFileCreatorFirstPage" filename="create_first.ui" sha256="e0aca36499e4760a641f828d41e5a1fc37896aeb25605e135891d4b3a041e46d"/>
+  <ui>
+    <content><![CDATA[<interface/>
+]]></content>
+  </ui>
+  <ui template-class="MyDropDown" filename="mydrop.ui" sha256="c4c170d6e18f97611455c83d477f1e6cdd69b0f0ff3fa460d7dd63a1f47b1d9f"/>
   <ui template-class="UnitCreatorWindow" filename="Creator.ui" sha256="d3640f2f9e979fae988c7535aba3c7eecbbdc0c45a96e67854401c630d2e3e85">
     <requires>NavigationRow</requires>
   </ui>
-  <ui template-class="CreatorPageTimer" filename="creator_page_timer.ui" sha256="84e23d7f70de943d0eb2ab53227f4b5a10cf8030937f2511b62b6bc026aa40df">
-    <requires>SysDDropDown</requires>
+  <ui template-class="CreatorPageTimer" filename="creator_page_timer.ui" sha256="4d6e0e0eaa213681e3c6c53d2dbe7aea0f769e601caaeac60252eed45b9cf9a4">
+    <requires>MyDropDown</requires>
   </ui>
-  <ui template-class="CreatorPageMount" filename="creator_page_mount.ui" sha256="19d8ce9caf5983314d61522cb11ab7963a3a67131dbde02cf11101c10c00fb23">
+  <ui template-class="CreatorPageMount" filename="creator_page_mount.ui" sha256="0c0874417f906ab8192ecfef3c74480d086c3c6116c7cd1191f609fda8d2665c">
     <requires>SuggestionRow</requires>
-    <requires>SysDDropDown</requires>
   </ui>
   <ui template-class="CreatorPageService" filename="creator_page_service.ui" sha256="5eef159ac22a13908856d458c5851dcbc357bcd0f3a829b6cbe8fddc88a07cce">
     <requires>SuggestionRow</requires>
