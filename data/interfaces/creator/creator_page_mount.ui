@@ -49,7 +49,7 @@ circular</property>
                         <property name="css-classes">circular
 flat</property>
                         <property name="icon-name">dialog-information-symbolic</property>
-                        <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html</property>
+                        <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.mount.html</property>
                       </object>
                     </property>
                     <property name="title">Mount</property>
@@ -83,13 +83,56 @@ circular</property>
                       </object>
                     </child>
                     <child>
+                      <object class="SuggestionRow" id="mount_type_suggestion">
+                        <property name="title">Type</property>
+                      </object>
+                    </child>
+                    <child>
                       <object class="AdwEntryRow">
                         <property name="title">Options</property>
                       </object>
                     </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwPreferencesGroup" id="mount_avanced_group">
+                    <property name="header-suffix">
+                      <object class="GtkLinkButton">
+                        <property name="css-classes">circular
+flat</property>
+                        <property name="icon-name">dialog-information-symbolic</property>
+                        <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.mount.html</property>
+                      </object>
+                    </property>
+                    <property name="title">Mount Advanced</property>
                     <child>
-                      <object class="SuggestionRow" id="mount_type_suggestion">
-                        <property name="title">Type</property>
+                      <object class="AdwSwitchRow" id="lazy_unmount">
+                        <property name="title">Lazy Unmount</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwSwitchRow" id="sloppy_options">
+                        <property name="title">Sloppy Options</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwSwitchRow" id="read_write_only">
+                        <property name="title">Read Write Only</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwSwitchRow" id="force_unmount">
+                        <property name="title">Force Unmount</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwEntryRow" id="timeout_sec">
+                        <property name="title">Timeout Sec</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwEntryRow" id="directory_mode">
+                        <property name="title">Directory Mode</property>
                       </object>
                     </child>
                   </object>

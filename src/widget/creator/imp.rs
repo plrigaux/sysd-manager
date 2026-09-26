@@ -613,14 +613,17 @@ impl ObjectImpl for UnitCreatorWindowImp {
         let advanced_mode = settings.boolean(&ACTION_CREATOR_AVANCED_MODE[8..]);
         let service_page = self.service_page.get().unwrap().clone();
         service_page.advanced_mode(advanced_mode);
+        let mount_page = self.mount_page.get().unwrap().clone();
+        mount_page.advanced_mode(advanced_mode);
         let action = settings.create_action(&ACTION_CREATOR_AVANCED_MODE[8..]);
         action.connect_state_notify(move |action| {
             let advanced = action
                 .state()
                 .and_then(|v| v.get::<bool>())
                 .unwrap_or_default();
-            info!("Advance Mode {}", advanced);
+            info!("Advanced Mode {}", advanced);
             service_page.advanced_mode(advanced);
+            mount_page.advanced_mode(advanced)
         });
 
         settings

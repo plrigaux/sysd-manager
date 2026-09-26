@@ -27,11 +27,20 @@ pub struct CreatorPageMountImp {
     #[template_child]
     mount_type_suggestion: TemplateChild<SuggestionRow>,
 
+    #[template_child]
+    mount_avanced_group: TemplateChild<adw::PreferencesGroup>,
+
     pub(super) window: OnceCell<WeakRef<UnitCreatorWindow>>,
 
     pub(super) file_data: RefCell<UnitFileData>,
 
     file_system_names: RefCell<BTreeSet<String>>,
+}
+
+impl CreatorPageMountImp {
+    pub fn advanced_mode(&self, advanced: bool) {
+        self.mount_avanced_group.set_visible(advanced);
+    }
 }
 
 #[glib::object_subclass]
@@ -112,8 +121,6 @@ impl ObjectImpl for CreatorPageMountImp {
         });
     }
 }
-
-impl CreatorPageMountImp {}
 
 #[gtk::template_callbacks]
 impl CreatorPageMountImp {

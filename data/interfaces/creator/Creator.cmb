@@ -19,7 +19,7 @@
   <ui template-class="CreatorPageTimer" filename="creator_page_timer.ui" sha256="4d6e0e0eaa213681e3c6c53d2dbe7aea0f769e601caaeac60252eed45b9cf9a4">
     <requires>MyDropDown</requires>
   </ui>
-  <ui template-class="CreatorPageMount" filename="creator_page_mount.ui" sha256="0c0874417f906ab8192ecfef3c74480d086c3c6116c7cd1191f609fda8d2665c">
+  <ui template-class="CreatorPageMount" filename="creator_page_mount.ui" sha256="572503a4ca2647c55243c05c46b459c95f9ac63f273ac9707ce353cc53ddf2fa">
     <requires>SuggestionRow</requires>
   </ui>
   <ui template-class="CreatorPageService" filename="creator_page_service.ui" sha256="5eef159ac22a13908856d458c5851dcbc357bcd0f3a829b6cbe8fddc88a07cce">
