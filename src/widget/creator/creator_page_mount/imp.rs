@@ -76,6 +76,12 @@ impl CreatorPageMountImp {
     }
 }
 
+impl CreatorPageMountImp {
+    pub fn advanced_mode(&self, advanced: bool) {
+        self.mount_avanced_group.set_visible(advanced);
+    }
+}
+
 #[glib::object_subclass]
 impl ObjectSubclass for CreatorPageMountImp {
     const NAME: &'static str = "CreatorPageMount";
