@@ -11,6 +11,14 @@ If this project saves you or your company time, consider [sponsoring](https://gi
 
 - A mount wizard
 
+## [2.23.0] - 2026-10-02
+
+### Added
+- Mount Unit Creation Wizard
+
+### Fixed
+- Various Creation Wizard Issues
+
 ## [2.22.1] - 2026-09-14
 
 ### Changed
