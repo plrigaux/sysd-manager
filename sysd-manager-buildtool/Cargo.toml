@@ -1,11 +1,13 @@
 [package]
-name = "tool"
+name = "sysd-manager-buildtool"
 version = "2.23.0"
 edition.workspace = true
 rust-version.workspace = true
 authors.workspace = true
 license.workspace = true
 repository.workspace = true
+description = "Building tools for sysd-manager."
+keywords = ["dbus", "sysd-manager", "changelogs"]
 
 [lib]
 name = "tool_lib"

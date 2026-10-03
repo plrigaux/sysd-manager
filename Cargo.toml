@@ -7,7 +7,7 @@ members = [
   "sysd-manager-comcontroler",
   "sysd-manager-test-base",
   "sysd-manager-base",
-  "tool",
+  "sysd-manager-buildtool",
 ]
 
 [workspace.package]
@@ -125,7 +125,7 @@ test-base.workspace = true
 #cargo-generate-rpm = "0.14.1"
 # quick-xml = "0.42"ll
 translating = { version = "0.4.2", path = "./sysd-manager-translating", package = "sysd-manager-translating" }
-tool = { version = "2.23.0", path = "./tool", package = "tool" }
+tool = { version = "2.23.0", path = "./sysd-manager-buildtool", package = "sysd-manager-buildtool" }
 
 [package.metadata.deb]
 section = "utils"

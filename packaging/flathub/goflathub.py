@@ -336,7 +336,7 @@ def set_required_files(from_git: bool):
             "sysd-manager-comcontroler",
             "sysd-manager-test-base",
             "sysd-manager-base",
-            "tool",
+            "sysd-manager-buildtool",
             "CHANGELOG.md",
             f"{FLATPACK_BUILD_DIR}",
         ]

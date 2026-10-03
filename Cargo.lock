@@ -2003,6 +2003,7 @@ dependencies = [
  "sourceview5",
  "strum",
  "sysd-manager-base",
+ "sysd-manager-buildtool",
  "sysd-manager-comcontroler",
  "sysd-manager-test-base",
  "sysd-manager-translating",
@@ -2010,7 +2011,6 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "toml",
- "tool",
  "tracing",
  "tracing-journald",
  "tracing-subscriber",
@@ -2020,7 +2020,7 @@ dependencies = [
 
 [[package]]
 name = "sysd-manager-base"
-version = "2.22.0"
+version = "2.23.0"
 dependencies = [
  "constcat",
  "gettext-rs",
@@ -2037,8 +2037,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "sysd-manager-buildtool"
+version = "2.23.0"
+dependencies = [
+ "quick-xml",
+ "regex",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
 name = "sysd-manager-comcontroler"
-version = "2.22.0"
+version = "2.23.0"
 dependencies = [
  "chrono",
  "enumflags2",
@@ -2317,16 +2327,6 @@ name = "toml_writer"
 version = "1.1.2+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7d56353a2a665ad0f41a421187180aab746c8c325620617ad883a99a1cbe66d2"
-
-[[package]]
-name = "tool"
-version = "2.23.0"
-dependencies = [
- "quick-xml",
- "regex",
- "tracing",
- "tracing-subscriber",
-]
 
 [[package]]
 name = "tower"
