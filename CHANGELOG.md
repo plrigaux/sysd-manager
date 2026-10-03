@@ -16,6 +16,9 @@ If this project saves you or your company time, consider [sponsoring](https://gi
 ### Added
 - Mount Unit Creation Wizard
 
+### Changed
+- Ukrainian translation
+
 ### Fixed
 - Various Creation Wizard Issues
 
