@@ -237,6 +237,7 @@
         <choice value="service"/>
         <choice value="timer"/>
         <choice value="timer_service"/>
+        <choice value="mount"/>
       </choices>
       <default>'service'</default>
       <summary>The type of unit to create</summary>
@@ -380,6 +381,10 @@
     <key name="pref-journal-wrap-word" type="b">
       <default>false</default>
       <summary>Warp word on journal</summary>
+    </key>
+    <key name="creator-advanced-mode" type="b">
+      <default>false</default>
+      <summary>Avanced mode for create units</summary>
     </key>
   </schema>
 </schemalist>

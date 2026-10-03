@@ -25,6 +25,7 @@ mod imp {
     use super::*;
     use adw::subclass::prelude::*;
     use gtk::{glib, prelude::WidgetExt};
+    use tracing::debug;
 
     #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
     #[template(resource = "/io/github/plrigaux/sysd-manager/nav_row.ui")]
@@ -43,44 +44,31 @@ mod imp {
     }
 
     impl NavigationRowImp {
-        pub(super) fn set_page_type(&self, page: PageType, creation_type: UnitCreateType) {
-            match (page, creation_type) {
-                (PageType::Start, _) => {
+        pub(super) fn set_page_type(&self, page: PageType, _creation_type: UnitCreateType) {
+            debug!("Set Page Type {:?}", page);
+            match page {
+                PageType::Start => {
                     self.prev_button.set_visible(false);
                     self.file_button.set_visible(false);
                     self.next_button.set_visible(true);
                     self.create_button.set_visible(false);
                     self.donate_button.set_visible(false);
                 }
-                (PageType::Service, _) => {
+                PageType::Service | PageType::Mount | PageType::Timer => {
                     self.prev_button.set_visible(true);
                     self.file_button.set_visible(true);
                     self.next_button.set_visible(true);
                     self.create_button.set_visible(false);
                     self.donate_button.set_visible(false);
                 }
-                (PageType::Timer, _) => {
-                    self.prev_button.set_visible(true);
-                    self.file_button.set_visible(true);
-                    self.next_button.set_visible(true);
-                    self.create_button.set_visible(false);
-                    self.donate_button.set_visible(false);
-                }
-                (PageType::Launch, _) => {
+                PageType::Launch => {
                     self.prev_button.set_visible(true);
                     self.file_button.set_visible(false);
                     self.next_button.set_visible(false);
                     self.create_button.set_visible(true);
                     self.donate_button.set_visible(true);
                 }
-                (PageType::ServiceFile, _) => {
-                    self.prev_button.set_visible(true);
-                    self.file_button.set_visible(false);
-                    self.next_button.set_visible(true);
-                    self.create_button.set_visible(false);
-                    self.donate_button.set_visible(false);
-                }
-                (PageType::TimerFile, _) => {
+                PageType::ServiceFile | PageType::TimerFile | PageType::MountFile => {
                     self.prev_button.set_visible(true);
                     self.file_button.set_visible(false);
                     self.next_button.set_visible(true);

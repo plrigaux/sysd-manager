@@ -5,8 +5,8 @@ use std::cmp::Ordering::{Equal, Greater, Less};
 use std::fmt::Write;
 use tracing::warn;
 
-use crate::widget::creator::service_creator_page::ENVIRONMENT;
-use crate::widget::creator::timer_creator_page::MonotonicTimer;
+use crate::widget::creator::creator_page_service::ENVIRONMENT;
+use crate::widget::creator::creator_page_timer::MonotonicTimer;
 
 pub const STANDARD_OUTPUT: &str = "StandardOutput";
 pub const STANDARD_ERROR: &str = "StandardError";
@@ -55,7 +55,62 @@ const UNIT: &str = "Unit";
 pub const TIMER: &str = "Timer";
 const SERVICE: &str = "Service";
 const INSTALL: &str = "Install";
+const MOUNT: &str = "Mount";
 pub const ON_CALENDAR: &str = "OnCalendar";
+
+// macro_rules! get_set_str {
+//     ($field:ident, $section:ident, $key:expr) => {
+//         // Getter
+//         pub fn $field(&self) -> &str {
+//             self.get_str($section, $key)
+//         }
+
+//         // Setter
+//         paste::paste! {
+//             pub fn [<set_ $field>](&mut self, value: impl AsRef<str>) {
+//                self.set_str($section, $key, Some(value.as_ref()));
+//             }
+//         }
+//     };
+// }
+macro_rules! get_set_str {
+    // ($section:ident, $key:ident) => {
+    //     get_set_str!($section, $key,*)
+    // };
+    ($section:ident, $key:ident $($suffix:ident), *) => {
+        // Getter
+        paste::paste! {
+            pub fn [<$key:snake $($suffix),*>](&self) -> &str {
+                self.get_str($section, stringify!($key))
+            }
+        }
+
+        // Setter
+        paste::paste! {
+            pub fn [<set_ $key:snake $($suffix),*>](&mut self, value: impl AsRef<str>) {
+               self.set_str($section, stringify!($key), Some(value.as_ref()));
+            }
+        }
+    };
+}
+
+macro_rules! get_set_bool {
+    ($section:ident, $key:ident) => {
+        // Getter
+        paste::paste! {
+            pub fn [< $key:snake >](&self) -> bool {
+                self.get_bool($section, stringify!($key))
+            }
+        }
+
+        // Setter
+        paste::paste! {
+            pub fn [<set_ $key:snake>](&mut self, value: bool) {
+               self.set_bool($section, stringify!($key), value);
+            }
+        }
+    };
+}
 
 #[derive(Debug, Default)]
 pub struct UnitFileData(IndexMap<FileEntry, Vec<String>>);
@@ -170,13 +225,7 @@ impl UnitFileData {
         self.0.get(&FileEntryRef::new(section, attribute))
     }
 
-    pub fn set_description(&mut self, description: impl AsRef<str>) {
-        self.set_str(UNIT, "Description", Some(description.as_ref()));
-    }
-
-    pub(crate) fn description(&self) -> &str {
-        self.get_str(UNIT, "Description")
-    }
+    get_set_str!(UNIT, Description);
 
     fn get_str(&self, section: &str, attribute: &str) -> &str {
         if let Some(vector) = self.get(section, attribute)
@@ -196,21 +245,9 @@ impl UnitFileData {
         }
     }
 
-    pub fn set_persistent(&mut self, persistent: bool) {
-        self.set_bool(TIMER, "Persistent", persistent);
-    }
-
-    pub fn persistent(&self) -> bool {
-        self.get_bool(TIMER, "Persistent")
-    }
-
-    pub fn working_directory(&self) -> &str {
-        self.get_str(SERVICE, "WorkingDirectory")
-    }
-
-    pub fn set_working_directory(&mut self, value: impl AsRef<str>) {
-        self.set_str(SERVICE, "WorkingDirectory", Some(value.as_ref()));
-    }
+    get_set_bool!(TIMER, Persistent);
+    get_set_str!(SERVICE, WorkingDirectory);
+    get_set_str!(INSTALL, WantedBy);
 
     pub fn after(&self) -> &str {
         self.get_str(UNIT, "After")
@@ -360,6 +397,17 @@ impl UnitFileData {
     pub fn set_standard_error(&mut self, value: glib::GString) {
         self.set_str(SERVICE, STANDARD_ERROR, Some(value.as_str()));
     }
+
+    get_set_str!(MOUNT, What);
+    get_set_str!(MOUNT, Where x);
+    get_set_str!(MOUNT, Options);
+    get_set_str!(MOUNT, Type x);
+    get_set_str!(MOUNT, DirectoryMode);
+    get_set_str!(MOUNT, TimeoutSec);
+    get_set_bool!(MOUNT, LazyUnmount);
+    get_set_bool!(MOUNT, SloppyOptions);
+    get_set_bool!(MOUNT, ReadWriteOnly);
+    get_set_bool!(MOUNT, ForceUnmount);
 }
 
 fn write_section_header(out: &mut String, section: &str) {

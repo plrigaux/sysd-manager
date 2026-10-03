@@ -227,15 +227,35 @@ def create_appdir(create_apprun=True):
             f"{APP_DIR}/io.github.plrigaux.sysd-manager.desktop",
         ]
     )
+    # bc.cmd_run(
+    #     [
+    #         "install",
+    #         "-Dm644",
+    #         "./target/loc/io.github.plrigaux.sysd-manager.metainfo.xml",
+    #         "-T",
+    #         f"{APP_DIR}/usr/share/metainfo/io.github.plrigaux.sysd-manager.appdata.xml",
+    #     ]
+    # )
     bc.cmd_run(
         [
             "install",
             "-Dm644",
             "./target/loc/io.github.plrigaux.sysd-manager.metainfo.xml",
-            "-T",
-            f"{APP_DIR}/usr/share/metainfo/io.github.plrigaux.sysd-manager.appdata.xml",
+            "-t",
+            f"{APP_DIR}/usr/share/metainfo",
         ]
     )
+
+    bc.cmd_run(
+        [
+            "install",
+            "-Dm644",
+            "./data/metainfo/io.github.plrigaux.sysd-manager.releases.xml",
+            "-T",
+            f"{APP_DIR}/usr/share/metainfo/releases/io.github.plrigaux.sysd-manager.releases.xml",
+        ]
+    )
+
     bc.cmd_run(["cp", "-r", "./target/locale", f"{APP_DIR}/usr/share/"])
 
     print(f"{color.CYAN}{color.BOLD}Compile schemas{color.END} ")

@@ -2,14 +2,15 @@ use super::*;
 use crate::{
     upgrade, upgrade_opt,
     widget::creator::{
-        CreateUnitErr, UnitCreateType,
-        service_creator_page::standard_output::output_file_descriptor,
+        self, CreateUnitErr, UnitCreateType,
+        creator_page_service::standard_output::{StandardOutput, output_file_descriptor},
+        mydropdown::MyDropDown,
         suggestion::SuggestionRow,
         unit_file::{STANDARD_ERROR, STANDARD_OUTPUT, UnitFileData},
     },
 };
 use adw::{
-    prelude::{ActionRowExt, ComboRowExt, PreferencesGroupExt, PreferencesRowExt},
+    prelude::{ActionRowExt, ComboRowExt, PreferencesGroupExt},
     subclass::prelude::*,
 };
 use gettextrs::{gettext, pgettext};
@@ -29,9 +30,9 @@ const VALIDATE_CPU_QUOTA_REGEX: &str = r"\d+%";
 const VALIDATE_MEMORY_HIGH_REGEX: &str = r"^[1-9][0-9]*[%KMGT]?$";
 
 #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
-#[template(resource = "/io/github/plrigaux/sysd-manager/service_creator_page.ui")]
-#[properties(wrapper_type = super::ServiceCreatorPage)]
-pub struct ServiceCreatorPageImp {
+#[template(resource = "/io/github/plrigaux/sysd-manager/creator_page_service.ui")]
+#[properties(wrapper_type = super::CreatorPageService)]
+pub struct CreatorPageServiceImp {
     #[property(get, set, default)]
     creation_type: Cell<UnitCreateType>,
 
@@ -51,10 +52,10 @@ pub struct ServiceCreatorPageImp {
     restart_policy_combo: TemplateChild<adw::ComboRow>,
 
     #[template_child]
-    unit_wants: TemplateChild<adw::ComboRow>,
+    unit_wants: TemplateChild<MyDropDown>,
 
     #[template_child]
-    unit_after: TemplateChild<adw::ComboRow>,
+    unit_after: TemplateChild<MyDropDown>,
 
     #[template_child]
     service_group: TemplateChild<adw::PreferencesGroup>,
@@ -77,6 +78,15 @@ pub struct ServiceCreatorPageImp {
     #[template_child]
     standard_error_entry: TemplateChild<SuggestionRow>,
 
+    #[template_child]
+    resource_control_group: TemplateChild<adw::PreferencesGroup>,
+
+    #[template_child]
+    wanted_by_entry: TemplateChild<SuggestionRow>,
+
+    #[template_child]
+    install_group: TemplateChild<adw::PreferencesGroup>,
+
     pub(super) window: OnceCell<WeakRef<UnitCreatorWindow>>,
 
     pub(super) file_data: RefCell<UnitFileData>,
@@ -88,9 +98,9 @@ pub struct ServiceCreatorPageImp {
 }
 
 #[glib::object_subclass]
-impl ObjectSubclass for ServiceCreatorPageImp {
-    const NAME: &'static str = "ServiceCreatorPage";
-    type Type = ServiceCreatorPage;
+impl ObjectSubclass for CreatorPageServiceImp {
+    const NAME: &'static str = "CreatorPageService";
+    type Type = CreatorPageService;
     type ParentType = adw::NavigationPage;
 
     fn class_init(klass: &mut Self::Class) {
@@ -106,14 +116,14 @@ impl ObjectSubclass for ServiceCreatorPageImp {
 }
 
 #[glib::derived_properties]
-impl ObjectImpl for ServiceCreatorPageImp {
+impl ObjectImpl for CreatorPageServiceImp {
     fn constructed(&self) {
         self.parent_constructed();
 
         let event_focus = gtk::EventControllerFocus::new();
         event_focus.connect_leave(|event| {
             if let Some(entry) = event.widget().and_downcast_ref::<adw::EntryRow>() {
-                ServiceCreatorPageImp::validate_entry_strat(entry);
+                CreatorPageServiceImp::validate_entry_exec_start(entry);
             }
         });
         self.exec_start_entry.add_controller(event_focus);
@@ -181,7 +191,7 @@ impl ObjectImpl for ServiceCreatorPageImp {
         let event_focus = gtk::EventControllerFocus::new();
         event_focus.connect_leave(move |event| {
             if let Some(entry) = event.widget().and_downcast_ref::<adw::EntryRow>() {
-                ServiceCreatorPageImp::validate_cpu_quota(this.imp(), entry);
+                CreatorPageServiceImp::validate_cpu_quota(this.imp(), entry);
             }
         });
 
@@ -191,7 +201,7 @@ impl ObjectImpl for ServiceCreatorPageImp {
         let event_focus = gtk::EventControllerFocus::new();
         event_focus.connect_leave(move |event| {
             if let Some(entry) = event.widget().and_downcast_ref::<adw::EntryRow>() {
-                ServiceCreatorPageImp::validate_memory_high(this.imp(), entry);
+                CreatorPageServiceImp::validate_memory_high(this.imp(), entry);
             }
         });
 
@@ -233,11 +243,21 @@ impl ObjectImpl for ServiceCreatorPageImp {
         self.standard_output_entry.set_factory(Some(&factory));
         self.standard_error_entry.set_factory(Some(&factory));
 
+        let expression = gtk::PropertyExpression::new(
+            StandardOutput::static_type(),
+            None::<gtk::Expression>,
+            "text",
+        );
+
+        self.standard_output_entry
+            .set_expression(expression.clone());
+        self.standard_error_entry.set_expression(expression);
+
         let event_focus = gtk::EventControllerFocus::new();
         let this = self.obj().clone();
         event_focus.connect_leave(move |event| {
             if let Some(entry) = event.widget().and_downcast_ref::<adw::EntryRow>() {
-                ServiceCreatorPageImp::validate_standard_output_and_error(
+                CreatorPageServiceImp::validate_standard_output_and_error(
                     this.imp(),
                     entry,
                     STANDARD_OUTPUT,
@@ -250,7 +270,7 @@ impl ObjectImpl for ServiceCreatorPageImp {
         let this = self.obj().clone();
         event_focus.connect_leave(move |event| {
             if let Some(entry) = event.widget().and_downcast_ref::<adw::EntryRow>() {
-                ServiceCreatorPageImp::validate_standard_output_and_error(
+                CreatorPageServiceImp::validate_standard_output_and_error(
                     this.imp(),
                     entry,
                     STANDARD_ERROR,
@@ -261,8 +281,8 @@ impl ObjectImpl for ServiceCreatorPageImp {
     }
 }
 
-impl ServiceCreatorPageImp {
-    fn validate_entry_strat(entry: &adw::EntryRow) {
+impl CreatorPageServiceImp {
+    fn validate_entry_exec_start(entry: &adw::EntryRow) {
         let text = entry.text();
 
         let name_err = if text.is_empty() {
@@ -283,13 +303,13 @@ impl ServiceCreatorPageImp {
             }
         };
 
-        Self::apply_validation_result(entry, name_err, "WorkingDirectory");
+        CreateUnitErr::apply_validation_result(entry, &name_err, "ExecStart");
     }
 
     fn validate_working_directory(&self, entry: &adw::EntryRow) {
         let text = entry.text();
 
-        let name_err = match get_file_path(text.as_str()) {
+        let name_err = match creator::get_file_path(text.as_str()) {
             Ok(text) => {
                 if text.is_empty() {
                     CreateUnitErr::NoErr
@@ -312,8 +332,7 @@ impl ServiceCreatorPageImp {
 
             Err(err) => err,
         };
-
-        Self::apply_validation_result(entry, name_err, "ExecStart");
+        CreateUnitErr::apply_validation_result(entry, &name_err, "WorkingDirectory");
     }
 
     fn cpu_quota_regex(&self) -> &Regex {
@@ -334,7 +353,7 @@ impl ServiceCreatorPageImp {
             CreateUnitErr::NoErr
         };
 
-        Self::apply_validation_result(entry, name_err, cpuquota);
+        CreateUnitErr::apply_validation_result(entry, &name_err, cpuquota);
     }
 
     fn validate_standard_output_and_error(&self, entry: &adw::EntryRow, attribute: &str) {
@@ -375,7 +394,7 @@ impl ServiceCreatorPageImp {
             name_err
         };
 
-        Self::apply_validation_result(entry, name_err, attribute);
+        CreateUnitErr::apply_validation_result(entry, &name_err, attribute);
     }
 
     fn validate_path(path: &str) -> CreateUnitErr {
@@ -414,20 +433,7 @@ impl ServiceCreatorPageImp {
             CreateUnitErr::NoErr
         };
 
-        Self::apply_validation_result(entry, name_err, cpuquota);
-    }
-
-    fn apply_validation_result(entry: &adw::EntryRow, name_err: CreateUnitErr, prefix: &str) {
-        match name_err {
-            CreateUnitErr::NoErr => {
-                entry.remove_css_class("warning");
-            }
-            _ => {
-                entry.add_css_class("warning");
-            }
-        }
-
-        entry.set_title(&name_err.title_err(prefix));
+        CreateUnitErr::apply_validation_result(entry, &name_err, cpuquota);
     }
 
     fn add_track(&self, param: &str, widget: &impl IsA<gtk::Widget>) {
@@ -460,6 +466,17 @@ impl ServiceCreatorPageImp {
         self.unit_wants.set_model(Some(&model));
         self.unit_after.set_model(Some(&model));
     }
+
+    pub(super) fn advanced_mode(&self, advanced: bool) {
+        self.unit_wants.set_visible(advanced);
+        self.unit_after.set_visible(advanced);
+        self.environment_entry.set_visible(advanced);
+        self.working_directory_entry.set_visible(advanced);
+        self.memory_high_entry.set_visible(advanced);
+        self.cpu_quota_entry.set_visible(advanced);
+        self.resource_control_group.set_visible(advanced);
+        self.install_group.set_visible(advanced);
+    }
 }
 
 fn is_executable(path: &Path) -> bool {
@@ -471,7 +488,7 @@ fn is_executable(path: &Path) -> bool {
 }
 
 #[gtk::template_callbacks]
-impl ServiceCreatorPageImp {
+impl CreatorPageServiceImp {
     #[template_callback]
     fn working_directory_search_dialog_clicked(&self, _button: gtk::Button) {
         let file_dialog = gtk::FileDialog::builder()
@@ -482,9 +499,9 @@ impl ServiceCreatorPageImp {
         let create_service_page = self.obj().clone();
 
         let text = self.working_directory_entry.text();
-        let text = get_file_path(&text).unwrap_or_default();
+        let text = creator::get_file_path(&text).unwrap_or_default();
         if text.is_empty() {
-            set_initial_folder(&file_dialog);
+            creator::set_initial_folder(&file_dialog);
         } else {
             let path = Path::new(text);
             if path.exists() {
@@ -492,7 +509,7 @@ impl ServiceCreatorPageImp {
                 file_dialog.set_initial_file(Some(&file));
             } else {
                 println!("not ex {text}");
-                set_initial_folder(&file_dialog);
+                creator::set_initial_folder(&file_dialog);
             }
         }
 
@@ -523,9 +540,9 @@ impl ServiceCreatorPageImp {
         let create_service_page = self.obj().clone();
 
         let text = self.exec_start_entry.text();
-        let text = get_file_path(&text).unwrap_or_default();
+        let text = creator::get_file_path(&text).unwrap_or_default();
         if text.is_empty() {
-            set_initial_folder(&file_dialog);
+            creator::set_initial_folder(&file_dialog);
         } else {
             let path = Path::new(text);
             if path.exists() {
@@ -538,8 +555,8 @@ impl ServiceCreatorPageImp {
                     file_dialog.set_initial_file(Some(&file));
                 }
             } else {
-                // println!("not ex");
-                set_initial_folder(&file_dialog);
+                warn!("not exist {}", path.display());
+                creator::set_initial_folder(&file_dialog);
             }
         }
 
@@ -625,7 +642,7 @@ impl ServiceCreatorPageImp {
     }
 }
 
-impl ServiceCreatorPageImp {
+impl CreatorPageServiceImp {
     pub(super) fn update_view(&self, page: &UnitFileCreatorPage) {
         self.fill_data();
         let data = self.file_data.borrow();
@@ -662,13 +679,7 @@ impl ServiceCreatorPageImp {
         file_data.set_memory_high(self.memory_high_entry.text());
         file_data.set_standard_output(self.standard_output_entry.text());
         file_data.set_standard_error(self.standard_error_entry.text());
-
-        let restart = self
-            .restart_policy_combo
-            .selected_item()
-            .and_downcast_ref::<gtk::StringObject>()
-            .map(|s| s.string());
-        file_data.set_restart(restart.unwrap_or_default());
+        file_data.set_wanted_by(self.wanted_by_entry.text());
 
         file_data.sort();
     }
@@ -755,14 +766,15 @@ impl ServiceCreatorPageImp {
 
         self.standard_output_entry.set_text2(data.standard_output());
         self.standard_error_entry.set_text2(data.standard_error());
+        self.wanted_by_entry.set_text(data.wanted_by());
 
         self.file_data.replace(data);
     }
 }
 
-impl WidgetImpl for ServiceCreatorPageImp {}
+impl WidgetImpl for CreatorPageServiceImp {}
 
-impl NavigationPageImpl for ServiceCreatorPageImp {}
+impl NavigationPageImpl for CreatorPageServiceImp {}
 
 fn escape(file_path: &mut String) {
     if file_path.contains(char::is_whitespace) {
@@ -771,62 +783,11 @@ fn escape(file_path: &mut String) {
     }
 }
 
-fn set_initial_folder(file_dialog: &gtk::FileDialog) {
-    if let Ok(home) = std::env::var("HOME") {
-        let path = Path::new(&home);
-        let dir = gio::File::for_path(path);
-        file_dialog.set_initial_folder(Some(&dir));
-    }
-}
-
-fn get_file_path(text: &str) -> Result<&str, CreateUnitErr> {
-    let text = text.trim_start();
-    let mut begin = 0;
-    let mut end = text.len();
-    let mut in_quotes = false;
-
-    for (idx, char) in text.char_indices() {
-        if char.is_whitespace() && !in_quotes {
-            end = idx;
-            break;
-        } else if char == '"' {
-            if idx == 0 {
-                in_quotes = true;
-                begin = 1;
-            } else {
-                end = idx;
-                in_quotes = false;
-                break;
-            }
-        }
-    }
-    if in_quotes {
-        return Err(CreateUnitErr::Malformed);
-    }
-    Ok(&text[begin..end])
-}
-
 #[cfg(test)]
 mod tests {
     use test_base::init_logs;
 
     use super::*;
-
-    #[test]
-    fn test_get_file() {
-        init_logs();
-        assert_eq!(get_file_path("text"), Ok("text"));
-        assert_eq!(get_file_path("  text"), Ok("text"));
-        assert_eq!(get_file_path("  text   "), Ok("text"));
-        assert_eq!(get_file_path("  text -f  "), Ok("text"));
-        assert_eq!(get_file_path(r#""text asdf" xxx"#), Ok("text asdf"));
-        assert_eq!(get_file_path("\"\"text"), Ok(""));
-
-        assert_eq!(
-            get_file_path("/home/plr/bin/AppDir/etc"),
-            Ok("/home/plr/bin/AppDir/etc")
-        );
-    }
 
     #[test]
     fn test_cpu_quota() {

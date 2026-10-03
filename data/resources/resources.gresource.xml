@@ -3,6 +3,7 @@
   <gresource prefix="/io/github/plrigaux/sysd-manager/">
     <file compressed="true" alias="io.github.plrigaux.sysd-manager.svg">icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="dropdown.ui">interfaces/creator/dropdown.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks" alias="mydropdown.ui">interfaces/creator/mydrop.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="suggestion_entry.ui">interfaces/creator/suggestion_entry.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="grid_cell.ui">interfaces/grid_cell.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="ex_menu_button.ui">interfaces/ex_menu_button.ui</file>
@@ -34,8 +35,9 @@
     <file compressed="true" preprocess="xml-stripblanks" alias="nav_row.ui">interfaces/creator/nav_row.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="creator.ui">interfaces/creator/Creator.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="create_first.ui">interfaces/creator/create_first.ui</file>
-    <file compressed="true" preprocess="xml-stripblanks" alias="timer_creator_page.ui">interfaces/creator/timer_creator_page.ui</file>
-    <file compressed="true" preprocess="xml-stripblanks" alias="service_creator_page.ui">interfaces/creator/service_creator_page.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks" alias="creator_page_mount.ui">interfaces/creator/creator_page_mount.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks" alias="creator_page_service.ui">interfaces/creator/creator_page_service.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks" alias="creator_page_timer.ui">interfaces/creator/creator_page_timer.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="unit_file_creator_page.ui">interfaces/creator/unit_file_creator_page.ui</file>
     <file compressed="true" preprocess="xml-stripblanks" alias="launch_creator_page.ui">interfaces/creator/creator_end_page.ui</file>
     <file compressed="true" alias="add_permission_dark.mp4">media/add_permission_dark.mp4</file>

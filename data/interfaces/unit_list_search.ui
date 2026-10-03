@@ -16,7 +16,6 @@
     <child>
       <object class="GtkButton" id="show_customize_button">
         <property name="action-name">app.properties_selector_general</property>
-        <property name="label" translatable="yes" context="unit search" comments="Button label"/>
         <property name="tooltip-text" translatable="yes" context="button's tooltips" comments="button's tooltips">Configure displayed Columns</property>
         <child>
           <object class="AdwButtonContent">

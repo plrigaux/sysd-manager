@@ -50,6 +50,7 @@ package() {
 	install -vDm644 "./data/schemas/io.github.plrigaux.sysd-manager.gschema.xml" -t "$pkgdir/usr/share/glib-2.0/schemas"
 	install -vDm644 "./target/loc/io.github.plrigaux.sysd-manager.desktop" -t "$pkgdir/usr/share/applications"
 	install -vDm644 "./target/loc/io.github.plrigaux.sysd-manager.metainfo.xml" -t "$pkgdir/usr/share/metainfo"
+	install -vDm644 "./data/metainfo/io.github.plrigaux.sysd-manager.releases.xml" -t "$pkgdir/usr/share/metainfo/releases"
 	
 	cp -vr "./target/locale" "$pkgdir/usr/share/" 
 

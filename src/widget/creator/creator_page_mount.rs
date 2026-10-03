@@ -1,6 +1,6 @@
 mod imp;
-pub mod standard_output;
-
+mod mount_tools;
+mod validator;
 use crate::widget::creator::{
     PageType, UnitCreatorWindow, unit_file_creator_page::UnitFileCreatorPage,
 };
@@ -10,14 +10,14 @@ use gtk::glib::{self};
 
 glib::wrapper! {
 
-    pub struct ServiceCreatorPage(ObjectSubclass<imp::ServiceCreatorPageImp>)
+    pub struct CreatorPageMount(ObjectSubclass<imp::CreatorPageMountImp>)
     @extends adw::NavigationPage,  gtk::Widget,
     @implements gtk::Accessible,  gtk::Buildable,  gtk::ConstraintTarget ;
 }
 
-impl ServiceCreatorPage {
+impl CreatorPageMount {
     pub fn new(window: WeakRef<UnitCreatorWindow>, page: PageType) -> Self {
-        let obj: ServiceCreatorPage = glib::Object::new();
+        let obj: CreatorPageMount = glib::Object::new();
         obj.set_tag(Some(page.id()));
         let _ = obj.imp().window.set(window);
         // obj.imp().update_from_unit_info();
@@ -37,8 +37,14 @@ impl ServiceCreatorPage {
     }
 
     pub fn update_from_unit_info(&self) {
-        self.imp().update_from_unit_info();
+        // self.imp().update_from_unit_info();
+    }
+
+    pub fn advanced_mode(&self, advanced: bool) {
+        self.imp().advanced_mode(advanced);
+    }
+
+    pub fn validate(&self) -> bool {
+        self.imp().validate()
     }
 }
-
-pub const ENVIRONMENT: &str = "Environment";

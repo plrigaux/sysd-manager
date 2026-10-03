@@ -1,6 +1,7 @@
 //test
 
 use glib::{object::IsA, subclass::types::ObjectSubclassIsExt};
+use tracing::warn;
 
 glib::wrapper! {
     pub struct SuggestionRow(ObjectSubclass<imp::SuggestionRowImp>)
@@ -25,6 +26,14 @@ impl SuggestionRow {
     pub fn set_text2(&self, text: &str) {
         self.imp().set_text2(text)
     }
+
+    pub fn set_expression(&self, expression: gtk::PropertyExpression) {
+        let _ = self
+            .imp()
+            .expression
+            .set(expression)
+            .inspect_err(|_| warn!("Expression already set!"));
+    }
 }
 
 impl Default for SuggestionRow {
@@ -34,9 +43,6 @@ impl Default for SuggestionRow {
 }
 
 mod imp {
-    use crate::widget::{
-        creator::service_creator_page::standard_output::StandardOutput, find_child_by_name,
-    };
     use adw::subclass::prelude::*;
     use glib::{
         object::IsA,
@@ -47,7 +53,9 @@ mod imp {
         prelude::*,
     };
     use std::cell::{Cell, OnceCell, RefCell};
-    use tracing::{debug, error};
+    use tracing::{debug, error, info};
+
+    use crate::{upgrade, widget::find_child_by_name};
 
     const PAGE_STEP: u32 = 10;
 
@@ -60,9 +68,13 @@ mod imp {
 
         popover: OnceCell<gtk::Popover>,
 
+        #[template_child]
+        arrow_down_image: TemplateChild<gtk::Image>,
+
         #[property(get, set)]
         popup_visible: Cell<bool>,
-
+        #[property(get=Self::popup_height, set=Self::set_popup_height, name = "popup-height", type=i32) ]
+        #[property(get=Self::popup_width, set=Self::set_popup_width, name = "popup-width", type=i32) ]
         filter_list_model: OnceCell<gtk::FilterListModel>,
 
         single_selection: OnceCell<gtk::SingleSelection>,
@@ -73,7 +85,7 @@ mod imp {
 
         custom_filter: OnceCell<gtk::CustomFilter>,
 
-        expression: OnceCell<gtk::PropertyExpression>,
+        pub(super) expression: OnceCell<gtk::PropertyExpression>,
     }
 
     impl SuggestionRowImp {
@@ -84,18 +96,24 @@ mod imp {
         }
 
         fn create_filter(&self) -> gtk::CustomFilter {
-            let this = self.obj().clone();
+            let this = self.obj().downgrade();
 
-            let expression = self.expression.get().unwrap().clone();
+            // let expression = self.expression.get().clone();
 
             gtk::CustomFilter::new(move |object| {
+                let this = upgrade!(this, false);
                 let text_gs = this.text();
                 if text_gs.is_empty() {
                     return true;
                 }
 
-                let Some(value) = expression.evaluate(Some(object)).and_then(|v| {
-                    v.get::<String>()
+                let Some(expression) = this.imp().expression.get() else {
+                    return true;
+                };
+
+                let Some(value) = expression.evaluate(Some(object)).and_then(|value| {
+                    value
+                        .get::<String>()
                         .inspect_err(|err| error!("bad convertion {:?}", err))
                         .ok()
                 }) else {
@@ -127,23 +145,31 @@ mod imp {
                 self.popover().popdown();
             }
 
+            // Set the porperty indicator
             self.obj().set_popup_visible(visible);
         }
 
         fn drop_list_view(&self) -> &gtk::ListView {
-            self.drop_list_view.get_or_init(gtk::ListView::default)
+            self.drop_list_view
+                .get_or_init(|| gtk::ListView::builder().build())
         }
 
         fn popover(&self) -> &gtk::Popover {
-            let this = self.obj().clone();
+            let this_weak = self.obj().downgrade();
             self.popover.get_or_init(|| {
-                let pop = gtk::Popover::new();
-                pop.set_parent(&this);
-                pop.set_autohide(false);
-                pop.set_has_arrow(false);
-                pop.set_height_request(300);
-                pop.set_width_request(200);
-                pop.set_position(gtk::PositionType::Bottom);
+                let pop = gtk::Popover::builder()
+                    .css_classes(["menu"])
+                    .autohide(false) //for not loosing the focus
+                    // .autohide(true)
+                    .has_arrow(true)
+                    .height_request(300)
+                    .width_request(200)
+                    .position(gtk::PositionType::Bottom)
+                    // .can_focus(false)
+                    .build();
+
+                let this = upgrade!(this_weak, pop);
+                pop.set_parent(&this.imp().arrow_down_image.get());
 
                 let scroll = gtk::ScrolledWindow::new();
                 scroll.set_child(Some(this.imp().drop_list_view()));
@@ -171,8 +197,11 @@ mod imp {
             match key {
                 Key::Return | Key::KP_Enter | Key::ISO_Enter => {
                     self.accept_current_selection();
-                    self.text_changed_idle();
-                    self.set_popup_visible(false);
+                    let visible = self.popup_visible.get();
+                    self.text_changed_idle(false);
+
+                    info!("Enter: {visible}");
+                    self.set_popup_visible(!visible);
                     glib::Propagation::Proceed
                 }
                 Key::Escape => {
@@ -183,6 +212,8 @@ mod imp {
                     this.block_signal(handler_id);
                     this.set_text("");
                     this.set_position(-1);
+                    self.set_popup_visible(false);
+                    self.text_changed_idle(false);
                     this.unblock_signal(handler_id);
                     glib::Propagation::Stop
                 }
@@ -269,26 +300,30 @@ mod imp {
 
             let handler_id = self.change_id.get().unwrap();
 
-            self.obj().block_signal(handler_id);
+            let obj = self.obj();
+            obj.block_signal(handler_id);
 
-            let expression = self.expression.get().unwrap();
+            let Some(expression) = self.expression.get() else {
+                error!("Suggestion Expression None");
+                return;
+            };
 
             if let Some(value) = expression
                 .evaluate(Some(&item))
                 .and_then(|v| v.get::<String>().ok())
             {
-                self.obj().set_text(&value);
+                obj.set_text(&value);
             }
 
-            self.obj().set_position(-1);
+            obj.set_position(-1);
 
-            self.obj().unblock_signal(handler_id);
+            obj.unblock_signal(handler_id);
+
+            self.set_popup_visible(false);
         }
 
-        fn text_changed_idle(&self) {
+        fn text_changed_idle(&self, manage_popup: bool) {
             let text = self.obj().text();
-
-            // self.search.replace(text);
 
             let mut last_filter = self.search.borrow_mut();
 
@@ -314,22 +349,25 @@ mod imp {
                 custom_filter.changed(change_type);
             }
 
-            let matches = self
-                .single_selection
-                .get()
-                .map(|s| s.n_items())
-                .unwrap_or_default();
+            if manage_popup {
+                let matches = self
+                    .single_selection
+                    .get()
+                    .map(|s| s.n_items())
+                    .unwrap_or_default();
 
-            self.set_popup_visible(matches > 0);
+                self.set_popup_visible(matches > 0);
+            }
         }
 
         fn text_changed(&self) {
             /* We need to defer to an idle since GtkText sets selection bounds
              * after notify::text
              */
-            let this = self.obj().clone();
+            let this = self.obj().downgrade();
             glib::spawn_future_local(async move {
-                this.imp().text_changed_idle();
+                let this = upgrade!(this);
+                this.imp().text_changed_idle(true);
             });
         }
 
@@ -340,6 +378,30 @@ mod imp {
             this.block_signal(handler_id);
             this.set_text(text);
             this.unblock_signal(handler_id);
+        }
+
+        pub fn filter_list_model(&self) -> &OnceCell<gtk::FilterListModel> {
+            &self.filter_list_model
+        }
+
+        pub fn set_filter_list_model(&mut self, filter_list_model: OnceCell<gtk::FilterListModel>) {
+            self.filter_list_model = filter_list_model;
+        }
+
+        fn popup_height(&self) -> i32 {
+            self.popover().height()
+        }
+
+        fn set_popup_height(&self, val: i32) {
+            self.popover().set_height_request(val)
+        }
+
+        fn popup_width(&self) -> i32 {
+            self.popover().width()
+        }
+
+        fn set_popup_width(&self, val: i32) {
+            self.popover().set_width_request(val)
         }
     }
 
@@ -364,13 +426,6 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
 
-            let expression = gtk::PropertyExpression::new(
-                StandardOutput::static_type(),
-                None::<gtk::Expression>,
-                "text",
-            );
-
-            let _ = self.expression.set(expression);
             let filter = self.create_filter();
 
             self.custom_filter
@@ -387,20 +442,22 @@ mod imp {
             let _ = self.single_selection.set(selection_model.clone());
 
             let _ = self.filter_list_model.set(filter_list_model);
-            let this = self.obj().clone();
+            let this = self.obj().downgrade();
 
             let gesture = gtk::GestureClick::new();
             gesture.connect_released(move |_, _, _, _| {
+                let this = upgrade!(this);
                 let visible = this.popup_visible();
                 this.imp().set_popup_visible(!visible);
             });
 
-            let this = self.obj().clone();
-            this.add_controller(gesture);
+            self.obj().add_controller(gesture);
 
             let controller = gtk::EventControllerKey::new();
 
+            let this = self.obj().downgrade();
             controller.connect_key_pressed(move |controller_key, key, code, status| {
+                let this = upgrade!(this, glib::Propagation::Proceed);
                 this.imp().key_pressed(controller_key, key, code, status)
             });
 
@@ -430,6 +487,30 @@ mod imp {
                 this.imp().accept_current_selection();
             });
             self.obj().add_controller(controller);
+
+            let expression = gtk::PropertyExpression::new(
+                gtk::StringObject::static_type(),
+                None::<gtk::Expression>,
+                "string",
+            );
+
+            self.obj().set_expression(expression);
+
+            let factory = gtk::SignalListItemFactory::new();
+            factory.connect_setup(move |_factory, item| {
+                let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+                let row = gtk::Label::builder().xalign(0.0).use_markup(true).build();
+                item.set_child(Some(&row));
+            });
+
+            factory.connect_bind(move |_factory, item| {
+                let item = item.downcast_ref::<gtk::ListItem>().unwrap();
+                let data = item.item().and_downcast::<gtk::StringObject>().unwrap();
+                let child = item.child().and_downcast::<gtk::Label>().unwrap();
+                child.set_label(&data.string());
+            });
+
+            self.obj().set_factory(Some(&factory));
         }
     }
 

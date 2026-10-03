@@ -205,8 +205,8 @@ def run(logbus=False, log="info"):
     if logbus:
         cmd.insert(2, "--log-session-bus")
 
-    env = {**os.environ, "RUST_LOG" : log}
-    
+    env = {**os.environ, "RUST_LOG": log}
+
     try:
         bcommon.cmd_run(cmd, env=env)
     except KeyboardInterrupt as ki:
@@ -314,10 +314,11 @@ def set_required_files(from_git: bool):
 
     generate(FLATPACK_BUILD_DIR)
 
+    # Copy all assets
     bcommon.cmd_run(
         [
             "cp",
-           # "-u",
+            # "-u",
             "-r",
             "Cargo.toml",
             CARGO_LOCK,
@@ -335,6 +336,8 @@ def set_required_files(from_git: bool):
             "sysd-manager-comcontroler",
             "sysd-manager-test-base",
             "sysd-manager-base",
+            "tool",
+            "CHANGELOG.md",
             f"{FLATPACK_BUILD_DIR}",
         ]
     )

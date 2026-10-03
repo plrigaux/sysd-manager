@@ -71,7 +71,7 @@ def main():
         case "generate":
             generate_file()
         case "logs":
-            get_logs()
+            write_changelog()
         case "cargologs":
             cargo_changelog()
         case "cargo":

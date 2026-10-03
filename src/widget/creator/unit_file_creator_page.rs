@@ -1,8 +1,8 @@
 use adw::prelude::NavigationPageExt;
-use glib::{GString, subclass::types::ObjectSubclassIsExt};
+use glib::{GString, WeakRef, subclass::types::ObjectSubclassIsExt};
 use gtk::glib::{self};
 
-use crate::widget::creator::{PageType, unit_file::UnitFileData};
+use crate::widget::creator::{PageType, UnitCreatorWindow, unit_file::UnitFileData};
 
 glib::wrapper! {
 
@@ -12,9 +12,10 @@ glib::wrapper! {
 }
 
 impl UnitFileCreatorPage {
-    pub fn new(page: PageType) -> Self {
+    pub fn new(window: WeakRef<UnitCreatorWindow>, page: PageType) -> Self {
         let obj: UnitFileCreatorPage = glib::Object::new();
         obj.set_tag(Some(page.id()));
+        let _ = obj.imp().window.set(window);
         obj
     }
 
@@ -45,6 +46,11 @@ mod imp {
     pub struct UnitFileCreatorPageImp {
         #[template_child]
         unit_file_scrolled_window: TemplateChild<gtk::ScrolledWindow>,
+
+        #[template_child]
+        window_title: TemplateChild<adw::WindowTitle>,
+
+        pub(super) window: OnceCell<WeakRef<UnitCreatorWindow>>,
 
         pub(super) buffer: OnceCell<sourceview5::Buffer>,
     }
@@ -95,6 +101,13 @@ mod imp {
 
     impl UnitFileCreatorPageImp {
         pub(super) fn update_view(&self, data: &UnitFileData) {
+            if let Some(window) = self.window.get().and_then(|w| w.upgrade())
+                && let Some(file_path) = window.file_path()
+            {
+                let file_path = file_path.file_name().unwrap_or_default().to_string_lossy();
+                self.window_title.set_subtitle(&file_path);
+            }
+
             let Some(buffer) = self.buffer.get() else {
                 warn!("No buffer");
                 return;

@@ -1,0 +1,141 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 1.0.3 -->
+<interface>
+  <!-- interface-name boot_creator_page.ui -->
+  <requires lib="gtk" version="4.18"/>
+  <requires lib="libadwaita" version="1.6"/>
+  <template class="CreatorPageMount" parent="AdwNavigationPage">
+    <property name="child">
+      <object class="GtkScrolledWindow">
+        <property name="child">
+          <object class="AdwClamp">
+            <property name="child">
+              <object class="GtkBox">
+                <property name="margin-bottom">12</property>
+                <property name="margin-top">12</property>
+                <property name="orientation">vertical</property>
+                <property name="spacing">13</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="css-classes">title-2
+</property>
+                    <property name="hexpand">True</property>
+                    <property name="hexpand-set">True</property>
+                    <property name="label">Mount</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwPreferencesGroup">
+                    <property name="header-suffix">
+                      <object class="GtkLinkButton">
+                        <property name="css-classes">flat
+circular</property>
+                        <property name="icon-name">dialog-information-symbolic</property>
+                        <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html</property>
+                      </object>
+                    </property>
+                    <property name="title">Unit</property>
+                    <child>
+                      <object class="AdwEntryRow" id="description_entry">
+                        <property name="title">Description</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwPreferencesGroup" id="mount_group">
+                    <property name="header-suffix">
+                      <object class="GtkLinkButton">
+                        <property name="css-classes">circular
+flat</property>
+                        <property name="icon-name">dialog-information-symbolic</property>
+                        <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.mount.html</property>
+                      </object>
+                    </property>
+                    <property name="title">Mount</property>
+                    <child>
+                      <object class="SuggestionRow" id="what_entry">
+                        <property name="title">What</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwEntryRow" id="where_entry">
+                        <property name="title">Where</property>
+                        <property name="title-selectable">True</property>
+                        <property name="use-underline">True</property>
+                        <child>
+                          <object class="GtkButton">
+                            <property name="css-classes">flat</property>
+                            <property name="icon-name">folder-open-symbolic</property>
+                            <property name="valign">center</property>
+                            <signal name="clicked" handler="where_search_dialog_clicked" swapped="True"/>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="SuggestionRow" id="mount_type_suggestion">
+                        <property name="title">Type</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwEntryRow" id="mount_options_entry">
+                        <property name="title">Options</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwPreferencesGroup" id="mount_avanced_group">
+                    <property name="header-suffix">
+                      <object class="GtkLinkButton">
+                        <property name="css-classes">circular
+flat</property>
+                        <property name="icon-name">dialog-information-symbolic</property>
+                        <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.mount.html</property>
+                      </object>
+                    </property>
+                    <property name="title">Mount Advanced</property>
+                    <child>
+                      <object class="AdwEntryRow" id="directory_mode_entry">
+                        <property name="title">DirectoryMode</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwEntryRow" id="timeout_sec_entry">
+                        <property name="title">TimeoutSec</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwSwitchRow" id="lazy_unmount_switch">
+                        <property name="title">LazyUnmount</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwSwitchRow" id="sloppy_options_switch">
+                        <property name="title">SloppyOptions</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwSwitchRow" id="read_write_only_switch">
+                        <property name="title">ReadWriteOnly</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwSwitchRow" id="force_unmount_switch">
+                        <property name="title">ForceUnmount</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </property>
+          </object>
+        </property>
+      </object>
+    </property>
+    <property name="tag">service_base</property>
+    <property name="title">Service Creation</property>
+  </template>
+  <object class="GtkDropTarget"/>
+</interface>

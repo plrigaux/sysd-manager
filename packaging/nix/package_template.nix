@@ -70,9 +70,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     in
     ''
 
-      install -Dm644 data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg  "$out/share/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg"
-      install -Dm644 target/loc/io.github.plrigaux.sysd-manager.desktop $out/share/applications/io.github.plrigaux.sysd-manager.desktop
-      install -Dm644 target/loc/io.github.plrigaux.sysd-manager.metainfo.xml $out/share/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml
+      install -Dm644 data/icons/hicolor/scalable/apps/io.github.plrigaux.sysd-manager.svg -t "$out/share/icons/hicolor/scalable/apps"
+      install -Dm644 target/loc/io.github.plrigaux.sysd-manager.desktop -t $out/share/applications
+      install -Dm644 target/loc/io.github.plrigaux.sysd-manager.metainfo.xml -t $out/share/metainfo
+      install -Dm644 data/metainfo/io.github.plrigaux.sysd-manager.releases.xml -t $out/share/metainfo/releases
       install -Dm644 data/schemas/io.github.plrigaux.sysd-manager.gschema.xml -t $out/share/gsettings-schemas/$name/glib-2.0/schemas
       glib-compile-schemas $out/share/gsettings-schemas/$name/glib-2.0/schemas/
 

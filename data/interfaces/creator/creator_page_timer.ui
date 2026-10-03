@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 1.0.2 -->
+<!-- Created with Cambalache 1.0.3 -->
 <interface>
   <!-- interface-name timer_creator_page.ui -->
   <requires lib="gio" version="2.0"/>
   <requires lib="gtk" version="4.20"/>
   <requires lib="libadwaita" version="1.8"/>
-  <template class="TimerCreatorPage" parent="AdwNavigationPage">
+  <template class="CreatorPageTimer" parent="AdwNavigationPage">
     <property name="child">
       <object class="GtkScrolledWindow">
         <property name="child">
@@ -93,15 +93,8 @@ flat</property>
                     </property>
                     <property name="title">Timer</property>
                     <child>
-                      <object class="AdwComboRow" id="trigger_unit">
-                        <property name="enable-search">True</property>
-                        <property name="expression">
-                          <lookup name="string" type="GtkStringObject"/>
-                        </property>
-                        <property name="search-match-mode">substring</property>
-                        <property name="subtitle-selectable">True</property>
+                      <object class="MyDropDown" id="trigger_unit">
                         <property name="title">Unit</property>
-                        <property name="use-subtitle">True</property>
                       </object>
                     </child>
                     <child>
@@ -110,8 +103,24 @@ flat</property>
                         <property name="title">Persistant</property>
                       </object>
                     </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwPreferencesGroup" id="install_group">
+                    <property name="header-suffix">
+                      <object class="GtkLinkButton">
+                        <property name="css-classes">circular
+flat</property>
+                        <property name="icon-name">dialog-information</property>
+                        <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html</property>
+                      </object>
+                    </property>
+                    <property name="title">Install</property>
                     <child>
-                      <object class="SysDDropDown" id="trigger_unit2"/>
+                      <object class="SuggestionRow" id="wanted_by_entry">
+                        <property name="text">timers.target</property>
+                        <property name="title">WantedBy</property>
+                      </object>
                     </child>
                   </object>
                 </child>

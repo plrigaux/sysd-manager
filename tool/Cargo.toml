@@ -7,6 +7,10 @@ authors.workspace = true
 license.workspace = true
 repository.workspace = true
 
+[lib]
+name = "tool_lib"
+path = "src/lib.rs"
+
 [[bin]]
 name = "tool"
 path = "src/main.rs"
@@ -15,3 +19,7 @@ path = "src/main.rs"
 default = []
 
 [dependencies]
+tracing.workspace = true
+tracing-subscriber.workspace = true
+regex.workspace = true
+quick-xml = "0.42"
