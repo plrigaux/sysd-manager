@@ -2,6 +2,7 @@ mod creator_page_mount;
 mod creator_page_service;
 mod creator_page_timer;
 //pub mod dropdown;
+mod common;
 mod first_page;
 mod imp;
 mod launch_creator_page;
@@ -76,7 +77,7 @@ impl UnitCreatorWindow {
         self.imp().app_window.get()
     }
 
-    fn unit_name(&self, create_type: UnitCreateType) -> Option<String> {
+    fn unit_name(&self, create_type: UnitCreateType) -> String {
         self.imp().unit_name(create_type)
     }
 
@@ -86,6 +87,10 @@ impl UnitCreatorWindow {
 
     pub(crate) fn update_unit_prefix(&self, escaped_prefix: String) -> CreateUnitErr {
         self.imp().update_unit_prefix(escaped_prefix)
+    }
+
+    pub(crate) fn unit_file_list(&self) -> Result<Ref<'_, HashSet<String>>, CreateUnitErr> {
+        self.imp().unit_file_list()
     }
 }
 
@@ -215,6 +220,7 @@ pub(crate) enum CreateUnitErr {
     TooLong(usize),
     Mandatory,
     Unknown,
+    NotUnit,
 }
 
 impl CreateUnitErr {
@@ -255,6 +261,7 @@ impl CreateUnitErr {
             ),
             CreateUnitErr::Mandatory => format2!(pgettext("validator", "{} - Mandatory"), prefix),
             CreateUnitErr::Unknown => format2!(pgettext("validator", "{} - Unknown"), prefix),
+            CreateUnitErr::NotUnit => format2!(pgettext("validator", "{} - Not Unit"), prefix),
         }
     }
 

@@ -212,9 +212,7 @@ mod imp {
 
             let flags = DisEnableFlags::empty();
             glib::spawn_future_local(async move {
-                if let Some(unit_name) = unit_name
-                    && let Err(err) = systemd::enable_unit_file(level, &unit_name, flags)
-                {
+                if let Err(err) = systemd::enable_unit_file(level, &unit_name, flags) {
                     warn!("Can't enable unit {:?}, Error {:?}", unit_name, err);
                 }
             });
@@ -240,9 +238,7 @@ mod imp {
             info!("Starting unit {:?}", unit_name);
 
             glib::spawn_future_local(async move {
-                if let Some(unit_name) = unit_name
-                    && let Err(err) = systemd::start_unit(level, &unit_name, StartStopMode::Fail)
-                {
+                if let Err(err) = systemd::start_unit(level, &unit_name, StartStopMode::Fail) {
                     warn!("Can't start unit {:?}, Error {:?}", unit_name, err);
                 }
             });
@@ -346,9 +342,7 @@ mod imp {
 
         fn show_unit(&self, unit_create_type: UnitCreateType) {
             let window = upgrade_opt!(self.window.get());
-            let Some(unit_name) = window.unit_name(unit_create_type) else {
-                return;
-            };
+            let unit_name = window.unit_name(unit_create_type);
 
             let level = window.level();
 

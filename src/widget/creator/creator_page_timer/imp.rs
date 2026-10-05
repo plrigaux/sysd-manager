@@ -3,7 +3,8 @@ use crate::{
     upgrade, upgrade_opt,
     widget::{
         creator::{
-            UnitCreateType, UnitCreatorWindow,
+            CreateUnitErr, UnitCreateType, UnitCreatorWindow,
+            common::{self},
             creator_page_timer::{
                 MonotonicTimer,
                 validator::{self},
@@ -29,6 +30,7 @@ use std::{
     collections::HashSet,
 };
 use strum::{EnumIter, IntoEnumIterator};
+use tracing::error;
 const ACTION_CREATOR_MONOTONIC_ADD: &str = "creator.monotonic-add";
 const ACTION_CREATOR_REALTIME_ADD: &str = "creator.realtime-add";
 
@@ -36,7 +38,7 @@ const ACTION_CREATOR_REALTIME_ADD: &str = "creator.realtime-add";
 #[template(resource = "/io/github/plrigaux/sysd-manager/creator_page_timer.ui")]
 #[properties(wrapper_type = super::CreatorPageTimer)]
 pub struct CreatorPageTimerImp {
-    #[property(get, set, default)]
+    #[property(get, default)]
     creation_type: Cell<UnitCreateType>,
 
     #[template_child]
@@ -137,10 +139,88 @@ impl ObjectImpl for CreatorPageTimerImp {
             .connect_has_focus_notify(|entry| entry.select_region(0, -1));
         self.description
             .connect_focus_on_click_notify(|entry| entry.select_region(0, -1));
+
+        let event_controller = gtk::EventControllerFocus::new();
+        let this = self.downgrade();
+        event_controller.connect_leave(move |_event| {
+            let this = upgrade!(this);
+
+            this.validate_unit_wanted_by();
+        });
+        self.wanted_by_entry.add_controller(event_controller);
+        let event_controller = gtk::EventControllerFocus::new();
+        let this = self.downgrade();
+        event_controller.connect_leave(move |_event| {
+            let this = upgrade!(this);
+
+            this.validate_unit();
+        });
+        self.trigger_unit.add_controller(event_controller);
+
+        self.obj().connect_showing(|page| {
+            page.imp().validate();
+        });
     }
 }
 
 impl CreatorPageTimerImp {
+    pub(super) fn validate(&self) {
+        self.validate_unit_wanted_by();
+        self.validate_unit();
+    }
+
+    fn validate_unit_wanted_by(&self) {
+        common::validate_unit_common(
+            &self.wanted_by_entry.get(),
+            "WantedBy",
+            Some(&self.wanted_by_entry.text()),
+            self.window(),
+        );
+    }
+
+    fn validate_unit(&self) {
+        let preference = &self.trigger_unit.get();
+        let prefix = "Unit";
+        let unit_name = preference.subtitle().unwrap_or_default();
+        let unit_name = unit_name.trim();
+
+        let name_err = if unit_name.is_empty() {
+            match self.creation_type.get() {
+                UnitCreateType::Timer => {
+                    if let Some(window) = self.window.get()
+                        && let Some(win) = window.upgrade()
+                    {
+                        let unit_name = win.unit_name(UnitCreateType::Service);
+                        match common::is_fill_exist(self.window(), &unit_name) {
+                            Ok(true) => CreateUnitErr::NoErr,
+                            Ok(false) => CreateUnitErr::NotUnit,
+                            Err(e) => e,
+                        }
+                    } else {
+                        error!("No Window");
+                        CreateUnitErr::NoErr
+                    }
+                }
+                UnitCreateType::TimerService => CreateUnitErr::NoErr,
+                ct => {
+                    error!("Invalid Creation Type {ct:?}");
+                    CreateUnitErr::NoErr
+                }
+            }
+        } else {
+            match common::is_fill_exist(self.window(), unit_name) {
+                Ok(true) => CreateUnitErr::NoErr,
+                Ok(false) => CreateUnitErr::NotUnit,
+                Err(e) => e,
+            }
+        };
+        CreateUnitErr::apply_validation_result(preference, &name_err, prefix);
+    }
+
+    fn window(&self) -> &WeakRef<UnitCreatorWindow> {
+        self.window.get().unwrap()
+    }
+
     pub(super) fn update_from_unit_info(&self) {
         let window = upgrade_opt!(self.window.get());
 
@@ -164,6 +244,14 @@ impl CreatorPageTimerImp {
             gtk::FilterListModel::new(Some(single_selection_model), Some(filter.clone()));
         // self.trigger_unit.set_selected(gtk::INVALID_LIST_POSITION);
         self.trigger_unit.set_model(Some(&filtered_model));
+
+        let single_selection_model = gtk::SingleSelection::builder()
+            .can_unselect(true)
+            .autoselect(false)
+            .model(&model)
+            .build();
+        self.wanted_by_entry
+            .set_model(Some(&single_selection_model));
     }
 
     pub(super) fn create_actions(&self) {
@@ -333,7 +421,7 @@ impl CreatorPageTimerImp {
         self.monotonic_type.set(timer);
     }
 
-    pub fn set_view(&self, creation_type: UnitCreateType) {
+    pub fn set_creation_type(&self, creation_type: UnitCreateType) {
         match creation_type {
             UnitCreateType::Service => {}
             UnitCreateType::Timer => {
@@ -346,6 +434,8 @@ impl CreatorPageTimerImp {
             }
             UnitCreateType::Mount => {}
         }
+
+        self.creation_type.set(creation_type);
     }
 
     pub fn advanced_mode(&self, advanced: bool) {
@@ -398,6 +488,8 @@ impl CreatorPageTimerImp {
             file_data.remove(TIMER, &s);
         }
 
+        file_data.set_trigger_unit(self.trigger_unit.subtitle());
+
         file_data.sort();
     }
 
@@ -406,7 +498,7 @@ impl CreatorPageTimerImp {
         self.file_data.borrow().to_file()
     }
 
-    pub fn update_from_file_content(&self, content: &str) {
+    pub(super) fn update_from_file_content(&self, content: &str) {
         let Some(data) = UnitFileData::from_content(content) else {
             return;
         };
@@ -438,6 +530,8 @@ impl CreatorPageTimerImp {
                 }
             }
         }
+
+        self.wanted_by_entry.set_text(data.wanted_by());
 
         self.file_data.replace(data);
     }

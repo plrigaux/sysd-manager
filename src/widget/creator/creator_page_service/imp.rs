@@ -2,7 +2,7 @@ use super::*;
 use crate::{
     upgrade, upgrade_opt,
     widget::creator::{
-        self, CreateUnitErr, UnitCreateType,
+        self, CreateUnitErr, UnitCreateType, common,
         creator_page_service::standard_output::{StandardOutput, output_file_descriptor},
         mydropdown::MyDropDown,
         suggestion::SuggestionRow,
@@ -278,6 +278,16 @@ impl ObjectImpl for CreatorPageServiceImp {
             }
         });
         self.standard_error_entry.add_controller(event_focus);
+
+        self.wanted_by_entry.set_popup_width(400);
+        let event_controller = gtk::EventControllerFocus::new();
+        let this = self.downgrade();
+        event_controller.connect_leave(move |_event| {
+            let this = upgrade!(this);
+
+            this.validate_unit_wanted_by();
+        });
+        self.wanted_by_entry.add_controller(event_controller);
     }
 }
 
@@ -476,6 +486,19 @@ impl CreatorPageServiceImp {
         self.cpu_quota_entry.set_visible(advanced);
         self.resource_control_group.set_visible(advanced);
         self.install_group.set_visible(advanced);
+    }
+
+    fn validate_unit_wanted_by(&self) {
+        common::validate_unit_common(
+            &self.wanted_by_entry.get(),
+            "WantedBy",
+            Some(&self.wanted_by_entry.text()),
+            self.window(),
+        );
+    }
+
+    fn window(&self) -> &WeakRef<UnitCreatorWindow> {
+        self.window.get().unwrap()
     }
 }
 

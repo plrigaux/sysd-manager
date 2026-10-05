@@ -41,12 +41,16 @@ impl CreatorPageTimer {
         self.imp().file_content()
     }
 
-    pub fn set_view(&self, creation_type: UnitCreateType) {
-        self.imp().set_view(creation_type)
+    pub fn set_creation_type(&self, creation_type: UnitCreateType) {
+        self.imp().set_creation_type(creation_type)
     }
 
     pub fn advanced_mode(&self, advanced: bool) {
         self.imp().advanced_mode(advanced);
+    }
+
+    pub fn validate(&self) {
+        self.imp().validate();
     }
 }
 

@@ -16,12 +16,12 @@
   <ui template-class="UnitCreatorWindow" filename="Creator.ui" sha256="d3640f2f9e979fae988c7535aba3c7eecbbdc0c45a96e67854401c630d2e3e85">
     <requires>NavigationRow</requires>
   </ui>
-  <ui template-class="CreatorPageMount" filename="creator_page_mount.ui" sha256="4f5e955f641e250835fd1bd03881ae1e347c17664fa056e92d210194fcfabeb3">
+  <ui template-class="CreatorPageMount" filename="creator_page_mount.ui" sha256="8607f618033a6a2121f45d207d0b08b8fab2afac25f0fabec4a3f368da17ac32">
     <requires>SuggestionRow</requires>
   </ui>
   <ui template-class="CreatorPageService" filename="creator_page_service.ui" sha256="fed283d06d488465d335ae31e2337b32e006d569664b3802bb7b50f5e0c9d1e5">
-    <requires>SuggestionRow</requires>
     <requires>MyDropDown</requires>
+    <requires>SuggestionRow</requires>
   </ui>
   <ui template-class="CreatorPageTimer" filename="creator_page_timer.ui" sha256="ec2c98077f524f0aca9ede89670f313a8436cfe47fb28fabdc80a5020b14fb91">
     <requires>MyDropDown</requires>
