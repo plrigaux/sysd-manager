@@ -71,7 +71,7 @@ mod imp {
         #[template_child]
         arrow_down_image: TemplateChild<gtk::Image>,
 
-        #[property(get, set)]
+        // #[property(get, set)]
         popup_visible: Cell<bool>,
         #[property(get=Self::popup_height, set=Self::set_popup_height, name = "popup-height", type=i32) ]
         #[property(get=Self::popup_width, set=Self::set_popup_width, name = "popup-width", type=i32) ]
@@ -79,7 +79,7 @@ mod imp {
 
         single_selection: OnceCell<gtk::SingleSelection>,
 
-        search: RefCell<String>,
+        search_text: RefCell<String>,
 
         change_id: OnceCell<glib::SignalHandlerId>,
 
@@ -96,18 +96,16 @@ mod imp {
         }
 
         fn create_filter(&self) -> gtk::CustomFilter {
-            let this = self.obj().downgrade();
-
-            // let expression = self.expression.get().clone();
+            let this = self.downgrade();
 
             gtk::CustomFilter::new(move |object| {
                 let this = upgrade!(this, false);
-                let text_gs = this.text();
+                let text_gs = this.obj().text();
                 if text_gs.is_empty() {
                     return true;
                 }
 
-                let Some(expression) = this.imp().expression.get() else {
+                let Some(expression) = this.expression.get() else {
                     return true;
                 };
 
@@ -146,7 +144,7 @@ mod imp {
             }
 
             // Set the porperty indicator
-            self.obj().set_popup_visible(visible);
+            self.popup_visible.set(visible);
         }
 
         fn drop_list_view(&self) -> &gtk::ListView {
@@ -325,25 +323,26 @@ mod imp {
         fn text_changed_idle(&self, manage_popup: bool) {
             let text = self.obj().text();
 
-            let mut last_filter = self.search.borrow_mut();
+            let mut last_filter_text = self.search_text.borrow_mut();
 
             let text_is_empty = text.is_empty();
-            if !text_is_empty {
-                // self.toogle_button.set_active(true);
-            }
 
             let change_type = if text_is_empty {
                 gtk::FilterChange::LessStrict
-            } else if text.len() > last_filter.len() && text.contains(last_filter.as_str()) {
+            } else if text.len() > last_filter_text.len()
+                && text.contains(last_filter_text.as_str())
+            {
                 gtk::FilterChange::MoreStrict
-            } else if text.len() < last_filter.len() && last_filter.contains(text.as_str()) {
+            } else if text.len() < last_filter_text.len()
+                && last_filter_text.contains(text.as_str())
+            {
                 gtk::FilterChange::LessStrict
             } else {
                 gtk::FilterChange::Different
             };
 
-            debug!("Search text. Current \"{text}\" Prev \"{last_filter}\"");
-            last_filter.replace_range(.., text.as_str());
+            debug!("Search text. Current \"{text}\" Prev \"{last_filter_text}\"");
+            last_filter_text.replace_range(.., text.as_str());
 
             if let Some(custom_filter) = self.custom_filter.get() {
                 custom_filter.changed(change_type);
@@ -355,8 +354,8 @@ mod imp {
                     .get()
                     .map(|s| s.n_items())
                     .unwrap_or_default();
-
-                self.set_popup_visible(matches > 0);
+                //TODO Hacky
+                self.set_popup_visible(matches > 1 || (matches == 1 && self.popup_visible.get()));
             }
         }
 
@@ -442,13 +441,13 @@ mod imp {
             let _ = self.single_selection.set(selection_model.clone());
 
             let _ = self.filter_list_model.set(filter_list_model);
-            let this = self.obj().downgrade();
+            let this = self.downgrade();
 
             let gesture = gtk::GestureClick::new();
             gesture.connect_released(move |_, _, _, _| {
                 let this = upgrade!(this);
-                let visible = this.popup_visible();
-                this.imp().set_popup_visible(!visible);
+                let visible = this.popup_visible.get();
+                this.set_popup_visible(!visible);
             });
 
             self.obj().add_controller(gesture);

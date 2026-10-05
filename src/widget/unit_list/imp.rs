@@ -1626,8 +1626,8 @@ impl UnitListPanelImp {
                         ));
                     }
 
-                    debug!("orignal {:?}", property_list_send);
-                    debug!("cleaned {:?}", cleaned_props);
+                    trace!("orignal {:?}", property_list_send);
+                    trace!("cleaned {:?}", cleaned_props);
 
                     let properties_setter = systemd::fetch_unit_properties(
                         level,
@@ -1637,7 +1637,7 @@ impl UnitListPanelImp {
                         cleaned_props,
                     )
                     .await
-                    .inspect_err(|err| debug!("Some Error : {err:?}"))
+                    .inspect_err(|err| warn!("Some Error : {err:?}"))
                     .unwrap_or(vec![]);
 
                     let result = sender

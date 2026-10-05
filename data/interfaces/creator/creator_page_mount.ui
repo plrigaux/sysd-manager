@@ -21,7 +21,7 @@
 </property>
                     <property name="hexpand">True</property>
                     <property name="hexpand-set">True</property>
-                    <property name="label">Mount</property>
+                    <property name="label" translatable="yes" context="create_unit" comments="Panel Title">Mount</property>
                   </object>
                 </child>
                 <child>
@@ -34,7 +34,7 @@ circular</property>
                         <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html</property>
                       </object>
                     </property>
-                    <property name="title">Unit</property>
+                    <property name="title" translatable="yes" context="create_unit" comments="Preference section title">Unit</property>
                     <child>
                       <object class="AdwEntryRow" id="description_entry">
                         <property name="title">Description</property>
@@ -52,7 +52,7 @@ flat</property>
                         <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.mount.html</property>
                       </object>
                     </property>
-                    <property name="title">Mount</property>
+                    <property name="title" translatable="yes" context="create_unit" comments="Preference section title">Mount</property>
                     <child>
                       <object class="SuggestionRow" id="what_entry">
                         <property name="title">What</property>
@@ -95,7 +95,7 @@ flat</property>
                         <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.mount.html</property>
                       </object>
                     </property>
-                    <property name="title">Mount Advanced</property>
+                    <property name="title" translatable="yes" context="create_unit" comments="Preference Section title">Mount Advanced</property>
                     <child>
                       <object class="AdwEntryRow" id="directory_mode_entry">
                         <property name="title">DirectoryMode</property>
@@ -124,6 +124,25 @@ flat</property>
                     <child>
                       <object class="AdwSwitchRow" id="force_unmount_switch">
                         <property name="title">ForceUnmount</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwPreferencesGroup" id="install_group">
+                    <property name="header-suffix">
+                      <object class="GtkLinkButton">
+                        <property name="css-classes">circular
+flat</property>
+                        <property name="icon-name">dialog-information</property>
+                        <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html</property>
+                      </object>
+                    </property>
+                    <property name="title" translatable="yes" context="create_unit" comments="Preference Section title">Install</property>
+                    <child>
+                      <object class="SuggestionRow" id="wanted_by_entry">
+                        <property name="text">multi-user.target</property>
+                        <property name="title">WantedBy</property>
                       </object>
                     </child>
                   </object>

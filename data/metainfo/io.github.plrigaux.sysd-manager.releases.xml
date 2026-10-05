@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--File generated from CHANGELOG.md-->
 <releases>
+	<release version="2.23.1" date="2026-10-08">
+		<description>
+			<p>Fixed</p>
+			<ul>
+				<li>Various Creation Wizard issues and behaviors</li>
+			</ul>
+		</description>
+	</release>
 	<release version="2.23.0" date="2026-10-02">
 		<description>
 			<p>Added</p>

@@ -2,19 +2,16 @@ use super::*;
 use crate::{
     upgrade, upgrade_opt,
     widget::creator::{
-        self, CreateUnitErr, UnitCreateType,
+        CreateUnitErr, UnitCreateType, common,
         creator_page_service::standard_output::{StandardOutput, output_file_descriptor},
         mydropdown::MyDropDown,
         suggestion::SuggestionRow,
         unit_file::{STANDARD_ERROR, STANDARD_OUTPUT, UnitFileData},
     },
 };
-use adw::{
-    prelude::{ActionRowExt, ComboRowExt, PreferencesGroupExt},
-    subclass::prelude::*,
-};
-use gettextrs::{gettext, pgettext};
-use gtk::{StringObject, glib, prelude::*};
+use adw::{prelude::*, subclass::prelude::*};
+use gettextrs::pgettext;
+use gtk::glib;
 use indexmap::{IndexMap, map::Entry};
 use itertools::{EitherOrBoth, Itertools};
 use regex::Regex;
@@ -24,7 +21,7 @@ use std::{
     os::unix::fs::PermissionsExt,
     path::Path,
 };
-use tracing::{info, warn};
+use tracing::{debug, warn};
 
 const VALIDATE_CPU_QUOTA_REGEX: &str = r"\d+%";
 const VALIDATE_MEMORY_HIGH_REGEX: &str = r"^[1-9][0-9]*[%KMGT]?$";
@@ -43,13 +40,16 @@ pub struct CreatorPageServiceImp {
     exec_start_entry: TemplateChild<adw::EntryRow>,
 
     #[template_child]
+    exec_reload_entry: TemplateChild<adw::EntryRow>,
+
+    #[template_child]
     environment_entry: TemplateChild<adw::EntryRow>,
 
     #[template_child]
     working_directory_entry: TemplateChild<adw::EntryRow>,
 
     #[template_child]
-    restart_policy_combo: TemplateChild<adw::ComboRow>,
+    restart_policy_combo: TemplateChild<MyDropDown>,
 
     #[template_child]
     unit_wants: TemplateChild<MyDropDown>,
@@ -67,10 +67,10 @@ pub struct CreatorPageServiceImp {
     cpu_quota_entry: TemplateChild<adw::EntryRow>,
 
     #[template_child]
-    user_combo: TemplateChild<adw::ComboRow>,
+    user_combo: TemplateChild<MyDropDown>,
 
     #[template_child]
-    group_combo: TemplateChild<adw::ComboRow>,
+    group_combo: TemplateChild<MyDropDown>,
 
     #[template_child]
     standard_output_entry: TemplateChild<SuggestionRow>,
@@ -126,10 +126,18 @@ impl ObjectImpl for CreatorPageServiceImp {
                 CreatorPageServiceImp::validate_entry_exec_start(entry);
             }
         });
+
         self.exec_start_entry.add_controller(event_focus);
 
+        let event_focus = gtk::EventControllerFocus::new();
+        event_focus.connect_leave(|event| {
+            if let Some(entry) = event.widget().and_downcast_ref::<adw::EntryRow>() {
+                CreatorPageServiceImp::validate_entry_exec_reload(entry);
+            }
+        });
+        self.exec_reload_entry.add_controller(event_focus);
+
         let vec = vec![
-            "",
             "always",
             "on-success",
             "on-failure",
@@ -163,7 +171,6 @@ impl ObjectImpl for CreatorPageServiceImp {
             .map(|u| u.name().to_string_lossy().into_owned())
             .collect();
 
-        users.push("".into());
         users.sort();
 
         let model = gtk::StringList::new(&[]);
@@ -178,7 +185,6 @@ impl ObjectImpl for CreatorPageServiceImp {
             .map(|u| u.name().to_string_lossy().into_owned())
             .collect();
 
-        groups.push("".into());
         groups.sort();
 
         let model = gtk::StringList::new(&[]);
@@ -187,31 +193,28 @@ impl ObjectImpl for CreatorPageServiceImp {
         }
         self.group_combo.set_model(Some(&model));
 
-        let this = self.obj().clone();
+        let this = self.downgrade();
         let event_focus = gtk::EventControllerFocus::new();
-        event_focus.connect_leave(move |event| {
-            if let Some(entry) = event.widget().and_downcast_ref::<adw::EntryRow>() {
-                CreatorPageServiceImp::validate_cpu_quota(this.imp(), entry);
-            }
+        event_focus.connect_leave(move |_| {
+            let this = upgrade!(this);
+            this.validate_cpu_quota();
         });
 
         self.cpu_quota_entry.add_controller(event_focus);
 
-        let this = self.obj().clone();
         let event_focus = gtk::EventControllerFocus::new();
-        event_focus.connect_leave(move |event| {
-            if let Some(entry) = event.widget().and_downcast_ref::<adw::EntryRow>() {
-                CreatorPageServiceImp::validate_memory_high(this.imp(), entry);
-            }
+        let this = self.downgrade();
+        event_focus.connect_leave(move |_| {
+            let this = upgrade!(this);
+            this.validate_memory_high();
         });
 
         self.memory_high_entry.add_controller(event_focus);
 
-        let this = self.obj().clone();
         let event_focus = gtk::EventControllerFocus::new();
         event_focus.connect_leave(move |event| {
             if let Some(entry) = event.widget().and_downcast_ref::<adw::EntryRow>() {
-                this.imp().validate_working_directory(entry);
+                CreatorPageServiceImp::validate_working_directory(entry);
             }
         });
 
@@ -278,12 +281,69 @@ impl ObjectImpl for CreatorPageServiceImp {
             }
         });
         self.standard_error_entry.add_controller(event_focus);
+
+        self.wanted_by_entry.set_popup_width(400);
+        let event_controller = gtk::EventControllerFocus::new();
+        let this = self.downgrade();
+        event_controller.connect_leave(move |_event| {
+            let this = upgrade!(this);
+            this.validate_unit_wanted_by();
+        });
+        self.wanted_by_entry.add_controller(event_controller);
     }
 }
 
 impl CreatorPageServiceImp {
-    fn validate_entry_exec_start(entry: &adw::EntryRow) {
+    pub(super) fn validate(&self) -> bool {
+        let valid = self.validate_exec_start();
+        Self::validate_entry_exec_reload(&self.exec_reload_entry);
+        Self::validate_working_directory(&self.working_directory_entry);
+        self.validate_memory_high();
+        self.validate_cpu_quota();
+        self.validate_standard_output_and_error(&self.standard_output_entry.get(), STANDARD_OUTPUT);
+        self.validate_standard_output_and_error(&self.standard_error_entry.get(), STANDARD_ERROR);
+        self.validate_unit_wanted_by();
+        self.validate_unit_wants();
+        self.validate_unit_after();
+        valid
+    }
+
+    fn validate_exec_start(&self) -> bool {
+        Self::validate_entry_exec_start(&self.exec_start_entry)
+    }
+
+    fn validate_entry_exec_start(entry: &adw::EntryRow) -> bool {
         let text = entry.text();
+        let text = text.trim();
+        entry.set_text(text);
+
+        let name_err = if text.is_empty() {
+            CreateUnitErr::Mandatory
+        } else {
+            let path = Path::new(&text);
+
+            if !path.exists() {
+                CreateUnitErr::FileNotExits
+            } else if !path.is_file() {
+                CreateUnitErr::NotFile
+            } else if !is_executable(path) {
+                CreateUnitErr::NotExecutable
+            } else if !path.is_absolute() {
+                CreateUnitErr::NotAbsolute
+            } else {
+                CreateUnitErr::NoErr
+            }
+        };
+
+        let is_error = matches!(name_err, CreateUnitErr::Mandatory);
+        CreateUnitErr::apply_validation_result_error(entry, &name_err, "ExecStart", is_error);
+        !is_error
+    }
+
+    fn validate_entry_exec_reload(entry: &adw::EntryRow) -> bool {
+        let text = entry.text();
+        let text = text.trim();
+        entry.set_text(text);
 
         let name_err = if text.is_empty() {
             CreateUnitErr::NoErr
@@ -303,13 +363,15 @@ impl CreatorPageServiceImp {
             }
         };
 
-        CreateUnitErr::apply_validation_result(entry, &name_err, "ExecStart");
+        let is_error = matches!(name_err, CreateUnitErr::Mandatory);
+        CreateUnitErr::apply_validation_result_error(entry, &name_err, "ExecReload", is_error);
+        !is_error
     }
 
-    fn validate_working_directory(&self, entry: &adw::EntryRow) {
+    fn validate_working_directory(entry: &adw::EntryRow) {
         let text = entry.text();
 
-        let name_err = match creator::get_file_path(text.as_str()) {
+        let name_err = match common::get_file_path(text.as_str()) {
             Ok(text) => {
                 if text.is_empty() {
                     CreateUnitErr::NoErr
@@ -340,10 +402,11 @@ impl CreatorPageServiceImp {
             .get_or_init(|| Regex::new(VALIDATE_CPU_QUOTA_REGEX).unwrap())
     }
 
-    fn validate_cpu_quota(&self, entry: &adw::EntryRow) {
+    fn validate_cpu_quota(&self) {
+        let entry = self.cpu_quota_entry.get();
         let text = entry.text();
         let cpuquota = "CPUQuota";
-        info!("Validating {:?} {:?}", cpuquota, text);
+        debug!("Validating {:?} {:?}", cpuquota, text);
 
         let name_err = if text.is_empty() {
             CreateUnitErr::NoErr
@@ -353,13 +416,17 @@ impl CreatorPageServiceImp {
             CreateUnitErr::NoErr
         };
 
-        CreateUnitErr::apply_validation_result(entry, &name_err, cpuquota);
+        CreateUnitErr::apply_validation_result(&entry, &name_err, cpuquota);
     }
 
-    fn validate_standard_output_and_error(&self, entry: &adw::EntryRow, attribute: &str) {
+    fn validate_standard_output_and_error(
+        &self,
+        entry: &(impl IsA<adw::PreferencesRow> + gtk::prelude::EditableExt + gtk::prelude::WidgetExt),
+        attribute: &str,
+    ) {
         let text = entry.text();
         let text = text.as_str();
-        info!("Validating {:?} {:?}", attribute, text);
+        debug!("Validating {:?} {:?}", attribute, text);
 
         let name_err = if text.is_empty() {
             CreateUnitErr::NoErr
@@ -420,10 +487,11 @@ impl CreatorPageServiceImp {
             .get_or_init(|| Regex::new(VALIDATE_MEMORY_HIGH_REGEX).unwrap())
     }
 
-    fn validate_memory_high(&self, entry: &adw::EntryRow) {
+    fn validate_memory_high(&self) {
+        let entry = self.memory_high_entry.get();
         let text = entry.text();
         let cpuquota = "MemoryHigh";
-        info!("Validating {:?} {:?}", cpuquota, text);
+        debug!("Validating {:?} {:?}", cpuquota, text);
 
         let name_err = if text.is_empty() {
             CreateUnitErr::NoErr
@@ -433,7 +501,7 @@ impl CreatorPageServiceImp {
             CreateUnitErr::NoErr
         };
 
-        CreateUnitErr::apply_validation_result(entry, &name_err, cpuquota);
+        CreateUnitErr::apply_validation_result(&entry, &name_err, cpuquota);
     }
 
     fn add_track(&self, param: &str, widget: &impl IsA<gtk::Widget>) {
@@ -465,6 +533,7 @@ impl CreatorPageServiceImp {
 
         self.unit_wants.set_model(Some(&model));
         self.unit_after.set_model(Some(&model));
+        self.wanted_by_entry.set_model(Some(&model));
     }
 
     pub(super) fn advanced_mode(&self, advanced: bool) {
@@ -476,6 +545,32 @@ impl CreatorPageServiceImp {
         self.cpu_quota_entry.set_visible(advanced);
         self.resource_control_group.set_visible(advanced);
         self.install_group.set_visible(advanced);
+        self.exec_reload_entry.set_visible(advanced);
+        self.standard_output_entry.set_visible(advanced);
+        self.standard_error_entry.set_visible(advanced);
+    }
+
+    fn validate_unit_wanted_by(&self) {
+        common::validate_unit_common(
+            &self.wanted_by_entry.get(),
+            "WantedBy",
+            Some(&self.wanted_by_entry.text()),
+            self.window(),
+        );
+    }
+
+    fn validate_unit_wants(&self) {
+        let entry = self.unit_wants.get();
+        common::validate_unit_common(&entry, "Wants", entry.subtitle().as_deref(), self.window());
+    }
+
+    fn validate_unit_after(&self) {
+        let entry = self.unit_after.get();
+        common::validate_unit_common(&entry, "After", entry.subtitle().as_deref(), self.window());
+    }
+
+    fn window(&self) -> &WeakRef<UnitCreatorWindow> {
+        self.window.get().unwrap()
     }
 }
 
@@ -492,24 +587,26 @@ impl CreatorPageServiceImp {
     #[template_callback]
     fn working_directory_search_dialog_clicked(&self, _button: gtk::Button) {
         let file_dialog = gtk::FileDialog::builder()
-            .title("Select a working directory")
-            .accept_label("Select")
+            //Title of the folder selection widget window
+            .title(pgettext("create_unit", "Select a working directory"))
+            //Button title of the folder selection widget
+            .accept_label(pgettext("create_unit", "Select"))
             .build();
 
         let create_service_page = self.obj().clone();
 
         let text = self.working_directory_entry.text();
-        let text = creator::get_file_path(&text).unwrap_or_default();
+        let text = common::get_file_path(&text).unwrap_or_default();
         if text.is_empty() {
-            creator::set_initial_folder(&file_dialog);
+            common::set_initial_folder(&file_dialog);
         } else {
             let path = Path::new(text);
             if path.exists() {
                 let file = gio::File::for_path(path);
                 file_dialog.set_initial_file(Some(&file));
             } else {
-                println!("not ex {text}");
-                creator::set_initial_folder(&file_dialog);
+                warn!("path does not exists {text}");
+                common::set_initial_folder(&file_dialog);
             }
         }
 
@@ -533,30 +630,30 @@ impl CreatorPageServiceImp {
     #[template_callback]
     fn exec_start_dialog_clicked(&self, _button: gtk::Button) {
         let file_dialog = gtk::FileDialog::builder()
-            .title(pgettext("unit creation", "Select executable"))
-            .accept_label(gettext("Select"))
+            //Button title of the executable selection widget
+            .accept_label(pgettext("create_unit", "Select"))
+            //Title of the executable selection widget window
+            .title(pgettext("create_unit", "Select executable"))
             .build();
 
         let create_service_page = self.obj().clone();
 
         let text = self.exec_start_entry.text();
-        let text = creator::get_file_path(&text).unwrap_or_default();
+        let text = common::get_file_path(&text).unwrap_or_default();
         if text.is_empty() {
-            creator::set_initial_folder(&file_dialog);
+            common::set_initial_folder(&file_dialog);
         } else {
             let path = Path::new(text);
             if path.exists() {
                 let file = gio::File::for_path(path);
                 if path.is_dir() {
-                    // println!("dir {:?} ", path);
                     file_dialog.set_initial_folder(Some(&file));
                 } else if path.is_file() {
-                    // println!("file {:?} ", path);
                     file_dialog.set_initial_file(Some(&file));
                 }
             } else {
-                warn!("not exist {}", path.display());
-                creator::set_initial_folder(&file_dialog);
+                warn!("path does not exist {}", path.display());
+                common::set_initial_folder(&file_dialog);
             }
         }
 
@@ -670,6 +767,7 @@ impl CreatorPageServiceImp {
         });
         file_data.set_environment(environments.as_deref());
         file_data.set_exec_start(self.exec_start_entry.text());
+        file_data.set_exec_reload(self.exec_reload_entry.text());
         file_data.set_user(self.user_combo.subtitle());
         file_data.set_group(self.group_combo.subtitle());
         file_data.set_working_directory(self.working_directory_entry.text());
@@ -735,6 +833,7 @@ impl CreatorPageServiceImp {
         }
 
         self.exec_start_entry.set_text(data.exec_start());
+        self.exec_reload_entry.set_text(data.exec_reload());
         self.working_directory_entry
             .set_text(data.working_directory());
 
@@ -744,25 +843,7 @@ impl CreatorPageServiceImp {
         self.user_combo.set_subtitle(data.user());
         self.group_combo.set_subtitle(data.group());
 
-        let restart = data.restart();
-        let mut position_sel = 0;
-        if !restart.is_empty()
-            && let Some(list_model) = self.restart_policy_combo.model()
-        {
-            //TODO make a map if too slow
-            for position in 0..list_model.n_items() {
-                if let Some(string_item) = list_model
-                    .item(position)
-                    .and_downcast_ref::<StringObject>()
-                    .map(|s| s.string())
-                    && string_item.as_str() == restart
-                {
-                    position_sel = position;
-                    break;
-                }
-            }
-        }
-        self.restart_policy_combo.set_selected(position_sel);
+        self.restart_policy_combo.set_subtitle(data.restart());
 
         self.standard_output_entry.set_text2(data.standard_output());
         self.standard_error_entry.set_text2(data.standard_error());

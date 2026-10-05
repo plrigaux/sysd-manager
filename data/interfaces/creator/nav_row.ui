@@ -19,6 +19,7 @@
             <property name="css-classes">circular</property>
             <property name="halign">start</property>
             <property name="label">🧡</property>
+            <property name="margin-end">5</property>
             <property name="tooltip-markup" translatable="yes">🙏🏻 Please donate — every contribution helps me to prove to my wife that this project is more than just “another coding hobby”</property>
             <property name="uri">https://github.com/sponsors/plrigaux</property>
             <property name="valign">center</property>
@@ -49,8 +50,13 @@
             <property name="action-name">creator.file</property>
             <property name="css-classes">pill</property>
             <property name="halign">end</property>
-            <property name="label">File</property>
             <property name="valign">center</property>
+            <child>
+              <object class="AdwButtonContent">
+                <property name="icon-name">document-text</property>
+                <property name="label">File</property>
+              </object>
+            </child>
           </object>
         </child>
         <child>
@@ -60,9 +66,20 @@
             <property name="halign">end</property>
             <property name="valign">center</property>
             <child>
-              <object class="AdwButtonContent">
-                <property name="icon-name">go-next-symbolic</property>
-                <property name="label">Next</property>
+              <object class="GtkBox">
+                <property name="halign">baseline-fill</property>
+                <property name="spacing">5</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label">Next</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkImage">
+                    <property name="halign">end</property>
+                    <property name="icon-name">go-next-symbolic</property>
+                  </object>
+                </child>
               </object>
             </child>
           </object>

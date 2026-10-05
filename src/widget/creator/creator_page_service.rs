@@ -43,6 +43,10 @@ impl CreatorPageService {
     pub fn advanced_mode(&self, advanced: bool) {
         self.imp().advanced_mode(advanced);
     }
+
+    pub fn validate(&self) -> bool {
+        self.imp().validate()
+    }
 }
 
 pub const ENVIRONMENT: &str = "Environment";

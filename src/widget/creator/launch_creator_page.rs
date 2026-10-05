@@ -35,15 +35,16 @@ mod imp {
         format2, systemd_gui, upgrade, upgrade_opt,
         widget::creator::{UnitCreateType, imp::UnitCreatorWindowImp},
     };
-    use adw::{prelude::ActionRowExt, subclass::prelude::*};
+    use adw::{prelude::*, subclass::prelude::*};
     use base::{
         enums::UnitDBusLevel,
         file::{self},
     };
     use enumflags2::BitFlag;
-    use gettextrs::gettext;
-    use gtk::{glib, prelude::*};
-    use std::cell::{Cell, OnceCell};
+    use gettextrs::{gettext, pgettext};
+    use glib::clone::Downgrade;
+    use gtk::glib;
+    use std::cell::{Cell, OnceCell, RefCell};
     use systemd::enums::{DisEnableFlags, StartStopMode};
     use tracing::{error, info, warn};
 
@@ -62,21 +63,9 @@ mod imp {
         start_switch: TemplateChild<adw::SwitchRow>,
 
         #[template_child]
-        service_file_action: TemplateChild<adw::ActionRow>,
-        #[template_child]
-        timer_file_action: TemplateChild<adw::ActionRow>,
-        #[template_child]
-        service_file_button: TemplateChild<gtk::Button>,
-        #[template_child]
-        timer_file_button: TemplateChild<gtk::Button>,
-        #[template_child]
-        service_unit_button: TemplateChild<gtk::Button>,
-        #[template_child]
-        timer_unit_button: TemplateChild<gtk::Button>,
-
+        artefacts_group: TemplateChild<adw::PreferencesGroup>,
         pub(super) window: OnceCell<WeakRef<UnitCreatorWindow>>,
-        // #[property(get)]
-        // pub(super) data: OnceCell<UnitFileData>,
+        rows: RefCell<Vec<InfoRow>>,
     }
 
     impl LaunchCreatorPageImp {
@@ -121,10 +110,10 @@ mod imp {
                 return;
             }
 
-            self.service_file_button.set_sensitive(true);
-            self.timer_file_button.set_sensitive(true);
-            self.service_unit_button.set_sensitive(true);
-            self.timer_unit_button.set_sensitive(true);
+            for row in self.rows.borrow().iter() {
+                row.file_button.set_sensitive(true);
+                row.unit_button.set_sensitive(true);
+            }
 
             if self.daemon_reload_switch.is_active() {
                 let window = upgrade_opt!(self.window.get());
@@ -206,15 +195,13 @@ mod imp {
             level: UnitDBusLevel,
             ct: UnitCreateType,
         ) {
-            let unit_name = UnitCreatorWindowImp::unit_name(window.imp(), ct);
+            let unit_name = UnitCreatorWindowImp::unit_name(window.imp(), Some(ct));
 
             info!("enabling unit {:?}", unit_name);
 
             let flags = DisEnableFlags::empty();
             glib::spawn_future_local(async move {
-                if let Some(unit_name) = unit_name
-                    && let Err(err) = systemd::enable_unit_file(level, &unit_name, flags)
-                {
+                if let Err(err) = systemd::enable_unit_file(level, &unit_name, flags) {
                     warn!("Can't enable unit {:?}, Error {:?}", unit_name, err);
                 }
             });
@@ -236,13 +223,11 @@ mod imp {
             level: UnitDBusLevel,
             create_type: UnitCreateType,
         ) {
-            let unit_name = window.imp().unit_name(create_type);
+            let unit_name = window.imp().unit_name(Some(create_type));
             info!("Starting unit {:?}", unit_name);
 
             glib::spawn_future_local(async move {
-                if let Some(unit_name) = unit_name
-                    && let Err(err) = systemd::start_unit(level, &unit_name, StartStopMode::Fail)
-                {
+                if let Err(err) = systemd::start_unit(level, &unit_name, StartStopMode::Fail) {
                     warn!("Can't start unit {:?}, Error {:?}", unit_name, err);
                 }
             });
@@ -252,117 +237,60 @@ mod imp {
     #[gtk::template_callbacks]
     impl LaunchCreatorPageImp {
         pub(crate) fn update_page(&self) {
-            let window = upgrade_opt!(self.window.get());
-
+            // let window = upgrade_opt!(self.window.get());
+            let window = self.window.get().unwrap();
+            let window = upgrade!(window);
             let creation_type = window.creation_type();
-            match creation_type {
-                UnitCreateType::Service => {
-                    self.service_file_action.set_visible(true);
-                    self.timer_file_action.set_visible(false);
 
-                    if let Some(file_path) = window.imp().file_path(None)
-                        && let Some(file_path) = file_path.to_str()
-                    {
-                        self.service_file_action.set_subtitle(file_path);
-                    }
+            // let pizza = Ve
+            let rows = match creation_type {
+                UnitCreateType::Service => {
+                    vec![build_action_row(
+                        //Action Row New Unit title
+                        &pgettext("create_unit", "Service File"),
+                        &window,
+                        None,
+                        &self.artefacts_group,
+                    )]
                 }
                 UnitCreateType::Timer => {
-                    self.service_file_action.set_visible(false);
-                    self.timer_file_action.set_visible(true);
-
-                    if let Some(file_path) = window.imp().file_path(None)
-                        && let Some(file_path) = file_path.to_str()
-                    {
-                        self.timer_file_action.set_subtitle(file_path);
-                    }
+                    vec![build_action_row(
+                        //Action Row New Unit title
+                        &pgettext("create_unit", "Service File"),
+                        &window,
+                        None,
+                        &self.artefacts_group,
+                    )]
                 }
                 UnitCreateType::TimerService => {
-                    self.service_file_action.set_visible(true);
-                    self.timer_file_action.set_visible(true);
-
-                    if let Some(file_path) = window.imp().file_path(Some(UnitCreateType::Service))
-                        && let Some(file_path) = file_path.to_str()
-                    {
-                        self.service_file_action.set_subtitle(file_path);
-                    }
-
-                    if let Some(file_path) = window.imp().file_path(Some(UnitCreateType::Timer))
-                        && let Some(file_path) = file_path.to_str()
-                    {
-                        self.timer_file_action.set_subtitle(file_path);
-                    }
+                    vec![
+                        build_action_row(
+                            //Action Row New Unit title
+                            &pgettext("create_unit", "Service File"),
+                            &window,
+                            None,
+                            &self.artefacts_group,
+                        ),
+                        build_action_row(
+                            //Action Row New Unit title
+                            &pgettext("create_unit", "Service File"),
+                            &window,
+                            None,
+                            &self.artefacts_group,
+                        ),
+                    ]
                 }
                 UnitCreateType::Mount => {
-                    self.service_file_action.set_visible(false);
-                    self.timer_file_action.set_visible(false);
-
-                    if let Some(file_path) = window.imp().file_path(None)
-                        && let Some(file_path) = file_path.to_str()
-                    {
-                        self.timer_file_action.set_subtitle(file_path);
-                    }
+                    vec![build_action_row(
+                        //Action Row New Unit title
+                        &pgettext("create_unit", "Mount File"),
+                        &window,
+                        None,
+                        &self.artefacts_group,
+                    )]
                 }
-            }
-        }
-
-        #[template_callback]
-        fn show_service_file(&self, _button: &gtk::Button) {
-            self.show_file(UnitCreateType::Service);
-        }
-
-        #[template_callback]
-        fn show_timer_file(&self, _button: &gtk::Button) {
-            self.show_file(UnitCreateType::Timer);
-        }
-
-        #[template_callback]
-        fn show_service_unit(&self, _button: &gtk::Button) {
-            self.show_unit(UnitCreateType::Service);
-        }
-
-        #[template_callback]
-        fn show_timer_unit(&self, _button: &gtk::Button) {
-            self.show_unit(UnitCreateType::Timer);
-        }
-
-        fn show_file(&self, create_type: UnitCreateType) {
-            let window = upgrade_opt!(self.window.get());
-            if let Some(file_path) = window.imp().file_path(Some(create_type))
-                && let Some(file_path) = file_path.to_str()
-            {
-                let file_path = file::flatpak_host_file_path(file_path);
-                let uri = gio::File::for_uri(&format!("file://{}", file_path.display()));
-                let launcher = gtk::FileLauncher::new(Some(&uri));
-                launcher.launch(Some(&window), None::<&gio::Cancellable>, move |result| {
-                    if let Err(error) = result {
-                        warn!(
-                            "File {:?} launch Support Error {error:?}",
-                            file_path.display()
-                        )
-                    }
-                });
-            }
-        }
-
-        fn show_unit(&self, unit_create_type: UnitCreateType) {
-            let window = upgrade_opt!(self.window.get());
-            let Some(unit_name) = window.unit_name(unit_create_type) else {
-                return;
             };
-
-            let level = window.level();
-
-            info!("Opening unit {:?} at level {:?}", unit_name, level);
-
-            let unit = systemd::fetch_unit(level, &unit_name)
-                .inspect_err(|e| warn!("Cli unit: {e:?}"))
-                .ok();
-
-            if let Some(app_window) = window.app_window() {
-                app_window.set_unit(unit.as_ref());
-            } else {
-                warn!("app_window missing");
-            }
+            self.rows.replace(rows);
         }
     }
 
@@ -420,4 +348,99 @@ mod imp {
     impl WidgetImpl for LaunchCreatorPageImp {}
 
     impl NavigationPageImpl for LaunchCreatorPageImp {}
+
+    struct InfoRow {
+        file_button: gtk::Button,
+        unit_button: gtk::Button,
+    }
+
+    fn build_action_row(
+        row_title: &str,
+        window: &UnitCreatorWindow,
+        creator_type: Option<UnitCreateType>,
+        artefacts_group: &adw::PreferencesGroup,
+    ) -> InfoRow {
+        let action_row = adw::ActionRow::builder()
+            .subtitle_selectable(true)
+            .title(row_title)
+            .build();
+
+        if let Some(file_path) = window.imp().file_path(creator_type)
+            && let Some(file_path) = file_path.to_str()
+        {
+            action_row.set_subtitle(file_path);
+        }
+
+        let show_file_button = gtk::Button::builder()
+            .icon_name("document-text-symbolic")
+            .sensitive(false)
+            //Tooltip Created new unit file
+            .tooltip_text(pgettext("create_unit", "Show Unit File"))
+            .valign(gtk::Align::Center)
+            .build();
+
+        let window_wr = glib::object::ObjectExt::downgrade(window);
+        show_file_button.connect_clicked(move |_| {
+            let window = upgrade!(window_wr);
+            show_file(window, creator_type)
+        });
+        action_row.add_suffix(&show_file_button);
+
+        let show_unit_button = gtk::Button::builder()
+            .label(pgettext("create_unit", "Unit"))
+            .sensitive(false)
+            //Tooltip Created new unit
+            .tooltip_text(pgettext("create_unit", "Show Unit in Browser"))
+            .valign(gtk::Align::Center)
+            .build();
+
+        let window_wr = glib::object::ObjectExt::downgrade(window);
+        show_unit_button.connect_clicked(move |_| {
+            let window = upgrade!(window_wr);
+            show_unit(window, creator_type)
+        });
+        action_row.add_suffix(&show_unit_button);
+
+        artefacts_group.add(&action_row);
+        InfoRow {
+            file_button: show_file_button,
+            unit_button: show_unit_button,
+        }
+    }
+
+    fn show_file(window: UnitCreatorWindow, create_type: Option<UnitCreateType>) {
+        if let Some(file_path) = window.imp().file_path(create_type)
+            && let Some(file_path) = file_path.to_str()
+        {
+            let file_path = file::flatpak_host_file_path(file_path);
+            let uri = gio::File::for_uri(&format!("file://{}", file_path.display()));
+            let launcher = gtk::FileLauncher::new(Some(&uri));
+            launcher.launch(Some(&window), None::<&gio::Cancellable>, move |result| {
+                if let Err(error) = result {
+                    warn!(
+                        "File {:?} launch Support Error {error:?}",
+                        file_path.display()
+                    )
+                }
+            });
+        }
+    }
+
+    fn show_unit(window: UnitCreatorWindow, unit_create_type: Option<UnitCreateType>) {
+        let unit_name = window.unit_name(unit_create_type);
+
+        let level = window.level();
+
+        info!("Opening unit {:?} at level {:?}", unit_name, level);
+
+        let unit = systemd::fetch_unit(level, &unit_name)
+            .inspect_err(|e| warn!("Cli unit: {e:?}"))
+            .ok();
+
+        if let Some(app_window) = window.app_window() {
+            app_window.set_unit(unit.as_ref());
+        } else {
+            warn!("app_window missing");
+        }
+    }
 }

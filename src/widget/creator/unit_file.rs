@@ -94,6 +94,30 @@ macro_rules! get_set_str {
     };
 }
 
+macro_rules! get_set_op_str {
+    // ($section:ident, $key:ident) => {
+    //     get_set_str!($section, $key,*)
+    // };
+    ($section:ident, $key:ident $($suffix:ident), *) => {
+        // Getter
+        paste::paste! {
+            pub fn [<$key:snake $($suffix),*>](&self) -> &str {
+                self.get_str($section, stringify!($key))
+            }
+        }
+
+        // Setter
+        paste::paste! {
+            pub fn [<set_ $key:snake $($suffix),*>](&mut self, value: Option<impl AsRef<str>>) {
+                match value {
+                    Some(v) => self.set_str($section, stringify!($key), Some(v.as_ref())),
+                    None => self.set_str($section, stringify!($key), None)
+                };
+            }
+        }
+    };
+}
+
 macro_rules! get_set_bool {
     ($section:ident, $key:ident) => {
         // Getter
@@ -249,53 +273,12 @@ impl UnitFileData {
     get_set_str!(SERVICE, WorkingDirectory);
     get_set_str!(INSTALL, WantedBy);
 
-    pub fn after(&self) -> &str {
-        self.get_str(UNIT, "After")
-    }
-
-    pub fn set_after(&mut self, value: Option<glib::GString>) {
-        self.set_str(UNIT, "After", value.as_deref());
-    }
-
-    pub fn wants(&self) -> &str {
-        self.get_str(UNIT, "Wants")
-    }
-
-    pub fn set_wants(&mut self, value: Option<glib::GString>) {
-        self.set_str(UNIT, "Wants", value.as_deref());
-    }
-
-    pub fn exec_start(&self) -> &str {
-        self.get_str(SERVICE, "ExecStart")
-    }
-
-    pub fn set_exec_start(&mut self, value: impl AsRef<str>) {
-        self.set_str(SERVICE, "ExecStart", Some(value.as_ref()));
-    }
-
-    pub fn user(&self) -> &str {
-        self.get_str(SERVICE, "User")
-    }
-
-    pub fn set_user(&mut self, value: Option<impl AsRef<str>>) {
-        if let Some(v) = value {
-            self.set_str(SERVICE, "User", Some(v.as_ref()));
-        } else {
-            self.set_str(SERVICE, "User", None);
-        }
-    }
-
-    pub fn group(&self) -> &str {
-        self.get_str(SERVICE, "Group")
-    }
-
-    pub fn set_group(&mut self, value: Option<impl AsRef<str>>) {
-        if let Some(v) = value {
-            self.set_str(SERVICE, "Group", Some(v.as_ref()));
-        } else {
-            self.set_str(SERVICE, "Group", None);
-        }
-    }
+    get_set_op_str!(UNIT, After);
+    get_set_op_str!(UNIT, Wants);
+    get_set_str!(SERVICE, ExecStart);
+    get_set_str!(SERVICE, ExecReload);
+    get_set_op_str!(SERVICE, User);
+    get_set_op_str!(SERVICE, Group);
 
     pub fn cpu_quota(&self) -> &str {
         self.get_str(SERVICE, "CPUQuota")
@@ -374,13 +357,7 @@ impl UnitFileData {
         })
     }
 
-    pub fn set_restart(&mut self, value: impl AsRef<str>) {
-        self.set_str(SERVICE, "Restart", Some(value.as_ref()));
-    }
-
-    pub(crate) fn restart(&self) -> &str {
-        self.get_str(SERVICE, "Restart")
-    }
+    get_set_str!(SERVICE, Restart);
 
     pub(crate) fn standard_output(&self) -> &str {
         self.get_str(SERVICE, STANDARD_OUTPUT)

@@ -30,8 +30,8 @@
                 <child>
                   <object class="AdwActionRow" id="radio_button_service">
                     <property name="focusable">False</property>
-                    <property name="subtitle" translatable="yes" context="unit creation" comments="info subtitle">Create a task</property>
-                    <property name="title" translatable="yes">Service</property>
+                    <property name="subtitle" translatable="yes" context="create_unit" comments="info subtitle">Create a task</property>
+                    <property name="title" translatable="yes" context="create_unit" comments="Unit type selection">Service</property>
                     <child type="prefix">
                       <object class="GtkCheckButton">
                         <property name="action-name">creator.create-unit-type-selection</property>
@@ -44,8 +44,8 @@
                 <child>
                   <object class="AdwActionRow" id="radio_button_timer_service">
                     <property name="focusable">False</property>
-                    <property name="subtitle" translatable="yes" context="unit creation" comments="info subtitle">Create a scheduled task</property>
-                    <property name="title" translatable="yes">Timer with Service</property>
+                    <property name="subtitle" translatable="yes" context="create_unit" comments="info subtitle">Create a scheduled task</property>
+                    <property name="title" translatable="yes" context="create_unit" comments="Unit type selection">Timer with Service</property>
                     <child type="prefix">
                       <object class="GtkCheckButton">
                         <property name="action-name">creator.create-unit-type-selection</property>
@@ -58,8 +58,8 @@
                 <child>
                   <object class="AdwActionRow" id="radio_button_timer">
                     <property name="focusable">False</property>
-                    <property name="subtitle" translatable="yes" context="unit creation" comments="info subtitle">Trigger an existing task (service)</property>
-                    <property name="title" translatable="yes">Timer</property>
+                    <property name="subtitle" translatable="yes" context="create_unit" comments="info subtitle">Trigger an existing task (service)</property>
+                    <property name="title" translatable="yes" context="create_unit" comments="Unit type selection">Timer</property>
                     <child type="prefix">
                       <object class="GtkCheckButton">
                         <property name="action-name">creator.create-unit-type-selection</property>
@@ -72,8 +72,8 @@
                 <child>
                   <object class="AdwActionRow" id="radio_button_boot">
                     <property name="focusable">False</property>
-                    <property name="subtitle" translatable="yes" context="unit creation" comments="info subtitle">Create a boot unit</property>
-                    <property name="title" translatable="yes">Mount</property>
+                    <property name="subtitle" translatable="yes" context="unit creation" comments="info subtitle">Create a mount unit</property>
+                    <property name="title" translatable="yes" context="create_unit" comments="Unit type selection">Mount</property>
                     <child type="prefix">
                       <object class="GtkCheckButton">
                         <property name="action-name">creator.create-unit-type-selection</property>
@@ -87,12 +87,12 @@
             </child>
             <child>
               <object class="AdwPreferencesGroup">
-                <property name="title">Process Management Modes</property>
+                <property name="title" translatable="yes" context="create_unit" comments="Group title">Process Management Modes</property>
                 <child>
                   <object class="AdwActionRow">
                     <property name="activatable-widget">system_bus</property>
                     <property name="focusable">False</property>
-                    <property name="subtitle">Create unit at System level</property>
+                    <property name="subtitle" translatable="yes" context="create_unit" comments="Unit type selection">Create unit at System level</property>
                     <property name="title" translatable="yes">System</property>
                     <child type="prefix">
                       <object class="GtkCheckButton" id="system_bus">
@@ -106,8 +106,8 @@
                 <child>
                   <object class="AdwActionRow">
                     <property name="focusable">False</property>
-                    <property name="subtitle">Create unit at User level</property>
-                    <property name="title" translatable="yes">User Session</property>
+                    <property name="subtitle" translatable="yes" context="create_unit" comments="Unit type selection">Create unit at User level</property>
+                    <property name="title" translatable="yes" context="create_unit" comments="Unit type selection">User Session</property>
                     <child type="prefix">
                       <object class="GtkCheckButton" id="session_bus">
                         <property name="action-name">creator.create-unit-bus-selection</property>
@@ -124,8 +124,8 @@
                 <child>
                   <object class="AdwActionRow">
                     <property name="focusable">False</property>
-                    <property name="subtitle" translatable="yes" context="unit creation" comments="info subtitle">Runtime units are discarded at next reboot</property>
-                    <property name="title">Runtime</property>
+                    <property name="subtitle" translatable="yes" context="create_unit" comments="info subtitle">Runtime units are discarded at next reboot</property>
+                    <property name="title" translatable="yes" context="create_unit" comments="info subtitle">Runtime</property>
                     <child type="prefix">
                       <object class="GtkSwitch" id="runtime_switch">
                         <property name="valign">center</property>
@@ -141,6 +141,6 @@
     </property>
     <property name="hexpand">True</property>
     <property name="tag">first-page</property>
-    <property name="title">Test1</property>
+    <property name="title">First Page</property>
   </template>
 </interface>

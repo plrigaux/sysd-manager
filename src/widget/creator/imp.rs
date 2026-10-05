@@ -9,7 +9,7 @@ use crate::{
         creator::{
             ACTION_CREATOR_AVANCED_MODE, ACTION_CREATOR_CREATE, ACTION_CREATOR_FILE,
             ACTION_CREATOR_NEXT, ACTION_CREATOR_PREVIOUS, ACTION_CREATOR_UNIT_BUS,
-            ACTION_CREATOR_UNIT_TYPE_SELECTION, PageType, SaveUnit, UnitCreateType,
+            ACTION_CREATOR_UNIT_TYPE_SELECTION, CreateUnitErr, PageType, SaveUnit, UnitCreateType,
             creator_page_mount::CreatorPageMount, creator_page_service::CreatorPageService,
             creator_page_timer::CreatorPageTimer, first_page::UnitCreatorFirstPage,
             launch_creator_page::LaunchCreatorPage, navigation_row::NavigationRow,
@@ -102,6 +102,24 @@ impl ObjectSubclass for UnitCreatorWindowImp {
 }
 
 impl UnitCreatorWindowImp {
+    pub(super) fn unit_file_list(&self) -> Result<Ref<'_, HashSet<String>>, CreateUnitErr> {
+        if let Some(state) = self
+            .obj()
+            .action_group()
+            .action_state(&ACTION_CREATOR_UNIT_BUS[8..])
+        {
+            let level: UnitDBusLevel = (&state).into();
+            let set = match level {
+                UnitDBusLevel::System | UnitDBusLevel::Both => self.system_file_list.borrow(),
+                UnitDBusLevel::UserSession => self.session_file_list.borrow(),
+            };
+
+            Ok(set)
+        } else {
+            Err(CreateUnitErr::Unknown)
+        }
+    }
+
     pub(super) fn set_creation_unit_type(&self, unit_type: UnitCreateType) {
         self.creation_type.set(unit_type);
         // self.insert_page(&unit_type);
@@ -128,6 +146,8 @@ impl UnitCreatorWindowImp {
                 }
             }
             PageType::Mount if let Some(page) = self.mount_page.get() => page.validate(),
+            PageType::Service if let Some(page) = self.service_page.get() => page.validate(),
+            PageType::Timer if let Some(page) = self.timer_page.get() => page.validate(),
             _ => true,
         };
 
@@ -256,15 +276,14 @@ impl UnitCreatorWindowImp {
         Some(dir.join(prefix).with_extension(create_type.suffix()))
     }
 
-    pub fn unit_name(&self, create_type: UnitCreateType) -> Option<String> {
-        let Some(first_page) = self.first_page.get() else {
-            error!("first page None");
-            return None;
-        };
+    pub(super) fn unit_name(&self, create_type: Option<UnitCreateType>) -> String {
+        let first_page = self.first_page();
 
         let (_, prefix) = first_page.fetch_settings();
 
-        Some(create_type.full_name(&prefix))
+        create_type
+            .unwrap_or(self.creation_type.get())
+            .full_name(&prefix)
     }
 
     fn save_unit_files(&self) {
@@ -604,16 +623,19 @@ impl ObjectImpl for UnitCreatorWindowImp {
                     let service_page = upgrade!(service_page);
                     let text = service_file_page.file_text();
                     service_page.update_from_file_content(&text);
-                }
-                (PageType::Timer, _) => {
-                    let timer_page = upgrade!(timer_page);
-                    timer_page.set_view(window.creation_type());
+                    service_page.validate();
                 }
                 (_, PageType::TimerFile) => {
                     let timer_file_page = upgrade!(timer_file_page);
                     let timer_page = upgrade!(timer_page);
                     let text = timer_file_page.file_text();
                     timer_page.update_from_file_content(&text);
+                    timer_page.set_creation_type(window.creation_type());
+                    timer_page.validate();
+                }
+                (PageType::Timer, _) => {
+                    let timer_page = upgrade!(timer_page);
+                    timer_page.set_creation_type(window.creation_type());
                 }
                 (PageType::Mount, PageType::MountFile) => {
                     let mount_file_page = upgrade!(mount_file_page);

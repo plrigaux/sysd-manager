@@ -20,7 +20,7 @@ impl CreatorPageMount {
         let obj: CreatorPageMount = glib::Object::new();
         obj.set_tag(Some(page.id()));
         let _ = obj.imp().window.set(window);
-        // obj.imp().update_from_unit_info();
+        obj.imp().update_from_unit_info();
         obj
     }
 

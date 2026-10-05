@@ -21,7 +21,7 @@
 </property>
                     <property name="hexpand">True</property>
                     <property name="hexpand-set">True</property>
-                    <property name="label">Service</property>
+                    <property name="label" translatable="yes" context="create_unit" comments="Panel title">Service</property>
                   </object>
                 </child>
                 <child>
@@ -34,7 +34,7 @@ circular</property>
                         <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html</property>
                       </object>
                     </property>
-                    <property name="title">Unit</property>
+                    <property name="title" translatable="yes" context="create_unit" comments="Prefererence group">Unit</property>
                     <child>
                       <object class="AdwEntryRow" id="description_entry">
                         <property name="title">Description</property>
@@ -62,7 +62,7 @@ flat</property>
                         <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html</property>
                       </object>
                     </property>
-                    <property name="title">Service</property>
+                    <property name="title" translatable="yes" context="create_unit" comments="Prefererence group">Service</property>
                     <child>
                       <object class="AdwEntryRow" id="environment_entry">
                         <property name="title">Environment</property>
@@ -95,8 +95,23 @@ circular</property>
                       </object>
                     </child>
                     <child>
-                      <object class="AdwComboRow" id="restart_policy_combo">
-                        <property name="title">Restart Policy</property>
+                      <object class="AdwEntryRow" id="exec_reload_entry">
+                        <property name="title">ExecReload</property>
+                        <property name="title-selectable">True</property>
+                        <property name="use-underline">True</property>
+                        <child>
+                          <object class="GtkButton">
+                            <property name="css-classes">flat</property>
+                            <property name="icon-name">folder-open-symbolic</property>
+                            <property name="valign">center</property>
+                            <signal name="clicked" handler="exec_start_dialog_clicked" swapped="True"/>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="MyDropDown" id="restart_policy_combo">
+                        <property name="title">Restart</property>
                       </object>
                     </child>
                   </object>
@@ -126,24 +141,17 @@ flat</property>
                       </object>
                     </child>
                     <child>
-                      <object class="AdwComboRow" id="user_combo">
-                        <property name="enable-search">True</property>
-                        <property name="expression">
-                          <lookup name="string" type="GtkStringObject"/>
-                        </property>
+                      <object class="MyDropDown" id="user_combo">
                         <property name="title">User</property>
-                        <property name="use-subtitle">True</property>
-                        <property name="use-underline">True</property>
+                        <!-- Custom object fragments -->
+                        <property name="enable-search">True</property>
                       </object>
                     </child>
                     <child>
-                      <object class="AdwComboRow" id="group_combo">
-                        <property name="enable-search">True</property>
-                        <property name="expression">
-                          <lookup name="string" type="GtkStringObject"/>
-                        </property>
+                      <object class="MyDropDown" id="group_combo">
                         <property name="title">Group</property>
-                        <property name="use-subtitle">True</property>
+                        <!-- Custom object fragments -->
+                        <property name="enable-search">True</property>
                       </object>
                     </child>
                     <child>
@@ -168,7 +176,7 @@ flat</property>
                         <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.resource-control.html</property>
                       </object>
                     </property>
-                    <property name="title" translatable="yes">Resource Control</property>
+                    <property name="title" translatable="yes" context="create_unit" comments="Prefererence group">Resource Control</property>
                     <child>
                       <object class="AdwEntryRow" id="cpu_quota_entry">
                         <property name="title">CPUQuota</property>
@@ -191,7 +199,7 @@ flat</property>
                         <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html</property>
                       </object>
                     </property>
-                    <property name="title">Install</property>
+                    <property name="title" translatable="yes" context="create_unit" comments="Prefererence group">Install</property>
                     <child>
                       <object class="SuggestionRow" id="wanted_by_entry">
                         <property name="text">multi-user.target</property>

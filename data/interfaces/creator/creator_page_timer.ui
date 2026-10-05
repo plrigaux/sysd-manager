@@ -34,7 +34,7 @@ flat</property>
                         <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html</property>
                       </object>
                     </property>
-                    <property name="title">Unit</property>
+                    <property name="title" translatable="yes" context="create_unit" comments="Prefererence group title">Unit</property>
                     <child>
                       <object class="AdwEntryRow" id="description">
                         <property name="title">Description</property>
@@ -49,7 +49,7 @@ flat</property>
                         <property name="title">Monotonic Timer</property>
                         <child>
                           <object class="AdwSplitButton" id="monotonic_timer_adder">
-                            <property name="label">Add</property>
+                            <property name="label" translatable="yes" context="create_unit" comments="Button to add Monotonic timer">Add</property>
                             <property name="valign">baseline-center</property>
                           </object>
                         </child>
@@ -57,7 +57,7 @@ flat</property>
                     </child>
                     <child>
                       <object class="AdwActionRow">
-                        <property name="title">Real-time Timer</property>
+                        <property name="title" translatable="yes" context="create_unit" comments="Button to add Realtime timer">Real-time Timer</property>
                         <child>
                           <object class="AdwSplitButton" id="realtime_timer_adder">
                             <property name="label">Add</property>
@@ -78,7 +78,7 @@ flat</property>
                         <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.time.html</property>
                       </object>
                     </property>
-                    <property name="title">Timer Triggers</property>
+                    <property name="title" translatable="yes" context="create_unit" comments="Prefererence group title">Timer Triggers</property>
                   </object>
                 </child>
                 <child>
@@ -91,7 +91,7 @@ flat</property>
                         <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.timer.html</property>
                       </object>
                     </property>
-                    <property name="title">Timer</property>
+                    <property name="title" translatable="yes" context="create_unit" comments="Prefererence group">Timer</property>
                     <child>
                       <object class="MyDropDown" id="trigger_unit">
                         <property name="title">Unit</property>
@@ -115,7 +115,7 @@ flat</property>
                         <property name="uri">https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html</property>
                       </object>
                     </property>
-                    <property name="title">Install</property>
+                    <property name="title" translatable="yes" context="create_unit" comments="Prefererence group title">Install</property>
                     <child>
                       <object class="SuggestionRow" id="wanted_by_entry">
                         <property name="text">timers.target</property>

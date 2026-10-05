@@ -1,7 +1,7 @@
+mod common;
 mod creator_page_mount;
 mod creator_page_service;
 mod creator_page_timer;
-//pub mod dropdown;
 mod first_page;
 mod imp;
 mod launch_creator_page;
@@ -20,11 +20,7 @@ use adw::{prelude::PreferencesRowExt, subclass::prelude::ObjectSubclassIsExt};
 use gettextrs::pgettext;
 use glib::object::IsA;
 use gtk::glib::{self};
-use std::{
-    cell::Ref,
-    collections::HashSet,
-    path::{Path, PathBuf},
-};
+use std::{cell::Ref, collections::HashSet, path::PathBuf};
 use systemd::errors::SystemdErrors;
 use tracing::{error, warn};
 
@@ -76,7 +72,7 @@ impl UnitCreatorWindow {
         self.imp().app_window.get()
     }
 
-    fn unit_name(&self, create_type: UnitCreateType) -> Option<String> {
+    fn unit_name(&self, create_type: Option<UnitCreateType>) -> String {
         self.imp().unit_name(create_type)
     }
 
@@ -86,6 +82,10 @@ impl UnitCreatorWindow {
 
     pub(crate) fn update_unit_prefix(&self, escaped_prefix: String) -> CreateUnitErr {
         self.imp().update_unit_prefix(escaped_prefix)
+    }
+
+    pub(crate) fn unit_file_list(&self) -> Result<Ref<'_, HashSet<String>>, CreateUnitErr> {
+        self.imp().unit_file_list()
     }
 }
 
@@ -215,46 +215,58 @@ pub(crate) enum CreateUnitErr {
     TooLong(usize),
     Mandatory,
     Unknown,
+    NotUnit,
 }
 
 impl CreateUnitErr {
     fn title_err(&self, prefix: &str) -> String {
-        match self {
-            CreateUnitErr::WrongChar => format!("{prefix} - Invalid character"),
-            CreateUnitErr::FileExits => format!("{prefix} - Unit File already exists"),
-            CreateUnitErr::Empty => format!("{prefix} -  Empty"),
-            CreateUnitErr::FileNotExits => format!("{prefix} - File not exists"),
-            CreateUnitErr::NotFile => format!("{prefix} - Not a File"),
-            CreateUnitErr::NotExecutable => format!("{prefix} - Not an executable"),
-            CreateUnitErr::Malformed => format!("{prefix} - Malformed"),
+        let warn_msg = match self {
             CreateUnitErr::NoErr => prefix.to_owned(),
-            CreateUnitErr::NotAbsolute => {
-                format2!(pgettext("validator", "{} - Not absolute path"), prefix)
-            }
-            CreateUnitErr::NotDir => {
-                format2!(pgettext("validator", "{} - Not a directory"), prefix)
-            }
-            CreateUnitErr::NoPath => {
-                format2!(pgettext("validator", "{} - No path specified"), prefix)
-            }
+            //Field validation message
+            CreateUnitErr::WrongChar => pgettext("validator", "Invalid character"),
+            //Field validation message
+            CreateUnitErr::FileExits => pgettext("validator", "Unit File already exists"),
+            //Field validation message
+            CreateUnitErr::Empty => pgettext("validator", " Empty"),
+            //Field validation message
+            CreateUnitErr::FileNotExits => pgettext("validator", "File not exists"),
+            //Field validation message
+            CreateUnitErr::NotFile => pgettext("validator", "Not a File"),
+            //Field validation message
+            CreateUnitErr::NotExecutable => pgettext("validator", "Not an executable"),
+            //Field validation message
+            CreateUnitErr::Malformed => pgettext("validator", "Malformed"),
+            //Field validation message
+            CreateUnitErr::NotAbsolute => pgettext("validator", "Not absolute path"),
+            //Field validation message
+            CreateUnitErr::NotDir => pgettext("validator", "Not a directory"),
+            //Field validation message
+            CreateUnitErr::NoPath => pgettext("validator", "No path specified"),
+            //Field validation message {CHAR LIMIT}
             CreateUnitErr::TooShort(limit) => format2!(
-                pgettext(
-                    "validator",
-                    "{} - Too short, under the limit of {} characters"
-                ),
-                prefix,
+                pgettext("validator", "Too short, under the limit of {} characters"),
                 limit
             ),
+            //Field validation message {CHAR LIMIT}
             CreateUnitErr::TooLong(limit) => format2!(
-                pgettext(
-                    "validator",
-                    "{} - Too long, over the limit of {} characters"
-                ),
-                prefix,
+                pgettext("validator", "Too long, over the limit of {} characters"),
                 limit
             ),
-            CreateUnitErr::Mandatory => format2!(pgettext("validator", "{} - Mandatory"), prefix),
-            CreateUnitErr::Unknown => format2!(pgettext("validator", "{} - Unknown"), prefix),
+            CreateUnitErr::Mandatory => pgettext("validator", "Mandatory field"),
+            //Field validation message
+            CreateUnitErr::Unknown => pgettext("validator", "Unknown error"),
+            //Field validation message
+            CreateUnitErr::NotUnit => pgettext("validator", "Not a Unit"),
+        };
+
+        if prefix.len() == warn_msg.len() {
+            warn_msg
+        } else {
+            let mut s = String::from(prefix);
+            s.push_str(" - ");
+            s.push_str(&warn_msg);
+
+            s
         }
     }
 
@@ -263,7 +275,8 @@ impl CreateUnitErr {
         name_err: &CreateUnitErr,
         prefix: &str,
     ) {
-        Self::apply_validation_result_error(entry, name_err, prefix, false);
+        let error = matches!(name_err, CreateUnitErr::Mandatory);
+        Self::apply_validation_result_error(entry, name_err, prefix, error);
     }
 
     fn apply_validation_result_error(
@@ -361,63 +374,5 @@ impl From<Option<&str>> for PageType {
                 PageType::Start
             }
         }
-    }
-}
-
-pub fn set_initial_folder(file_dialog: &gtk::FileDialog) {
-    if let Ok(home) = std::env::var("HOME") {
-        let path = Path::new(&home);
-        let dir = gio::File::for_path(path);
-        file_dialog.set_initial_folder(Some(&dir));
-    }
-}
-
-fn get_file_path(text: &str) -> Result<&str, CreateUnitErr> {
-    let text = text.trim_start();
-    let mut begin = 0;
-    let mut end = text.len();
-    let mut in_quotes = false;
-
-    for (idx, char) in text.char_indices() {
-        if char.is_whitespace() && !in_quotes {
-            end = idx;
-            break;
-        } else if char == '"' {
-            if idx == 0 {
-                in_quotes = true;
-                begin = 1;
-            } else {
-                end = idx;
-                in_quotes = false;
-                break;
-            }
-        }
-    }
-    if in_quotes {
-        return Err(CreateUnitErr::Malformed);
-    }
-    Ok(&text[begin..end])
-}
-
-#[cfg(test)]
-mod tests {
-    use test_base::init_logs;
-
-    use super::*;
-
-    #[test]
-    fn test_get_file() {
-        init_logs();
-        assert_eq!(get_file_path("text"), Ok("text"));
-        assert_eq!(get_file_path("  text"), Ok("text"));
-        assert_eq!(get_file_path("  text   "), Ok("text"));
-        assert_eq!(get_file_path("  text -f  "), Ok("text"));
-        assert_eq!(get_file_path(r#""text asdf" xxx"#), Ok("text asdf"));
-        assert_eq!(get_file_path("\"\"text"), Ok(""));
-
-        assert_eq!(
-            get_file_path("/home/plr/bin/AppDir/etc"),
-            Ok("/home/plr/bin/AppDir/etc")
-        );
     }
 }

@@ -1,9 +1,9 @@
 use crate::{
-    upgrade,
+    upgrade, upgrade_opt,
     widget::{
         self,
         creator::{
-            self, CreateUnitErr, UnitCreatorWindow,
+            self, CreateUnitErr, UnitCreatorWindow, common,
             creator_page_mount::{CreatorPageMount, mount_tools, validator},
             suggestion::SuggestionRow,
             unit_file::UnitFileData,
@@ -12,6 +12,7 @@ use crate::{
     },
 };
 use adw::{prelude::*, subclass::prelude::*};
+use gettextrs::pgettext;
 use glib::WeakRef;
 use regex::Regex;
 use std::{
@@ -58,6 +59,9 @@ pub struct CreatorPageMountImp {
     read_write_only_switch: TemplateChild<adw::SwitchRow>,
     #[template_child]
     force_unmount_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    wanted_by_entry: TemplateChild<SuggestionRow>,
 
     pub(super) window: OnceCell<WeakRef<UnitCreatorWindow>>,
 
@@ -110,38 +114,34 @@ impl ObjectImpl for CreatorPageMountImp {
             let page = page.obj().clone();
 
             glib::spawn_future_local(async move {
-                let (file_system_names, resources_to_mount) = match runtime().block_on(async move {
+                let (file_system_names, resources_to_mount) = runtime().block_on(async move {
                     let h1 = tokio::spawn(async { mount_tools::fetch_filesystem_names().await });
                     let h2 = tokio::spawn(async { mount_tools::fetch_resources_to_mount().await });
 
                     tokio::join!(h1, h2)
-                }) {
-                    (Ok(s1), Ok(s2)) => (
-                        s1.inspect_err(|err| warn!("Fetch File System Names Error {}", err))
-                            .unwrap_or_default(),
-                        s2.inspect_err(|err| warn!("Fetch Resources to Mount Error {}", err))
-                            .unwrap_or_default(),
-                    ),
-                    (Ok(result_file_system_names), Err(err2)) => {
-                        warn!("Fetch Mount Points Error {}", err2);
+                });
 
-                        let set = result_file_system_names
-                            .inspect_err(|err| warn!("Fetch Resources to Mount Error {}", err))
-                            .unwrap_or_default();
-                        (set, BTreeSet::new())
-                    }
-                    (Err(err1), Ok(result_mount_points)) => {
+                let file_system_names = match file_system_names {
+                    Ok(Ok(set)) => set,
+                    Ok(Err(err1)) => {
                         warn!("Fetch File System Names Error {}", err1);
+                        BTreeSet::default()
+                    }
+                    Err(err1) => {
+                        warn!("Fetch File System Names Error {}", err1);
+                        BTreeSet::default()
+                    }
+                };
 
-                        let set = result_mount_points
-                            .inspect_err(|err| warn!("Fetch Resources to Mount Error {}", err))
-                            .unwrap_or_default();
-                        (BTreeSet::new(), set)
-                    }
-                    (Err(err1), Err(err2)) => {
-                        warn!("Fetch File System Names Error {}", err1);
+                let resources_to_mount = match resources_to_mount {
+                    Ok(Ok(set)) => set,
+                    Ok(Err(err2)) => {
                         warn!("Fetch Resources to Mount Error {}", err2);
-                        (BTreeSet::new(), BTreeSet::new())
+                        BTreeSet::default()
+                    }
+                    Err(err2) => {
+                        warn!("Fetch Resources to Mount Error {}", err2);
+                        BTreeSet::default()
                     }
                 };
 
@@ -212,6 +212,16 @@ impl ObjectImpl for CreatorPageMountImp {
             }
         });
         self.timeout_sec_entry.add_controller(event_focus);
+
+        self.wanted_by_entry.set_popup_width(400);
+        let event_controller = gtk::EventControllerFocus::new();
+        let this = self.downgrade();
+        event_controller.connect_leave(move |_event| {
+            let this = upgrade!(this);
+
+            this.validate_unit_wanted_by();
+        });
+        self.wanted_by_entry.add_controller(event_controller);
     }
 }
 
@@ -220,8 +230,10 @@ impl CreatorPageMountImp {
     #[template_callback]
     fn where_search_dialog_clicked(&self, _button: gtk::Button) {
         let file_dialog = gtk::FileDialog::builder()
-            .title("Select a mount point")
-            .accept_label("Select")
+            //Title of the folder selection widget window
+            .title(pgettext("create_unit", "Select a mount point"))
+            //Button title of the folder selection widget
+            .accept_label(pgettext("create_unit", "Select"))
             .build();
 
         let create_service_page = self.obj().clone();
@@ -240,7 +252,7 @@ impl CreatorPageMountImp {
                 file_dialog.set_initial_file(Some(&file));
             } else {
                 warn!("not exist {}", path.display());
-                creator::set_initial_folder(&file_dialog);
+                common::set_initial_folder(&file_dialog);
             }
         }
 
@@ -267,6 +279,27 @@ impl CreatorPageMountImp {
 }
 
 impl CreatorPageMountImp {
+    fn validate_unit_wanted_by(&self) {
+        common::validate_unit_common(
+            &self.wanted_by_entry.get(),
+            "WantedBy",
+            Some(&self.wanted_by_entry.text()),
+            self.window(),
+        );
+    }
+
+    fn window(&self) -> &WeakRef<UnitCreatorWindow> {
+        self.window.get().unwrap()
+    }
+
+    pub(super) fn update_from_unit_info(&self) {
+        let window = upgrade_opt!(self.window.get());
+
+        let model = window.imp().get_trigger_units_model();
+
+        self.wanted_by_entry.set_model(Some(&model));
+    }
+
     pub(super) fn update_view(&self, page: &UnitFileCreatorPage) {
         self.fill_data();
         let data = self.file_data.borrow();
@@ -292,10 +325,6 @@ impl CreatorPageMountImp {
         file_data.set_sloppy_options(self.sloppy_options_switch.is_active());
         file_data.set_read_write_only(self.read_write_only_switch.is_active());
         file_data.set_force_unmount(self.force_unmount_switch.is_active());
-
-        if file_data.wanted_by().is_empty() {
-            file_data.set_wanted_by("multi-user.target");
-        }
 
         file_data.sort();
     }
