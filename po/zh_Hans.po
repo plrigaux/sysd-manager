@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-08 22:58-0400\n"
+"POT-Creation-Date: 2026-10-08 23:13-0400\n"
 "PO-Revision-Date: 2026-09-11 01:51+0000\n"
 "Last-Translator: CGuo <CGuoXYZ@163.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
@@ -2372,13 +2372,13 @@ msgstr ""
 #. Field validation message
 #: src/widget/creator/mod.rs:230
 msgctxt "validator"
-msgid " Empty"
+msgid "Empty"
 msgstr ""
 
 #. Field validation message
 #: src/widget/creator/mod.rs:232
 msgctxt "validator"
-msgid "File not exists"
+msgid "File does not exist"
 msgstr ""
 
 #. Field validation message

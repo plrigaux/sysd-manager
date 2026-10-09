@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-08 22:58-0400\n"
+"POT-Creation-Date: 2026-10-08 23:13-0400\n"
 "PO-Revision-Date: 2026-10-09 03:12+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
@@ -2384,14 +2384,16 @@ msgstr "Le fichier d'unité existe déjà"
 
 #. Field validation message
 #: src/widget/creator/mod.rs:230
+#, fuzzy
 msgctxt "validator"
-msgid " Empty"
+msgid "Empty"
 msgstr " Vide"
 
 #. Field validation message
 #: src/widget/creator/mod.rs:232
+#, fuzzy
 msgctxt "validator"
-msgid "File not exists"
+msgid "File does not exist"
 msgstr "Le fichier n'existe pas"
 
 #. Field validation message

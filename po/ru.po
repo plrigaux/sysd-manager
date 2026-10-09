@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-08 22:58-0400\n"
+"POT-Creation-Date: 2026-10-08 23:13-0400\n"
 "PO-Revision-Date: 2025-11-27 17:59+0000\n"
 "Last-Translator: Nurlan Musayev <nurlancik1@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/sysd-manager/"
@@ -2404,13 +2404,13 @@ msgstr ""
 #. Field validation message
 #: src/widget/creator/mod.rs:230
 msgctxt "validator"
-msgid " Empty"
+msgid "Empty"
 msgstr ""
 
 #. Field validation message
 #: src/widget/creator/mod.rs:232
 msgctxt "validator"
-msgid "File not exists"
+msgid "File does not exist"
 msgstr ""
 
 #. Field validation message
