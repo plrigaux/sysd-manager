@@ -2020,7 +2020,7 @@ dependencies = [
 
 [[package]]
 name = "sysd-manager-base"
-version = "2.23.0"
+version = "2.23.1"
 dependencies = [
  "constcat",
  "gettext-rs",
@@ -2038,7 +2038,7 @@ dependencies = [
 
 [[package]]
 name = "sysd-manager-buildtool"
-version = "2.23.0"
+version = "2.23.1"
 dependencies = [
  "quick-xml",
  "regex",
@@ -2048,7 +2048,7 @@ dependencies = [
 
 [[package]]
 name = "sysd-manager-comcontroler"
-version = "2.23.0"
+version = "2.23.1"
 dependencies = [
  "chrono",
  "enumflags2",
