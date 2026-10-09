@@ -227,9 +227,9 @@ impl CreateUnitErr {
             //Field validation message
             CreateUnitErr::FileExits => pgettext("validator", "Unit File already exists"),
             //Field validation message
-            CreateUnitErr::Empty => pgettext("validator", " Empty"),
+            CreateUnitErr::Empty => pgettext("validator", "Empty"),
             //Field validation message
-            CreateUnitErr::FileNotExits => pgettext("validator", "File not exists"),
+            CreateUnitErr::FileNotExits => pgettext("validator", "File does not exist"),
             //Field validation message
             CreateUnitErr::NotFile => pgettext("validator", "Not a File"),
             //Field validation message
