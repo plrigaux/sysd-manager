@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-08 22:58-0400\n"
-"PO-Revision-Date: 2026-09-09 13:08+0000\n"
+"PO-Revision-Date: 2026-10-09 03:12+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2026.9.1\n"
+"X-Generator: Weblate 2026.10.1.dev0\n"
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -310,7 +310,7 @@ msgstr "Termine le processus"
 #: data/interfaces/creator/create_first.ui:95
 msgctxt "create_unit"
 msgid "Create unit at System level"
-msgstr ""
+msgstr "Créer une unité au niveau du système"
 
 #: data/interfaces/creator/create_first.ui:96
 msgid "System"
@@ -320,7 +320,7 @@ msgstr "Système"
 #: data/interfaces/creator/create_first.ui:109
 msgctxt "create_unit"
 msgid "Create unit at User level"
-msgstr ""
+msgstr "Créer une unité au niveau utilisateur"
 
 #. Unit type selection
 #: data/interfaces/creator/create_first.ui:110
@@ -338,7 +338,6 @@ msgstr "Les unités runtime sont supprimées au prochain redémarrage"
 
 #. info subtitle
 #: data/interfaces/creator/create_first.ui:128
-#, fuzzy
 msgctxt "create_unit"
 msgid "Runtime"
 msgstr "Runtime"
@@ -347,7 +346,7 @@ msgstr "Runtime"
 #: data/interfaces/creator/creator_end_page.ui:18
 msgctxt "create_unit"
 msgid "After creation"
-msgstr ""
+msgstr "Post création"
 
 #. switch row subtitle
 #: data/interfaces/creator/creator_end_page.ui:23
@@ -404,13 +403,13 @@ msgstr "Monté"
 #: data/interfaces/creator/creator_page_timer.ui:118
 msgctxt "create_unit"
 msgid "Install"
-msgstr ""
+msgstr "Install"
 
 #. Prefererence group
 #: data/interfaces/creator/creator_page_service.ui:179
 msgctxt "create_unit"
 msgid "Resource Control"
-msgstr ""
+msgstr "Contrôle des ressources"
 
 #. Button to add Monotonic timer
 #: data/interfaces/creator/creator_page_timer.ui:52
@@ -430,7 +429,7 @@ msgstr "Signal temps réel"
 #: data/interfaces/creator/creator_page_timer.ui:81
 msgctxt "create_unit"
 msgid "Timer Triggers"
-msgstr ""
+msgstr "Déclencheurs"
 
 #: data/interfaces/creator/creator_page_timer.ui:102
 msgid "Catch up missed runs after boot "
@@ -442,7 +441,7 @@ msgstr "Rattraper les courses manquées après le démarrage "
 #. It should be phrased as a verb
 #: data/interfaces/creator/mydrop.ui:30 src/widget/creator/dropdown.rs:459
 msgid "Search"
-msgstr ""
+msgstr "Recherche"
 
 #: data/interfaces/creator/nav_row.ui:23
 msgid ""
@@ -2206,7 +2205,7 @@ msgstr "Sélectionner"
 #: src/widget/creator/creator_page_service/imp.rs:591
 msgctxt "create_unit"
 msgid "Select a working directory"
-msgstr ""
+msgstr "Sélectionnez un répertoire de travail"
 
 #. Title of the executable selection widget window
 #: src/widget/creator/creator_page_service/imp.rs:636
@@ -2295,7 +2294,7 @@ msgstr "Préfixe du nom de l'unité"
 #: src/widget/creator/first_page.rs:146
 msgctxt "creator"
 msgid "(automatically generated )"
-msgstr ""
+msgstr "(généré automatiquement)"
 
 #: src/widget/creator/imp.rs:395
 #, rust-format
@@ -2375,25 +2374,25 @@ msgstr "Monté"
 #: src/widget/creator/mod.rs:226
 msgctxt "validator"
 msgid "Invalid character"
-msgstr ""
+msgstr "Caractère invalide"
 
 #. Field validation message
 #: src/widget/creator/mod.rs:228
 msgctxt "validator"
 msgid "Unit File already exists"
-msgstr ""
+msgstr "Le fichier d'unité existe déjà"
 
 #. Field validation message
 #: src/widget/creator/mod.rs:230
 msgctxt "validator"
 msgid " Empty"
-msgstr ""
+msgstr " Vide"
 
 #. Field validation message
 #: src/widget/creator/mod.rs:232
 msgctxt "validator"
 msgid "File not exists"
-msgstr ""
+msgstr "Le fichier n'existe pas"
 
 #. Field validation message
 #: src/widget/creator/mod.rs:234
@@ -2413,7 +2412,7 @@ msgstr "Sélectionner l'exécutable"
 #: src/widget/creator/mod.rs:238
 msgctxt "validator"
 msgid "Malformed"
-msgstr ""
+msgstr "Malformé"
 
 #. Field validation message
 #: src/widget/creator/mod.rs:240
@@ -2440,24 +2439,24 @@ msgstr "{} - Aucun chemin spécifié"
 #, rust-format
 msgctxt "validator"
 msgid "Too short, under the limit of {} characters"
-msgstr ""
+msgstr "Trop court, en dessous de la limite de {} caractères"
 
 #: src/widget/creator/mod.rs:252
 #, rust-format
 msgctxt "validator"
 msgid "Too long, over the limit of {} characters"
-msgstr ""
+msgstr "Trop long, dépasse la limite de {} caractères"
 
 #: src/widget/creator/mod.rs:255
 msgctxt "validator"
 msgid "Mandatory field"
-msgstr ""
+msgstr "Champ obligatoire"
 
 #. Field validation message
 #: src/widget/creator/mod.rs:257
 msgctxt "validator"
 msgid "Unknown error"
-msgstr ""
+msgstr "Erreur inconnue"
 
 #. Field validation message
 #: src/widget/creator/mod.rs:259
