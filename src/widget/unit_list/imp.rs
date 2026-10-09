@@ -23,8 +23,8 @@ use crate::{
         InterPanelMessage,
         app_window::AppWindow,
         preferences::data::{
-            DbusLevel, KEY_PREF_CASE_INSENSITIVE_DEFAULT, KEY_PREF_UNIT_LIST_DISPLAY_COLORS,
-            PREFERENCES,
+            DbusLevel, KEY_PREF_CASE_INSENSITIVE_DEFAULT, KEY_PREF_LIST_PRESERVE_FILTERS,
+            KEY_PREF_UNIT_LIST_DISPLAY_COLORS, PREFERENCES,
         },
         unit_list::{
             COL_ID_UNIT, UnitCuratedList, UnitListPanel,
@@ -34,8 +34,8 @@ use crate::{
                 filter_bus_level, filter_enable_status, filter_load_state, filter_preset,
                 filter_sub_state, filter_unit_description, filter_unit_name, filter_unit_type,
                 unit_prop_filter::{
-                    FilterBool, FilterElement, FilterNum, FilterText, UnitPropertyAssessor,
-                    UnitPropertyFilter, UnitPropertyFilterType,
+                    self, FilterBool, FilterElement, FilterNum, FilterText, UnitPropertyAssessor,
+                    UnitPropertyFilter, UnitPropertyFilterType, save_filter,
                 },
             },
             get_clean_col_title,
@@ -72,7 +72,7 @@ use std::{
     hash::{Hash, Hasher},
     rc::Rc,
     sync::OnceLock,
-    time::Duration,
+    time::{Duration, SystemTime},
 };
 use systemd::{SystemdSignal, errors::SystemdErrors, init_signal_watcher, runtime};
 use tokio::{
@@ -87,6 +87,7 @@ static PATH_QUARK: OnceLock<glib::Quark> = OnceLock::new();
 const SELECT_LIST_VIEW: &str = "selected-list-view";
 const UNIT_LIST_VIEW_PAGE: &str = "unit_list";
 const RESTRICTIVE_FILTER_VIEW_PAGE: &str = "restrictive_filter";
+const FILTER_SAVING_DELAY_SECS: u64 = 5;
 
 #[derive(Debug, Clone)]
 struct UnitKey {
@@ -205,7 +206,7 @@ impl<'a> PartialEq<UnitKeyRef<'a>> for UnitKey {
 }
 
 type UnitPropertyFiltersContainer =
-    RefCell<HashMap<String, Rc<RefCell<Box<dyn UnitPropertyFilter>>>>>;
+    RefCell<IndexMap<String, Rc<RefCell<Box<dyn UnitPropertyFilter>>>>>;
 type AppliedUnitPropertyFilters = OnceCell<Rc<RefCell<Vec<Box<dyn UnitPropertyAssessor>>>>>;
 
 #[derive(Default, gtk::CompositeTemplate, Properties)]
@@ -227,7 +228,7 @@ pub struct UnitListPanelImp {
     #[template_child]
     search_bar: TemplateChild<gtk::SearchBar>,
 
-    filter_list_model: RefCell<gtk::FilterListModel>,
+    filter_list_model: OnceCell<gtk::FilterListModel>,
 
     #[template_child]
     panel_stack: TemplateChild<adw::ViewStack>,
@@ -256,8 +257,11 @@ pub struct UnitListPanelImp {
     #[property(get, set=Self::set_unit_filter_count)]
     unit_filtered_count: Cell<u32>,
 
-    #[property(get, set=Self::set_case_incensitive_default)]
-    case_incensitive_default: Cell<bool>,
+    #[property(get, set=Self::set_case_insensitive_default)]
+    case_insensitive_default: Cell<bool>,
+
+    #[property(get, set=Self::set_list_preserve_filter)]
+    list_preserve_filters: Cell<bool>,
 
     #[property(get, set, default)]
     selected_list_view: Cell<UnitCuratedList>,
@@ -290,6 +294,8 @@ pub struct UnitListPanelImp {
     pop_menu: OnceCell<pop_menu::UnitPopMenu>,
 
     dbus_level: Cell<DbusLevel>,
+
+    filter_write_time: Cell<Option<SystemTime>>,
 }
 
 macro_rules! update_search_entry {
@@ -576,6 +582,21 @@ impl UnitListPanelImp {
                 col_active.column().set_factory(factory.as_ref());
             }
         });
+
+        if self.list_preserve_filters.get() {
+            let unit_list_panel = self.obj().clone();
+            glib::spawn_future_local(async move {
+                let map = unit_prop_filter::load_filters(&unit_list_panel);
+                unit_list_panel.imp().unit_property_filters.replace(map);
+            });
+        }
+    }
+
+    fn set_list_preserve_filter(&self, value: bool) {
+        self.list_preserve_filters.set(value);
+        if value {
+            self.saving_filter();
+        }
     }
 
     fn generate_column_list(&self) -> Vec<gtk::ColumnViewColumn> {
@@ -628,7 +649,6 @@ impl UnitListPanelImp {
         let panel_stack = self.panel_stack.clone();
         let single_selection = single_selection!(self).clone();
         let unit_list = self.obj().clone();
-        let units_browser = units_browser!(self).clone();
         let view = self.selected_list_view.get();
         let dbus_level = PREFERENCES.dbus_level();
         let refresh_unit_list_button = upgrade!(self.refresh_unit_list_button);
@@ -770,7 +790,7 @@ impl UnitListPanelImp {
 
             //cause no scrollwindow v adjustment
             if n_items > 0 {
-                focus_on_row(&unit_list, &units_browser);
+                unit_list.imp().focus_on_row();
             }
             panel_stack.set_visible_child_name(UNIT_LIST_VIEW_PAGE);
 
@@ -788,11 +808,8 @@ impl UnitListPanelImp {
             };
             s_controls.grab_focus_on_search_entry();
 
-            let applied_assessors = self
-                .applied_unit_property_filters
-                .get()
-                .expect("applied_assessors not null")
-                .borrow();
+            let applied_assessors = self.applied_assessors();
+            let applied_assessors = applied_assessors.borrow();
 
             //TODO report a bug because the adw::ButtonContent doesn't hinerit it's parent
             //sensitivity when hidden
@@ -832,7 +849,7 @@ impl UnitListPanelImp {
                 .get()
                 .map(|ls| ls.n_items())
                 .unwrap_or_default(),
-            self.filter_list_model.borrow().n_items(),
+            self.filter_list_model().n_items(),
             self.unit_list_sort_list_model.borrow().n_items()
         );
 
@@ -869,19 +886,26 @@ impl UnitListPanelImp {
 
         info!("Sel {:?}", unit_found_position);
         if let Some(row) = unit_found_position {
-            info!("Scroll to row {row}");
+            let fitems = self.filter_list_model().n_items();
+            if fitems > 0 {
+                info!("Scroll to row {row} fitems {fitems}");
 
-            units_browser!(self).scroll_to(
-                row, // to centerish on the selected unit
-                None,
-                gtk::ListScrollFlags::FOCUS | gtk::ListScrollFlags::SELECT,
-                None,
-            );
+                units_browser!(self).scroll_to(
+                    row, // to centerish on the selected unit
+                    None,
+                    gtk::ListScrollFlags::FOCUS | gtk::ListScrollFlags::SELECT,
+                    None,
+                );
+            }
         } else {
             single_selection.set_selected(gtk::INVALID_LIST_POSITION);
         }
 
         Some(unit.clone())
+    }
+
+    fn filter_list_model(&self) -> &gtk::FilterListModel {
+        self.filter_list_model.get().unwrap()
     }
 
     fn set_unit_favorite(&self, unit: Option<&UnitInfo>) {
@@ -1136,10 +1160,7 @@ impl UnitListPanelImp {
         update_widget: bool,
     ) {
         debug!("Assessor Change {new_assessor:?} Change Type: {change_type:?}");
-        let applied_assessors = self
-            .applied_unit_property_filters
-            .get()
-            .expect("applied_assessors not null");
+        let applied_assessors = self.applied_assessors();
 
         let add = if let Some(new_assessor) = new_assessor {
             debug!("Add filter id {id}");
@@ -1166,18 +1187,41 @@ impl UnitListPanelImp {
         self.set_filter_column_header_marker(add, id);
 
         if let Some(change_type) = change_type {
-            if let Some(filter) = self.filter_list_model.borrow().filter() {
+            if let Some(filter) = self.filter_list_model().filter() {
                 filter.changed(change_type);
             } else {
                 let custom_filter = self.create_custom_filter();
-                self.filter_list_model
-                    .borrow()
-                    .set_filter(Some(&custom_filter));
+                self.filter_list_model().set_filter(Some(&custom_filter));
             }
         }
 
         let search_controls = self.search_controls.get().expect("Not Null");
         search_controls.set_filter_is_set(!applied_assessors.borrow().is_empty());
+
+        if self.filter_write_time.get().is_none() && self.list_preserve_filters.get() {
+            self.saving_filter();
+        }
+
+        let future_time = SystemTime::now() + Duration::from_secs(FILTER_SAVING_DELAY_SECS);
+        self.filter_write_time.replace(Some(future_time));
+    }
+
+    fn saving_filter(&self) {
+        let this = self.obj().clone();
+        glib::idle_add_local(move || {
+            let this = this.imp();
+            match this.filter_write_time.get() {
+                Some(time) => {
+                    if time > SystemTime::now() {
+                        return glib::ControlFlow::Continue;
+                    }
+                }
+                None => return glib::ControlFlow::Break,
+            }
+            this.filter_write_time.replace(None);
+            save_filter(this.unit_property_filters.borrow());
+            glib::ControlFlow::Break
+        });
     }
 
     fn set_filter_column_header_marker(&self, add: bool, id: &str) {
@@ -1240,7 +1284,7 @@ impl UnitListPanelImp {
 
     pub(super) fn update_unit_name_search(&self, text: &str, update_widget: bool) {
         debug!("update_unit_name_search {text}");
-        let Some(filter) = self.lazy_get_filter_assessor(&SysdColumn::Name) else {
+        let Some(filter) = self.lazy_get_filter_property(&SysdColumn::Name) else {
             error!("No filter id {COL_ID_UNIT}");
             return;
         };
@@ -1255,18 +1299,13 @@ impl UnitListPanelImp {
         filter.set_filter_elem(text, update_widget);
     }
 
-    /*     pub(super) fn clear_unit_list_filter_window_dependancy(&self) {
-        for property_filter in self.unit_property_filters.borrow().values() {
-            property_filter.borrow_mut().clear_widget_dependancy();
-        }
-    } */
+    fn applied_assessors(&self) -> &Rc<RefCell<Vec<Box<dyn UnitPropertyAssessor>>>> {
+        self.applied_unit_property_filters
+            .get_or_init(|| Rc::new(RefCell::new(Vec::new())))
+    }
 
     fn create_custom_filter(&self) -> gtk::CustomFilter {
-        let applied_assessors = self
-            .applied_unit_property_filters
-            .get()
-            .expect("not none")
-            .clone();
+        let applied_assessors = self.applied_assessors().clone();
         gtk::CustomFilter::new(move |object| {
             let Some(unit) = object.downcast_ref::<UnitInfo>() else {
                 error!("some wrong downcast_ref to UnitBinding  {object:?}");
@@ -1282,7 +1321,7 @@ impl UnitListPanelImp {
         })
     }
 
-    pub(super) fn lazy_get_filter_assessor(
+    pub(super) fn lazy_get_filter_property(
         &self,
         id: &SysdColumn,
     ) -> Option<Rc<RefCell<Box<dyn UnitPropertyFilter>>>> {
@@ -1294,17 +1333,16 @@ impl UnitListPanelImp {
             }
         }
 
-        let unit_list_panel: glib::BorrowedObject<'_, crate::widget::unit_list::UnitListPanel> =
-            self.obj();
+        let unit_list_panel = self.obj();
 
-        let case_incensitive_default = self.case_incensitive_default.get();
+        let case_insensitive_default = self.case_insensitive_default.get();
 
         let filter: Option<Box<dyn UnitPropertyFilter>> = match id {
             SysdColumn::Name => Some(Box::new(FilterText::new(
                 id_str,
                 filter_unit_name,
                 &unit_list_panel,
-                case_incensitive_default,
+                case_insensitive_default,
             ))),
             SysdColumn::Bus => Some(Box::new(FilterElement::new(
                 id_str,
@@ -1345,7 +1383,7 @@ impl UnitListPanelImp {
                 id_str,
                 filter_unit_description,
                 &unit_list_panel,
-                case_incensitive_default,
+                case_insensitive_default,
             ))),
             _ => match id.property_type().as_deref() {
                 Some("t") => Some(Box::new(FilterNum::<u64>::new(
@@ -1359,7 +1397,7 @@ impl UnitListPanelImp {
                     id_str,
                     custom_str,
                     &unit_list_panel,
-                    case_incensitive_default,
+                    case_insensitive_default,
                     id.generate_quark(),
                 ))),
                 Some("i") => Some(Box::new(FilterNum::<i32>::new(
@@ -1401,7 +1439,7 @@ impl UnitListPanelImp {
                     id_str,
                     custom_str,
                     &unit_list_panel,
-                    case_incensitive_default,
+                    case_insensitive_default,
                     id.generate_quark(),
                 ))),
                 None => {
@@ -1854,12 +1892,12 @@ impl UnitListPanelImp {
         }
     }
 
-    fn set_case_incensitive_default(&self, case_incensitive_default: bool) {
-        if self.case_incensitive_default.get() == case_incensitive_default {
+    fn set_case_insensitive_default(&self, case_insensitive_default: bool) {
+        if self.case_insensitive_default.get() == case_insensitive_default {
             return;
         }
 
-        self.case_incensitive_default.set(case_incensitive_default);
+        self.case_insensitive_default.set(case_insensitive_default);
 
         for filter in self.unit_property_filters.borrow().values() {
             let mut filter = filter.borrow_mut();
@@ -1868,7 +1906,7 @@ impl UnitListPanelImp {
                 continue;
             };
 
-            filter_text.set_filter_match_case_insensitive(case_incensitive_default, false);
+            filter_text.set_filter_match_case_insensitive(case_insensitive_default, false);
         }
     }
 
@@ -1928,6 +1966,48 @@ impl UnitListPanelImp {
                 info!("Received Signal {:?}", signal);
                 list_panel.imp().manage_unit_new_remove(signal);
             }
+        });
+    }
+
+    fn focus_on_row(&self) {
+        let Some(mut force_selected_index) = self.force_selected_index.get() else {
+            return;
+        };
+
+        self.force_selected_index.set(None);
+
+        if force_selected_index == gtk::INVALID_LIST_POSITION {
+            force_selected_index = 0;
+        }
+
+        let fitems = self.filter_list_model().n_items();
+        if fitems == 0 {
+            info!("No items to scroll to");
+            return;
+        }
+
+        info!("Focus on selected unit list row (index {force_selected_index})");
+
+        let units_browser = units_browser!(self).clone();
+
+        //needs a bit of time to rendering  the list, then I found this hack
+        glib::spawn_future_local(async move {
+            // Deactivate the button until the operation is done
+            gio::spawn_blocking(move || {
+                let sleep_duration = Duration::from_millis(100);
+                std::thread::sleep(sleep_duration);
+            })
+            .await
+            .expect("Task needs to finish successfully.");
+
+            // Set sensitivity of button to `enable_button`
+
+            units_browser.scroll_to(
+                force_selected_index, // to centerish on the selected unit
+                None,
+                gtk::ListScrollFlags::FOCUS,
+                None,
+            );
         });
     }
 }
@@ -2232,8 +2312,8 @@ impl ObjectImpl for UnitListPanelImp {
 
         self.scrolled_window.set_child(Some(&column_view));
         self.units_browser.get_or_init(|| column_view);
-        self.single_selection.get_or_init(|| single_selection);
-        self.filter_list_model.replace(filter_list_model);
+        let _ = self.single_selection.set(single_selection);
+        let _ = self.filter_list_model.set(filter_list_model);
         self.unit_list_sort_list_model.replace(sort_list_model);
 
         let column_view_column_list = self.generate_column_list();
@@ -2268,17 +2348,10 @@ impl ObjectImpl for UnitListPanelImp {
             },
         );
 
-        let _ = self
-            .applied_unit_property_filters
-            .set(Rc::new(RefCell::new(Vec::new())));
-
         let custom_filter = self.create_custom_filter();
-        self.filter_list_model
-            .borrow()
-            .set_filter(Some(&custom_filter));
+        self.filter_list_model().set_filter(Some(&custom_filter));
 
-        self.filter_list_model
-            .borrow()
+        self.filter_list_model()
             .bind_property::<UnitListPanel>("n-items", &self.obj(), "unit_filtered_count")
             .build();
 
@@ -2292,11 +2365,10 @@ impl ObjectImpl for UnitListPanelImp {
         let units_browser = units_browser!(self);
         {
             let unit_list = self.obj().clone();
-            let units_browser = units_browser.clone();
             self.scrolled_window
                 .vadjustment()
                 .connect_changed(move |_adjustment| {
-                    focus_on_row(&unit_list, &units_browser);
+                    unit_list.imp().focus_on_row();
                 });
         }
 
@@ -2310,11 +2382,7 @@ impl ObjectImpl for UnitListPanelImp {
 
         units_browser.connect_activate(|_a, row| info!("Unit row position {row}")); //TODO make selection
 
-        let pop = pop_menu::UnitPopMenu::new(
-            units_browser,
-            &self.obj(),
-            &self.filter_list_model.borrow(),
-        );
+        let pop = pop_menu::UnitPopMenu::new(units_browser, &self.obj(), self.filter_list_model());
         let _ = self.pop_menu.set(pop);
 
         force_expand_on_the_last_visible_column(&units_browser.columns());
@@ -2323,7 +2391,15 @@ impl ObjectImpl for UnitListPanelImp {
             .bind::<UnitListPanel>(
                 KEY_PREF_CASE_INSENSITIVE_DEFAULT,
                 &self.obj(),
-                "case-incensitive-default",
+                "case-insensitive-default",
+            )
+            .build();
+
+        settings
+            .bind::<UnitListPanel>(
+                KEY_PREF_LIST_PRESERVE_FILTERS,
+                &self.obj(),
+                "list-preserve-filters",
             )
             .build();
 
@@ -2331,41 +2407,6 @@ impl ObjectImpl for UnitListPanelImp {
 
         self.process_signals();
     }
-}
-
-fn focus_on_row(unit_list: &super::UnitListPanel, units_browser: &gtk::ColumnView) {
-    let Some(mut force_selected_index) = unit_list.imp().force_selected_index.get() else {
-        return;
-    };
-
-    unit_list.imp().force_selected_index.set(None);
-
-    if force_selected_index == gtk::INVALID_LIST_POSITION {
-        force_selected_index = 0;
-    }
-
-    info!("Focus on selected unit list row (index {force_selected_index})");
-
-    let units_browser = units_browser.clone();
-    //needs a bit of time to rendering  the list, then I found this hack
-    glib::spawn_future_local(async move {
-        // Deactivate the button until the operation is done
-        gio::spawn_blocking(move || {
-            let sleep_duration = Duration::from_millis(100);
-            std::thread::sleep(sleep_duration);
-        })
-        .await
-        .expect("Task needs to finish successfully.");
-
-        // Set sensitivity of button to `enable_button`
-
-        units_browser.scroll_to(
-            force_selected_index, // to centerish on the selected unit
-            None,
-            gtk::ListScrollFlags::FOCUS,
-            None,
-        );
-    });
 }
 
 impl WidgetImpl for UnitListPanelImp {}

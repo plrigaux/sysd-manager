@@ -1,20 +1,30 @@
-use tracing::debug;
-
 use crate::{
     systemd::{
         data::UnitInfo,
         enums::{NumMatchType, StrMatchType},
     },
-    widget::unit_list::{UnitListPanel, filter::BoolFilter},
+    widget::{
+        unit_list::{UnitListPanel, column::SysdColumn, filter::BoolFilter},
+        unit_properties_selector::save::{get_sysd_manager_config_dir, save_to_toml_file},
+    },
 };
+use base::enums::UnitDBusLevel;
+use indexmap::IndexMap;
+use serde::{Deserialize, Serialize};
 use std::{
     any::Any,
     borrow::Cow,
+    cell::{Ref, RefCell},
     collections::HashSet,
-    fmt::{self, Debug},
+    fmt::{self, Debug, Display},
     hash::Hash,
+    rc::Rc,
 };
-#[derive(Debug, Copy, Clone)]
+use systemd::enums::{ActiveState, LoadState, Preset, UnitFileStatus, UnitType};
+use tokio::fs;
+use tracing::{debug, error, info, warn};
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum UnitPropertyFilterType {
     Text,
     Element,
@@ -25,6 +35,52 @@ pub enum UnitPropertyFilterType {
     NumI64,
     Bool,
 }
+
+impl UnitPropertyFilterType {
+    fn as_str(&self) -> &str {
+        match self {
+            UnitPropertyFilterType::Text => "text",
+            UnitPropertyFilterType::Element => "element",
+            UnitPropertyFilterType::NumU64 => "u64",
+            UnitPropertyFilterType::NumI32 => "i32",
+            UnitPropertyFilterType::NumU16 => "u16",
+            UnitPropertyFilterType::NumU32 => "u32",
+            UnitPropertyFilterType::NumI64 => "i64",
+            UnitPropertyFilterType::Bool => "bool",
+        }
+    }
+}
+
+impl Display for UnitPropertyFilterType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+impl TryFrom<String> for UnitPropertyFilterType {
+    type Error = String;
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        value.as_str().try_into()
+    }
+}
+
+impl TryFrom<&str> for UnitPropertyFilterType {
+    type Error = String;
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
+            "bool" => Ok(UnitPropertyFilterType::Bool),
+            "text" => Ok(UnitPropertyFilterType::Text),
+            "element" => Ok(UnitPropertyFilterType::Element),
+            "u64" => Ok(UnitPropertyFilterType::NumU64),
+            "i32" => Ok(UnitPropertyFilterType::NumI32),
+            "u16" => Ok(UnitPropertyFilterType::NumU16),
+            "u32" => Ok(UnitPropertyFilterType::NumU32),
+            "i64" => Ok(UnitPropertyFilterType::NumI64),
+            err => Err(format!("Unkown Filter type {err:?}")),
+        }
+    }
+}
+
 pub trait UnitPropertyFilter: Debug {
     fn set_on_filter_apply_ui_func(&mut self, on_filter_apply_ui_func: Option<Box<dyn Fn(bool)>>);
     fn unset_on_filter_apply_ui_func(&mut self) {
@@ -62,12 +118,10 @@ pub trait UnitPropertyFilter: Debug {
     }
 
     fn clear_filter(&mut self);
-    /*     fn clear_widget_dependancy(&mut self) {
-        let lambda = |_: bool| {};
-        self.set_on_change(Box::new(lambda));
-    } */
 
     fn is_filter_applies(&self) -> bool;
+
+    fn build_save_struct(&self) -> FilterSave;
 }
 
 pub fn get_filter_element<T>(prop_filter: &dyn UnitPropertyFilter) -> &FilterElement<T>
@@ -102,6 +156,7 @@ where
     unit_property_getter_func: fn(&FilterElementAssessor<T>, &UnitInfo) -> bool,
     id: String,
     unit_list_panel: UnitListPanel,
+    gen_type: &'static str,
 }
 
 impl<T> fmt::Debug for FilterElement<T>
@@ -121,7 +176,7 @@ where
 
 impl<T> FilterElement<T>
 where
-    T: Eq + Hash + Debug + Clone + 'static,
+    T: Eq + Hash + Debug + Clone + 'static + ToString,
 {
     pub fn new(
         id: &str,
@@ -134,6 +189,7 @@ where
             unit_property_getter_func,
             id: id.to_owned(),
             unit_list_panel: unit_list_panel.clone(),
+            gen_type: std::any::type_name::<T>(),
         }
     }
 
@@ -145,6 +201,14 @@ where
         self.filter_elements.contains(value)
     }
 
+    pub(crate) fn add_element(&mut self, f_element: T) {
+        self.set_filter_elem(f_element, true);
+    }
+
+    pub(crate) fn remove_element(&mut self, f_element: T) {
+        self.set_filter_elem(f_element, false);
+    }
+
     pub(crate) fn set_filter_elem(&mut self, f_element: T, add_or_remove: bool) {
         let old_is_empty = self.filter_elements.is_empty();
 
@@ -154,18 +218,7 @@ where
             self.filter_elements.remove(&f_element)
         };
 
-        if !has_changed {
-            return;
-        }
-
         let new_is_empty = self.filter_elements.is_empty();
-
-        let change_type = match (add_or_remove, old_is_empty, new_is_empty) {
-            (true, true, _) => Some(gtk::FilterChange::MoreStrict),
-            (true, false, _) => Some(gtk::FilterChange::LessStrict),
-            (false, _, false) => Some(gtk::FilterChange::MoreStrict),
-            (false, _, true) => Some(gtk::FilterChange::LessStrict),
-        };
 
         if old_is_empty != new_is_empty {
             self.on_filter_apply_ui(!new_is_empty);
@@ -181,6 +234,18 @@ where
             }))
         };
 
+        debug!("Filter Element has changed {}", has_changed);
+        if !has_changed {
+            return;
+        }
+
+        let change_type = match (add_or_remove, old_is_empty, new_is_empty) {
+            (true, true, _) => Some(gtk::FilterChange::MoreStrict),
+            (true, false, _) => Some(gtk::FilterChange::LessStrict),
+            (false, _, false) => Some(gtk::FilterChange::MoreStrict),
+            (false, _, true) => Some(gtk::FilterChange::LessStrict),
+        };
+
         self.unit_list_panel
             .filter_assessor_change(&self.id, assessor, change_type, false);
     }
@@ -194,7 +259,7 @@ where
 
 impl<T> UnitPropertyFilter for FilterElement<T>
 where
-    T: Eq + Hash + Debug + Clone + 'static,
+    T: Eq + Hash + Debug + Clone + 'static + ToString,
 {
     fn set_on_filter_apply_ui_func(&mut self, lambda: Option<Box<dyn Fn(bool)>>) {
         self.on_filter_apply_ui_func = lambda
@@ -210,7 +275,7 @@ where
 
     fn clear_n_apply_filter(&mut self) {
         self.filter_elements.clear();
-
+        self.on_filter_apply_ui(false);
         self.unit_list_panel.filter_assessor_change(
             &self.id,
             None,
@@ -238,6 +303,17 @@ where
 
     fn id(&self) -> &String {
         &self.id
+    }
+
+    fn build_save_struct(&self) -> FilterSave {
+        FilterSave {
+            id: self.id().to_owned(),
+            ftype: self.ftype().to_string(),
+            elements: Some(self.elements().iter().map(|t| t.to_string()).collect()),
+            text: None,
+            match_type: None,
+            element_type: Some(self.gen_type.to_owned()),
+        }
     }
 }
 
@@ -282,18 +358,6 @@ impl FilterText {
             case_incensitive_default,
             glib::Quark::from_str("default"),
         )
-        // Self {
-        //     filter_text: Default::default(),
-        //     match_type: StrMatchType::default(),
-        //     on_filter_apply_ui_func: Default::default(),
-        //     filter_unit_func,
-        //     id: id.to_owned(),
-        //     unit_list_panel: unit_list_panel.clone(),
-        //     key: glib::Quark::from_str("default"),
-        //     filter_unset: false,
-        //     filter_invert: false,
-        //     case_insensitive: case_incensitive_default,
-        // }
     }
 
     pub fn newq(
@@ -565,6 +629,17 @@ impl UnitPropertyFilter for FilterText {
     fn id(&self) -> &String {
         &self.id
     }
+
+    fn build_save_struct(&self) -> FilterSave {
+        FilterSave {
+            id: self.id().to_owned(),
+            ftype: self.ftype().to_string(),
+            elements: None,
+            text: Some(self.text().to_string()),
+            match_type: Some(self.match_type.position()),
+            element_type: None,
+        }
+    }
 }
 
 pub struct FilterNum<T>
@@ -631,7 +706,7 @@ where
             gtk::FilterChange::Different
         };
 
-        self.filter_num = f_element;
+        self.set_num(f_element);
 
         if old_is_none != new_is_none {
             self.on_filter_apply_ui(filter_applies);
@@ -649,6 +724,10 @@ where
             Some(change_type),
             update_widget,
         );
+    }
+
+    fn set_num(&mut self, value: Option<T>) {
+        self.filter_num = value
     }
 
     pub fn set_filter_match_type(&mut self, match_type: NumMatchType, update_widget: bool) {
@@ -752,11 +831,21 @@ where
     fn id(&self) -> &String {
         &self.id
     }
+
+    fn build_save_struct(&self) -> FilterSave {
+        FilterSave {
+            id: self.id().to_owned(),
+            ftype: self.ftype().to_string(),
+            elements: None,
+            text: Some(self.text().to_string()),
+            match_type: None,
+            element_type: None,
+        }
+    }
 }
 
 pub trait UnitPropertyAssessor: Debug {
     fn filter_unit(&self, unit: &UnitInfo) -> bool;
-    //  fn filter_unit_value(&self, unit_value: &str) -> bool;
     fn id(&self) -> &str;
     fn text(&self) -> &str {
         ""
@@ -765,6 +854,8 @@ pub trait UnitPropertyAssessor: Debug {
     fn match_type(&self) -> StrMatchType {
         StrMatchType::default()
     }
+
+    // fn to_write(&self) ->
 }
 
 pub struct FilterBool {
@@ -813,7 +904,7 @@ impl FilterBool {
 
         let change_type = gtk::FilterChange::Different;
 
-        self.filter_bool = f_element;
+        self.set_filter_value(f_element);
 
         if old_is_none != new_is_none {
             self.on_filter_apply_ui(filter_applies);
@@ -835,6 +926,10 @@ impl FilterBool {
 
     pub fn filter_value(&self) -> Option<BoolFilter> {
         self.filter_bool
+    }
+
+    pub fn set_filter_value(&mut self, value: Option<BoolFilter>) {
+        self.filter_bool = value
     }
 
     fn on_filter_apply_ui(&self, filter_applies: bool) {
@@ -890,6 +985,17 @@ impl UnitPropertyFilter for FilterBool {
 
     fn id(&self) -> &String {
         &self.id
+    }
+
+    fn build_save_struct(&self) -> FilterSave {
+        FilterSave {
+            id: self.id().to_owned(),
+            ftype: self.ftype().to_string(),
+            elements: None,
+            text: self.filter_bool.map(|b| b.code().to_owned()),
+            match_type: None,
+            element_type: None,
+        }
     }
 }
 
@@ -1300,8 +1406,278 @@ impl UnitPropertyAssessor for FilterBoolAssessor {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct FilterListSave {
+    #[serde(rename = "filter")]
+    pub filters: Vec<FilterSave>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Default)]
+#[serde(default)]
+pub struct FilterSave {
+    id: String,
+    ftype: String,
+    elements: Option<Vec<String>>,
+    text: Option<String>,
+    match_type: Option<u32>,
+    element_type: Option<String>,
+}
+
+type FilterType<'a> = Ref<'a, IndexMap<String, Rc<RefCell<Box<dyn UnitPropertyFilter + 'static>>>>>;
+
+pub fn save_filter<'a>(filters: FilterType<'a>) {
+    let filters: Vec<_> = filters
+        .values()
+        .filter(|pf| pf.borrow().is_filter_applies())
+        .map(|pf| pf.borrow().build_save_struct())
+        .collect();
+
+    systemd::runtime().spawn(save_filters_async(filters));
+}
+
+const FILTERS_FILE_NAME: &str = "filters.toml";
+
+async fn save_filters_async(filters: Vec<FilterSave>) {
+    let flist = FilterListSave { filters };
+    let sysd_manager_config_dir = get_sysd_manager_config_dir();
+    if let Err(e) = fs::create_dir_all(&sysd_manager_config_dir).await {
+        error!(
+            "Failed to create config directory {:?}: {}",
+            sysd_manager_config_dir, e
+        );
+        return;
+    }
+    let config_path = sysd_manager_config_dir.join(FILTERS_FILE_NAME);
+
+    if let Err(e) = save_to_toml_file(&flist, &config_path).await {
+        error!(
+            "Failed to save filters to TOML file: {:?} {:?}",
+            config_path, e
+        );
+    } else {
+        info!("Filters saved to {:?}", config_path);
+    }
+}
+
+const TUNIT_NAME: &str = "sysd_manager_comcontroler::enums::UnitType";
+const TDBUS_LEVEL: &str = "sysd_manager_base::enums::UnitDBusLevel";
+const TUNIT_FILE_STATUS: &str = "sysd_manager_comcontroler::enums::UnitFileStatus";
+const TPRESET: &str = "sysd_manager_comcontroler::enums::Preset";
+const TLOADSTATE: &str = "sysd_manager_comcontroler::enums::LoadState";
+const TACTIVESTATE: &str = "sysd_manager_comcontroler::enums::ActiveState";
+const TSTRING: &str = "alloc::string::String";
+
+macro_rules! fill_filter_num {
+    ($text:expr, $ftype:expr, $filter_mut:expr, $typ:ty) => {
+        if let Some(num_filter) = $filter_mut.as_any_mut().downcast_mut::<FilterNum<$typ>>()
+            && let Some(value) = $text
+        {
+            if let Ok(value) = value.parse::<$typ>() {
+                num_filter.set_filter_elem(Some(value), true);
+            }
+        } else {
+            warn!("Some Error {:?}", $ftype);
+            continue;
+        }
+    };
+}
+
+macro_rules! fill_filter_element {
+    ($elements:expr, $ftype:expr, $filter_mut:expr, $typ:ty ) => {
+        if let Some(elem_filter) = $filter_mut
+            .as_any_mut()
+            .downcast_mut::<FilterElement<$typ>>()
+        {
+            if let Some(values) = $elements {
+                for value in values {
+                    let value: $typ = value.into();
+                    elem_filter.set_filter_elem(value, true);
+                }
+            } else {
+                warn!("Some Error {:?}", $ftype);
+                continue;
+            }
+        } else {
+            error!("Filter bad cast {:?}", $ftype);
+            continue;
+        }
+    };
+}
+
+pub(crate) fn load_filters(
+    unit_list_panel: &UnitListPanel,
+) -> IndexMap<String, Rc<RefCell<Box<dyn UnitPropertyFilter + 'static>>>> {
+    let map = IndexMap::new();
+    let Some(saved_filters) = load_filters_base() else {
+        return map;
+    };
+
+    let mut map = IndexMap::new();
+    for saved_filter in saved_filters.filters {
+        let id: SysdColumn = saved_filter.id.into();
+        let Some(filter) = unit_list_panel.lazy_get_filter_property(&id) else {
+            warn!("No filter ???");
+            continue;
+        };
+
+        let ftype: Result<UnitPropertyFilterType, String> = saved_filter.ftype.as_str().try_into();
+        let Ok(ftype) = ftype.inspect_err(|str_err| warn!("Error {str_err}")) else {
+            continue;
+        };
+
+        let mut filter_mut = filter.borrow_mut();
+
+        if filter_mut.ftype() != ftype {
+            warn!("Filter not match {:?} {:?}", ftype, filter_mut.ftype());
+            continue;
+        }
+
+        match ftype {
+            UnitPropertyFilterType::Text => {
+                if let Some(text_filter) = filter_mut.as_any_mut().downcast_mut::<FilterText>()
+                    && let Some(value) = saved_filter.text
+                {
+                    text_filter.set_filter_elem(&value, true);
+
+                    if let Some(match_type) = saved_filter.match_type {
+                        let match_type = match_type.into();
+                        text_filter.set_filter_match_type(match_type, false);
+                    }
+                } else {
+                    warn!("Some Error {:?}", ftype);
+                    continue;
+                }
+            }
+            UnitPropertyFilterType::Element => {
+                let Some(element_type) = saved_filter.element_type else {
+                    warn!("No element type");
+                    continue;
+                };
+
+                match element_type.as_str() {
+                    TUNIT_NAME => {
+                        fill_filter_element!(saved_filter.elements, ftype, filter_mut, UnitType)
+                    }
+                    TDBUS_LEVEL => {
+                        fill_filter_element!(
+                            saved_filter.elements,
+                            ftype,
+                            filter_mut,
+                            UnitDBusLevel
+                        )
+                    }
+                    TUNIT_FILE_STATUS => {
+                        fill_filter_element!(
+                            saved_filter.elements,
+                            ftype,
+                            filter_mut,
+                            UnitFileStatus
+                        )
+                    }
+                    TPRESET => {
+                        fill_filter_element!(saved_filter.elements, ftype, filter_mut, Preset)
+                    }
+                    TLOADSTATE => {
+                        fill_filter_element!(saved_filter.elements, ftype, filter_mut, LoadState)
+                    }
+                    TACTIVESTATE => {
+                        fill_filter_element!(saved_filter.elements, ftype, filter_mut, ActiveState)
+                    }
+                    TSTRING => {
+                        fill_filter_element!(saved_filter.elements, ftype, filter_mut, String)
+                    }
+
+                    _ => {
+                        error!("unit type not handeled {:?}", element_type);
+                        continue;
+                    }
+                }
+            }
+            UnitPropertyFilterType::NumU64 => {
+                fill_filter_num!(saved_filter.text, ftype, filter_mut, u64)
+            }
+            UnitPropertyFilterType::NumI64 => {
+                fill_filter_num!(saved_filter.text, ftype, filter_mut, i64)
+            }
+            UnitPropertyFilterType::NumI32 => {
+                fill_filter_num!(saved_filter.text, ftype, filter_mut, i32)
+            }
+            UnitPropertyFilterType::NumU32 => {
+                fill_filter_num!(saved_filter.text, ftype, filter_mut, u32)
+            }
+            UnitPropertyFilterType::NumU16 => {
+                fill_filter_num!(saved_filter.text, ftype, filter_mut, u16)
+            }
+            UnitPropertyFilterType::Bool => {
+                if let Some(bool_filter) = filter_mut.as_any_mut().downcast_mut::<FilterBool>() {
+                    bool_filter.set_filter_elem(saved_filter.text.map(|s| s.into()));
+                } else {
+                    warn!("Some Error {:?}", ftype);
+                }
+            }
+        };
+
+        drop(filter_mut);
+
+        let id = filter.borrow().id().clone();
+        map.insert(id, filter);
+    }
+    map
+}
+
+fn load_filters_base() -> Option<FilterListSave> {
+    systemd::runtime().block_on(load_filters_async())
+}
+
+pub(crate) async fn load_filters_async() -> Option<FilterListSave> {
+    let sysd_manager_config_dir = get_sysd_manager_config_dir();
+
+    if !sysd_manager_config_dir.exists() {
+        info!(
+            "Config directory {:?} does not exist. Using default configuration.",
+            sysd_manager_config_dir
+        );
+        return None;
+    }
+
+    let config_path = sysd_manager_config_dir.join(FILTERS_FILE_NAME);
+
+    if !config_path.exists() {
+        info!(
+            "Config file {:?} does not exist. Using default configuration.",
+            config_path
+        );
+        return None;
+    }
+
+    match fs::read_to_string(&config_path).await {
+        Ok(toml_str) => match toml::from_str::<FilterListSave>(&toml_str) {
+            Ok(config) => {
+                if config.filters.is_empty() {
+                    warn!("Loaded config is empty, FALLBACK on default");
+                    None
+                } else {
+                    Some(config)
+                }
+            }
+            Err(e) => {
+                error!("Failed to parse TOML from {:?}: {}", config_path, e);
+                None
+            }
+        },
+        Err(e) => {
+            error!("Failed to read config file {:?}: {}", config_path, e);
+            None
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
+    use std::any::type_name;
+
+    use super::*;
+
     #[test]
     fn test_comp() {
         let a = 4;
@@ -1314,5 +1690,22 @@ mod test {
         let d = Some(a) > b;
 
         println!("d {d}");
+    }
+
+    #[test]
+    fn test_element_type_string() {
+        let v = vec![
+            (TUNIT_NAME, type_name::<UnitType>()),
+            (TDBUS_LEVEL, type_name::<UnitDBusLevel>()),
+            (TUNIT_FILE_STATUS, type_name::<UnitFileStatus>()),
+            (TPRESET, type_name::<Preset>()),
+            (TLOADSTATE, type_name::<LoadState>()),
+            (TACTIVESTATE, type_name::<ActiveState>()),
+            (TSTRING, type_name::<String>()),
+        ];
+
+        for (a, b) in v {
+            assert_eq!(a, b)
+        }
     }
 }

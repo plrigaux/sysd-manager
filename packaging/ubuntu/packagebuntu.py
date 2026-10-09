@@ -142,7 +142,8 @@ directory = "vendor"
 
 def ubuntu_version(version_raw, release):
     # return f"{version_raw}-{release}ubuntu{release}"
-    return f"{version_raw}-{release}"
+    # return f"{version_raw}-{release}"
+    return f"{version_raw}"
 
 
 def write_changelog(release=None):
@@ -200,6 +201,7 @@ def write_rules():
 
     format_file = source_dir / "format"
 
+    # content = "3.0 (quilt)"
     content = "3.0 (native)"
 
     with open(format_file, "w") as config_file:

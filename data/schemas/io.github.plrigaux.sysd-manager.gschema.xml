@@ -386,5 +386,9 @@
       <default>false</default>
       <summary>Avanced mode for create units</summary>
     </key>
+    <key name="pref-list-preserve-filters" type="b">
+      <default>true</default>
+      <summary>Preserve the unit browser filters across application restarts</summary>
+    </key>
   </schema>
 </schemalist>

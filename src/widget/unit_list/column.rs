@@ -344,6 +344,16 @@ impl From<(GString, Option<String>)> for SysdColumn {
     }
 }
 
+impl From<String> for SysdColumn {
+    fn from(value: String) -> Self {
+        if let Some((utype, prop)) = value.split_once('@') {
+            (utype, Some(prop.to_owned())).into()
+        } else {
+            (value, None).into()
+        }
+    }
+}
+
 #[derive(Debug)]
 pub enum SysdColumnNonConformity {
     CustomColWithoutDefinePropType,

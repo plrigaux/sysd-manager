@@ -1,21 +1,21 @@
-use std::rc::Weak;
-use std::{cell::RefCell, rc::Rc};
-
+use crate::{
+    consts::FLAT,
+    gtk::{glib::clone::Downgrade, prelude::*},
+    widget::unit_list::filter::{
+        dropdown::SubState,
+        imp::{FilterWidget, contain_entry, create_content_box},
+        unit_prop_filter::{FilterElement, UnitPropertyFilter},
+    },
+};
 use gettextrs::pgettext;
 use gio::glib::WeakRef;
+use std::{
+    cell::RefCell,
+    rc::{Rc, Weak},
+};
 use tracing::warn;
 
-use crate::consts::FLAT;
-use crate::gtk::prelude::*;
-
-use crate::gtk::glib::clone::Downgrade;
-use crate::widget::unit_list::filter::imp::FilterWidget;
-use crate::widget::unit_list::filter::unit_prop_filter::{FilterElement, UnitPropertyFilter};
-use crate::widget::unit_list::filter::{
-    dropdown::SubState,
-    imp::{contain_entry, create_content_box},
-};
-pub fn sub_state_filter(
+pub(super) fn sub_state_filter(
     filter_container_: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>,
 ) -> (gtk::Box, Vec<FilterWidget>) {
     let container = create_content_box();
@@ -34,7 +34,9 @@ pub fn sub_state_filter(
         .spacing(5)
         .build();
 
+    //Filter Substate button label
     let label = pgettext("filter", "Add");
+    //Filter Substate button tooltip
     let tooltip_text = pgettext("filter", "Add filter on sub state");
     let add_button = gtk::Button::builder()
         .label(label)
@@ -89,12 +91,12 @@ pub fn sub_state_filter(
             if let Some(filter_container) = filter_container_weak.upgrade() {
                 let mut binding = filter_container.as_ref().borrow_mut();
 
-                let filter_text = binding
+                let filter_element = binding
                     .as_any_mut()
                     .downcast_mut::<FilterElement<String>>()
                     .expect("downcast_mut to FilterElement");
 
-                filter_text.set_filter_elem(word.to_string(), true);
+                filter_element.add_element(word.to_string());
             }
         });
     }
@@ -128,7 +130,7 @@ pub fn sub_state_filter(
                 .downcast_mut::<FilterElement<String>>()
                 .expect("downcast_mut to FilterElement");
 
-            filter_text.set_filter_elem(sub_state.sub_state(), true);
+            filter_text.add_element(sub_state.sub_state());
         });
     }
 
@@ -139,7 +141,9 @@ pub fn sub_state_filter(
         .build();
 
     let clear_button = gtk::Button::builder()
+        //Filter Clear button
         .label(pgettext("filter", "Clear"))
+        //Filter Clear button tooltip
         .tooltip_text(pgettext("filter", "Clear filter's selected items"))
         .build();
     {
@@ -239,7 +243,7 @@ fn add_filter_tag(
                 .downcast_mut::<FilterElement<String>>()
                 .expect("downcast_ref to FilterElement");
 
-            filter_elem.set_filter_elem(word.clone(), false);
+            filter_elem.remove_element(word.clone());
         }
     });
 }

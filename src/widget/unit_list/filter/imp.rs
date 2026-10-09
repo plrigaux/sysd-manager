@@ -1,26 +1,3 @@
-use std::{
-    cell::{Cell, OnceCell, RefCell},
-    collections::HashMap,
-    rc::Rc,
-    str::FromStr,
-};
-
-use adw::{prelude::*, subclass::window::AdwWindowImpl};
-use gettextrs::pgettext;
-use glib::{Quark, SignalHandlerId};
-use std::fmt::Debug;
-
-use gtk::{
-    glib::{self},
-    subclass::{
-        prelude::*,
-        widget::{
-            CompositeTemplateCallbacksClass, CompositeTemplateClass,
-            CompositeTemplateInitializingExt, WidgetImpl,
-        },
-    },
-};
-
 use crate::{
     consts::{ALL_FILTER_KEY, CLASS_WARNING, FLAT},
     systemd::enums::{
@@ -43,7 +20,27 @@ use crate::{
         },
     },
 };
+use adw::{prelude::*, subclass::window::AdwWindowImpl};
 use base::enums::UnitDBusLevel;
+use gettextrs::pgettext;
+use glib::{Quark, SignalHandlerId};
+use gtk::{
+    glib::{self},
+    subclass::{
+        prelude::*,
+        widget::{
+            CompositeTemplateCallbacksClass, CompositeTemplateClass,
+            CompositeTemplateInitializingExt, WidgetImpl,
+        },
+    },
+};
+use std::{
+    cell::{Cell, OnceCell, RefCell},
+    collections::HashMap,
+    fmt::Debug,
+    rc::Rc,
+    str::FromStr,
+};
 use strum::IntoEnumIterator;
 use tracing::{debug, error, info, warn};
 
@@ -76,33 +73,26 @@ pub struct UnitListFilterWindowImp {
 impl UnitListFilterWindowImp {
     #[template_callback]
     fn clear_all_filters_button_clicked(&self, _button: gtk::Button) {
-        let unit_list_panel = self
-            .unit_list_panel
-            .get()
-            .expect("unit_list_panel in filter dialog not None");
-
-        unit_list_panel.clear_filters(ALL_FILTER_KEY);
-
-        let selection_model = self.filter_stack.pages();
-        let list: gio::ListModel = selection_model.into();
-        let nb = list.n_items();
-
-        info!("Clean all the {nb} filters");
-
+        //Need to be before to ensure the filter window GUI behave well
         for filter_widgets_list in self.filter_widgets.borrow().iter() {
             for filter_widget in filter_widgets_list {
                 filter_widget.clear();
             }
         }
+
+        self.unit_list_panel().clear_filters(ALL_FILTER_KEY);
     }
 }
 
 impl UnitListFilterWindowImp {
-    pub(super) fn get_filter(&self) {
-        let unit_list_panel = self
-            .unit_list_panel
+    fn unit_list_panel(&self) -> &UnitListPanel {
+        self.unit_list_panel
             .get()
-            .expect("unit_list_panel in filter dialog not None");
+            .expect("unit_list_panel in filter dialog not None")
+    }
+
+    pub(super) fn get_filter(&self) {
+        let unit_list_panel = self.unit_list_panel();
 
         let binding = self.selected.borrow();
         let selected = binding.as_ref();
@@ -120,7 +110,7 @@ impl UnitListFilterWindowImp {
             let key = unit_prop_selection.sysd_column();
 
             let Some(unit_property_filter_configurator) =
-                unit_list_panel.lazy_get_filter_assessor(&key)
+                unit_list_panel.lazy_get_filter_property(&key)
             else {
                 warn!("No filter for key {key:?}");
                 continue;
@@ -193,7 +183,8 @@ impl UnitListFilterWindowImp {
             let mut filter_container_binding =
                 unit_property_filter_configurator.as_ref().borrow_mut();
             let is_filter_applies = filter_container_binding.is_filter_applies();
-            button_content.set_icon_name(icon_name(is_filter_applies));
+            let iname = icon_name(is_filter_applies);
+            button_content.set_icon_name(iname);
             {
                 let button_content = button_content.downgrade();
                 let on_filter_apply_ui_func = move |is_filter_apply: bool| {
@@ -216,19 +207,25 @@ impl UnitListFilterWindowImp {
             }
 
             let tooltip_text = match key {
-                SysdColumn::Load => {
-                    Some("Reflects whether the unit definition was properly loaded.")
-                }
-                SysdColumn::Active => {
-                    Some("The high-level unit activation state, i.e. generalization of <b>Sub</b>.")
-                }
-                SysdColumn::SubState => {
-                    Some("The low-level unit activation state, values depend on unit type.")
-                }
+                //Filter group tooltip - Load
+                SysdColumn::Load => Some(pgettext(
+                    "filter",
+                    "Reflects whether the unit definition was properly loaded.",
+                )),
+                //Filter group tooltip - Active
+                SysdColumn::Active => Some(pgettext(
+                    "filter",
+                    "The high-level unit activation state, i.e. generalization of <b>Sub</b>.",
+                )),
+                //Filter group tooltip - Substate
+                SysdColumn::SubState => Some(pgettext(
+                    "filter",
+                    "The low-level unit activation state, values depend on unit type.",
+                )),
                 _ => None,
             };
 
-            button.set_tooltip_markup(tooltip_text);
+            button.set_tooltip_markup(tooltip_text.as_deref());
             {
                 let filter_stack = self.filter_stack.clone();
                 button.connect_clicked(move |button| {
@@ -238,11 +235,11 @@ impl UnitListFilterWindowImp {
                         let mut child_o = parent.first_child();
 
                         while let Some(child) = child_o {
-                            child.add_css_class("flat");
+                            child.add_css_class(FLAT);
                             child_o = child.next_sibling();
                         }
                     }
-                    button.remove_css_class("flat");
+                    button.remove_css_class(FLAT);
                 });
             }
             self.filter_navigation_container.append(&button);
@@ -467,7 +464,7 @@ fn common_text_filter(
         .row_spacing(5)
         .build();
 
-    //Filter option
+    //Filter text options
     let label_text = pgettext("filter", "Match Type");
     let label = gtk::Label::builder()
         .label(&label_text)
@@ -698,13 +695,8 @@ fn bool_filter_ui_builder(
                 (_, _) => false,
             };
 
-            let label = gtk::Label::builder()
-                .label(bool_filter_type.label())
-                .use_markup(true)
-                .build();
-
             gtk::CheckButton::builder()
-                .child(&label)
+                .label(bool_filter_type.label())
                 .active(active)
                 .name(bool_filter_type.code())
                 .build()
@@ -968,6 +960,7 @@ fn build_type_filter(
 ) -> (gtk::Box, Vec<FilterWidget>) {
     let container = create_content_box();
 
+    let mut vec = Vec::new();
     //  let filter_elem = Rc::new(RefCell::new(FilterElem::default()));
     for unit_type in UnitType::iter().filter(|x| !matches!(*x, UnitType::Unknown | UnitType::Unit))
     {
@@ -983,18 +976,24 @@ fn build_type_filter(
 
         let filter_elem = filter_container.clone();
         check.connect_toggled(move |check_button| {
-            //println!("t {} {:?}", check_button.is_active(), unit_type.as_str());
+            debug!(
+                "Filter check button {:?} {} {:?}",
+                check_button.label(),
+                check_button.is_active(),
+                unit_type.as_str()
+            );
             let mut filter_elem = filter_elem.borrow_mut();
             let filter_element = get_filter_element_mut::<UnitType>(filter_elem.as_mut());
             filter_element.set_filter_elem(unit_type, check_button.is_active());
         });
 
+        vec.push(FilterWidget::CheckBox(check.downgrade()));
         container.append(&check);
     }
 
     build_controls(&container);
 
-    (container, vec![])
+    (container, vec)
 }
 
 macro_rules! build_elem_filter {
@@ -1007,13 +1006,8 @@ macro_rules! build_elem_filter {
                 let binding = $filter_container.borrow();
                 let active = get_filter_element::<$value_type>(binding.as_ref()).contains(&value);
 
-                let label = gtk::Label::builder()
-                    .label(value.label())
-                    .use_markup(true)
-                    .build();
-
                 gtk::CheckButton::builder()
-                    .child(&label)
+                    .label(value.label())
                     .active(active)
                     .build()
             };
@@ -1069,22 +1063,20 @@ fn build_controls(container: &gtk::Box) {
         .build();
 
     let clear_button = gtk::Button::builder()
-        //Clear button
+        //Filter Clear button
         .label(pgettext("filter", "Clear"))
-        //Clear button tooltip
+        //Filter Clear button tooltip
         .tooltip_text(pgettext("filter", "Clear filter's selected items"))
         .build();
     {
         let container = container.clone();
         clear_button.connect_clicked(move |_| {
             let mut some_widget = container.first_child();
-            while let Some(w) = some_widget.as_ref() {
-                let maybe_checkbutton = w.downcast_ref::<gtk::CheckButton>();
-                if let Some(check) = maybe_checkbutton {
+            while let Some(widget) = some_widget.as_ref() {
+                if let Some(check) = widget.downcast_ref::<gtk::CheckButton>() {
                     check.set_active(false);
                 }
-
-                some_widget = w.next_sibling();
+                some_widget = widget.next_sibling();
             }
         });
     }
@@ -1092,6 +1084,7 @@ fn build_controls(container: &gtk::Box) {
     let inv_button = gtk::Button::builder()
         //Invert filter Button
         .label(pgettext("filter", "Invert"))
+        //Invert filter Button tooltip
         .tooltip_text(pgettext("filter", "Invert filter's selected items"))
         .build();
     {
