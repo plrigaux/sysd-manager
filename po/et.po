@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-09 08:56-0400\n"
+"POT-Creation-Date: 2026-10-08 22:58-0400\n"
 "PO-Revision-Date: 2026-04-10 23:09+0000\n"
 "Last-Translator: Priit Jõerüüt <jrthwlate@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/sysd-manager/"
@@ -227,60 +227,215 @@ msgstr ""
 #. info subtitle
 #: data/interfaces/creator/create_first.ui:33
 #, fuzzy
-msgctxt "unit creation"
+msgctxt "create_unit"
 msgid "Create a task"
 msgstr "Laadi üksus uuesti"
 
+#. Unit type selection
+#. Panel title
+#. Prefererence group
 #: data/interfaces/creator/create_first.ui:34
+#: data/interfaces/creator/creator_page_service.ui:24
+#: data/interfaces/creator/creator_page_service.ui:65
 #, fuzzy
+msgctxt "create_unit"
 msgid "Service"
 msgstr "Teenusehaldur"
 
 #. info subtitle
 #: data/interfaces/creator/create_first.ui:47
-msgctxt "unit creation"
+#, fuzzy
+msgctxt "create_unit"
 msgid "Create a scheduled task"
-msgstr ""
+msgstr "Laadi üksus uuesti"
 
+#. Unit type selection
 #: data/interfaces/creator/create_first.ui:48
+msgctxt "create_unit"
 msgid "Timer with Service"
 msgstr ""
 
 #. info subtitle
 #: data/interfaces/creator/create_first.ui:61
-msgctxt "unit creation"
+msgctxt "create_unit"
 msgid "Trigger an existing task (service)"
 msgstr ""
 
+#. Unit type selection
+#. Prefererence group
 #: data/interfaces/creator/create_first.ui:62
+#: data/interfaces/creator/creator_page_timer.ui:94
 #, fuzzy
+msgctxt "create_unit"
 msgid "Timer"
 msgstr "Taimerid"
 
-#: data/interfaces/creator/create_first.ui:81
+#. info subtitle
+#: data/interfaces/creator/create_first.ui:75
+#, fuzzy
+msgctxt "unit creation"
+msgid "Create a mount unit"
+msgstr "Laadi üksus uuesti"
+
+#. Unit type selection
+#. Panel Title
+#. Preference section title
+#: data/interfaces/creator/create_first.ui:76
+#: data/interfaces/creator/creator_page_mount.ui:24
+#: data/interfaces/creator/creator_page_mount.ui:55
+#, fuzzy
+msgctxt "create_unit"
+msgid "Mount"
+msgstr "Haagitud"
+
+#. Group title
+#: data/interfaces/creator/create_first.ui:90
+msgctxt "create_unit"
+msgid "Process Management Modes"
+msgstr ""
+
+#. Unit type selection
+#: data/interfaces/creator/create_first.ui:95
+msgctxt "create_unit"
+msgid "Create unit at System level"
+msgstr ""
+
+#: data/interfaces/creator/create_first.ui:96
 #, fuzzy
 msgid "System"
 msgstr "süsteem"
 
-#: data/interfaces/creator/create_first.ui:94
+#. Unit type selection
+#: data/interfaces/creator/create_first.ui:109
+msgctxt "create_unit"
+msgid "Create unit at User level"
+msgstr ""
+
+#. Unit type selection
+#: data/interfaces/creator/create_first.ui:110
 #, fuzzy
+msgctxt "create_unit"
 msgid "User Session"
 msgstr "Kasutaja sessioonisiin"
 
 #. info subtitle
-#: data/interfaces/creator/create_first.ui:111
-msgctxt "unit creation"
+#: data/interfaces/creator/create_first.ui:127
+msgctxt "create_unit"
 msgid "Runtime units are discarded at next reboot"
 msgstr ""
 
-#: data/interfaces/creator/nav_row.ui:21
+#. info subtitle
+#: data/interfaces/creator/create_first.ui:128
+#, fuzzy
+msgctxt "create_unit"
+msgid "Runtime"
+msgstr "Käitusaegne"
+
+#. Prefererence group after creation options
+#: data/interfaces/creator/creator_end_page.ui:18
+msgctxt "create_unit"
+msgid "After creation"
+msgstr ""
+
+#. switch row subtitle
+#: data/interfaces/creator/creator_end_page.ui:23
+#, fuzzy
+msgctxt "create_unit"
+msgid "Reload systemd config"
+msgstr "Laadi üksus uuesti"
+
+#. switch row title
+#: data/interfaces/creator/creator_end_page.ui:24
+#, fuzzy
+msgctxt "create_unit"
+msgid "Daemon Reload"
+msgstr "Laadi taustateenused uuesti"
+
+#. Switch row subtitle
+#: data/interfaces/creator/creator_end_page.ui:35
+#, fuzzy
+msgctxt "create_unit"
+msgid "Start Unit after creation"
+msgstr "Käivita üksus kohe peale sisselülitamist"
+
+#. Option to start after creation
+#: data/interfaces/creator/creator_end_page.ui:36
+#, fuzzy
+msgctxt "create_unit"
+msgid "Start"
+msgstr "Käivita"
+
+#. Preference section title
+#. Prefererence group
+#. Prefererence group title
+#: data/interfaces/creator/creator_page_mount.ui:37
+#: data/interfaces/creator/creator_page_service.ui:37
+#: data/interfaces/creator/creator_page_timer.ui:37
+#: src/widget/creator/launch_creator_page.rs:390
+#, fuzzy
+msgctxt "create_unit"
+msgid "Unit"
+msgstr "Üksus"
+
+#. Preference Section title
+#: data/interfaces/creator/creator_page_mount.ui:98
+#, fuzzy
+msgctxt "create_unit"
+msgid "Mount Advanced"
+msgstr "Haagitud"
+
+#. Preference Section title
+#. Prefererence group
+#. Prefererence group title
+#: data/interfaces/creator/creator_page_mount.ui:141
+#: data/interfaces/creator/creator_page_service.ui:202
+#: data/interfaces/creator/creator_page_timer.ui:118
+msgctxt "create_unit"
+msgid "Install"
+msgstr ""
+
+#. Prefererence group
+#: data/interfaces/creator/creator_page_service.ui:179
+msgctxt "create_unit"
+msgid "Resource Control"
+msgstr ""
+
+#. Button to add Monotonic timer
+#: data/interfaces/creator/creator_page_timer.ui:52
+#, fuzzy
+msgctxt "create_unit"
+msgid "Add"
+msgstr "Lisa"
+
+#. Button to add Realtime timer
+#: data/interfaces/creator/creator_page_timer.ui:60
+#, fuzzy
+msgctxt "create_unit"
+msgid "Real-time Timer"
+msgstr "Signaal reaalajas"
+
+#. Prefererence group title
+#: data/interfaces/creator/creator_page_timer.ui:81
+msgctxt "create_unit"
+msgid "Timer Triggers"
+msgstr ""
+
+#: data/interfaces/creator/creator_page_timer.ui:102
+msgid "Catch up missed runs after boot "
+msgstr ""
+
+#. Translators: placeholder text of the search entry from AdwComboRow.
+#. It should be phrased as a verb
+#. Translators: placeholder text of the search entry from Custom AdwComboRow.
+#. It should be phrased as a verb
+#: data/interfaces/creator/mydrop.ui:30 src/widget/creator/dropdown.rs:459
+msgid "Search"
+msgstr ""
+
+#: data/interfaces/creator/nav_row.ui:23
 msgid ""
 "🙏🏻 Please donate — every contribution helps me to prove to my wife that "
 "this project is more than just “another coding hobby”"
-msgstr ""
-
-#: data/interfaces/creator/timer_creator_page.ui:109
-msgid "Catch up missed runs after boot "
 msgstr ""
 
 #: data/interfaces/ex_menu_button.ui:40
@@ -338,31 +493,31 @@ msgid "List Boots"
 msgstr "Alglaadimiste loend"
 
 #. button
-#: data/interfaces/journal_panel.ui:86
+#: data/interfaces/journal_panel.ui:87
 msgctxt "journal"
 msgid "Current boot"
 msgstr "Viimane alglaadimine"
 
 #. button
-#: data/interfaces/journal_panel.ui:92
+#: data/interfaces/journal_panel.ui:97
 msgctxt "journal"
 msgid "All events"
 msgstr "Kõik sündmused"
 
 #. title
-#: data/interfaces/journal_panel.ui:99
+#: data/interfaces/journal_panel.ui:106
 msgctxt "journal"
 msgid "Boot id"
 msgstr "Alglaadimise tunnus"
 
 #. wiki link
-#: data/interfaces/journal_panel.ui:146
+#: data/interfaces/journal_panel.ui:153
 msgctxt "journal"
 msgid "For more information"
 msgstr "Vaata lisateavet"
 
 #. description
-#: data/interfaces/journal_panel.ui:150
+#: data/interfaces/journal_panel.ui:157
 msgctxt "journal"
 msgid ""
 "Either there are no log events to display, or you don't have permission to "
@@ -370,7 +525,7 @@ msgid ""
 msgstr ""
 
 #. title
-#: data/interfaces/journal_panel.ui:152
+#: data/interfaces/journal_panel.ui:159
 msgctxt "journal"
 msgid "No journal events"
 msgstr "Süsteemipäevikus pole sündmusi"
@@ -1633,37 +1788,37 @@ msgid "Filter Units by their Names"
 msgstr ""
 
 #. button's tooltips
-#: data/interfaces/unit_list_search.ui:20
+#: data/interfaces/unit_list_search.ui:19
 msgctxt "button's tooltips"
 msgid "Configure displayed Columns"
 msgstr "Seadista näidatavaid veerge"
 
 #. Button label
-#: data/interfaces/unit_list_search.ui:24
+#: data/interfaces/unit_list_search.ui:23
 msgctxt "unit search"
 msgid "Columns"
 msgstr "Veerud"
 
 #. button's tooltips
-#: data/interfaces/unit_list_search.ui:32
+#: data/interfaces/unit_list_search.ui:31
 msgctxt "unit search"
 msgid "More filtering Options"
 msgstr ""
 
 #. Button label
-#: data/interfaces/unit_list_search.ui:36
+#: data/interfaces/unit_list_search.ui:35
 msgctxt "unit search"
 msgid "Filters"
 msgstr "Filtrid"
 
 #. Button label
-#: data/interfaces/unit_list_search.ui:51
+#: data/interfaces/unit_list_search.ui:50
 msgctxt "unit search"
 msgid "Clear"
 msgstr "Tühjenda"
 
 #. button's tooltips
-#: data/interfaces/unit_list_search.ui:52
+#: data/interfaces/unit_list_search.ui:51
 msgctxt "unit search"
 msgid "Clear applied Filters"
 msgstr "Tühjenda kasutusel filtrid"
@@ -1996,144 +2151,284 @@ msgctxt "action unit file"
 msgid "Stoping mode options"
 msgstr "Lõpetamisviisi valikud"
 
-#: src/widget/creator/first_page.rs:116
+#. Title of the folder selection widget window
+#: src/widget/creator/creator_page_mount/imp.rs:234
+#, fuzzy
+msgctxt "create_unit"
+msgid "Select a mount point"
+msgstr "Vali kirjatüüp"
+
+#. Button title of the folder selection widget
+#. Button title of the executable selection widget
+#: src/widget/creator/creator_page_mount/imp.rs:236
+#: src/widget/creator/creator_page_service/imp.rs:593
+#: src/widget/creator/creator_page_service/imp.rs:634
+#, fuzzy
+msgctxt "create_unit"
+msgid "Select"
+msgstr "Vali kirjatüüp"
+
+#. Title of the folder selection widget window
+#: src/widget/creator/creator_page_service/imp.rs:591
+msgctxt "create_unit"
+msgid "Select a working directory"
+msgstr ""
+
+#. Title of the executable selection widget window
+#: src/widget/creator/creator_page_service/imp.rs:636
+msgctxt "create_unit"
+msgid "Select executable"
+msgstr ""
+
+#: src/widget/creator/creator_page_timer/imp.rs:587
+#, fuzzy
+msgctxt "timer"
+msgid "Custom"
+msgstr "Kohandatud"
+
+#: src/widget/creator/creator_page_timer/imp.rs:588
+msgctxt "timer"
+msgid "Minutely"
+msgstr ""
+
+#: src/widget/creator/creator_page_timer/imp.rs:589
+msgctxt "timer"
+msgid "Hourly"
+msgstr ""
+
+#: src/widget/creator/creator_page_timer/imp.rs:590
+msgctxt "timer"
+msgid "Daily"
+msgstr ""
+
+#: src/widget/creator/creator_page_timer/imp.rs:591
+msgctxt "timer"
+msgid "Monthly"
+msgstr ""
+
+#: src/widget/creator/creator_page_timer/imp.rs:592
+msgctxt "timer"
+msgid "Weekly"
+msgstr ""
+
+#: src/widget/creator/creator_page_timer/imp.rs:593
+msgctxt "timer"
+msgid "Yearly"
+msgstr ""
+
+#: src/widget/creator/creator_page_timer/imp.rs:594
+msgctxt "timer"
+msgid "Quarterly"
+msgstr ""
+
+#: src/widget/creator/creator_page_timer/imp.rs:595
+msgctxt "timer"
+msgid "Semiannually"
+msgstr ""
+
+#: src/widget/creator/creator_page_timer.rs:80
+msgctxt "timer"
+msgid "OnActiveSec"
+msgstr ""
+
+#: src/widget/creator/creator_page_timer.rs:81
+msgctxt "timer"
+msgid "OnBootSec"
+msgstr ""
+
+#: src/widget/creator/creator_page_timer.rs:82
+msgctxt "timer"
+msgid "OnStartupSec"
+msgstr ""
+
+#: src/widget/creator/creator_page_timer.rs:83
+msgctxt "timer"
+msgid "OnUnitActiveSec"
+msgstr ""
+
+#: src/widget/creator/creator_page_timer.rs:84
+msgctxt "timer"
+msgid "OnUnitInactiveSec"
+msgstr ""
+
+#. Entry title for unit name prefix
+#: src/widget/creator/first_page.rs:142
 msgctxt "creator"
 msgid "Unit Name Prefix"
 msgstr ""
 
-#: src/widget/creator/imp.rs:355
+#. Entry title for unit name prefix
+#: src/widget/creator/first_page.rs:146
+msgctxt "creator"
+msgid "(automatically generated )"
+msgstr ""
+
+#: src/widget/creator/imp.rs:395
 #, fuzzy, rust-format
 msgctxt "create"
 msgid "Unit {} Created!"
 msgstr "„{}“ ühikufaili varasema oleku taastamine õnnestus!"
 
-#: src/widget/creator/imp.rs:362
+#: src/widget/creator/imp.rs:402
 #, rust-format
 msgctxt "create"
 msgid "Creation Failed! {}"
 msgstr ""
 
 #. Faild to reload manager a System or User level
-#: src/widget/creator/launch_creator_page.rs:184
+#: src/widget/creator/launch_creator_page.rs:170
 #, fuzzy, rust-format
 msgid "Daemon Reload failed at {} level"
 msgstr "Taustateenuste uuestilaadimine ei õnnestunud!"
 
-#: src/widget/creator/mod.rs:98
+#. Action Row New Unit title
+#: src/widget/creator/launch_creator_page.rs:250
+#: src/widget/creator/launch_creator_page.rs:259
+#: src/widget/creator/launch_creator_page.rs:269
+#: src/widget/creator/launch_creator_page.rs:276
+#, fuzzy
+msgctxt "create_unit"
+msgid "Service File"
+msgstr "Teenusehaldur"
+
+#. Action Row New Unit title
+#: src/widget/creator/launch_creator_page.rs:286
+#, fuzzy
+msgctxt "create_unit"
+msgid "Mount File"
+msgstr "Üksuse fail"
+
+#. Tooltip Created new unit file
+#: src/widget/creator/launch_creator_page.rs:378
+#, fuzzy
+msgctxt "create_unit"
+msgid "Show Unit File"
+msgstr "Üksusefaili pole"
+
+#. Tooltip Created new unit
+#: src/widget/creator/launch_creator_page.rs:393
+#, fuzzy
+msgctxt "create_unit"
+msgid "Show Unit in Browser"
+msgstr "Näita üksuse omadusi"
+
+#. Create Unit title
+#: src/widget/creator/mod.rs:144
 #, fuzzy
 msgctxt "create"
 msgid "Service"
 msgstr "Teenusehaldur"
 
-#: src/widget/creator/mod.rs:99
+#. Create Unit title
+#: src/widget/creator/mod.rs:146
 #, fuzzy
 msgctxt "create"
 msgid "Timer"
 msgstr "Taimerid"
 
-#: src/widget/creator/mod.rs:100
+#. Create Unit title
+#: src/widget/creator/mod.rs:148
 msgctxt "create"
 msgid "Timer with Service"
 msgstr ""
 
-#: src/widget/creator/mod.rs:178
-#, rust-format
-msgctxt "validator"
-msgid "{} - Not absolute path"
-msgstr ""
-
-#: src/widget/creator/mod.rs:181
-#, rust-format
-msgctxt "validator"
-msgid "{} - Not a directory"
-msgstr ""
-
-#: src/widget/creator/mod.rs:184
-#, rust-format
-msgctxt "validator"
-msgid "{} - No path specified"
-msgstr ""
-
-#: src/widget/creator/service_creator_page/imp.rs:519
-msgctxt "unit creation"
-msgid "Select executable"
-msgstr ""
-
-#: src/widget/creator/service_creator_page/imp.rs:520
+#. Create Unit title
+#: src/widget/creator/mod.rs:150
 #, fuzzy
-msgid "Select"
-msgstr "Vali kirjatüüp"
+msgctxt "create"
+msgid "Mount"
+msgstr "Haagitud"
 
-#: src/widget/creator/timer_creator_page/imp.rs:562
+#. Field validation message
+#: src/widget/creator/mod.rs:226
+msgctxt "validator"
+msgid "Invalid character"
+msgstr ""
+
+#. Field validation message
+#: src/widget/creator/mod.rs:228
+msgctxt "validator"
+msgid "Unit File already exists"
+msgstr ""
+
+#. Field validation message
+#: src/widget/creator/mod.rs:230
+msgctxt "validator"
+msgid " Empty"
+msgstr ""
+
+#. Field validation message
+#: src/widget/creator/mod.rs:232
+msgctxt "validator"
+msgid "File not exists"
+msgstr ""
+
+#. Field validation message
+#: src/widget/creator/mod.rs:234
 #, fuzzy
-msgctxt "timer"
-msgid "Custom"
-msgstr "Kohandatud"
+msgctxt "validator"
+msgid "Not a File"
+msgstr "Üksusefaili pole"
 
-#: src/widget/creator/timer_creator_page/imp.rs:563
-msgctxt "timer"
-msgid "Minutely"
+#. Field validation message
+#: src/widget/creator/mod.rs:236
+msgctxt "validator"
+msgid "Not an executable"
 msgstr ""
 
-#: src/widget/creator/timer_creator_page/imp.rs:564
-msgctxt "timer"
-msgid "Hourly"
+#. Field validation message
+#: src/widget/creator/mod.rs:238
+msgctxt "validator"
+msgid "Malformed"
 msgstr ""
 
-#: src/widget/creator/timer_creator_page/imp.rs:565
-msgctxt "timer"
-msgid "Daily"
+#. Field validation message
+#: src/widget/creator/mod.rs:240
+msgctxt "validator"
+msgid "Not absolute path"
 msgstr ""
 
-#: src/widget/creator/timer_creator_page/imp.rs:566
-msgctxt "timer"
-msgid "Monthly"
+#. Field validation message
+#: src/widget/creator/mod.rs:242
+msgctxt "validator"
+msgid "Not a directory"
 msgstr ""
 
-#: src/widget/creator/timer_creator_page/imp.rs:567
-msgctxt "timer"
-msgid "Weekly"
+#. Field validation message
+#: src/widget/creator/mod.rs:244
+msgctxt "validator"
+msgid "No path specified"
 msgstr ""
 
-#: src/widget/creator/timer_creator_page/imp.rs:568
-msgctxt "timer"
-msgid "Yearly"
+#: src/widget/creator/mod.rs:247
+#, rust-format
+msgctxt "validator"
+msgid "Too short, under the limit of {} characters"
 msgstr ""
 
-#: src/widget/creator/timer_creator_page/imp.rs:569
-msgctxt "timer"
-msgid "Quarterly"
+#: src/widget/creator/mod.rs:252
+#, rust-format
+msgctxt "validator"
+msgid "Too long, over the limit of {} characters"
 msgstr ""
 
-#: src/widget/creator/timer_creator_page/imp.rs:570
-msgctxt "timer"
-msgid "Semiannually"
+#: src/widget/creator/mod.rs:255
+msgctxt "validator"
+msgid "Mandatory field"
 msgstr ""
 
-#: src/widget/creator/timer_creator_page.rs:72
-msgctxt "timer"
-msgid "OnActiveSec"
+#. Field validation message
+#: src/widget/creator/mod.rs:257
+msgctxt "validator"
+msgid "Unknown error"
 msgstr ""
 
-#: src/widget/creator/timer_creator_page.rs:73
-msgctxt "timer"
-msgid "OnBootSec"
-msgstr ""
-
-#: src/widget/creator/timer_creator_page.rs:74
-msgctxt "timer"
-msgid "OnStartupSec"
-msgstr ""
-
-#: src/widget/creator/timer_creator_page.rs:75
-msgctxt "timer"
-msgid "OnUnitActiveSec"
-msgstr ""
-
-#: src/widget/creator/timer_creator_page.rs:76
-msgctxt "timer"
-msgid "OnUnitInactiveSec"
-msgstr ""
+#. Field validation message
+#: src/widget/creator/mod.rs:259
+#, fuzzy
+msgctxt "validator"
+msgid "Not a Unit"
+msgstr "Laadi üksus uuesti"
 
 #. Menu item label for status menu
 #: src/widget/journal/imp.rs:881 src/widget/unit_status/imp.rs:276
@@ -2804,35 +3099,35 @@ msgctxt "warning"
 msgid "_Close"
 msgstr "_Sulge"
 
-#: src/widget/unit_file_panel/imp.rs:269
+#: src/widget/unit_file_panel/imp.rs:268
 #, rust-format
 msgctxt "file"
 msgid "File {} created successfully!"
 msgstr "„{}“ faili loomine õnnestus!"
 
-#: src/widget/unit_file_panel/imp.rs:270
+#: src/widget/unit_file_panel/imp.rs:269
 #, rust-format
 msgctxt "file"
 msgid "File {} saved successfully!"
 msgstr "„{}“ faili salvestamine õnnestus!"
 
 #. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:280 src/widget/unit_file_panel/imp.rs:1035
+#: src/widget/unit_file_panel/imp.rs:279 src/widget/unit_file_panel/imp.rs:1034
 msgid "Daemon Reload"
 msgstr "Laadi taustateenused uuesti"
 
-#: src/widget/unit_file_panel/imp.rs:297 src/widget/unit_file_panel/imp.rs:311
-#: src/widget/unit_file_panel/imp.rs:1051
+#: src/widget/unit_file_panel/imp.rs:296 src/widget/unit_file_panel/imp.rs:310
+#: src/widget/unit_file_panel/imp.rs:1050
 msgctxt "file"
 msgid "Not able to save file, permission not granted!"
 msgstr "Faili salvetamine ei õnnestu, õigused on puudu!"
 
-#: src/widget/unit_file_panel/imp.rs:319
+#: src/widget/unit_file_panel/imp.rs:318
 msgctxt "file"
 msgid "Not able to save file, Flatpak permission not granted!"
 msgstr "Faili salvetamine ei õnnestu, Flatpaki õigused on puudu!"
 
-#: src/widget/unit_file_panel/imp.rs:325
+#: src/widget/unit_file_panel/imp.rs:324
 #, fuzzy, rust-format
 msgctxt "file"
 msgid ""
@@ -2840,35 +3135,35 @@ msgid ""
 " Because: {}"
 msgstr "Faili salvetamine ei õnnestu, tekkis viga!"
 
-#: src/widget/unit_file_panel/imp.rs:505
+#: src/widget/unit_file_panel/imp.rs:504
 msgctxt "file"
 msgid "File not found! You may need to perform \"Daemon Reload\""
 msgstr ""
 "Faili ei leidu! Ilmselt peaksid klõpsama valikut „Laadi taustateenused "
 "uuesti“"
 
-#: src/widget/unit_file_panel/imp.rs:597
+#: src/widget/unit_file_panel/imp.rs:596
 msgctxt "file"
 msgid "Unit File"
 msgstr "Üksusefail"
 
-#: src/widget/unit_file_panel/imp.rs:599
+#: src/widget/unit_file_panel/imp.rs:598
 msgctxt "file"
 msgid "Drop In"
 msgstr ""
 
 #. Create Drop in file name
-#: src/widget/unit_file_panel/imp.rs:910
+#: src/widget/unit_file_panel/imp.rs:909
 msgctxt "file"
 msgid "Editing"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:920
+#: src/widget/unit_file_panel/imp.rs:919
 msgctxt "file"
 msgid "Note: you can change the drop-in file name by modifying the above line"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:930
+#: src/widget/unit_file_panel/imp.rs:929
 msgctxt "file"
 msgid ""
 "Anything between here and the comment below will become the contents of the "
@@ -2876,30 +3171,30 @@ msgid ""
 msgstr ""
 
 #. Create Drop in file footer
-#: src/widget/unit_file_panel/imp.rs:939
+#: src/widget/unit_file_panel/imp.rs:938
 msgctxt "file"
 msgid "Edits below this comment will be discarded"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:1027
+#: src/widget/unit_file_panel/imp.rs:1026
 #, rust-format
 msgctxt "file"
 msgid "Unit {} reverted successfully!"
 msgstr "„{}“ ühikufaili varasema oleku taastamine õnnestus!"
 
-#: src/widget/unit_file_panel/imp.rs:1072
+#: src/widget/unit_file_panel/imp.rs:1071
 msgctxt "file"
 msgid "Not able to revert unit, permission not granted!"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:1080
+#: src/widget/unit_file_panel/imp.rs:1079
 msgctxt "file"
 msgid "Not able to revert unit, an error happened!"
 msgstr ""
 
 #. Menu item label for status menu
 #. Show Line Number Menu Item
-#: src/widget/unit_file_panel/imp.rs:1188
+#: src/widget/unit_file_panel/imp.rs:1187
 msgctxt "file"
 msgid "Display Line Numbers"
 msgstr "Näita reanumbreid"
@@ -3258,11 +3553,6 @@ msgstr "Lemmikud"
 #~ msgctxt "controls"
 #~ msgid "Reload"
 #~ msgstr "Laadi uuesti"
-
-#, fuzzy
-#~ msgctxt "preference"
-#~ msgid "Reload Daemon"
-#~ msgstr "Laadi üksus uuesti"
 
 #, fuzzy
 #~ msgctxt "preference"
