@@ -1,19 +1,27 @@
-use tracing::debug;
+use serde::{Deserialize, Serialize};
+use tokio::fs;
+use tracing::{debug, error, info, warn};
 
 use crate::{
     systemd::{
         data::UnitInfo,
         enums::{NumMatchType, StrMatchType},
     },
-    widget::unit_list::{UnitListPanel, filter::BoolFilter},
+    widget::{
+        unit_list::{UnitListPanel, filter::BoolFilter},
+        unit_properties_selector::save::{get_sysd_manager_config_dir, save_to_toml_file},
+    },
 };
 use std::{
     any::Any,
     borrow::Cow,
-    collections::HashSet,
-    fmt::{self, Debug},
+    cell::{Ref, RefCell},
+    collections::{HashMap, HashSet},
+    fmt::{self, Debug, Display},
     hash::Hash,
+    rc::Rc,
 };
+
 #[derive(Debug, Copy, Clone)]
 pub enum UnitPropertyFilterType {
     Text,
@@ -25,6 +33,28 @@ pub enum UnitPropertyFilterType {
     NumI64,
     Bool,
 }
+
+impl UnitPropertyFilterType {
+    fn as_str(&self) -> &str {
+        match self {
+            UnitPropertyFilterType::Text => "text",
+            UnitPropertyFilterType::Element => "element",
+            UnitPropertyFilterType::NumU64 => "u64",
+            UnitPropertyFilterType::NumI32 => "i32",
+            UnitPropertyFilterType::NumU16 => "u16",
+            UnitPropertyFilterType::NumU32 => "u32",
+            UnitPropertyFilterType::NumI64 => "i64",
+            UnitPropertyFilterType::Bool => "bool",
+        }
+    }
+}
+
+impl Display for UnitPropertyFilterType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
 pub trait UnitPropertyFilter: Debug {
     fn set_on_filter_apply_ui_func(&mut self, on_filter_apply_ui_func: Option<Box<dyn Fn(bool)>>);
     fn unset_on_filter_apply_ui_func(&mut self) {
@@ -62,12 +92,10 @@ pub trait UnitPropertyFilter: Debug {
     }
 
     fn clear_filter(&mut self);
-    /*     fn clear_widget_dependancy(&mut self) {
-        let lambda = |_: bool| {};
-        self.set_on_change(Box::new(lambda));
-    } */
 
     fn is_filter_applies(&self) -> bool;
+
+    fn build_save_struct(&self) -> FilterSave;
 }
 
 pub fn get_filter_element<T>(prop_filter: &dyn UnitPropertyFilter) -> &FilterElement<T>
@@ -121,7 +149,7 @@ where
 
 impl<T> FilterElement<T>
 where
-    T: Eq + Hash + Debug + Clone + 'static,
+    T: Eq + Hash + Debug + Clone + 'static + ToString,
 {
     pub fn new(
         id: &str,
@@ -194,7 +222,7 @@ where
 
 impl<T> UnitPropertyFilter for FilterElement<T>
 where
-    T: Eq + Hash + Debug + Clone + 'static,
+    T: Eq + Hash + Debug + Clone + 'static + ToString,
 {
     fn set_on_filter_apply_ui_func(&mut self, lambda: Option<Box<dyn Fn(bool)>>) {
         self.on_filter_apply_ui_func = lambda
@@ -238,6 +266,15 @@ where
 
     fn id(&self) -> &String {
         &self.id
+    }
+
+    fn build_save_struct(&self) -> FilterSave {
+        FilterSave {
+            id: self.id().to_owned(),
+            ftype: self.ftype().to_string(),
+            elements: Some(self.elements().iter().map(|t| t.to_string()).collect()),
+            text: None,
+        }
     }
 }
 
@@ -565,6 +602,15 @@ impl UnitPropertyFilter for FilterText {
     fn id(&self) -> &String {
         &self.id
     }
+
+    fn build_save_struct(&self) -> FilterSave {
+        FilterSave {
+            id: self.id().to_owned(),
+            ftype: self.ftype().to_string(),
+            elements: None,
+            text: Some(self.text().to_string()),
+        }
+    }
 }
 
 pub struct FilterNum<T>
@@ -752,11 +798,19 @@ where
     fn id(&self) -> &String {
         &self.id
     }
+
+    fn build_save_struct(&self) -> FilterSave {
+        FilterSave {
+            id: self.id().to_owned(),
+            ftype: self.ftype().to_string(),
+            elements: None,
+            text: Some(self.text().to_string()),
+        }
+    }
 }
 
 pub trait UnitPropertyAssessor: Debug {
     fn filter_unit(&self, unit: &UnitInfo) -> bool;
-    //  fn filter_unit_value(&self, unit_value: &str) -> bool;
     fn id(&self) -> &str;
     fn text(&self) -> &str {
         ""
@@ -765,6 +819,8 @@ pub trait UnitPropertyAssessor: Debug {
     fn match_type(&self) -> StrMatchType {
         StrMatchType::default()
     }
+
+    // fn to_write(&self) ->
 }
 
 pub struct FilterBool {
@@ -890,6 +946,15 @@ impl UnitPropertyFilter for FilterBool {
 
     fn id(&self) -> &String {
         &self.id
+    }
+
+    fn build_save_struct(&self) -> FilterSave {
+        FilterSave {
+            id: self.id().to_owned(),
+            ftype: self.ftype().to_string(),
+            elements: None,
+            text: Some(self.text().to_string()),
+        }
     }
 }
 
@@ -1297,6 +1362,107 @@ impl UnitPropertyAssessor for FilterBoolAssessor {
 
     fn text(&self) -> &str {
         ""
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct FilterListSave {
+    #[serde(rename = "filter")]
+    pub filters: Vec<FilterSave>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Default)]
+#[serde(default)]
+pub struct FilterSave {
+    id: String,
+    ftype: String,
+    elements: Option<Vec<String>>,
+    text: Option<String>,
+}
+
+type FilterType<'a> = Ref<'a, HashMap<String, Rc<RefCell<Box<dyn UnitPropertyFilter + 'static>>>>>;
+
+pub fn save_filter<'a>(filters: FilterType<'a>) {
+    let filters: Vec<_> = filters
+        .values()
+        .filter(|pf| pf.borrow().is_filter_applies())
+        .map(|pf| pf.borrow().build_save_struct())
+        .collect();
+
+    systemd::runtime().spawn(save_filters_async(filters));
+}
+
+const FILTERS_FILE_NAME: &str = "filters.toml";
+
+async fn save_filters_async(filters: Vec<FilterSave>) {
+    let flist = FilterListSave { filters };
+    let sysd_manager_config_dir = get_sysd_manager_config_dir();
+    if let Err(e) = fs::create_dir_all(&sysd_manager_config_dir).await {
+        error!(
+            "Failed to create config directory {:?}: {}",
+            sysd_manager_config_dir, e
+        );
+        return;
+    }
+    let config_path = sysd_manager_config_dir.join(FILTERS_FILE_NAME);
+
+    if let Err(e) = save_to_toml_file(&flist, &config_path).await {
+        error!(
+            "Failed to save filters to TOML file: {:?} {:?}",
+            config_path, e
+        );
+    } else {
+        info!("Filters saved to {:?}", config_path);
+    }
+}
+
+pub(crate) fn load_filters() -> Option<FilterListSave> {
+    if let Some(x) = systemd::runtime().block_on(load_filters_async()) {
+        for y in x.filters {}
+    }
+    todo!()
+}
+
+pub(crate) async fn load_filters_async() -> Option<FilterListSave> {
+    let sysd_manager_config_dir = get_sysd_manager_config_dir();
+
+    if !sysd_manager_config_dir.exists() {
+        info!(
+            "Config directory {:?} does not exist. Using default configuration.",
+            sysd_manager_config_dir
+        );
+        return None;
+    }
+
+    let config_path = sysd_manager_config_dir.join(FILTERS_FILE_NAME);
+
+    if !config_path.exists() {
+        info!(
+            "Config file {:?} does not exist. Using default configuration.",
+            config_path
+        );
+        return None;
+    }
+
+    match fs::read_to_string(&config_path).await {
+        Ok(toml_str) => match toml::from_str::<FilterListSave>(&toml_str) {
+            Ok(config) => {
+                if config.filters.is_empty() {
+                    warn!("Loaded config is empty, FALLBACK on default");
+                    None
+                } else {
+                    Some(config)
+                }
+            }
+            Err(e) => {
+                error!("Failed to parse TOML from {:?}: {}", config_path, e);
+                None
+            }
+        },
+        Err(e) => {
+            error!("Failed to read config file {:?}: {}", config_path, e);
+            None
+        }
     }
 }
 

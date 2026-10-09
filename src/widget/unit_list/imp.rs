@@ -35,7 +35,7 @@ use crate::{
                 filter_sub_state, filter_unit_description, filter_unit_name, filter_unit_type,
                 unit_prop_filter::{
                     FilterBool, FilterElement, FilterNum, FilterText, UnitPropertyAssessor,
-                    UnitPropertyFilter, UnitPropertyFilterType,
+                    UnitPropertyFilter, UnitPropertyFilterType, save_filter,
                 },
             },
             get_clean_col_title,
@@ -72,7 +72,7 @@ use std::{
     hash::{Hash, Hasher},
     rc::Rc,
     sync::OnceLock,
-    time::Duration,
+    time::{Duration, SystemTime},
 };
 use systemd::{SystemdSignal, errors::SystemdErrors, init_signal_watcher, runtime};
 use tokio::{
@@ -290,6 +290,8 @@ pub struct UnitListPanelImp {
     pop_menu: OnceCell<pop_menu::UnitPopMenu>,
 
     dbus_level: Cell<DbusLevel>,
+
+    filter_write_time: Cell<Option<SystemTime>>,
 }
 
 macro_rules! update_search_entry {
@@ -788,11 +790,8 @@ impl UnitListPanelImp {
             };
             s_controls.grab_focus_on_search_entry();
 
-            let applied_assessors = self
-                .applied_unit_property_filters
-                .get()
-                .expect("applied_assessors not null")
-                .borrow();
+            let applied_assessors = self.applied_assessors();
+            let applied_assessors = applied_assessors.borrow();
 
             //TODO report a bug because the adw::ButtonContent doesn't hinerit it's parent
             //sensitivity when hidden
@@ -1136,10 +1135,7 @@ impl UnitListPanelImp {
         update_widget: bool,
     ) {
         debug!("Assessor Change {new_assessor:?} Change Type: {change_type:?}");
-        let applied_assessors = self
-            .applied_unit_property_filters
-            .get()
-            .expect("applied_assessors not null");
+        let applied_assessors = self.applied_assessors();
 
         let add = if let Some(new_assessor) = new_assessor {
             debug!("Add filter id {id}");
@@ -1178,6 +1174,29 @@ impl UnitListPanelImp {
 
         let search_controls = self.search_controls.get().expect("Not Null");
         search_controls.set_filter_is_set(!applied_assessors.borrow().is_empty());
+
+        let applied_assessors = applied_assessors.clone();
+
+        if self.filter_write_time.get().is_none() {
+            let this = self.obj().clone();
+            glib::idle_add_local(move || {
+                match this.imp().filter_write_time.get() {
+                    Some(time) => {
+                        if time > SystemTime::now() {
+                            return glib::ControlFlow::Continue;
+                        }
+                    }
+                    None => return glib::ControlFlow::Break,
+                }
+                debug!("filter changed {}", applied_assessors.borrow().len());
+                this.imp().filter_write_time.replace(None);
+                save_filter(this.imp().unit_property_filters.borrow());
+                glib::ControlFlow::Break
+            });
+        }
+
+        let future_time = SystemTime::now() + Duration::from_secs(4);
+        self.filter_write_time.replace(Some(future_time));
     }
 
     fn set_filter_column_header_marker(&self, add: bool, id: &str) {
@@ -1255,18 +1274,13 @@ impl UnitListPanelImp {
         filter.set_filter_elem(text, update_widget);
     }
 
-    /*     pub(super) fn clear_unit_list_filter_window_dependancy(&self) {
-        for property_filter in self.unit_property_filters.borrow().values() {
-            property_filter.borrow_mut().clear_widget_dependancy();
-        }
-    } */
+    fn applied_assessors(&self) -> &Rc<RefCell<Vec<Box<dyn UnitPropertyAssessor>>>> {
+        self.applied_unit_property_filters
+            .get_or_init(|| Rc::new(RefCell::new(Vec::new())))
+    }
 
     fn create_custom_filter(&self) -> gtk::CustomFilter {
-        let applied_assessors = self
-            .applied_unit_property_filters
-            .get()
-            .expect("not none")
-            .clone();
+        let applied_assessors = self.applied_assessors().clone();
         gtk::CustomFilter::new(move |object| {
             let Some(unit) = object.downcast_ref::<UnitInfo>() else {
                 error!("some wrong downcast_ref to UnitBinding  {object:?}");
@@ -2267,10 +2281,6 @@ impl ObjectImpl for UnitListPanelImp {
                 );
             },
         );
-
-        let _ = self
-            .applied_unit_property_filters
-            .set(Rc::new(RefCell::new(Vec::new())));
 
         let custom_filter = self.create_custom_filter();
         self.filter_list_model

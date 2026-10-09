@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use gettextrs::{gettext, pgettext};
 use glib::value::ToValue;
 use strum::EnumIter;
@@ -97,6 +99,12 @@ impl UnitDBusLevel {
                 gettext("System & User")
             }
         }
+    }
+}
+
+impl Display for UnitDBusLevel {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
     }
 }
 

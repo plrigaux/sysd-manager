@@ -58,6 +58,12 @@ impl Preset {
     }
 }
 
+impl Display for Preset {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
 impl From<&str> for Preset {
     fn from(value: &str) -> Self {
         match value {
@@ -464,7 +470,7 @@ impl ActiveState {
 
 impl Display for ActiveState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.as_str())
+        f.write_str(self.as_str())
     }
 }
 
@@ -636,6 +642,12 @@ impl UnitType {
 
             _ => false,
         }
+    }
+}
+
+impl Display for UnitType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
     }
 }
 
@@ -972,6 +984,12 @@ impl LoadState {
 
     pub fn tooltip_info(&self) -> Option<&str> {
         None
+    }
+}
+
+impl Display for LoadState {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
     }
 }
 

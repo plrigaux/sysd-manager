@@ -1,26 +1,3 @@
-use std::{
-    cell::{Cell, OnceCell, RefCell},
-    collections::HashMap,
-    rc::Rc,
-    str::FromStr,
-};
-
-use adw::{prelude::*, subclass::window::AdwWindowImpl};
-use gettextrs::pgettext;
-use glib::{Quark, SignalHandlerId};
-use std::fmt::Debug;
-
-use gtk::{
-    glib::{self},
-    subclass::{
-        prelude::*,
-        widget::{
-            CompositeTemplateCallbacksClass, CompositeTemplateClass,
-            CompositeTemplateInitializingExt, WidgetImpl,
-        },
-    },
-};
-
 use crate::{
     consts::{ALL_FILTER_KEY, CLASS_WARNING, FLAT},
     systemd::enums::{
@@ -43,7 +20,27 @@ use crate::{
         },
     },
 };
+use adw::{prelude::*, subclass::window::AdwWindowImpl};
 use base::enums::UnitDBusLevel;
+use gettextrs::pgettext;
+use glib::{Quark, SignalHandlerId};
+use gtk::{
+    glib::{self},
+    subclass::{
+        prelude::*,
+        widget::{
+            CompositeTemplateCallbacksClass, CompositeTemplateClass,
+            CompositeTemplateInitializingExt, WidgetImpl,
+        },
+    },
+};
+use std::{
+    cell::{Cell, OnceCell, RefCell},
+    collections::HashMap,
+    fmt::Debug,
+    rc::Rc,
+    str::FromStr,
+};
 use strum::IntoEnumIterator;
 use tracing::{debug, error, info, warn};
 
