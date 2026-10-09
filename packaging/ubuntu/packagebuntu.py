@@ -149,7 +149,8 @@ def write_changelog(release=None):
     print(f"Write {color.BOLD}changelog{color.END} file")
 
     urgency = "medium"
-    distribution = "resolute"
+    # distribution = "resolute"
+    distribution = "stonking"
     package = "sysd-manager"
 
     if not isinstance(release, int):
@@ -225,7 +226,7 @@ def copy_source():
         "sysd-manager-comcontroler",
         "sysd-manager-test-base",
         "sysd-manager-base",
-        "tool",
+        "sysd-manager-buildtool",
         # "vendor",
     ]
 
