@@ -955,47 +955,6 @@ where
     (container, vec![filter_wiget])
 }
 
-fn build_type_filter(
-    filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>,
-) -> (gtk::Box, Vec<FilterWidget>) {
-    let container = create_content_box();
-
-    let mut vec = Vec::new();
-    //  let filter_elem = Rc::new(RefCell::new(FilterElem::default()));
-    for unit_type in UnitType::iter().filter(|x| !matches!(*x, UnitType::Unknown | UnitType::Unit))
-    {
-        let check = {
-            let binding = filter_container.borrow();
-            let active = get_filter_element::<UnitType>(binding.as_ref()).contains(&unit_type);
-
-            gtk::CheckButton::builder()
-                .label(unit_type.as_str())
-                .active(active)
-                .build()
-        };
-
-        let filter_elem = filter_container.clone();
-        check.connect_toggled(move |check_button| {
-            debug!(
-                "Filter check button {:?} {} {:?}",
-                check_button.label(),
-                check_button.is_active(),
-                unit_type.as_str()
-            );
-            let mut filter_elem = filter_elem.borrow_mut();
-            let filter_element = get_filter_element_mut::<UnitType>(filter_elem.as_mut());
-            filter_element.set_filter_elem(unit_type, check_button.is_active());
-        });
-
-        vec.push(FilterWidget::CheckBox(check.downgrade()));
-        container.append(&check);
-    }
-
-    build_controls(&container);
-
-    (container, vec)
-}
-
 macro_rules! build_elem_filter {
     ($filter_container:expr, $iter:expr, $value_type:ty) => {{
         let container = create_content_box();
@@ -1006,9 +965,15 @@ macro_rules! build_elem_filter {
                 let binding = $filter_container.borrow();
                 let active = get_filter_element::<$value_type>(binding.as_ref()).contains(&value);
 
-                gtk::CheckButton::builder()
+                let label = gtk::Label::builder()
                     .label(value.label())
+                    .use_markup(true)
+                    .margin_start(5)
+                    .build();
+
+                gtk::CheckButton::builder()
                     .active(active)
+                    .child(&label)
                     .build()
             };
 
@@ -1030,6 +995,14 @@ macro_rules! build_elem_filter {
 
         (container, vec)
     }};
+}
+
+fn build_type_filter(
+    filter_container: &Rc<RefCell<Box<dyn UnitPropertyFilter>>>,
+) -> (gtk::Box, Vec<FilterWidget>) {
+    let it = UnitType::iter()
+        .filter(|unit_type| !matches!(*unit_type, UnitType::Unknown | UnitType::Unit));
+    build_elem_filter!(filter_container, it, UnitType)
 }
 
 fn build_preset_filter(

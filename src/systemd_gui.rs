@@ -29,26 +29,6 @@ pub fn is_dark() -> bool {
 }
 
 #[macro_export]
-macro_rules! format2 {
-     ($template: expr $(,)?) => {
-          let s = formatx::formatx!($template)
-          s
-     };
-
-     ($template: expr, $($values: tt)*)  => {{
-          let res = formatx::formatx!($template, $($values)*);
-          match res {
-               Ok(s) => s,
-               Err(error) => {
-                    let error_str = format!("Format Translation error: {:?}", error);
-                    tracing::error!("{}",error_str);
-                    error_str
-               }
-          }
-     }};
-}
-
-#[macro_export]
 macro_rules! upgrade {
     ($weak_ref:expr) => {
         upgrade!($weak_ref, ())

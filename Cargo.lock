@@ -2052,6 +2052,7 @@ dependencies = [
  "chrono",
  "enumflags2",
  "flagset",
+ "formatx",
  "futures-util",
  "gettext-rs",
  "gio",

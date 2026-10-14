@@ -1,9 +1,9 @@
 use gettextrs::pgettext;
 use gtk::{glib, prelude::*, subclass::prelude::*};
+use systemd::format2;
 
 use super::{InterPanelMessage, app_window::AppWindow};
 use crate::{
-    format2,
     systemd::{data::UnitInfo, enums::StartStopMode, errors::SystemdErrors},
     widget::{
         app_window::ToastAction, close_window_shortcut, unit_control_panel::enums::UnitContolType,

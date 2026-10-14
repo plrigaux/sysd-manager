@@ -14,6 +14,7 @@ use gtk::{
     prelude::*,
 };
 use std::cell::Ref;
+use systemd::format2;
 use tracing::{error, info};
 
 const PAGE_BLAME: &str = "blame";
@@ -212,7 +213,7 @@ fn fill_store(
 
                     //total time
                     let total_time_label_str =
-                        crate::format2!(pgettext("analyze blame", "{} seconds"), time);
+                        format2!(pgettext("analyze blame", "{} seconds"), time);
 
                     total_time_label.set_label(&total_time_label_str);
 

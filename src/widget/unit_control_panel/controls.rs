@@ -1,10 +1,11 @@
+use std::borrow::Cow;
 use std::rc::Rc;
 
 use gettextrs::pgettext;
 use gtk::{gio, glib};
+use systemd::format2;
 use tracing::{debug, info, warn};
 
-use crate::format2;
 use crate::systemd::{self, data::UnitInfo, enums::UnitFileStatus};
 
 use super::UnitControlPanel;
@@ -74,13 +75,13 @@ pub(super) fn switch_ablement_state_set(
                 let (action_str, action_log) = match expected_new_status {
                     UnitFileStatus::Disabled => {
                         //toast message action on fail
-                        (pgettext("toast", "Disabling"), "Disabling")
+                        (Cow::from(pgettext("toast", "Disabling")), "Disabling")
                     }
                     UnitFileStatus::Enabled => {
                         //toast message action on fail
-                        (pgettext("toast", "Enabling"), "Enabling")
+                        (Cow::from(pgettext("toast", "Enabling")), "Enabling")
                     }
-                    _ => (expected_new_status.label().to_owned(), "???"),
+                    _ => (expected_new_status.label(), "???"),
                 };
 
                 let toast_info = make_toast_message(&unit, error, &action_str);

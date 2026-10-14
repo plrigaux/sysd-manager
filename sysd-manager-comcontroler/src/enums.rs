@@ -1,10 +1,11 @@
 use crate::{
     errors::SystemdErrors,
+    format2,
     sysdbus::{INTERFACE_SYSTEMD_MANAGER, INTERFACE_SYSTEMD_UNIT},
 };
 use base::consts::{GREEN, RED};
 use enumflags2::{_internal::RawBitFlags, bitflags};
-use gettextrs::pgettext;
+use gettextrs::{gettext, pgettext};
 use glib::{self, EnumValue, value::ToValue};
 use std::{borrow::Cow, cell::RefCell, fmt::Display, str::FromStr};
 use strum::{EnumIter, IntoEnumIterator};
@@ -20,11 +21,11 @@ const LINKED: &str = "linked";
 )]
 #[enum_type(name = "Preset")]
 pub enum Preset {
-    #[default]
-    UnSet,
     Enabled,
     Disabled,
     Ignore,
+    #[default]
+    UnSet,
 }
 
 impl Preset {
@@ -46,10 +47,11 @@ impl Preset {
         }
     }
 
-    pub fn label(&self) -> &'static str {
+    pub fn label(&self) -> Cow<'_, str> {
         match self {
-            Preset::UnSet => "<i>not set</i>",
-            _ => self.as_str(),
+            //Not set preset value
+            Preset::UnSet => Cow::from(format2!("<i>{}</i>", gettext("not set"))),
+            _ => Cow::from(self.as_str()),
         }
     }
 
@@ -169,10 +171,11 @@ impl UnitFileStatus {
         }
     }
 
-    pub fn label(&self) -> &'static str {
+    pub fn label(&self) -> Cow<'_, str> {
         match self {
-            UnitFileStatus::Unknown => "<i>unset</i>",
-            _ => self.as_str(),
+            //Not set file status value
+            UnitFileStatus::Unknown => Cow::from(format2!("<i>{}</i>", gettext("not set"))),
+            _ => Cow::from(self.as_str()),
         }
     }
 
@@ -265,16 +268,16 @@ impl UnitFileStatus {
         match self {
             UnitFileStatus::Disabled => Cow::Owned(Self::set_toast(RED, self.label())),
             UnitFileStatus::Enabled => Cow::Owned(Self::set_toast(GREEN, self.label())),
-            _ => Cow::Borrowed(self.label()),
+            _ => self.label(),
         }
     }
 
-    fn set_toast(tag: &str, label: &str) -> String {
+    fn set_toast(tag: &str, label: Cow<'_, str>) -> String {
         let mut s = String::with_capacity(tag.len() * 2 + label.len() + 10);
         s.push('<');
         s.push_str(tag);
         s.push('>');
-        s.push_str(label);
+        s.push_str(&label);
         s.push_str("</");
         s.push_str(tag);
         s.push('>');
@@ -378,7 +381,6 @@ pub enum ActiveState {
 impl ActiveState {
     pub fn as_str(&self) -> &'static str {
         match self {
-            ActiveState::Unknown => "unknown",
             ActiveState::Active => "active",
             ActiveState::Reloading => "reloading",
             ActiveState::Inactive => "inactive",
@@ -387,13 +389,15 @@ impl ActiveState {
             ActiveState::Deactivating => "deactivating",
             ActiveState::Maintenance => "maintenance",
             ActiveState::Refreshing => "refreshing",
+            ActiveState::Unknown => "unknown",
         }
     }
 
-    pub fn label(&self) -> &str {
+    pub fn label(&self) -> Cow<'_, str> {
         match self {
-            ActiveState::Unknown => "<i>unset</i>",
-            _ => self.as_str(),
+            //Not set active state value
+            ActiveState::Unknown => Cow::from(format2!("<i>{}</i>", gettext("not set"))),
+            _ => Cow::from(self.as_str()),
         }
     }
 
@@ -576,6 +580,14 @@ impl UnitType {
             Self::Unit => "unit",
             _ => "",
         }
+    }
+
+    pub fn label(&self) -> Cow<'_, str> {
+        Cow::from(self.as_str())
+    }
+
+    pub fn tooltip_info(&self) -> Option<String> {
+        None
     }
 
     pub fn interface(&self) -> &str {
@@ -876,20 +888,6 @@ impl From<glib::Variant> for StartStopMode {
     }
 }
 
-/* impl From<Option<glib::Object>> for StartStopMode {
-    fn from(value: Option<glib::Object>) -> Self {
-        let Some(object) = value else {
-            return StartStopMode::default();
-        };
-
-        let enum_list_item = object
-            .downcast::<adw::EnumListItem>()
-            .expect("Needs to be EnumListItem");
-
-        StartStopMode::from(enum_list_item.name().as_str())
-    }
-} */
-
 #[bitflags]
 #[repr(u8)]
 #[derive(Copy, Clone)]
@@ -975,10 +973,11 @@ impl LoadState {
         }
     }
 
-    pub fn label(&self) -> &'static str {
+    pub fn label(&self) -> Cow<'_, str> {
         match self {
-            LoadState::Unknown => "<i>not set</i>",
-            _ => self.as_str(),
+            //Not set load state value
+            LoadState::Unknown => Cow::Owned(format2!("<i>{}</i>", gettext("not set"))),
+            _ => Cow::Borrowed(self.as_str()),
         }
     }
 

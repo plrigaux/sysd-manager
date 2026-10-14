@@ -1,7 +1,5 @@
-use adw::prelude::{AdwDialogExt, AlertDialogExt, AlertDialogExtManual};
-
+use adw::prelude::*;
 use gettextrs::pgettext;
-use gtk::prelude::WidgetExt;
 use tracing::{info, warn};
 
 use crate::widget::app_window::AppWindow;
@@ -86,7 +84,7 @@ pub fn proxy_service_not_started(
 
 pub fn revert_drop_in_alert(unit_name: &str) -> adw::AlertDialog {
     //Warning dialog message
-    let body = crate::format2!(
+    let body = systemd::format2!(
         pgettext("warning", "You are about to clear the Drop-ins for unit {}"),
         format!("<b>{unit_name}</b>")
     );

@@ -7,9 +7,10 @@ use gettextrs::pgettext;
 use glib::WeakRef;
 use gtk::{glib, prelude::*, subclass::prelude::*};
 use regex::Regex;
+use systemd::format2;
 use tracing::{debug, info, warn};
 
-use crate::{format2, systemd_gui::is_dark, upgrade, widget};
+use crate::{systemd_gui::is_dark, upgrade, widget};
 
 use super::TextSearchEntry;
 

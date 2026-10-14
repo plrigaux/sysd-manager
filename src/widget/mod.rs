@@ -18,7 +18,6 @@ pub mod unit_properties_selector;
 pub mod unit_status;
 
 use crate::{
-    format2,
     systemd::{BootFilter, data::UnitInfo},
     utils::palette::{dark_blue, dark_green, dark_red},
 };
@@ -29,6 +28,7 @@ use glib::object::{Cast, CastNone, IsA};
 use gtk::{gdk, pango::FontDescription, prelude::*};
 use regex::Regex;
 pub(crate) use std::{rc::Rc, sync::OnceLock};
+use systemd::format2;
 use tracing::debug;
 
 pub enum InterPanelMessage<'a> {

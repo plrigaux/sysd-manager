@@ -13,10 +13,10 @@ use gtk::{
         },
     },
 };
+use systemd::format2;
 
 use crate::{
     consts::{ERROR_CSS, WARNING_CSS},
-    format2,
     systemd::{self, data::UnitInfo, enums::KillWho, errors::SystemdErrors},
     widget::{
         InterPanelMessage, close_window_shortcut,

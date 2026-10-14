@@ -32,7 +32,7 @@ mod imp {
 
     use super::*;
     use crate::{
-        format2, systemd_gui, upgrade, upgrade_opt,
+        systemd_gui, upgrade, upgrade_opt,
         widget::creator::{UnitCreateType, imp::UnitCreatorWindowImp},
     };
     use adw::{prelude::*, subclass::prelude::*};
@@ -45,7 +45,10 @@ mod imp {
     use glib::clone::Downgrade;
     use gtk::glib;
     use std::cell::{Cell, OnceCell, RefCell};
-    use systemd::enums::{DisEnableFlags, StartStopMode};
+    use systemd::{
+        enums::{DisEnableFlags, StartStopMode},
+        format2,
+    };
     use tracing::{error, info, warn};
 
     #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
@@ -166,7 +169,7 @@ mod imp {
                     }
                     Err(e) => {
                         error!("Daemon Reload level {dbus_level:?} failed {e:?}");
-                        //Faild to reload manager a System or User level
+                        //Faild to reload manager at {System or User level}
                         let msg = gettext("Daemon Reload failed at {} level");
                         let msg = format2!(msg, dbus_level.message());
                         let msg = format!("<red>{msg}</red>");
