@@ -1982,7 +1982,9 @@ impl UnitListPanelImp {
 
         let fitems = self.filter_list_model().n_items();
         if fitems == 0 {
-            info!("No items to scroll to");
+            info!("No items to scroll to filter too restrictive");
+            self.panel_stack
+                .set_visible_child_name(RESTRICTIVE_FILTER_VIEW_PAGE);
             return;
         }
 
