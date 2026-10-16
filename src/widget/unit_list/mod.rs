@@ -116,6 +116,10 @@ impl UnitListPanel {
     pub fn is_favorite(&self, unit: &UnitInfo) -> bool {
         self.imp().is_favorite(unit)
     }
+
+    pub fn on_close_request(&self) {
+        self.imp().on_close_request();
+    }
 }
 
 pub fn get_clean_col_title(title: &str) -> String {

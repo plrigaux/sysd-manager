@@ -594,9 +594,7 @@ impl UnitListPanelImp {
 
     fn set_list_preserve_filter(&self, value: bool) {
         self.list_preserve_filters.set(value);
-        if value {
-            self.saving_filter();
-        }
+        self.saving_filter(false);
     }
 
     fn generate_column_list(&self) -> Vec<gtk::ColumnViewColumn> {
@@ -1198,30 +1196,36 @@ impl UnitListPanelImp {
         let search_controls = self.search_controls.get().expect("Not Null");
         search_controls.set_filter_is_set(!applied_assessors.borrow().is_empty());
 
-        if self.filter_write_time.get().is_none() && self.list_preserve_filters.get() {
-            self.saving_filter();
-        }
-
-        let future_time = SystemTime::now() + Duration::from_secs(FILTER_SAVING_DELAY_SECS);
-        self.filter_write_time.replace(Some(future_time));
+        self.saving_filter(false);
     }
 
-    fn saving_filter(&self) {
-        let this = self.obj().clone();
-        glib::idle_add_local(move || {
-            let this = this.imp();
-            match this.filter_write_time.get() {
-                Some(time) => {
-                    if time > SystemTime::now() {
-                        return glib::ControlFlow::Continue;
+    fn saving_filter(&self, now: bool) {
+        if self.filter_write_time.get().is_some() || !self.list_preserve_filters.get() {
+            return;
+        }
+
+        if now {
+            save_filter(self.unit_property_filters.borrow());
+        } else {
+            let this = self.obj().clone();
+            glib::idle_add_local(move || {
+                let this = this.imp();
+                match this.filter_write_time.get() {
+                    Some(time) => {
+                        if time > SystemTime::now() {
+                            return glib::ControlFlow::Continue;
+                        }
                     }
+                    None => return glib::ControlFlow::Break,
                 }
-                None => return glib::ControlFlow::Break,
-            }
-            this.filter_write_time.replace(None);
-            save_filter(this.unit_property_filters.borrow());
-            glib::ControlFlow::Break
-        });
+                this.filter_write_time.replace(None);
+                save_filter(this.unit_property_filters.borrow());
+                glib::ControlFlow::Break
+            });
+
+            let future_time = SystemTime::now() + Duration::from_secs(FILTER_SAVING_DELAY_SECS);
+            self.filter_write_time.replace(Some(future_time));
+        }
     }
 
     fn set_filter_column_header_marker(&self, add: bool, id: &str) {
@@ -2011,6 +2015,10 @@ impl UnitListPanelImp {
                 None,
             );
         });
+    }
+
+    pub(super) fn on_close_request(&self) {
+        self.saving_filter(true);
     }
 }
 
