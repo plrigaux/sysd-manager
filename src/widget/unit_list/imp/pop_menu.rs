@@ -33,7 +33,6 @@ impl UnitPopMenu {
 mod imp {
     use crate::{
         consts::{DESTRUCTIVE_ACTION, FLAT, SUGGESTED_ACTION},
-        format2,
         systemd::{data::UnitInfo, enums::UnitFileStatus},
         upgrade,
         widget::{
@@ -48,6 +47,7 @@ mod imp {
         cell::{OnceCell, RefCell},
         rc::Rc,
     };
+    use systemd::format2;
     use tracing::{debug, info, warn};
 
     macro_rules! unit {

@@ -3,14 +3,6 @@ mod imp;
 mod substate;
 pub mod unit_prop_filter;
 
-use adw::subclass::prelude::ObjectSubclassIsExt;
-use gtk::{
-    glib::{self},
-    prelude::ObjectExt,
-};
-
-use strum::{EnumIter, IntoEnumIterator};
-
 use super::UnitListPanel;
 use crate::{
     systemd::{
@@ -24,7 +16,13 @@ use crate::{
         },
     },
 };
+use adw::subclass::prelude::ObjectSubclassIsExt;
 use base::enums::UnitDBusLevel;
+use gtk::{
+    glib::{self},
+    prelude::ObjectExt,
+};
+use strum::{EnumIter, IntoEnumIterator};
 
 // ANCHOR: mod
 glib::wrapper! {
@@ -192,5 +190,17 @@ impl BoolFilter {
 
     fn from_code(code: &str) -> Option<BoolFilter> {
         BoolFilter::iter().find(|bf| bf.code() == code)
+    }
+}
+
+impl From<String> for BoolFilter {
+    fn from(value: String) -> Self {
+        match value.as_str() {
+            "True" => BoolFilter::True,
+            "False" => BoolFilter::False,
+            "Set" => BoolFilter::Set,
+            "Unset" => BoolFilter::Unset,
+            _ => BoolFilter::Unset,
+        }
     }
 }

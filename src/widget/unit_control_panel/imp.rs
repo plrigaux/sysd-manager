@@ -8,7 +8,7 @@ use crate::{
         ACTION_WIN_START_UNIT, ACTION_WIN_STOP_UNIT, ACTION_WIN_UNIT_HAS_RELOAD_UNIT_CAPABILITY,
         DESTRUCTIVE_ACTION, SETTING_FIND_IN_TEXT, SUGGESTED_ACTION,
     },
-    format2, systemd_gui,
+    systemd_gui,
     utils::font_management::{self, create_provider},
     widget::{
         InterPanelMessage,
@@ -42,6 +42,7 @@ use systemd::{
     data::UnitInfo,
     enums::{ActiveState, StartStopMode, UnitFileStatus},
     errors::SystemdErrors,
+    format2,
 };
 use tracing::{debug, error, info, warn};
 

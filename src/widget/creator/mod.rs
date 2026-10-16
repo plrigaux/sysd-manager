@@ -13,7 +13,6 @@ mod unit_file_creator_page;
 
 use crate::{
     consts::{ERROR_CSS, WARNING_CSS},
-    format2,
     widget::app_window::AppWindow,
 };
 use adw::{prelude::PreferencesRowExt, subclass::prelude::ObjectSubclassIsExt};
@@ -21,7 +20,7 @@ use gettextrs::pgettext;
 use glib::object::IsA;
 use gtk::glib::{self};
 use std::{cell::Ref, collections::HashSet, path::PathBuf};
-use systemd::errors::SystemdErrors;
+use systemd::{errors::SystemdErrors, format2};
 use tracing::{error, warn};
 
 glib::wrapper! {

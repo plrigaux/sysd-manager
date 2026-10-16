@@ -1,6 +1,5 @@
 use super::UnitCreatorWindow;
 use crate::{
-    format2,
     systemd_gui::new_settings,
     upgrade,
     widget::{
@@ -29,7 +28,7 @@ use std::{
     collections::HashSet,
     path::PathBuf,
 };
-use systemd::errors::SystemdErrors;
+use systemd::{errors::SystemdErrors, format2};
 use tracing::{debug, error, info, warn};
 
 // const PROPERTY_NAME: &str = "creation-type";

@@ -770,11 +770,10 @@ impl WindowImpl for AppWindowImpl {
         }
         // Save window size
         debug!("Close window");
-        // if let Err(_err) = self.save_window_context() {
-        //     error!("Failed to save window state");
-        // }
 
         self.unit_list_panel.save_column_config();
+
+        self.unit_list_panel.on_close_request();
 
         self.parent_close_request();
         // Allow to invoke other event handlers

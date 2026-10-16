@@ -227,6 +227,7 @@ fn build_ui(application: &adw::Application, unit: Option<&UnitInfo>, create: boo
     }
 
     if create {
+        let window = window.clone();
         glib::spawn_future_local(async move {
             if let Err(err) =
                 gtk::prelude::WidgetExt::activate_action(&window, ACTION_APP_CREATE_UNIT, None)
@@ -235,6 +236,15 @@ fn build_ui(application: &adw::Application, unit: Option<&UnitInfo>, create: boo
             };
         });
     }
+
+    glib_unix::unix_signal_add_local(2, move || {
+        println!("SIGTINT received! Shutting down smoothly...");
+
+        // Properly quit the GTK application
+        window.close();
+
+        glib::ControlFlow::Break
+    });
 }
 
 /// A GUI interface to manage systemd units

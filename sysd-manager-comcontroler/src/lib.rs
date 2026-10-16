@@ -66,6 +66,26 @@ use crate::sysdbus::to_proxy::{self, SysDManagerComLinkProxy};
 #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
 use base::consts::PROXY_SERVICE;
 
+#[macro_export]
+macro_rules! format2 {
+     ($template: expr $(,)?) => {
+          let s = formatx::formatx!($template)
+          s
+     };
+
+     ($template: expr, $($values: tt)*)  => {{
+          let res = formatx::formatx!($template, $($values)*);
+          match res {
+               Ok(s) => s,
+               Err(error) => {
+                    let error_str = format!("Format Translation error: {:?}", error);
+                    tracing::error!("{}",error_str);
+                    error_str
+               }
+          }
+     }};
+}
+
 #[derive(Default, Clone, PartialEq, Debug)]
 pub enum BootFilter {
     #[default]

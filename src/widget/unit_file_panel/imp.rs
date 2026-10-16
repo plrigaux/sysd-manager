@@ -4,7 +4,6 @@ use crate::{
         ACTION_SAVE_UNIT_FILE, APP_ACTION_DAEMON_RELOAD_BUS, SETTING_FIND_IN_TEXT,
         UNIT_FILE_LINE_NUMBER_ACTION,
     },
-    format2,
     systemd::{
         self, data::UnitInfo, errors::SystemdErrors, generate_file_uri, sysd_proxy_service_name,
     },
@@ -37,6 +36,7 @@ use std::{
     fmt::Write,
     path::Path,
 };
+use systemd::format2;
 use tracing::{debug, error, info, warn};
 
 const PANEL_EMPTY: &str = "empty";

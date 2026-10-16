@@ -3,6 +3,7 @@ use std::env;
 use std::fmt::Write;
 
 use crate::consts::{ACTION_APP_ANALYZE_BLAME, ACTION_DAEMON_RELOAD_BUS};
+use crate::systemd_gui;
 use crate::widget::close_window_shortcut;
 use crate::{
     analyze::build_analyze_window,
@@ -18,13 +19,13 @@ use crate::{
         signals_dialog::SignalsWindow,
     },
 };
-use crate::{format2, systemd_gui};
 use adw::prelude::*;
 use base::consts::APP_ID;
 use base::enums::UnitDBusLevel;
 use gettextrs::gettext;
 use glib::VariantTy;
 use gtk::{gdk, gio, glib, prelude::ActionMapExtManual};
+use systemd::format2;
 use tracing::{error, info, warn};
 
 pub const APP_TITLE: &str = "SysD Manager";

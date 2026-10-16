@@ -59,11 +59,11 @@ impl UnitListPanel {
         self.imp().set_inter_message(action);
     }
 
-    fn lazy_get_filter_assessor(
+    fn lazy_get_filter_property(
         &self,
         id: &SysdColumn,
     ) -> Option<Rc<RefCell<Box<dyn UnitPropertyFilter>>>> {
-        self.imp().lazy_get_filter_assessor(id)
+        self.imp().lazy_get_filter_property(id)
     }
 
     fn filter_assessor_change(
@@ -115,6 +115,10 @@ impl UnitListPanel {
 
     pub fn is_favorite(&self, unit: &UnitInfo) -> bool {
         self.imp().is_favorite(unit)
+    }
+
+    pub fn on_close_request(&self) {
+        self.imp().on_close_request();
     }
 }
 

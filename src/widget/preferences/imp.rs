@@ -22,7 +22,8 @@ use crate::{
         preferences::{
             data::{
                 KEY_PREF_CASE_INSENSITIVE_DEFAULT, KEY_PREF_CONTROLS_ALWAYS_SHOWS_START_STOP,
-                KEY_PREF_UNIT_DESCRIPTION_WRAP, KEY_PREF_UNIT_LIST_DISPLAY_COLORS,
+                KEY_PREF_LIST_PRESERVE_FILTERS, KEY_PREF_UNIT_DESCRIPTION_WRAP,
+                KEY_PREF_UNIT_LIST_DISPLAY_COLORS,
             },
             drop_down_elem::{build_pane_orientation_selector, build_preferred_color_scheme},
             style_scheme::style_schemes,
@@ -133,6 +134,9 @@ pub struct PreferencesDialogImpl {
 
     #[template_child]
     stop_proxy_at_close_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
+    list_preserve_filters_switch: TemplateChild<adw::SwitchRow>,
 
     #[template_child]
     unit_always_show_start_stop_switch: TemplateChild<adw::SwitchRow>,
@@ -528,20 +532,29 @@ impl ObjectImpl for PreferencesDialogImpl {
             )
             .build();
 
+        settings
+            .bind::<adw::SwitchRow>(
+                KEY_PREF_LIST_PRESERVE_FILTERS,
+                self.list_preserve_filters_switch.as_ref(),
+                "active",
+            )
+            .build();
+
         #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
         {
-            use systemd::proxy_switcher::{
-                KEY_PREF_PROXY_START_AT_STARTUP, KEY_PREF_PROXY_STOP_AT_CLOSE,
-                KEY_PREF_USE_PROXY_CLEAN, KEY_PREF_USE_PROXY_CREATE_DROP_IN,
-                KEY_PREF_USE_PROXY_CREATE_FILE, KEY_PREF_USE_PROXY_DISABLE_UNIT_FILE,
-                KEY_PREF_USE_PROXY_ENABLE_UNIT_FILE, KEY_PREF_USE_PROXY_FREEZE,
-                KEY_PREF_USE_PROXY_RELOAD_DAEMON, KEY_PREF_USE_PROXY_RELOAD_UNIT,
-                KEY_PREF_USE_PROXY_RESTART, KEY_PREF_USE_PROXY_REVERT_UNIT_FILE,
-                KEY_PREF_USE_PROXY_SAVE_FILE, KEY_PREF_USE_PROXY_START, KEY_PREF_USE_PROXY_STOP,
-                KEY_PREF_USE_PROXY_THAW, PROXY_SWITCHER,
+            use systemd::{
+                format2,
+                proxy_switcher::{
+                    KEY_PREF_PROXY_START_AT_STARTUP, KEY_PREF_PROXY_STOP_AT_CLOSE,
+                    KEY_PREF_USE_PROXY_CLEAN, KEY_PREF_USE_PROXY_CREATE_DROP_IN,
+                    KEY_PREF_USE_PROXY_CREATE_FILE, KEY_PREF_USE_PROXY_DISABLE_UNIT_FILE,
+                    KEY_PREF_USE_PROXY_ENABLE_UNIT_FILE, KEY_PREF_USE_PROXY_FREEZE,
+                    KEY_PREF_USE_PROXY_RELOAD_DAEMON, KEY_PREF_USE_PROXY_RELOAD_UNIT,
+                    KEY_PREF_USE_PROXY_RESTART, KEY_PREF_USE_PROXY_REVERT_UNIT_FILE,
+                    KEY_PREF_USE_PROXY_SAVE_FILE, KEY_PREF_USE_PROXY_START,
+                    KEY_PREF_USE_PROXY_STOP, KEY_PREF_USE_PROXY_THAW, PROXY_SWITCHER,
+                },
             };
-
-            use crate::format2;
 
             settings
                 .bind::<adw::SwitchRow>(
