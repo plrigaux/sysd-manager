@@ -222,6 +222,24 @@ impl UnitListFilterWindowImp {
                     "filter",
                     "The low-level unit activation state, values depend on unit type.",
                 )),
+                //Filter group tooltip - Unit Name prefix
+                SysdColumn::Name => Some(pgettext("filter", "Unit identifier")),
+                //Filter group tooltip - Systemd Bus
+                SysdColumn::Bus => Some(pgettext("filter", "User or System instances")),
+                //Filter group tooltip - Unit type
+                SysdColumn::Type => Some(pgettext("filter", "Categories of units")),
+                //Filter group tooltip - File Enablement
+                SysdColumn::State => Some(pgettext("filter", "Unit File enablement status")),
+                //Filter group tooltip - File Preset
+                SysdColumn::Preset => Some(pgettext(
+                    "filter",
+                    "Unit File default enablement status policy",
+                )),
+                //Filter group tooltip - Unit Description
+                SysdColumn::Description => Some(pgettext(
+                    "filter",
+                    "A brief, meaningful, human-readable text identifying the unit.",
+                )),
                 _ => None,
             };
 
