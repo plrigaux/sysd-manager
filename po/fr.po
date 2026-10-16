@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-16 09:07-0400\n"
-"PO-Revision-Date: 2026-10-09 03:27+0000\n"
+"PO-Revision-Date: 2026-10-16 23:07+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2026.10.1.dev0\n"
+"X-Generator: Weblate 2026.11.dev0\n"
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -53,7 +53,6 @@ msgstr ""
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:40
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:45
-#, fuzzy
 msgid "Unit Status"
 msgstr "Statut de l'unité"
 
@@ -828,14 +827,13 @@ msgstr "État actif sous forme d'icône"
 #: data/interfaces/preferences.ui:112
 msgctxt "preference"
 msgid "Preserve the Filters across application restarts"
-msgstr ""
+msgstr "Conserver les filtres lors du redémarrage de l'application"
 
 #. title
 #: data/interfaces/preferences.ui:113
-#, fuzzy
 msgctxt "preference"
 msgid "Preserve Filters "
-msgstr "Supprimer les filtres"
+msgstr "Conserver les filtres "
 
 #. group
 #: data/interfaces/preferences.ui:120
@@ -1970,10 +1968,10 @@ msgid "Running units"
 msgstr "Unités en cours d'exécution"
 
 #: src/analyze/mod.rs:216
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "analyze blame"
 msgid "{} seconds"
-msgstr "secondes…"
+msgstr "{} secondes"
 
 #. Just a simple log that it's all ok. Need to set env RUST_LOG="info" to see it
 #: src/main.rs:116
@@ -3253,54 +3251,57 @@ msgstr "Afficher les numéros de ligne"
 #: src/widget/unit_list/filter/imp.rs:213
 msgctxt "filter"
 msgid "Reflects whether the unit definition was properly loaded."
-msgstr ""
+msgstr "Indique si la définition de l'unité a été correctement chargée."
 
 #: src/widget/unit_list/filter/imp.rs:218
 msgctxt "filter"
 msgid ""
 "The high-level unit activation state, i.e. generalization of <b>Sub</b>."
 msgstr ""
+"L'état d'activation de l'unité de haut niveau, c'est-à-dire la "
+"généralisation de <b>Sub</b>."
 
 #: src/widget/unit_list/filter/imp.rs:223
 msgctxt "filter"
 msgid "The low-level unit activation state, values depend on unit type."
 msgstr ""
+"L'état d'activation de l'unité de bas niveau ; les valeurs dépendent du type "
+"d'unité."
 
 #. Filter group tooltip - Unit Name prefix
 #: src/widget/unit_list/filter/imp.rs:226
-#, fuzzy
 msgctxt "filter"
 msgid "Unit identifier"
-msgstr "Fichier de l'unité"
+msgstr "Identifiant de l'unité"
 
 #. Filter group tooltip - Systemd Bus
 #: src/widget/unit_list/filter/imp.rs:228
 msgctxt "filter"
 msgid "User or System instances"
-msgstr ""
+msgstr "Instances utilisateur ou système"
 
 #. Filter group tooltip - Unit type
 #: src/widget/unit_list/filter/imp.rs:230
 msgctxt "filter"
 msgid "Categories of units"
-msgstr ""
+msgstr "Catégories d'unités"
 
 #. Filter group tooltip - File Enablement
 #: src/widget/unit_list/filter/imp.rs:232
-#, fuzzy
 msgctxt "filter"
 msgid "Unit File enablement status"
-msgstr "Le fichier d'unité existe déjà"
+msgstr "État d'activation du fichier d'unité"
 
 #: src/widget/unit_list/filter/imp.rs:236
 msgctxt "filter"
 msgid "Unit File default enablement status policy"
-msgstr ""
+msgstr "Politique d'état d'activation par défaut des fichiers d'unité"
 
 #: src/widget/unit_list/filter/imp.rs:241
 msgctxt "filter"
 msgid "A brief, meaningful, human-readable text identifying the unit."
 msgstr ""
+"Un texte bref, significatif et lisible par l'humain identifiant l'unité."
 
 #: src/widget/unit_list/filter/imp.rs:385
 msgctxt "filter"
