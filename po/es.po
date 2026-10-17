@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-16 09:07-0400\n"
+"POT-Creation-Date: 2026-10-16 23:28-0400\n"
 "PO-Revision-Date: 2025-08-14 23:57+0000\n"
 "Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/sysd-manager/"
@@ -577,7 +577,7 @@ msgid "Common Unix signals"
 msgstr "Señales comunes de Unix"
 
 #. button
-#: data/interfaces/kill_panel.ui:84
+#: data/interfaces/kill_panel.ui:83
 msgctxt "kill"
 msgid "Send Kill Signal to Unit"
 msgstr "Enviar señal de muerte a la unidad"
@@ -830,7 +830,7 @@ msgstr ""
 #: data/interfaces/preferences.ui:113
 #, fuzzy
 msgctxt "preference"
-msgid "Preserve Filters "
+msgid "Preserve Filters"
 msgstr "Borrar filtros"
 
 #. group

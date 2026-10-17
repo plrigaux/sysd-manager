@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-16 09:07-0400\n"
+"POT-Creation-Date: 2026-10-16 23:28-0400\n"
 "PO-Revision-Date: 2026-09-11 01:51+0000\n"
 "Last-Translator: Magnus Vikan <dizzi90@gmail.com>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/sysd-"
@@ -558,7 +558,7 @@ msgid "Common Unix signals"
 msgstr ""
 
 #. button
-#: data/interfaces/kill_panel.ui:84
+#: data/interfaces/kill_panel.ui:83
 msgctxt "kill"
 msgid "Send Kill Signal to Unit"
 msgstr ""
@@ -805,7 +805,7 @@ msgstr ""
 #: data/interfaces/preferences.ui:113
 #, fuzzy
 msgctxt "preference"
-msgid "Preserve Filters "
+msgid "Preserve Filters"
 msgstr "Tjenestebehandler"
 
 #. group

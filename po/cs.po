@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-16 09:07-0400\n"
+"POT-Creation-Date: 2026-10-16 23:28-0400\n"
 "PO-Revision-Date: 2026-10-06 18:51+0000\n"
 "Last-Translator: Pavel Borecki <pavel.borecki@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/sysd-manager/"
@@ -590,7 +590,7 @@ msgid "Common Unix signals"
 msgstr "Běžné unixové signály"
 
 #. button
-#: data/interfaces/kill_panel.ui:84
+#: data/interfaces/kill_panel.ui:83
 msgctxt "kill"
 msgid "Send Kill Signal to Unit"
 msgstr "Odeslat jednotce signál Kill"
@@ -847,7 +847,7 @@ msgstr ""
 #: data/interfaces/preferences.ui:113
 #, fuzzy
 msgctxt "preference"
-msgid "Preserve Filters "
+msgid "Preserve Filters"
 msgstr "Vyčistit filtry"
 
 #. group

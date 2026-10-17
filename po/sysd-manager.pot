@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-16 09:07-0400\n"
+"POT-Creation-Date: 2026-10-16 23:28-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -552,7 +552,7 @@ msgid "Common Unix signals"
 msgstr ""
 
 #. button
-#: data/interfaces/kill_panel.ui:84
+#: data/interfaces/kill_panel.ui:83
 msgctxt "kill"
 msgid "Send Kill Signal to Unit"
 msgstr ""
@@ -798,7 +798,7 @@ msgstr ""
 #. title
 #: data/interfaces/preferences.ui:113
 msgctxt "preference"
-msgid "Preserve Filters "
+msgid "Preserve Filters"
 msgstr ""
 
 #. group
