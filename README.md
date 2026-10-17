@@ -167,7 +167,17 @@ sudo dpkg -i sysd-mangager-<version>_amd64.deb
 
 > **Note** There is no PPA yet, because the distro's Rust version is too old :(.
 
-### Method 7: Build from Source
+### Method 7: Ubuntu
+
+You can install SysD Manager from PPA for the __stonking__ release
+
+```bash
+sudo add-apt-repository ppa:plrigaux/ppa
+sudo apt update
+sudo apt install sysd-manager
+```
+        
+### Method 8: Build from Source
 
 For developers and users who prefer building from source.
 
