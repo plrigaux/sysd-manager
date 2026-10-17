@@ -65,7 +65,7 @@ def main():
         case "copysource":
             copy_source()
         case "upload":
-            upload_package()
+            upload_package(release)
         case "build":
             build_package()
         case "generate":
