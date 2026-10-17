@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-16 23:28-0400\n"
-"PO-Revision-Date: 2026-10-16 23:07+0000\n"
+"PO-Revision-Date: 2026-10-17 03:32+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -831,10 +831,9 @@ msgstr "Conserver les filtres lors du redémarrage de l'application"
 
 #. title
 #: data/interfaces/preferences.ui:113
-#, fuzzy
 msgctxt "preference"
 msgid "Preserve Filters"
-msgstr "Conserver les filtres "
+msgstr "Conserver les filtres"
 
 #. group
 #: data/interfaces/preferences.ui:120
