@@ -22,8 +22,11 @@ finish-args:
 # Needed to access journal logs
 - --filesystem=/var/log:ro
 
-# Access needed to access user unit files
+# Permission needed to access user unit files
 - --filesystem=xdg-config/systemd
+
+# Permission needed to access user unit files in runtime
+- --filesystem=xdg-run/systemd
 
 # Needed to talk to systemd1 with dbus  
 - --talk-name=org.freedesktop.systemd1

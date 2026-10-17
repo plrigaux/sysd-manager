@@ -1,11 +1,12 @@
 import argparse
-import logging
 import json
-import oyaml as yaml
+import logging
 import os
+
+import oyaml as yaml
+
 import build_aux.build_common as bcommon
 import build_aux.flatpak_cargo_generator as cargo_gen
-
 
 color = bcommon.color
 
@@ -26,7 +27,7 @@ MANIFEST = f"{APP_ID}.yaml"
 MANIFEST_LOC = "packaging/flathub"
 # FLATHUB_DIR = "../flathub"
 FLATHUB_DIR = "../io.github.plrigaux.sysd-manager"
-FLATPACK_BUILD_DIR = "../flatpak_sysdm"
+FLATPACK_BUILD_DIR = "/tmp/flatpak_sysdm"
 CARGO_LOCK = "Cargo.lock"
 CARGO_SOURCES = "cargo-sources.json"
 
