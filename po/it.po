@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-16 23:44-0400\n"
+"POT-Creation-Date: 2026-10-17 00:15-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -3535,7 +3535,7 @@ msgstr ""
 #: sysd-manager-comcontroler/src/enums.rs:53
 #: sysd-manager-comcontroler/src/enums.rs:177
 #: sysd-manager-comcontroler/src/enums.rs:399
-#: sysd-manager-comcontroler/src/enums.rs:1004
+#: sysd-manager-comcontroler/src/enums.rs:1021
 msgid "not set"
 msgstr ""
 
@@ -3618,128 +3618,128 @@ msgid ""
 "units may not be enabled."
 msgstr ""
 
-#: sysd-manager-comcontroler/src/enums.rs:453
+#: sysd-manager-comcontroler/src/enums.rs:454
 msgctxt "active state"
 msgid "Started, bound, plugged in, ..., depending on the unit type."
 msgstr ""
 
-#: sysd-manager-comcontroler/src/enums.rs:458
+#: sysd-manager-comcontroler/src/enums.rs:461
 msgctxt "active state"
 msgid "Unit is <b>active</b> and it is reloading its configuration."
 msgstr ""
 
-#: sysd-manager-comcontroler/src/enums.rs:463
+#: sysd-manager-comcontroler/src/enums.rs:469
 msgctxt "active state"
 msgid "Stopped, unbound, unplugged, ..., depending on the unit type."
 msgstr ""
 
-#: sysd-manager-comcontroler/src/enums.rs:468
+#: sysd-manager-comcontroler/src/enums.rs:476
 msgctxt "active state"
 msgid ""
 "Similar to inactive, but the unit failed in some way (process returned error "
 "code on exit, crashed, an operation timed out, or after too many restarts)."
 msgstr ""
 
-#: sysd-manager-comcontroler/src/enums.rs:473
-msgctxt "active state"
-msgid "Changing from <b>inactive</b> to <b>active</b>. "
-msgstr ""
-
-#: sysd-manager-comcontroler/src/enums.rs:478
-msgctxt "active state"
-msgid "Changing from <b>active</b> to <b>inactive</b>. "
-msgstr ""
-
 #: sysd-manager-comcontroler/src/enums.rs:483
+msgctxt "active state"
+msgid "Changing from <b>inactive</b> to <b>active</b>."
+msgstr ""
+
+#: sysd-manager-comcontroler/src/enums.rs:490
+msgctxt "active state"
+msgid "Changing from <b>active</b> to <b>inactive</b>."
+msgstr ""
+
+#: sysd-manager-comcontroler/src/enums.rs:497
 msgctxt "active state"
 msgid "Unit is inactive and a maintenance operation is in progress."
 msgstr ""
 
-#: sysd-manager-comcontroler/src/enums.rs:488
+#: sysd-manager-comcontroler/src/enums.rs:504
 msgctxt "active state"
 msgid "Unit is active and a new mount is being activated in its namespace."
 msgstr ""
 
 #. subtitle to detail who to kill Main
-#: sysd-manager-comcontroler/src/enums.rs:732
+#: sysd-manager-comcontroler/src/enums.rs:749
 msgctxt "kill"
 msgid "Only the main unit's process"
 msgstr ""
 
 #. subtitle to detail who to kill Control
-#: sysd-manager-comcontroler/src/enums.rs:734
+#: sysd-manager-comcontroler/src/enums.rs:751
 msgctxt "kill"
 msgid "Only the unit's controled processes"
 msgstr ""
 
 #. subtitle to detail who to kill All
-#: sysd-manager-comcontroler/src/enums.rs:736
+#: sysd-manager-comcontroler/src/enums.rs:753
 msgctxt "kill"
 msgid "All unit's processes"
 msgstr ""
 
 #. menu option
-#: sysd-manager-comcontroler/src/enums.rs:786
+#: sysd-manager-comcontroler/src/enums.rs:803
 msgctxt "dependency"
 msgid "Forward"
 msgstr ""
 
 #. menu option
-#: sysd-manager-comcontroler/src/enums.rs:788
+#: sysd-manager-comcontroler/src/enums.rs:805
 msgctxt "dependency"
 msgid "Reverse"
 msgstr ""
 
 #. menu option
-#: sysd-manager-comcontroler/src/enums.rs:790
+#: sysd-manager-comcontroler/src/enums.rs:807
 msgctxt "dependency"
 msgid "After"
 msgstr ""
 
 #. menu option
-#: sysd-manager-comcontroler/src/enums.rs:792
+#: sysd-manager-comcontroler/src/enums.rs:809
 msgctxt "dependency"
 msgid "Before"
 msgstr ""
 
 #. clean options
-#: sysd-manager-comcontroler/src/enums.rs:946
+#: sysd-manager-comcontroler/src/enums.rs:963
 msgctxt "clean"
 msgid "_Runtime"
 msgstr ""
 
 #. clean options
-#: sysd-manager-comcontroler/src/enums.rs:948
+#: sysd-manager-comcontroler/src/enums.rs:965
 msgctxt "clean"
 msgid "_State"
 msgstr ""
 
 #. clean options
-#: sysd-manager-comcontroler/src/enums.rs:950
+#: sysd-manager-comcontroler/src/enums.rs:967
 msgctxt "clean"
 msgid "Cac_he"
 msgstr ""
 
 #. clean options
-#: sysd-manager-comcontroler/src/enums.rs:952
+#: sysd-manager-comcontroler/src/enums.rs:969
 msgctxt "clean"
 msgid "_Logs"
 msgstr ""
 
 #. clean options
-#: sysd-manager-comcontroler/src/enums.rs:954
+#: sysd-manager-comcontroler/src/enums.rs:971
 msgctxt "clean"
 msgid "_Configuration"
 msgstr ""
 
 #. clean options
-#: sysd-manager-comcontroler/src/enums.rs:956
+#: sysd-manager-comcontroler/src/enums.rs:973
 msgctxt "clean"
 msgid "_File Descriptor Store"
 msgstr ""
 
 #. clean options
-#: sysd-manager-comcontroler/src/enums.rs:958
+#: sysd-manager-comcontroler/src/enums.rs:975
 msgctxt "clean"
 msgid "_All"
 msgstr ""
