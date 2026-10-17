@@ -1,6 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--File generated from CHANGELOG.md-->
 <releases>
+	<release version="2.24.0" date="2026-10-16">
+		<description>
+			<p>Added</p>
+			<ul>
+				<li>[Issue 80] Preserve Filters on the appplication restart</li>
+			</ul>
+			<p>Changed</p>
+			<ul>
+				<li>Filter Unit Panel UX</li>
+			</ul>
+			<p>Fixed </p>
+			<ul>
+				<li>[Issue 81] Flathub Image Title showcasing Status are labeled File</li>
+			</ul>
+		</description>
+		<issues>
+			<issue url="https://github.com/plrigaux/sysd-manager/issues/80">Issue 80</issue>
+			<issue url="https://github.com/plrigaux/sysd-manager/issues/81">Issue 81</issue>
+		</issues>
+	</release>
 	<release version="2.23.1" date="2026-10-08">
 		<description>
 			<p>Changed</p>

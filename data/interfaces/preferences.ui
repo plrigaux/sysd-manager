@@ -110,7 +110,7 @@ You can set the application's Dbus level to &lt;u&gt;System&lt;/u&gt; if you wan
             <child>
               <object class="AdwSwitchRow" id="list_preserve_filters_switch">
                 <property name="subtitle" translatable="yes" context="preference" comments="subtitle">Preserve the Filters across application restarts</property>
-                <property name="title" translatable="yes" context="preference" comments="title">Preserve Filters </property>
+                <property name="title" translatable="yes" context="preference" comments="title">Preserve Filters</property>
               </object>
             </child>
           </object>

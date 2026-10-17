@@ -845,7 +845,7 @@ impl ObjectImpl for PreferencesDialogImpl {
             let package_version = "Flatpak";
 
             //Flatpak of AppImage version ...
-            let title = crate::format2!(
+            let title = systemd::format2!(
                 pgettext("preference", "{} version can't use the Proxy"),
                 package_version
             );

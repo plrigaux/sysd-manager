@@ -445,27 +445,49 @@ impl ActiveState {
         }
     }
 
-    pub fn tooltip_info(&self) -> Option<&str> {
+    pub fn tooltip_info(&self) -> Option<String> {
         let value = match self {
-            ActiveState::Active => "Started, bound, plugged in, ..., depending on the unit type.",
-            ActiveState::Reloading => {
-                "Unit is <b>active</b> and it is reloading its configuration."
-            }
-            ActiveState::Inactive => {
-                "Stopped, unbound, unplugged, ..., depending on the unit type."
-            }
-            ActiveState::Failed => {
-                "Similar to inactive, but the unit failed in some way (process returned error code on exit, crashed, an operation timed out, or after too many restarts)."
-            }
-            ActiveState::Activating => "Changing from <b>inactive</b> to <b>active</b>. ",
-            ActiveState::Deactivating => "Changing from <b>active</b> to <b>inactive</b>. ",
-            ActiveState::Maintenance => {
-                "Unit is inactive and a maintenance operation is in progress."
-            }
-            ActiveState::Refreshing => {
-                "Unit is active and a new mount is being activated in its namespace."
-            }
-            _ => "",
+            //Tooltip Active state Active
+            ActiveState::Active => pgettext(
+                "active state",
+                "Started, bound, plugged in, ..., depending on the unit type.",
+            ),
+            //Tooltip Active state Reloading
+            ActiveState::Reloading => pgettext(
+                "active state",
+                "Unit is <b>active</b> and it is reloading its configuration.",
+            ),
+            //Tooltip Active state Inactive
+            ActiveState::Inactive => pgettext(
+                "active state",
+                "Stopped, unbound, unplugged, ..., depending on the unit type.",
+            ),
+            //Tooltip Active state Failed
+            ActiveState::Failed => pgettext(
+                "active state",
+                "Similar to inactive, but the unit failed in some way (process returned error code on exit, crashed, an operation timed out, or after too many restarts).",
+            ),
+            //Tooltip Active state Activating
+            ActiveState::Activating => pgettext(
+                "active state",
+                "Changing from <b>inactive</b> to <b>active</b>. ",
+            ),
+            //Tooltip Active state Desactivating
+            ActiveState::Deactivating => pgettext(
+                "active state",
+                "Changing from <b>active</b> to <b>inactive</b>. ",
+            ),
+            //Tooltip Active state Maintenance
+            ActiveState::Maintenance => pgettext(
+                "active state",
+                "Unit is inactive and a maintenance operation is in progress.",
+            ),
+            //Tooltip Active state Refreshing
+            ActiveState::Refreshing => pgettext(
+                "active state",
+                "Unit is active and a new mount is being activated in its namespace.",
+            ),
+            _ => String::new(),
         };
 
         Some(value)
@@ -704,11 +726,14 @@ impl KillWho {
         }
     }
 
-    pub fn description(&self) -> &str {
+    pub fn description(&self) -> String {
         match self {
-            Self::Main => "Only the main unit's process",
-            Self::Control => "Only the unit's controled processes",
-            Self::All => "All unit's processes",
+            //subtitle to detail who to kill Main
+            Self::Main => pgettext("kill", "Only the main unit's process"),
+            //subtitle to detail who to kill Control
+            Self::Control => pgettext("kill", "Only the unit's controled processes"),
+            //subtitle to detail who to kill All
+            Self::All => pgettext("kill", "All unit's processes"),
         }
     }
 }

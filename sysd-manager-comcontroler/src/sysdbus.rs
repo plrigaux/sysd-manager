@@ -224,12 +224,12 @@ pub fn shut_down_sysd_proxy() -> Result<(), SystemdErrors> {
     let state: ActiveState = unit_info_proxy.active_state()?.into();
 
     if state.is_inactive() {
-        info!("Proxy inactive --> No stopping");
+        debug!("Proxy inactive -> No stopping");
         return Ok(());
     }
 
     match unit_info_proxy.stop(StartStopMode::Fail.as_str()) {
-        Ok(job_id) => info!("Stopped unit {sysd_proxy_unit_name}, job id {job_id}"),
+        Ok(job_id) => info!("Send stop request for unit {sysd_proxy_unit_name}, job id {job_id}"),
         Err(error) => {
             error!("Error stopping unit {sysd_proxy_unit_name}: {error:?}");
         }

@@ -65,9 +65,8 @@
                     <property name="halign">baseline-fill</property>
                     <property name="vexpand">True</property>
                     <child>
-                      <object class="GtkBox" id="signals_box">
+                      <object class="AdwPreferencesGroup" id="signals_box">
                         <property name="margin-end">10</property>
-                        <property name="orientation">vertical</property>
                       </object>
                     </child>
                   </object>

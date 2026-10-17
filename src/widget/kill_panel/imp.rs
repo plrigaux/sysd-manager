@@ -45,7 +45,7 @@ pub struct KillPanelImp {
     window_title: TemplateChild<adw::WindowTitle>,
 
     #[template_child]
-    signals_box: TemplateChild<gtk::Box>,
+    signals_box: TemplateChild<adw::PreferencesGroup>,
 
     unit: RefCell<Option<UnitInfo>>,
 
@@ -173,7 +173,7 @@ impl KillPanelImp {
             entry_row.set_text(&button_label);
         });
         action_row.add_suffix(&action_button);
-        self.signals_box.append(&action_row);
+        self.signals_box.add(&action_row);
     }
 }
 
@@ -370,7 +370,7 @@ impl ObjectImpl for KillPanelImp {
 
                 let kill_who: KillWho = item.value().into();
 
-                who_to_kill.set_subtitle(kill_who.description());
+                who_to_kill.set_subtitle(&kill_who.description());
             });
 
         let edit = self.signal_id_entry.delegate().unwrap();
