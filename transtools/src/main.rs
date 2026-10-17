@@ -291,11 +291,13 @@ const POTFILES: &str = "POTFILES";
 fn generate_potfiles() -> Result<(), TransError> {
     //TODO filter on gettext only
     let mut potfiles_entries = list_files("src", "rs")?;
+    let mut com_files = list_files("sysd-manager-comcontroler/src", "rs")?;
     let mut interc = list_files("data/interfaces", "ui")?;
     let desktop = PathBuf::from(DESKTOP_FILE_PATH);
     let metainfo = PathBuf::from(METAINFO_FILE_PATH);
     let policy = PathBuf::from(POLICY_FILE_PATH);
 
+    potfiles_entries.append(&mut com_files);
     potfiles_entries.append(&mut interc);
     potfiles_entries.push(desktop);
     potfiles_entries.push(metainfo);
