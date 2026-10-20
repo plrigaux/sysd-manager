@@ -3473,7 +3473,7 @@ dependencies = [
 
 [[package]]
 name = "sysd-manager-base"
-version = "2.24.0"
+version = "2.24.1"
 dependencies = [
  "constcat",
  "gettext-rs",
@@ -3491,7 +3491,7 @@ dependencies = [
 
 [[package]]
 name = "sysd-manager-buildtool"
-version = "2.23.1"
+version = "2.24.1"
 dependencies = [
  "clap",
  "quick-xml",
@@ -3502,7 +3502,7 @@ dependencies = [
 
 [[package]]
 name = "sysd-manager-comcontroler"
-version = "2.24.0"
+version = "2.24.1"
 dependencies = [
  "chrono",
  "enumflags2",
