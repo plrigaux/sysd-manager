@@ -91,7 +91,7 @@ def create(release):
     write_control(release)
     write_rules()
     build_package()
-    upload_package(release)
+    # upload_package(release)
 
 
 def set_up_dir():
@@ -135,7 +135,7 @@ directory = "vendor"
     bc.cmd_run(
         ["tar", "-cJf", "vendor.tar.xz", "../vendor"],
         cwd=DEB_DIR,
-        env={"XZ_OPT": str(-9)},
+        # env={"XZ_OPT": str(-9)},
     )
     bc.cmd_run(["rm", "-r", "vendor"], cwd=PACKAGE_DIR)
 

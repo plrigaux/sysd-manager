@@ -20,7 +20,6 @@ use translating::PO_DIR;
 use translating::POLICY_FILE_PATH;
 use translating::error::TransError;
 
-/// A GUI interface to manage systemd units
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {

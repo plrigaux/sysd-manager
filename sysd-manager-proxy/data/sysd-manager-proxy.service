@@ -14,7 +14,7 @@ Group=root
 ExecStart={EXECUTABLE}
 ExecReload=/bin/kill -HUP $MAINPID
 TimeoutStopSec=5
-LogsDirectory=log/{SERVICE_ID}
+#LogsDirectory=log/{SERVICE_ID} #Commented because file creation donesn't work on Fedora because SELinux `sudo setenforce 0`
 Environment=HEART_BEAT_DELAY=30000
 Environment="RUST_LOG=info" 
 {ENVIRONMENT}

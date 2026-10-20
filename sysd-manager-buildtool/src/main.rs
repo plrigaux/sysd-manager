@@ -1,20 +1,49 @@
+mod build_rpm;
+use clap::{Parser, Subcommand};
 use std::env;
 use tool_lib::{errors::ToolError, extract_changelog, find_change_log_file, write_releases_to_xml};
-use tracing::{error, info, level_filters::LevelFilter};
-
+use tracing::{error, info, level_filters::LevelFilter, warn};
 // use crate::lib::{errors::ToolError, find_change_log_file, read_file};
 
 const CHANGELOG: &str = "CHANGELOG.md";
+
+/// Build a simple RPM package from scratch.
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct Args {
+    #[command(subcommand)]
+    command: Option<Commands>,
+}
+
+#[derive(Subcommand, Debug)]
+enum Commands {
+    /// Build a simple RPM package from scratch.
+    Rpm {},
+    WriteRealese {},
+}
 
 fn main() -> Result<(), ToolError> {
     tracing_subscriber::fmt()
         .with_max_level(LevelFilter::DEBUG)
         .init();
 
-    if let Err(e) = write_releases() {
+    let args = Args::parse();
+
+    if let Err(e) = execute_command(args) {
         error!("{:?}", e);
     }
     Ok(())
+}
+
+fn execute_command(args: Args) -> Result<(), ToolError> {
+    match args.command {
+        Some(Commands::Rpm {}) => build_rpm::build_rpm(),
+        Some(Commands::WriteRealese {}) => write_releases(),
+        _ => {
+            warn!("No option selected");
+            Err(ToolError::NoOption)
+        }
+    }
 }
 
 fn write_releases() -> Result<(), ToolError> {

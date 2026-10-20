@@ -21,6 +21,7 @@ class color:
     UNDERLINE = "\033[4m"
     END = "\033[0m"
     DARK_ORANGE = "\033[38;5;208m"
+    DARK_BLUE = "\033[34m"
 
 
 def cmd_run(
@@ -278,8 +279,12 @@ def replace_in_file(path, replaces, dest=None):
         if d.is_dir():
             d = d / Path(path).name
             dest = str(d)
+        elif not d.exists():
+            d.mkdir(parents=True, exist_ok=True)
+            d = d / Path(path).name
+            dest = str(d)
 
-    print(f"replace stings in file {dest}")
+    print(f"Replace strings in file {dest}")
     with open(dest, "w") as pkgbuild_file:
         pkgbuild_file.write(pkgbuild_text)
 
@@ -307,3 +312,42 @@ def get_version_logs():
     print(f"{color.GREEN}{logs}{color.END}")
 
     return logs
+
+
+def generate_files():
+    print(f"{color.BOLD}{color.GREEN}Generate files{color.END}")
+
+    cmd_run(
+        [
+            "cargo",
+            "run",
+            "-p",
+            "transtools",
+            "--",
+            "packfiles",
+        ],
+    )
+
+    replace_in_file(
+        "./sysd-manager-proxy/data/io.github.plrigaux.SysDManager.conf",
+        [
+            ("{BUS_NAME}", "io.github.plrigaux.SysDManager"),
+            ("{DESTINATION}", "io.github.plrigaux.SysDManager"),
+            ("{ENVIRONMENT}", ""),
+            ("{INTERFACE}", "io.github.plrigaux.SysDManager"),
+        ],
+        dest="target/generated/",
+    )
+
+    replace_in_file(
+        "./sysd-manager-proxy/data/sysd-manager-proxy.service",
+        [
+            ("{BUS_NAME}", "io.github.plrigaux.SysDManager"),
+            ("{DESTINATION}", "io.github.plrigaux.SysDManager"),
+            ("{ENVIRONMENT}", ""),
+            ("{INTERFACE}", "io.github.plrigaux.SysDManager"),
+            ("{EXECUTABLE}", "/usr/bin/sysd-manager-proxy"),
+            ("{SERVICE_ID}", "sysd-manager-proxy"),
+        ],
+        dest="target/generated/",
+    )

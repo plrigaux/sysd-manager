@@ -19,7 +19,7 @@ repository = "https://github.com/plrigaux/sysd-manager"
 
 [package]
 name = "sysd-manager"
-version = "2.24.0"
+version = "2.24.1"
 edition = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
@@ -65,6 +65,7 @@ test-base = { version = "0.1", path = "./sysd-manager-test-base", package = "sys
 tokio = { version = "1", features = ["full"] }
 tokio-stream = { version = "0.1", features = ["sync", "time"] }
 tokio-util = "0.7"
+toml = "1"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = [
   "ansi",
@@ -115,7 +116,7 @@ tracing-journald.workspace = true
 tracing-subscriber.workspace = true
 tracing.workspace = true
 uzers = "0.12"
-toml = "1"
+toml.workspace = true
 zvariant.workspace = true
 
 [dev-dependencies]
@@ -127,7 +128,7 @@ translating = { version = "0.4.2", path = "./sysd-manager-translating", package 
 tool = { version = "2.23.0", path = "./sysd-manager-buildtool", package = "sysd-manager-buildtool" }
 
 [package.metadata.deb]
-section = "utils"
+section = "utilities"
 maintainer = "Pierre-Luc Rigaux <plrigaux@users.noreply.github.com>"
 depends = "libgtk-4-1 (>=4.21), libadwaita-1-0 (>=1.8), libsystemd0 (>=257), libgtksourceview-5-0 (>=5.16), libgtextutils0v5"
 systemd-units = { unit-name = "sysd-manager-proxy", unit-scripts = "generated", enable = false }
@@ -155,12 +156,12 @@ assets = [
     "644",
   ],
   [
-    "generated/io.github.plrigaux.sysd-manager.desktop",
+    "target/generated/io.github.plrigaux.sysd-manager.desktop",
     "usr/share/applications/",
     "644",
   ],
   [
-    "generated/io.github.plrigaux.sysd-manager.metainfo.xml",
+    "target/generated/io.github.plrigaux.sysd-manager.metainfo.xml",
     "usr/share/metainfo/",
     "644",
   ],
@@ -177,6 +178,12 @@ assets = [
   [
     "sysd-manager-proxy/data/50-io.github.plrigaux.SysDManager.rules",
     "usr/share/polkit-1/rules.d/",
+    "644",
+  ],
+
+  [
+    "target/locale/fr/LC_MESSAGES/sysd-manager.mo",
+    "usr/share/locale/fr/LC_MESSAGES/sysd-manager.mo",
     "644",
   ],
 
