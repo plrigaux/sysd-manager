@@ -1,6 +1,6 @@
 [package]
 name = "sysd-manager-proxy"
-version = "2.22.0"
+version = "2.24.1"
 authors = { workspace = true }
 edition = { workspace = true }
 rust-version = { workspace = true }
@@ -37,7 +37,7 @@ tracing.workspace = true
 tracing-subscriber.workspace = true
 tracing-journald.workspace = true
 zbus.workspace = true
-zbus_polkit = "5"
+zbus_polkit.workspace = true
 
 [dev-dependencies]
 test-base.workspace = true

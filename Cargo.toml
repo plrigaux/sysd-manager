@@ -77,10 +77,12 @@ tracing-subscriber = { version = "0.3", features = [
 ] }
 tracing-journald = "0.3"
 zvariant = "5"
-zbus = { version = "5.11", default-features = false, features = [
+zbus = { version = "5", default-features = false, features = [
   "tokio",
   "blocking-api",
 ] }
+zbus_polkit = "5"
+zbus_xml = "5"
 
 [dependencies]
 pango = { version = "0", package = "pango", features = ["v1_56"] }

@@ -238,9 +238,12 @@ fn build_ui(application: &adw::Application, unit: Option<&UnitInfo>, create: boo
     }
 
     glib_unix::unix_signal_add_local(2, move || {
-        println!("SIGTINT received! Shutting down smoothly...");
+        println!("SIGINT received! Shutting down smoothly...");
 
         // Properly quit the GTK application
+        window.close();
+
+        //to close the pop-up window case
         window.close();
 
         glib::ControlFlow::Break
