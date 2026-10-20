@@ -30,7 +30,7 @@ def main():
             "cargologs",
             "cargo",
             "publish",
-            "cargo_publish",
+            "create_publish",
         ],
         help="action to perform",
     )
@@ -55,6 +55,8 @@ def main():
             generate_files()
         case "publish":
             publish()
+        case "create_publish":
+            create_publish(release)
 
 
 def create(release):
@@ -111,7 +113,8 @@ def publish():
     dir_path = Path("target")
 
     version = bc.get_version_cargo()
-    file = dir_path / f"sysd-manager_{version}.rpm"
+    arch = "x86_64"
+    file = dir_path / f"sysd-manager_{version}_{arch}.rpm"
 
     if file:
         print(f"Rpm file: {file}")
@@ -119,6 +122,11 @@ def publish():
         bc.release_upload_file(file)
     else:
         print(f"{color.RED}No files found in the directory: {dir_path}.{color.RED}")
+
+
+def create_publish(release):
+    create(release)
+    publish()
 
 
 if __name__ == "__name__":
