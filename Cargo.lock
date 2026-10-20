@@ -3496,8 +3496,6 @@ dependencies = [
  "clap",
  "quick-xml",
  "regex",
- "rpm",
- "toml",
  "tracing",
  "tracing-subscriber",
 ]
@@ -3530,6 +3528,19 @@ dependencies = [
  "zvariant",
  "zvariant_derive",
  "zvariant_utils",
+]
+
+[[package]]
+name = "sysd-manager-packaging"
+version = "2.23.1"
+dependencies = [
+ "clap",
+ "regex",
+ "rpm",
+ "sysd-manager-buildtool",
+ "toml",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]

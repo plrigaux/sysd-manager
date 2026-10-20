@@ -1,9 +1,13 @@
 mod build_rpm;
+mod errors;
 use clap::{Parser, Subcommand};
 use std::env;
-use tool_lib::{errors::ToolError, extract_changelog, find_change_log_file, write_releases_to_xml};
+use sysd_build_tool::{
+    errors::ToolError, extract_changelog, find_change_log_file, write_releases_to_xml,
+};
 use tracing::{error, info, level_filters::LevelFilter, warn};
-// use crate::lib::{errors::ToolError, find_change_log_file, read_file};
+
+use crate::errors::PackageError;
 
 const CHANGELOG: &str = "CHANGELOG.md";
 
@@ -35,18 +39,18 @@ fn main() -> Result<(), ToolError> {
     Ok(())
 }
 
-fn execute_command(args: Args) -> Result<(), ToolError> {
+fn execute_command(args: Args) -> Result<(), PackageError> {
     match args.command {
         Some(Commands::Rpm {}) => build_rpm::build_rpm(),
         Some(Commands::WriteRealese {}) => write_releases(),
         _ => {
             warn!("No option selected");
-            Err(ToolError::NoOption)
+            Err(PackageError::NoOption)
         }
     }
 }
 
-fn write_releases() -> Result<(), ToolError> {
+fn write_releases() -> Result<(), PackageError> {
     let dir = env::current_dir()?;
 
     let changelog_path = find_change_log_file(&dir, CHANGELOG)?;

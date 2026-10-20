@@ -24,7 +24,5 @@ default = []
 clap.workspace = true
 regex.workspace = true
 quick-xml = "0.42"
-rpm = "0.30"
-toml.workspace = true
 tracing-subscriber.workspace = true
 tracing.workspace = true

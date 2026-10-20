@@ -4,10 +4,11 @@ use std::{
     path::{Path, PathBuf},
 };
 use toml::Table;
-use tool_lib::errors::ToolError;
 use tracing::{debug, info};
 
-pub fn build_rpm() -> Result<(), ToolError> {
+use crate::errors::PackageError;
+
+pub fn build_rpm() -> Result<(), PackageError> {
     let version = env!("CARGO_PKG_VERSION");
     let name = env!("CARGO_PKG_NAME");
     debug!("{name} version {version}");
@@ -22,10 +23,11 @@ pub fn build_rpm() -> Result<(), ToolError> {
     };
 
     let Some(path) = p else {
-        return Err(ToolError::CargoNotFound);
+        return Err(PackageError::CargoNotFound);
     };
 
     env::set_current_dir(path)?;
+    info!("New working path {}", path.display());
 
     let path = path.join("Cargo.toml");
 
@@ -41,7 +43,7 @@ pub fn build_rpm() -> Result<(), ToolError> {
         .and_then(|v| v.get("version"))
         .and_then(|v| v.as_str())
     else {
-        return Err(ToolError::Custom("No version"));
+        return Err("No version".into());
     };
 
     const WORKSPACE: &str = "workspace";
@@ -53,7 +55,7 @@ pub fn build_rpm() -> Result<(), ToolError> {
         .and_then(|v| v.get("license"))
         .and_then(|v| v.as_str())
     else {
-        return Err(ToolError::Custom("No licence"));
+        return Err(PackageError::Custom("No licence"));
     };
 
     let Some(repository) = parsed
@@ -64,7 +66,7 @@ pub fn build_rpm() -> Result<(), ToolError> {
         .and_then(|v| v.get("repository"))
         .and_then(|v| v.as_str())
     else {
-        return Err(ToolError::Custom("No repository"));
+        return Err(PackageError::Custom("No repository"));
     };
 
     let Some(author) = parsed
@@ -77,7 +79,7 @@ pub fn build_rpm() -> Result<(), ToolError> {
         .and_then(|a| a.first())
         .and_then(|v| v.as_str())
     else {
-        return Err(ToolError::Custom("No authors"));
+        return Err(PackageError::Custom("No authors"));
     };
 
     let Some(description) = parsed
@@ -86,7 +88,7 @@ pub fn build_rpm() -> Result<(), ToolError> {
         .and_then(|v| v.get("description"))
         .and_then(|v| v.as_str())
     else {
-        return Err(ToolError::Custom("No decription"));
+        return Err(PackageError::Custom("No decription"));
     };
 
     let Some(name) = parsed
@@ -95,7 +97,7 @@ pub fn build_rpm() -> Result<(), ToolError> {
         .and_then(|v| v.get("name"))
         .and_then(|v| v.as_str())
     else {
-        return Err(ToolError::Custom("No name"));
+        return Err(PackageError::Custom("No name"));
     };
 
     info!("version {:?}", version);
@@ -205,7 +207,7 @@ pub fn build_rpm() -> Result<(), ToolError> {
 
         let stripped = mo
             .strip_prefix(VALUE)
-            .map_err(|_e| ToolError::Custom("strip error"))?;
+            .map_err(|_e| PackageError::Custom("strip error"))?;
         let dest = dest.join(stripped).to_string_lossy().to_string();
 
         info!("Try {} {}", source, dest);
@@ -263,7 +265,7 @@ fn add_file(
     r.map(|_| ())
 }
 
-fn inspect(pkg: Package) -> Result<(), ToolError> {
+fn inspect(pkg: Package) -> Result<(), PackageError> {
     let meta = pkg.metadata;
     let nevra = meta.get_nevra()?;
     debug!("Name        : {}", nevra.name());

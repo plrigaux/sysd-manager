@@ -302,41 +302,7 @@ def cargo_build():
 
 def generate_file():
     print(f"{color.BOLD}{color.DARK_ORANGE}Generate file{color.END}")
-
-    bc.cmd_run(
-        [
-            "cargo",
-            "run",
-            "-p",
-            "transtools",
-            "--",
-            "packfiles",
-        ],
-    )
-
-    bc.replace_in_file(
-        "./sysd-manager-proxy/data/io.github.plrigaux.SysDManager.conf",
-        [
-            ("{BUS_NAME}", "io.github.plrigaux.SysDManager"),
-            ("{DESTINATION}", "io.github.plrigaux.SysDManager"),
-            ("{ENVIRONMENT}", ""),
-            ("{INTERFACE}", "io.github.plrigaux.SysDManager"),
-        ],
-        dest="generated",
-    )
-
-    bc.replace_in_file(
-        "./sysd-manager-proxy/data/sysd-manager-proxy.service",
-        [
-            ("{BUS_NAME}", "io.github.plrigaux.SysDManager"),
-            ("{DESTINATION}", "io.github.plrigaux.SysDManager"),
-            ("{ENVIRONMENT}", ""),
-            ("{INTERFACE}", "io.github.plrigaux.SysDManager"),
-            ("{EXECUTABLE}", "/usr/bin/sysd-manager-proxy"),
-            ("{SERVICE_ID}", "sysd-manager-proxy"),
-        ],
-        dest="generated",
-    )
+    bc.generate_files()
 
 
 def cargo_changelog(release=None):
@@ -367,7 +333,7 @@ def cargo_changelog(release=None):
 
     content = headerline + "\n" + logs + "\n\n" + trailline
 
-    with open("generated/changelog", "w") as changelog_file:
+    with open("target/generated/changelog", "w") as changelog_file:
         changelog_file.write(content)
 
 

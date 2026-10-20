@@ -1,0 +1,26 @@
+[package]
+name = "sysd-manager-packaging"
+version = "2.23.1"
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Packaging tools for sysd-manager."
+keywords = ["dbus", "sysd-manager", "changelogs"]
+
+[[bin]]
+name = "packaging"
+path = "src/main.rs"
+
+[features]
+default = []
+
+[dependencies]
+sysd-build-tool.workspace = true
+clap.workspace = true
+regex.workspace = true
+rpm = "0.30"
+toml.workspace = true
+tracing-subscriber.workspace = true
+tracing.workspace = true
