@@ -764,7 +764,10 @@ impl ObjectImpl for PreferencesDialogImpl {
             let proxy_reload_switch = self.proxy_reload_daemon_switch.clone();
             let proxy_create_dropin_switch = self.proxy_create_dropin_switch.clone();
             let proxy_save_file = self.proxy_save_file_switch.clone();
+            let proxy_create_file_switch = self.proxy_create_file_switch.clone();
             let proxy_revert_unit_file_switch = self.proxy_revert_unit_file_switch.clone();
+            let start_proxy_at_startup_switch = self.start_proxy_at_startup_switch.clone();
+            let stop_proxy_at_close_switch = self.stop_proxy_at_close_switch.clone();
 
             let group_of_switches = [
                 proxy_start_switch,
@@ -779,7 +782,10 @@ impl ObjectImpl for PreferencesDialogImpl {
                 proxy_reload_switch,
                 proxy_create_dropin_switch,
                 proxy_save_file,
+                proxy_create_file_switch,
                 proxy_revert_unit_file_switch,
+                start_proxy_at_startup_switch,
+                stop_proxy_at_close_switch,
             ];
 
             let sum: usize = group_of_switches

@@ -21,7 +21,8 @@ path = "src/main.rs"
 default = []
 
 [dependencies]
-tracing.workspace = true
-tracing-subscriber.workspace = true
+clap.workspace = true
 regex.workspace = true
 quick-xml = "0.42"
+tracing-subscriber.workspace = true
+tracing.workspace = true

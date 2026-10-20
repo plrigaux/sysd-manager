@@ -18,10 +18,6 @@ use tracing::{debug, info, warn};
 
 use crate::errors::ToolError;
 
-// use crate::errors::ToolError;
-
-// use crate::errors::ToolError;
-
 pub fn find_change_log_file(dir_path: &Path, file_name: &str) -> Result<PathBuf, ToolError> {
     let path = dir_path.join(file_name);
 

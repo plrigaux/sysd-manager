@@ -8,6 +8,7 @@ members = [
   "sysd-manager-test-base",
   "sysd-manager-base",
   "sysd-manager-buildtool",
+  "sysd-manager-packaging",
 ]
 
 [workspace.package]
@@ -19,7 +20,7 @@ repository = "https://github.com/plrigaux/sysd-manager"
 
 [package]
 name = "sysd-manager"
-version = "2.24.0"
+version = "2.24.1"
 edition = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
@@ -61,10 +62,12 @@ libc = "0.2"
 regex = "1.12"
 serde = "1.0"
 strum = { version = "0.28", features = ["derive"] }
+sysd-build-tool = { version = "2.23.0", path = "./sysd-manager-buildtool", package = "sysd-manager-buildtool" }
 test-base = { version = "0.1", path = "./sysd-manager-test-base", package = "sysd-manager-test-base" }
 tokio = { version = "1", features = ["full"] }
 tokio-stream = { version = "0.1", features = ["sync", "time"] }
 tokio-util = "0.7"
+toml = "1"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = [
   "ansi",
@@ -74,10 +77,12 @@ tracing-subscriber = { version = "0.3", features = [
 ] }
 tracing-journald = "0.3"
 zvariant = "5"
-zbus = { version = "5.11", default-features = false, features = [
+zbus = { version = "5", default-features = false, features = [
   "tokio",
   "blocking-api",
 ] }
+zbus_polkit = "5"
+zbus_xml = "5"
 
 [dependencies]
 pango = { version = "0", package = "pango", features = ["v1_56"] }
@@ -115,7 +120,7 @@ tracing-journald.workspace = true
 tracing-subscriber.workspace = true
 tracing.workspace = true
 uzers = "0.12"
-toml = "1"
+toml.workspace = true
 zvariant.workspace = true
 
 [dev-dependencies]
@@ -123,15 +128,15 @@ test-base.workspace = true
 
 
 [build-dependencies]
+sysd-build-tool.workspace = true
 translating = { version = "0.4.2", path = "./sysd-manager-translating", package = "sysd-manager-translating" }
-tool = { version = "2.23.0", path = "./sysd-manager-buildtool", package = "sysd-manager-buildtool" }
 
 [package.metadata.deb]
-section = "utils"
+section = "utilities"
 maintainer = "Pierre-Luc Rigaux <plrigaux@users.noreply.github.com>"
 depends = "libgtk-4-1 (>=4.21), libadwaita-1-0 (>=1.8), libsystemd0 (>=257), libgtksourceview-5-0 (>=5.16), libgtextutils0v5"
-systemd-units = { unit-name = "sysd-manager-proxy", unit-scripts = "generated", enable = false }
-changelog = "generated/changelog"
+systemd-units = { unit-name = "sysd-manager-proxy", unit-scripts = "target/generated", enable = false }
+changelog = "target/generated/changelog"
 assets = [
 
   [
@@ -155,12 +160,12 @@ assets = [
     "644",
   ],
   [
-    "generated/io.github.plrigaux.sysd-manager.desktop",
+    "target/loc/io.github.plrigaux.sysd-manager.desktop",
     "usr/share/applications/",
     "644",
   ],
   [
-    "generated/io.github.plrigaux.sysd-manager.metainfo.xml",
+    "target/loc/io.github.plrigaux.sysd-manager.metainfo.xml",
     "usr/share/metainfo/",
     "644",
   ],
@@ -170,13 +175,19 @@ assets = [
     "644",
   ],
   [
-    "generated/io.github.plrigaux.SysDManager.policy",
+    "target/loc/io.github.plrigaux.SysDManager.policy",
     "usr/share/polkit-1/actions/",
     "644",
   ],
   [
     "sysd-manager-proxy/data/50-io.github.plrigaux.SysDManager.rules",
     "usr/share/polkit-1/rules.d/",
+    "644",
+  ],
+
+  [
+    "target/locale/fr/LC_MESSAGES/sysd-manager.mo",
+    "usr/share/locale/fr/LC_MESSAGES/sysd-manager.mo",
     "644",
   ],
 

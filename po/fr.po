@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-17 00:15-0400\n"
-"PO-Revision-Date: 2026-10-17 03:32+0000\n"
+"PO-Revision-Date: 2026-10-17 18:40+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -3643,17 +3643,17 @@ msgstr "Favoris"
 #: sysd-manager-comcontroler/src/enums.rs:399
 #: sysd-manager-comcontroler/src/enums.rs:1021
 msgid "not set"
-msgstr ""
+msgstr "non défini"
 
 #: sysd-manager-comcontroler/src/enums.rs:187
 msgctxt "list"
 msgid "The name is an alias (symlink to another unit file)."
-msgstr ""
+msgstr "Le nom est un alias (lien symbolique vers un autre fichier d'unité)."
 
 #: sysd-manager-comcontroler/src/enums.rs:192
 msgctxt "list"
 msgid "The unit file is invalid or another error occurred."
-msgstr ""
+msgstr "Le fichier d'unité est invalide ou une autre erreur s'est produite."
 
 #: sysd-manager-comcontroler/src/enums.rs:197
 msgctxt "list"
@@ -3661,6 +3661,8 @@ msgid ""
 "The unit file is not enabled, but contains an [Install] section with "
 "installation instructions."
 msgstr ""
+"Le fichier d'unité n'est pas activé, mais contient une section [Install] "
+"avec des instructions d'installation."
 
 #: sysd-manager-comcontroler/src/enums.rs:202
 #: sysd-manager-comcontroler/src/enums.rs:239
@@ -3671,6 +3673,10 @@ msgid ""
 "in <span fgcolor='#62a0ea'>/etc/systemd/system/</span>, or transiently in "
 "<span fgcolor='#62a0ea'>/run/systemd/system/</span>)."
 msgstr ""
+"Activé via des liens symboliques <span fgcolor='#62a0ea'>.wants/</span>, "
+"<span fgcolor='#62a0ea'>.requires/</span> ou <u>Alias=</u> (de manière "
+"permanente dans <span fgcolor='#62a0ea'>/etc/systemd/system/</span>, ou "
+"temporaire dans <span fgcolor='#62a0ea'>/run/systemd/system/</span>)."
 
 #: sysd-manager-comcontroler/src/enums.rs:207
 msgctxt "list"
@@ -3679,6 +3685,10 @@ msgid ""
 "systemd.generator(7)</b>. Generated unit files may not be enabled, they are "
 "enabled implicitly by their generator."
 msgstr ""
+"Le fichier d'unité a été généré dynamiquement par un outil de génération. "
+"Voir <b>man systemd.generator(7)</b>. Les fichiers d'unité générés ne "
+"peuvent pas être activés ; ils sont activés implicitement par leur "
+"générateur."
 
 #: sysd-manager-comcontroler/src/enums.rs:212
 msgctxt "list"
@@ -3690,6 +3700,12 @@ msgid ""
 "instance different than the one specified in <u>DefaultInstance=</u> is "
 "enabled."
 msgstr ""
+"Le fichier d'unité lui-même n'est pas activé, mais il comporte un paramètre "
+"<u>Also=</u> non vide dans la section [Install] — énumérant d'autres "
+"fichiers d'unité susceptibles d'être activés — ou bien il possède un alias "
+"sous un nom différent via un lien symbolique non spécifié dans <u>Also=</u>. "
+"Dans le cas de fichiers d'unité de type modèle (template), une instance "
+"différente de celle spécifiée dans <u>DefaultInstance=</u> est activée."
 
 #: sysd-manager-comcontroler/src/enums.rs:217
 #: sysd-manager-comcontroler/src/enums.rs:244
@@ -3700,6 +3716,11 @@ msgid ""
 "fgcolor='#62a0ea'>/run/systemd/system/</span>), even though the unit file "
 "might reside outside of the unit file search path."
 msgstr ""
+"Rendu disponible via un ou plusieurs liens symboliques vers le fichier "
+"d'unité (de manière permanente dans <span fgcolor='#62a0ea'>/etc/systemd/"
+"system/</span> ou temporaire dans <span fgcolor='#62a0ea'>/run/systemd/"
+"system/</span>), même si le fichier d'unité peut se trouver en dehors du "
+"chemin de recherche des fichiers d'unité."
 
 #: sysd-manager-comcontroler/src/enums.rs:222
 #: sysd-manager-comcontroler/src/enums.rs:249
@@ -3709,6 +3730,10 @@ msgid ""
 "<span fgcolor='#62a0ea'>/etc/systemd/system/</span> or transiently in <span "
 "fgcolor='#62a0ea'>/run/systemd/systemd/</span>)."
 msgstr ""
+"Entièrement désactivé, de sorte que toute tentative de le démarrer échoue "
+"(de manière permanente dans <span fgcolor='#62a0ea'>/etc/systemd/system/</"
+"span> ou temporaire dans <span fgcolor='#62a0ea'>/run/systemd/systemd/</"
+"span>)."
 
 #: sysd-manager-comcontroler/src/enums.rs:227
 msgctxt "list"
@@ -3716,6 +3741,8 @@ msgid ""
 "The unit file is not enabled, and has no provisions for enabling in the "
 "[Install] unit file section."
 msgstr ""
+"Le fichier d'unité n'est pas activé et ne prévoit aucune disposition pour "
+"son activation dans la section [Install] du fichier d'unité."
 
 #: sysd-manager-comcontroler/src/enums.rs:232
 msgctxt "list"
@@ -3723,22 +3750,23 @@ msgid ""
 "The unit file has been created dynamically with the runtime API. Transient "
 "units may not be enabled."
 msgstr ""
+"Le fichier d'unité a été créé dynamiquement via l'API d'exécution. Les "
+"unités éphémères ne peuvent pas être activées."
 
 #: sysd-manager-comcontroler/src/enums.rs:454
 msgctxt "active state"
 msgid "Started, bound, plugged in, ..., depending on the unit type."
-msgstr ""
+msgstr "Démarré, appairé, branché... selon le type d'appareil."
 
 #: sysd-manager-comcontroler/src/enums.rs:461
-#, fuzzy
 msgctxt "active state"
 msgid "Unit is <b>active</b> and it is reloading its configuration."
-msgstr "Demander à l'unité spécifiée de recharger sa configuration"
+msgstr "L'unité est <b>active</b> et recharge sa configuration."
 
 #: sysd-manager-comcontroler/src/enums.rs:469
 msgctxt "active state"
 msgid "Stopped, unbound, unplugged, ..., depending on the unit type."
-msgstr ""
+msgstr "Arrêté, dissocié, débranché..., selon le type d'unité."
 
 #: sysd-manager-comcontroler/src/enums.rs:476
 msgctxt "active state"
@@ -3746,115 +3774,115 @@ msgid ""
 "Similar to inactive, but the unit failed in some way (process returned error "
 "code on exit, crashed, an operation timed out, or after too many restarts)."
 msgstr ""
+"Similaire à l'état inactif, mais l'unité a connu une défaillance (le "
+"processus a renvoyé un code d'erreur à la sortie, a planté, une opération a "
+"expiré ou après trop de redémarrages)."
 
 #: sysd-manager-comcontroler/src/enums.rs:483
 msgctxt "active state"
 msgid "Changing from <b>inactive</b> to <b>active</b>."
-msgstr ""
+msgstr "Passage de l'état <b>inactif</b> à l'état <b>actif</b>."
 
 #: sysd-manager-comcontroler/src/enums.rs:490
 msgctxt "active state"
 msgid "Changing from <b>active</b> to <b>inactive</b>."
-msgstr ""
+msgstr "Passage de l'état <b>actif</b> à <b>inactif</b>."
 
 #: sysd-manager-comcontroler/src/enums.rs:497
 msgctxt "active state"
 msgid "Unit is inactive and a maintenance operation is in progress."
-msgstr ""
+msgstr "L'unité est inactive et une opération de maintenance est en cours."
 
 #: sysd-manager-comcontroler/src/enums.rs:504
 msgctxt "active state"
 msgid "Unit is active and a new mount is being activated in its namespace."
 msgstr ""
+"L'unité est active et un nouveau point de montage est en cours d'activation "
+"dans son espace de noms."
 
 #. subtitle to detail who to kill Main
 #: sysd-manager-comcontroler/src/enums.rs:749
 msgctxt "kill"
 msgid "Only the main unit's process"
-msgstr ""
+msgstr "Seul le processus de l'unité principale"
 
 #. subtitle to detail who to kill Control
 #: sysd-manager-comcontroler/src/enums.rs:751
-#, fuzzy
 msgctxt "kill"
 msgid "Only the unit's controled processes"
-msgstr "Processus liés à l'unité"
+msgstr "Seuls les processus contrôlés par l'unité"
 
 #. subtitle to detail who to kill All
 #: sysd-manager-comcontroler/src/enums.rs:753
-#, fuzzy
 msgctxt "kill"
 msgid "All unit's processes"
-msgstr "Disponible pour les processus"
+msgstr "Tous les processus de l'unité"
 
 #. menu option
 #: sysd-manager-comcontroler/src/enums.rs:803
 msgctxt "dependency"
 msgid "Forward"
-msgstr ""
+msgstr "Devant"
 
 #. menu option
 #: sysd-manager-comcontroler/src/enums.rs:805
 msgctxt "dependency"
 msgid "Reverse"
-msgstr ""
+msgstr "Inverse"
 
 #. menu option
 #: sysd-manager-comcontroler/src/enums.rs:807
 msgctxt "dependency"
 msgid "After"
-msgstr ""
+msgstr "Après"
 
 #. menu option
 #: sysd-manager-comcontroler/src/enums.rs:809
 msgctxt "dependency"
 msgid "Before"
-msgstr ""
+msgstr "Avant"
 
 #. clean options
 #: sysd-manager-comcontroler/src/enums.rs:963
-#, fuzzy
 msgctxt "clean"
 msgid "_Runtime"
-msgstr "Runtime"
+msgstr "_Runtime"
 
 #. clean options
 #: sysd-manager-comcontroler/src/enums.rs:965
-#, fuzzy
 msgctxt "clean"
 msgid "_State"
-msgstr "État"
+msgstr "É_tat"
 
 #. clean options
 #: sysd-manager-comcontroler/src/enums.rs:967
 msgctxt "clean"
 msgid "Cac_he"
-msgstr ""
+msgstr "Cac_he"
 
 #. clean options
 #: sysd-manager-comcontroler/src/enums.rs:969
 msgctxt "clean"
 msgid "_Logs"
-msgstr ""
+msgstr "_Journaux"
 
 #. clean options
 #: sysd-manager-comcontroler/src/enums.rs:971
-#, fuzzy
 msgctxt "clean"
 msgid "_Configuration"
-msgstr "Condition"
+msgstr "_Configuration"
 
 #. clean options
 #: sysd-manager-comcontroler/src/enums.rs:973
 msgctxt "clean"
 msgid "_File Descriptor Store"
-msgstr ""
+msgstr "Magasin de descripteurs de _fichiers"
 
 #. clean options
 #: sysd-manager-comcontroler/src/enums.rs:975
 msgctxt "clean"
 msgid "_All"
-msgstr ""
+msgstr "_Tout"
 
 #: sysd-manager-comcontroler/src/errors.rs:59
 msgctxt "error"
@@ -3863,6 +3891,9 @@ msgid ""
 "Flatpack.\n"
 "Please install it to enable all features."
 msgstr ""
+"Le programme <b>flatpack-spawn</b> est nécessaire si vous utilisez "
+"l'application Flatpak.\n"
+"Veuillez l'installer pour activer toutes les fonctionnalités."
 
 #: sysd-manager-comcontroler/src/errors.rs:66
 msgctxt "error"
@@ -3870,82 +3901,83 @@ msgid ""
 "It requires permission to talk to <b>org.freedesktop.Flatpak</b> D-Bus "
 "interface when the program is a Flatpak."
 msgstr ""
+"Cela nécessite une autorisation pour communiquer avec l'interface D-Bus <b>"
+"org.freedesktop.Flatpak</b> lorsque le programme est un Flatpak."
 
 #. Error message displayed to user
 #: sysd-manager-comcontroler/src/errors.rs:83
-#, fuzzy
 msgctxt "error"
 msgid "SysD Manager Proxy issue"
-msgstr "SysD Manager"
+msgstr "Problème de proxy SysD Manager"
 
 #. time style option
 #: sysd-manager-comcontroler/src/time_handling.rs:36
 msgctxt "pref time style"
 msgid "Pretty"
-msgstr ""
+msgstr "Joli"
 
 #. time style option
 #: sysd-manager-comcontroler/src/time_handling.rs:38
 msgctxt "pref time style"
 msgid "Pretty usec"
-msgstr ""
+msgstr "Joly usec"
 
 #. time style option
 #: sysd-manager-comcontroler/src/time_handling.rs:40
 msgctxt "pref time style"
 msgid "UTC"
-msgstr ""
+msgstr "UTC"
 
 #. time style option
 #: sysd-manager-comcontroler/src/time_handling.rs:42
 msgctxt "pref time style"
 msgid "UTC usec"
-msgstr ""
+msgstr "UTC usec"
 
 #. time style option
 #: sysd-manager-comcontroler/src/time_handling.rs:44
 msgctxt "pref time style"
 msgid "Unix"
-msgstr ""
+msgstr "Unix"
 
 #. time style option
 #: sysd-manager-comcontroler/src/time_handling.rs:46
 msgctxt "pref time style"
 msgid "Unix usec"
-msgstr ""
+msgstr "Unix usec"
 
 #. time style option tooltip
 #: sysd-manager-comcontroler/src/time_handling.rs:53
 msgctxt "pref time style"
 msgid "Day YYYY-MM-DD HH:MM:SS TZ"
-msgstr ""
+msgstr "Jour AAAA-MM-JJ HH:MM:SS Fuseau horaire"
 
 #: sysd-manager-comcontroler/src/time_handling.rs:57
 msgctxt "pref time style"
 msgid "Day YYYY-MM-DD HH:MM:SS.000000 TZ"
-msgstr ""
+msgstr "Jour AAAA-MM-JJ HH:MM:SS.000000 TZ"
 
 #. time style option tooltip
 #: sysd-manager-comcontroler/src/time_handling.rs:61
 msgctxt "pref time style"
 msgid "Day YYYY-MM-DD HH:MM:SS UTC"
-msgstr ""
+msgstr "Jour AAAA-MM-JJ HH:MM:SS UTC"
 
 #: sysd-manager-comcontroler/src/time_handling.rs:65
 msgctxt "pref time style"
 msgid "Day YYYY-MM-DD HH:MM:SS.000000 UTC"
-msgstr ""
+msgstr "Jour AAAA-MM-JJ HH:MM:SS.000000 UTC"
 
 #. time style option tooltip
 #: sysd-manager-comcontroler/src/time_handling.rs:69
 msgctxt "pref time style"
 msgid "Seconds since the epoch"
-msgstr ""
+msgstr "Secondes depuis l'époque"
 
 #: sysd-manager-comcontroler/src/time_handling.rs:73
 msgctxt "pref time style"
 msgid "Micro seconds since the epoch"
-msgstr ""
+msgstr "Microsecondes depuis l'époque"
 
 #~ msgid "Unit Files"
 #~ msgstr "Fichiers d'unité"

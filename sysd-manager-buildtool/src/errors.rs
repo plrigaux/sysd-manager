@@ -5,6 +5,9 @@ pub enum ToolError {
     IoError(std::io::Error),
     FileNotFound,
     Utf8Error(FromUtf8Error),
+    NoOption,
+    CargoNotFound,
+    Custom(&'static str),
 }
 
 impl From<std::io::Error> for ToolError {

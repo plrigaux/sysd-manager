@@ -1,6 +1,7 @@
 //#![allow(clippy::uninlined_format_args)]
 use std::{env, fs, io::Write, path::Path, process::Command};
-use tool::{Release, errors::ToolError, find_change_log_file};
+use sysd_build_tool::{Release, errors::ToolError, find_change_log_file};
+use sysd_build_tool::{extract_changelog, get_about_what_change, write_releases_to_xml};
 use translating::PO_DIR;
 use translating::error::TransError;
 
@@ -200,16 +201,16 @@ fn generate_notes() -> Result<(), ToolError> {
 
     let dir = env::current_dir()?;
 
-    let changelog_path = tool::find_change_log_file(&dir, CHANGELOG)?;
+    let changelog_path = find_change_log_file(&dir, CHANGELOG)?;
 
-    let releases = tool::extract_changelog(&changelog_path)?;
+    let releases = extract_changelog(&changelog_path)?;
 
     let file_path = find_change_log_file(
         &dir,
         "data/metainfo/io.github.plrigaux.sysd-manager.releases.xml",
     )?;
 
-    tool::write_releases_to_xml(&file_path, &releases)?;
+    write_releases_to_xml(&file_path, &releases)?;
     // let release_notes = match get_release_notes(METAINFO) {
     //     Ok(list) => list,
     //     Err(error) => {
@@ -225,7 +226,7 @@ fn generate_notes() -> Result<(), ToolError> {
 
 fn generate_release_notes_rs(release_notes: &[Release]) -> Result<(), ToolError> {
     let (version, date, description) = if let Some(first) = release_notes.first() {
-        let notes = tool::get_about_what_change(first)?;
+        let notes = get_about_what_change(first)?;
         (
             format!("Some(r###\"{}\"###)", first.version),
             format!("Some(r###\"{}\"###)", first.date),
