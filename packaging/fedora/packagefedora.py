@@ -74,7 +74,7 @@ def build_package():
             "cargo",
             "run",
             "-p",
-            "sysd-manager-buildtool",
+            "sysd-manager-packaging",
             "--",
             "rpm",
         ]
