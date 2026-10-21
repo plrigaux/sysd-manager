@@ -46,7 +46,12 @@ pub(super) fn switch_ablement_state_set(
         let level = unit.dbus_level();
         let enable_status = unit.enable_status();
         let enable_result = gio::spawn_blocking(move || {
-            systemd::disenable_unit_file(&primary_name, level, enable_status, expected_new_status)
+            systemd::runtime().block_on(systemd::disenable_unit_file(
+                &primary_name,
+                level,
+                enable_status,
+                expected_new_status,
+            ))
         })
         .await
         .expect("Task needs to finish successfully.");
@@ -144,14 +149,14 @@ pub(super) fn reenable_unit(
         let level = unit.dbus_level();
 
         let enable_result = gio::spawn_blocking(move || {
-            systemd::disenable_unit_file(
+            systemd::disenable_unit_file_block(
                 &primary_name,
                 level,
                 UnitFileStatus::Enabled,
                 UnitFileStatus::Disabled,
             )
             .map(|_ret| {
-                systemd::disenable_unit_file(
+                systemd::disenable_unit_file_block(
                     &primary_name,
                     level,
                     UnitFileStatus::Disabled,
@@ -247,8 +252,9 @@ pub(super) fn handle_switch_sensivity(
         let primary_name = unit.primary();
         let level = unit.dbus_level();
         glib::spawn_future_local(async move {
-            let current_state = gio::spawn_blocking(move || {
+            let current_state = gio::spawn_blocking(async move || {
                 systemd::get_unit_file_state(level, &primary_name)
+                    .await
                     .inspect_err(|err| {
                         info!(
                             "Get unit file state fail! For {:?} : {:?}",
@@ -258,7 +264,8 @@ pub(super) fn handle_switch_sensivity(
                     .unwrap_or(unit_file_state)
             })
             .await
-            .expect("Task needs to finish successfully.");
+            .expect("Task needs to finish successfully.")
+            .await;
 
             if current_state != unit_file_state {
                 unit_file_state = current_state;

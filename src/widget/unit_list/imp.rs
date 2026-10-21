@@ -1055,7 +1055,7 @@ impl UnitListPanelImp {
             } else {
                 info!("Removing unit {:?}", unit.primary());
 
-                match systemd::get_unit_file_state(unit.dbus_level(), &unit.primary()) {
+                match systemd::get_unit_file_state_block(unit.dbus_level(), &unit.primary()) {
                     Ok(state) => unit.set_enable_status(state),
                     Err(SystemdErrors::ZFileNotFound(_)) => {
                         let Some(list_store) = panel.imp().list_store.get() else {

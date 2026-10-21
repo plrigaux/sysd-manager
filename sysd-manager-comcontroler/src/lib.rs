@@ -23,7 +23,7 @@ use crate::{
     journal_data::Boot,
     sysdbus::{
         ListedUnitFile,
-        dbus_proxies::{Systemd1ManagerProxy, systemd_manager, systemd_manager_async},
+        dbus_proxies::{Systemd1ManagerProxy, systemd_manager_async},
     },
     time_handling::TimestampStyle,
 };
@@ -563,13 +563,13 @@ async fn restartstop_unit_call(
                     Err(err) => Err(err),
                 }
             } else {
-                let manager = sysdbus::dbus_proxies::system_manager_system_async().await?;
+                let manager = sysdbus::dbus_proxies::systemd_manager_system_async().await?;
                 action.systemd_action(manager, unit_name, mode).await
             }
         }
 
         UnitDBusLevel::UserSession => {
-            let manager = sysdbus::dbus_proxies::system_manager_user_session_async().await?;
+            let manager = sysdbus::dbus_proxies::systemd_manager_user_session_async().await?;
             action.systemd_action(manager, unit_name, mode).await
         }
     }
@@ -581,18 +581,35 @@ async fn restartstop_unit_call(
     }
 }
 
-pub fn disenable_unit_file(
+pub fn disenable_unit_file_block(
+    primary_name: &str,
+    level: UnitDBusLevel,
+    enable_status: UnitFileStatus,
+    expected_status: UnitFileStatus,
+) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
+    runtime().block_on(disenable_unit_file(
+        primary_name,
+        level,
+        enable_status,
+        expected_status,
+    ))
+}
+
+pub async fn disenable_unit_file(
     primary_name: &str,
     level: UnitDBusLevel,
     enable_status: UnitFileStatus,
     expected_status: UnitFileStatus,
 ) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
     match expected_status {
-        UnitFileStatus::Enabled | UnitFileStatus::EnabledRuntime => enable_unit_file(
-            level,
-            primary_name,
-            DisEnableFlags::SdSystemdUnitForce.into(),
-        ),
+        UnitFileStatus::Enabled | UnitFileStatus::EnabledRuntime => {
+            enable_unit_file(
+                level,
+                primary_name,
+                DisEnableFlags::SdSystemdUnitForce.into(),
+            )
+            .await
+        }
         _ => {
             let flags: BitFlags<DisEnableFlags> = if enable_status.is_runtime() {
                 DisEnableFlags::SdSystemdUnitRuntime.into()
@@ -600,12 +617,12 @@ pub fn disenable_unit_file(
                 DisEnableFlags::empty()
             };
 
-            disable_unit_file(level, primary_name, flags)
+            disable_unit_file(level, primary_name, flags).await
         }
     }
 }
 
-pub fn enable_unit_file(
+pub async fn enable_unit_file(
     level: UnitDBusLevel,
     unit_file: &str,
     flags: BitFlags<DisEnableFlags>,
@@ -614,19 +631,25 @@ pub fn enable_unit_file(
     match level {
         UnitDBusLevel::System | UnitDBusLevel::Both => {
             if proxy_switcher::PROXY_SWITCHER.enable_unit_file() {
-                proxy_call_blocking!(
+                proxy_call_async!(
                     enable_unit_files_with_flags,
                     &[unit_file],
                     flags.bits_c() as u64
                 )
             } else {
-                systemd_manager()
+                use crate::sysdbus::dbus_proxies::systemd_manager_system_async;
+
+                systemd_manager_system_async()
+                    .await?
                     .enable_unit_files_with_flags(&[unit_file], flags.bits_c() as u64)
+                    .await
                     .map_err(|err| err.into())
             }
         }
-        UnitDBusLevel::UserSession => sysdbus::dbus_proxies::systemd_manager_session()
+        UnitDBusLevel::UserSession => sysdbus::dbus_proxies::systemd_manager_user_session_async()
+            .await?
             .enable_unit_files_with_flags(&[unit_file], flags.bits_c() as u64)
+            .await
             .map_err(|err| err.into()),
     }
 
@@ -639,7 +662,7 @@ pub fn enable_unit_file(
     }
 }
 
-pub fn disable_unit_file(
+pub async fn disable_unit_file(
     level: UnitDBusLevel,
     unit_file: &str,
     flags: BitFlags<DisEnableFlags>,
@@ -649,22 +672,28 @@ pub fn disable_unit_file(
     match level {
         UnitDBusLevel::System | UnitDBusLevel::Both => {
             if proxy_switcher::PROXY_SWITCHER.disable_unit_file() {
-                proxy_call_blocking!(
+                proxy_call_async!(
                     disable_unit_files_with_flags,
                     &[unit_file],
                     flags.bits_c() as u64
                 )
             } else {
-                systemd_manager()
+                use crate::sysdbus::dbus_proxies::systemd_manager_system_async;
+
+                systemd_manager_system_async()
+                    .await?
                     .disable_unit_files_with_flags_and_install_info(
                         &[unit_file],
                         flags.bits_c() as u64,
                     )
+                    .await
                     .map_err(|err| err.into())
             }
         }
-        UnitDBusLevel::UserSession => sysdbus::dbus_proxies::systemd_manager_session()
+        UnitDBusLevel::UserSession => sysdbus::dbus_proxies::systemd_manager_user_session_async()
+            .await?
             .disable_unit_files_with_flags_and_install_info(&[unit_file], flags.bits_c() as u64)
+            .await
             .map_err(|err| err.into()),
     }
 
@@ -903,7 +932,7 @@ pub fn generate_file_uri(file_path: &str) -> String {
 
 pub fn fetch_system_info() -> Result<Vec<(UnitType, String, String)>, SystemdErrors> {
     //TODO check with Session (user)
-    sysdbus::fetch_system_info(UnitDBusLevel::System)
+    runtime().block_on(sysdbus::fetch_system_info(UnitDBusLevel::System))
 }
 
 pub fn fetch_system_unit_info_native(
@@ -913,7 +942,11 @@ pub fn fetch_system_unit_info_native(
     let unit_type: UnitType = unit.unit_type();
     let object_path = unit.object_path();
 
-    sysdbus::fetch_system_unit_info_native(level, &object_path, unit_type)
+    runtime().block_on(sysdbus::fetch_system_unit_info_native(
+        level,
+        &object_path,
+        unit_type,
+    ))
 }
 
 pub fn fetch_system_unit_info_native_map(
@@ -922,8 +955,11 @@ pub fn fetch_system_unit_info_native_map(
     let level = unit.dbus_level();
     let unit_type: UnitType = unit.unit_type();
     let object_path = unit.object_path();
-
-    sysdbus::fetch_system_unit_info_native_map(level, &object_path, unit_type)
+    runtime().block_on(sysdbus::fetch_system_unit_info_native_map(
+        level,
+        &object_path,
+        unit_type,
+    ))
 }
 
 /* fn get_unit_path(unit: &UnitInfo) -> String {
@@ -941,7 +977,7 @@ pub fn fetch_unit(
     level: UnitDBusLevel,
     unit_primary_name: &str,
 ) -> Result<UnitInfo, SystemdErrors> {
-    sysdbus::fetch_unit(level, unit_primary_name)
+    runtime().block_on(sysdbus::fetch_unit(level, unit_primary_name))
 }
 
 pub fn kill_unit(
@@ -950,25 +986,33 @@ pub fn kill_unit(
     who: KillWho,
     signal: i32,
 ) -> Result<(), SystemdErrors> {
-    sysdbus::kill_unit(level, primary_name, who, signal)
+    runtime().block_on(sysdbus::kill_unit(level, primary_name, who, signal))
 }
 
-pub fn freeze_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), SystemdErrors> {
+pub fn freeze_unit_block(params: Option<(UnitDBusLevel, String)>) -> Result<(), SystemdErrors> {
+    runtime().block_on(freeze_unit(params))
+}
+
+pub async fn freeze_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), SystemdErrors> {
     if let Some((_level, primary_name)) = params {
         #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
         match _level {
             UnitDBusLevel::System | UnitDBusLevel::Both => {
                 if proxy_switcher::PROXY_SWITCHER.freeze() {
-                    proxy_call_blocking!(freeze_unit, &primary_name)
+                    proxy_call_async!(freeze_unit, &primary_name)
                 } else {
-                    let proxy = systemd_manager();
-                    proxy.freeze_unit(&primary_name)?;
+                    let proxy = sysdbus::dbus_proxies::systemd_manager_system_async().await?;
+                    proxy.freeze_unit(&primary_name).await?;
                     Ok(())
                 }
             }
-            UnitDBusLevel::UserSession => sysdbus::dbus_proxies::systemd_manager_session()
-                .freeze_unit(&primary_name)
-                .map_err(|err| err.into()),
+            UnitDBusLevel::UserSession => {
+                sysdbus::dbus_proxies::systemd_manager_user_session_async()
+                    .await?
+                    .freeze_unit(&primary_name)
+                    .await
+                    .map_err(|err| err.into())
+            }
         }
 
         #[cfg(any(feature = "flatpak", feature = "appimage"))]
@@ -982,7 +1026,11 @@ pub fn freeze_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), System
     }
 }
 
-pub fn thaw_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), SystemdErrors> {
+pub fn thaw_unit_block(params: Option<(UnitDBusLevel, String)>) -> Result<(), SystemdErrors> {
+    runtime().block_on(thaw_unit(params))
+}
+
+pub async fn thaw_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), SystemdErrors> {
     let Some((level, primary_name)) = params else {
         return Err(SystemdErrors::NoUnit);
     };
@@ -991,15 +1039,17 @@ pub fn thaw_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), SystemdE
     match level {
         UnitDBusLevel::System | UnitDBusLevel::Both => {
             if proxy_switcher::PROXY_SWITCHER.thaw() {
-                proxy_call_blocking!(thaw_unit, &primary_name)
+                proxy_call_async!(thaw_unit, &primary_name)
             } else {
-                let proxy = systemd_manager();
-                proxy.thaw_unit(&primary_name)?;
+                let proxy = sysdbus::dbus_proxies::systemd_manager_system_async().await?;
+                proxy.thaw_unit(&primary_name).await?;
                 Ok(())
             }
         }
-        UnitDBusLevel::UserSession => sysdbus::dbus_proxies::systemd_manager_session()
+        UnitDBusLevel::UserSession => sysdbus::dbus_proxies::systemd_manager_user_session_async()
+            .await?
             .thaw_unit(&primary_name)
+            .await
             .map_err(|err| err.into()),
     }
 
@@ -1017,7 +1067,7 @@ pub fn reload_unit(
     primary_name: &str,
     mode: StartStopMode,
 ) -> Result<String, SystemdErrors> {
-    sysdbus::reload_unit(level, primary_name, mode.as_str())
+    runtime().block_on(sysdbus::reload_unit(level, primary_name, mode.as_str()))
 }
 
 pub fn queue_signal_unit(
@@ -1027,10 +1077,16 @@ pub fn queue_signal_unit(
     signal: i32,
     value: i32,
 ) -> Result<(), SystemdErrors> {
-    sysdbus::queue_signal_unit(level, primary_name, who, signal, value)
+    runtime().block_on(sysdbus::queue_signal_unit(
+        level,
+        primary_name,
+        who,
+        signal,
+        value,
+    ))
 }
 
-pub fn clean_unit(
+pub async fn clean_unit(
     level: UnitDBusLevel,
     unit_name: &str,
     what: &[String],
@@ -1051,16 +1107,19 @@ pub fn clean_unit(
     match level {
         UnitDBusLevel::System | UnitDBusLevel::Both => {
             if proxy_switcher::PROXY_SWITCHER.clean() {
-                proxy_call_blocking!(clean_unit, unit_name, &clean_what)
+                proxy_call_async!(clean_unit, unit_name, &clean_what)
             } else {
-                let proxy = systemd_manager();
+                let proxy = sysdbus::dbus_proxies::systemd_manager_system_async().await?;
                 proxy
                     .clean_unit(unit_name, &clean_what)
+                    .await
                     .map_err(|err| err.into())
             }
         }
-        UnitDBusLevel::UserSession => sysdbus::dbus_proxies::systemd_manager_session()
+        UnitDBusLevel::UserSession => sysdbus::dbus_proxies::systemd_manager_user_session_async()
+            .await?
             .clean_unit(unit_name, &clean_what)
+            .await
             .map_err(|err| err.into()),
     }
 
@@ -1080,7 +1139,12 @@ pub fn mask_unit_files(
     runtime: bool,
     force: bool,
 ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
-    sysdbus::mask_unit_files(level, &[primary_name], runtime, force)
+    self::runtime().block_on(sysdbus::mask_unit_files(
+        level,
+        &[primary_name],
+        runtime,
+        force,
+    ))
 }
 
 pub fn preset_unit_files(
@@ -1089,7 +1153,12 @@ pub fn preset_unit_files(
     runtime: bool,
     force: bool,
 ) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
-    sysdbus::preset_unit_file(level, &[primary_name], runtime, force)
+    self::runtime().block_on(sysdbus::preset_unit_file(
+        level,
+        &[primary_name],
+        runtime,
+        force,
+    ))
 }
 
 pub fn reenable_unit_file(
@@ -1098,7 +1167,12 @@ pub fn reenable_unit_file(
     runtime: bool,
     force: bool,
 ) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
-    sysdbus::reenable_unit_file(level, &[primary_name], runtime, force)
+    self::runtime().block_on(sysdbus::reenable_unit_file(
+        level,
+        &[primary_name],
+        runtime,
+        force,
+    ))
 }
 
 pub fn unmask_unit_files(
@@ -1106,7 +1180,7 @@ pub fn unmask_unit_files(
     primary_name: &str,
     runtime: bool,
 ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
-    sysdbus::unmask_unit_files(level, &[primary_name], runtime)
+    self::runtime().block_on(sysdbus::unmask_unit_files(level, &[primary_name], runtime))
 }
 
 pub fn link_unit_files(
@@ -1115,7 +1189,12 @@ pub fn link_unit_files(
     runtime: bool,
     force: bool,
 ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
-    sysdbus::link_unit_files(dbus_level, &[unit_file], runtime, force)
+    self::runtime().block_on(sysdbus::link_unit_files(
+        dbus_level,
+        &[unit_file],
+        runtime,
+        force,
+    ))
 }
 
 pub async fn daemon_reload(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
@@ -1219,7 +1298,13 @@ pub fn fetch_unit_dependencies(
     dependency_type: DependencyType,
     plain: bool,
 ) -> Result<Dependency, SystemdErrors> {
-    sysdbus::unit_get_dependencies(level, primary_name, object_path, dependency_type, plain)
+    runtime().block_on(sysdbus::unit_get_dependencies(
+        level,
+        primary_name,
+        object_path,
+        dependency_type,
+        plain,
+    ))
 }
 
 pub fn get_unit_active_state(
@@ -1228,7 +1313,7 @@ pub fn get_unit_active_state(
 ) -> Result<ActiveState, SystemdErrors> {
     let object_path = sysdbus::unit_dbus_path_from_name(primary_name);
 
-    sysdbus::get_unit_active_state(level, &object_path)
+    runtime().block_on(sysdbus::get_unit_active_state(level, &object_path))
 }
 
 pub fn retreive_unit_processes(
@@ -1236,7 +1321,8 @@ pub fn retreive_unit_processes(
 ) -> Result<BTreeMap<String, BTreeSet<UnitProcess>>, SystemdErrors> {
     let level = unit.dbus_level();
 
-    let unit_processes = sysdbus::retreive_unit_processes(level, &unit.primary())?;
+    let unit_processes =
+        runtime().block_on(sysdbus::retreive_unit_processes(level, &unit.primary()))?;
 
     // let mut unit_processes_out = Vec::with_capacity(unit_processes.len());
     let mut unit_processes_map: BTreeMap<String, BTreeSet<UnitProcess>> = BTreeMap::new();
@@ -1323,7 +1409,12 @@ pub fn fetch_unit_property_blocking(
     unit_type: UnitType,
     unit_property: &str,
 ) -> Result<OwnedValue, SystemdErrors> {
-    sysdbus::fetch_unit_property_blocking(level, unit_primary_name, unit_type, unit_property)
+    runtime().block_on(sysdbus::fetch_unit_property_blocking(
+        level,
+        unit_primary_name,
+        unit_type,
+        unit_property,
+    ))
 }
 
 pub async fn create_drop_in(
@@ -1417,4 +1508,12 @@ pub async fn fill_list_unit_files(
     level: UnitDBusLevel,
 ) -> Result<Vec<SystemdUnitFile>, SystemdErrors> {
     sysdbus::fill_list_unit_files(level).await
+}
+
+/// Returns the current enablement status of the unit
+pub fn get_unit_file_state_block(
+    level: UnitDBusLevel,
+    unit_file: &str,
+) -> Result<UnitFileStatus, SystemdErrors> {
+    runtime().block_on(sysdbus::get_unit_file_state(level, unit_file))
 }

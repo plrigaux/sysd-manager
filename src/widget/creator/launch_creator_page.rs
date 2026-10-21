@@ -204,7 +204,9 @@ mod imp {
 
             let flags = DisEnableFlags::empty();
             glib::spawn_future_local(async move {
-                if let Err(err) = systemd::enable_unit_file(level, &unit_name, flags) {
+                if let Err(err) =
+                    systemd::runtime().block_on(systemd::enable_unit_file(level, &unit_name, flags))
+                {
                     warn!("Can't enable unit {:?}, Error {:?}", unit_name, err);
                 }
             });

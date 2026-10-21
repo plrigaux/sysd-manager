@@ -3,8 +3,11 @@ use super::*;
 use crate::{
     SystemdUnitFile,
     enums::{DependencyType, StartStopMode},
+    get_unit_file_state,
 };
+use futures_util::TryStreamExt;
 use test_base::{TEST_SERVICE, init_logs};
+use zbus::MessageStream;
 use zvariant::Value;
 
 #[ignore = "need a connection to a service"]
@@ -15,12 +18,12 @@ fn stop_service_test() -> Result<(), SystemdErrors> {
 }
 
 #[ignore = "need a connection to a service"]
-#[test]
-fn test_get_unit_file_state() {
+#[tokio::test]
+async fn test_get_unit_file_state() {
     init_logs();
     let file1: &str = TEST_SERVICE;
 
-    let status = get_unit_file_state(UnitDBusLevel::System, file1);
+    let status = get_unit_file_state(UnitDBusLevel::System, file1).await;
     debug!("Status: {status:?}");
 }
 
@@ -155,20 +158,22 @@ fn test_list_units() -> Result<(), SystemdErrors> {
 } */
 
 #[ignore = "need a connection to a service"]
-#[test]
-pub fn test_get_unit_path() -> Result<(), SystemdErrors> {
+#[tokio::test]
+pub async fn test_get_unit_path() -> Result<(), SystemdErrors> {
     init_logs();
     let unit_file: &str = "tiny_daemon.service";
 
-    let connection = get_blocking_connection(UnitDBusLevel::System)?;
+    let connection = get_connection(UnitDBusLevel::System).await?;
 
-    let message = connection.call_method(
-        Some(DESTINATION_SYSTEMD),
-        PATH_SYSTEMD,
-        Some(INTERFACE_SYSTEMD_MANAGER),
-        "GetUnit",
-        &(unit_file),
-    )?;
+    let message = connection
+        .call_method(
+            Some(DESTINATION_SYSTEMD),
+            PATH_SYSTEMD,
+            Some(INTERFACE_SYSTEMD_MANAGER),
+            "GetUnit",
+            &(unit_file),
+        )
+        .await?;
 
     info!("message {message:?}");
 
@@ -188,81 +193,82 @@ pub fn test_get_unit_path() -> Result<(), SystemdErrors> {
 }
 
 #[ignore = "need a connection to a service"]
-#[test]
-pub fn test_fetch_system_unit_info() -> Result<(), SystemdErrors> {
+#[tokio::test]
+async fn test_fetch_system_unit_info() -> Result<(), SystemdErrors> {
     init_logs();
 
     let btree_map = fetch_system_unit_info(
         UnitDBusLevel::System,
         "/org/freedesktop/systemd1/unit/tiny_5fdaemon_2eservice",
         UnitType::Service,
-    )?;
+    )
+    .await?;
 
     debug!("ALL PARAM: {btree_map:#?}");
     Ok(())
 }
 
 #[ignore = "need a connection to a service"]
-#[test]
-fn test_fetch_info() -> Result<(), SystemdErrors> {
+#[tokio::test]
+async fn test_fetch_info() -> Result<(), SystemdErrors> {
     init_logs();
 
     let path = unit_dbus_path_from_name(TEST_SERVICE);
 
     println!("unit {TEST_SERVICE} Path {path}");
-    let map = fetch_system_unit_info(UnitDBusLevel::System, &path, UnitType::Service)?;
+    let map = fetch_system_unit_info(UnitDBusLevel::System, &path, UnitType::Service).await?;
 
     println!("{map:#?}");
     Ok(())
 }
 
 #[ignore = "need a connection to a service"]
-#[test]
-fn test_fetch_system_info() -> Result<(), SystemdErrors> {
+#[tokio::test]
+async fn test_fetch_system_info() -> Result<(), SystemdErrors> {
     init_logs();
 
-    let map = fetch_system_info(UnitDBusLevel::System)?;
+    let map = fetch_system_info(UnitDBusLevel::System).await?;
 
     info!("{map:#?}");
     Ok(())
 }
 
 #[ignore = "need a connection to a service"]
-#[test]
-fn test_fetch_unit() -> Result<(), SystemdErrors> {
+#[tokio::test]
+async fn test_fetch_unit() -> Result<(), SystemdErrors> {
     init_logs();
 
-    let unit = fetch_unit(UnitDBusLevel::System, TEST_SERVICE)?;
+    let unit = fetch_unit(UnitDBusLevel::System, TEST_SERVICE).await?;
 
     info!("{unit:#?}");
     Ok(())
 }
 
 #[ignore = "need a connection to a service"]
-#[test]
-fn test_fetch_unit_user_session() -> Result<(), SystemdErrors> {
+#[tokio::test]
+async fn test_fetch_unit_user_session() -> Result<(), SystemdErrors> {
     init_logs();
 
-    let unit = fetch_unit(UnitDBusLevel::UserSession, TEST_SERVICE)?;
+    let unit = fetch_unit(UnitDBusLevel::UserSession, TEST_SERVICE).await?;
 
     info!("{unit:#?}");
     Ok(())
 }
 
 #[ignore = "need a connection to a service"]
-#[test]
-fn test_fetch_unit_wrong_bus() -> Result<(), SystemdErrors> {
+#[tokio::test]
+async fn test_fetch_unit_wrong_bus() -> Result<(), SystemdErrors> {
     init_logs();
 
-    let unit = fetch_unit(UnitDBusLevel::UserSession, TEST_SERVICE)?;
+    let unit = fetch_unit(UnitDBusLevel::UserSession, TEST_SERVICE).await?;
 
     info!("{}", unit.debug());
     Ok(())
 }
 
 #[ignore = "need a connection to a service"]
-#[test]
-fn test_fetch_unit_dependencies() -> Result<(), SystemdErrors> {
+#[tokio::test]
+async fn test_fetch_unit_dependencies() -> Result<(), SystemdErrors> {
     init_logs();
 
     let path = unit_dbus_path_from_name(TEST_SERVICE);
@@ -272,15 +278,16 @@ fn test_fetch_unit_dependencies() -> Result<(), SystemdErrors> {
         &path,
         DependencyType::Forward,
         false,
-    );
+    )
+    .await;
 
     info!("{:#?}", res.unwrap());
     Ok(())
 }
 
 #[ignore = "need a connection to a service"]
-#[test]
-fn test_fetch_unit_reverse_dependencies() -> Result<(), SystemdErrors> {
+#[tokio::test]
+async fn test_fetch_unit_reverse_dependencies() -> Result<(), SystemdErrors> {
     init_logs();
 
     let path = unit_dbus_path_from_name(TEST_SERVICE);
@@ -290,19 +297,20 @@ fn test_fetch_unit_reverse_dependencies() -> Result<(), SystemdErrors> {
         &path,
         DependencyType::Reverse,
         false,
-    );
+    )
+    .await;
 
     info!("{res:#?}");
     Ok(())
 }
 
 #[ignore = "need a connection to a service"]
-#[test]
-fn test_fetch_unit_fail_wrong_name() -> Result<(), SystemdErrors> {
+#[tokio::test]
+async fn test_fetch_unit_fail_wrong_name() -> Result<(), SystemdErrors> {
     init_logs();
 
     let fake = format!("{TEST_SERVICE}_fake");
-    match fetch_unit(UnitDBusLevel::System, &fake) {
+    match fetch_unit(UnitDBusLevel::System, &fake).await {
         Ok(_) => todo!(),
         Err(e) => {
             warn!("{e:?}");
@@ -331,11 +339,11 @@ fn test_name_convertion() {
 }
 
 #[ignore = "need a connection to a service"]
-#[test]
-fn test_get_unit_processes() -> Result<(), SystemdErrors> {
+#[tokio::test]
+async fn test_get_unit_processes() -> Result<(), SystemdErrors> {
     let unit_file: &str = "system.slice";
 
-    let list = retreive_unit_processes(UnitDBusLevel::System, unit_file)?;
+    let list = retreive_unit_processes(UnitDBusLevel::System, unit_file).await?;
 
     for up in list {
         println!("{up:#?}")
@@ -345,12 +353,12 @@ fn test_get_unit_processes() -> Result<(), SystemdErrors> {
 }
 
 #[ignore = "need a connection to a service"]
-#[test]
-fn test_get_unit_active_state() -> Result<(), SystemdErrors> {
+#[tokio::test]
+async fn test_get_unit_active_state() -> Result<(), SystemdErrors> {
     let unit_object = unit_dbus_path_from_name(TEST_SERVICE);
 
     println!("path : {unit_object}");
-    let state = get_unit_active_state(UnitDBusLevel::System, &unit_object)?;
+    let state = get_unit_active_state(UnitDBusLevel::System, &unit_object).await?;
 
     println!("state of {TEST_SERVICE} is {state:?}");
 
@@ -483,33 +491,30 @@ async fn test_get_list2() -> Result<(), SystemdErrors> {
 }
 
 #[ignore = "need a connection to a service"]
-#[test]
-fn test_get_properties() -> Result<(), SystemdErrors> {
+#[tokio::test]
+async fn test_get_properties() -> Result<(), SystemdErrors> {
     init_logs();
-    let connection = get_blocking_connection(UnitDBusLevel::System)?;
+    let connection = get_connection(UnitDBusLevel::System).await?;
 
     let object_path = unit_dbus_path_from_name(TEST_SERVICE);
     debug!("Unit path: {object_path}");
-    let properties_proxy: zbus::blocking::fdo::PropertiesProxy =
-        fdo::PropertiesProxy::builder(&connection)
-            .destination(DESTINATION_SYSTEMD)?
-            .path(object_path)?
-            // .interface(INTERFACE_SYSTEMD_UNIT)?
-            //  .interface(UnitType::Service.interface())?
-            .build()?;
+    let properties_proxy = ZPropertiesProxy::builder(&connection)
+        .destination(DESTINATION_SYSTEMD)?
+        .path(object_path)?
+        // .interface(INTERFACE_SYSTEMD_UNIT)?
+        //  .interface(UnitType::Service.interface())?
+        .build()
+        .await?;
 
-    let unit_type = UnitType::Service;
-    let unit_interface = unit_type.interface();
+    // let unit_type = UnitType::Service;
 
     //let unit_interface_name = InterfaceName::try_from(INTERFACE_SYSTEMD_UNIT).unwrap();
-    let unit_interface_name = InterfaceName::try_from(INTERFACE_SYSTEMD_UNIT).unwrap();
 
     let mut unit_properties: HashMap<String, OwnedValue> =
-        properties_proxy.get_all(unit_interface_name)?;
+        properties_proxy.get_all(INTERFACE_SYSTEMD_UNIT).await?;
 
-    let interface_name = InterfaceName::try_from(unit_interface).unwrap();
-
-    let properties: HashMap<String, OwnedValue> = properties_proxy.get_all(interface_name)?;
+    let properties: HashMap<String, OwnedValue> =
+        properties_proxy.get_all(INTERFACE_SYSTEMD_UNIT).await?;
 
     info!("Properties size {}", properties.len());
 
@@ -529,17 +534,17 @@ fn test_get_properties() -> Result<(), SystemdErrors> {
 }
 
 #[ignore = "need a connection to a service"]
-#[test]
-fn test_kill_unit() -> Result<(), SystemdErrors> {
+#[tokio::test]
+async fn test_kill_unit() -> Result<(), SystemdErrors> {
     init_logs();
     let unit_name: &str = TEST_SERVICE;
 
-    kill_unit(UnitDBusLevel::System, unit_name, KillWho::Main, 1)
+    kill_unit(UnitDBusLevel::System, unit_name, KillWho::Main, 1).await
 }
 
 #[ignore = "need a connection to a service"]
-#[test]
-fn test_queue_signal_unit() -> Result<(), SystemdErrors> {
+#[tokio::test]
+async fn test_queue_signal_unit() -> Result<(), SystemdErrors> {
     init_logs();
     let unit_name: &str = TEST_SERVICE;
     let val: i32 = libc::SIGRTMIN();
@@ -547,12 +552,12 @@ fn test_queue_signal_unit() -> Result<(), SystemdErrors> {
 
     println!("{val} {val2}");
 
-    queue_signal_unit(UnitDBusLevel::System, unit_name, KillWho::Main, 9, 0)
+    queue_signal_unit(UnitDBusLevel::System, unit_name, KillWho::Main, 9, 0).await
 }
 
 #[ignore = "need a connection to a service"]
-#[test]
-pub(super) fn test_unit_clean() -> Result<(), SystemdErrors> {
+#[tokio::test]
+pub(super) async fn test_unit_clean() -> Result<(), SystemdErrors> {
     init_logs();
     let handle_answer = |_method: &str, _return_message: &Message| {
         info!("Clean Unit SUCCESS");
@@ -568,7 +573,8 @@ pub(super) fn test_unit_clean() -> Result<(), SystemdErrors> {
         &(&what),
         handle_answer,
         &path,
-    );
+    )
+    .await;
 
     if let Err(ref e) = r {
         error!("{e:?}");
@@ -576,7 +582,7 @@ pub(super) fn test_unit_clean() -> Result<(), SystemdErrors> {
     r
 }
 
-fn send_unit_message<T, U>(
+async fn send_unit_message<T, U>(
     level: UnitDBusLevel,
     method: &str,
     body: &T,
@@ -593,15 +599,15 @@ where
         .interface(INTERFACE_SYSTEMD_UNIT)?
         .build(body)?;
 
-    let connection = get_blocking_connection(level)?;
+    let connection = get_connection(level).await?;
 
-    connection.send(&message)?;
+    connection.send(&message).await?;
 
-    let message_it = MessageIterator::from(connection);
+    let mut message_it = MessageStream::from(connection);
 
-    for message_res in message_it {
+    while let Some(message_res) = message_it.try_next().await? {
         debug!("Message response {message_res:?}");
-        let return_message = message_res?;
+        let return_message = message_res;
 
         match return_message.message_type() {
             zbus::message::Type::MethodReturn => {
@@ -650,59 +656,61 @@ where
 }
 
 #[ignore = "need a connection to a service"]
-#[test]
-fn test_mask_unit_file() -> Result<(), SystemdErrors> {
+#[tokio::test]
+async fn test_mask_unit_file() -> Result<(), SystemdErrors> {
     init_logs();
     let unit_name: &str = TEST_SERVICE;
 
-    mask_unit_files(UnitDBusLevel::System, &[unit_name], false, false)?;
+    mask_unit_files(UnitDBusLevel::System, &[unit_name], false, false).await?;
 
     Ok(())
 }
 
 #[ignore = "need a connection to a service"]
-#[test]
-fn test_mask_unit_file2() -> Result<(), SystemdErrors> {
+#[tokio::test]
+async fn test_mask_unit_file2() -> Result<(), SystemdErrors> {
     init_logs();
     let unit_file_name: &str = "/etc/systemd/system/tiny_daemon.service";
 
-    mask_unit_files(UnitDBusLevel::System, &[unit_file_name], false, false)?;
+    mask_unit_files(UnitDBusLevel::System, &[unit_file_name], false, false).await?;
 
     Ok(())
 }
 
 #[ignore = "need a connection to a service"]
-#[test]
-fn test_unmask_unit_file() -> Result<(), SystemdErrors> {
+#[tokio::test]
+async fn test_unmask_unit_file() -> Result<(), SystemdErrors> {
     init_logs();
     let unit_name: &str = TEST_SERVICE;
 
-    unmask_unit_files(UnitDBusLevel::System, &[unit_name], false)?;
+    unmask_unit_files(UnitDBusLevel::System, &[unit_name], false).await?;
 
     Ok(())
 }
 
 #[ignore = "need a connection to a service"]
-#[test]
-fn test_introspect() -> Result<(), SystemdErrors> {
+#[tokio::test]
+async fn test_introspect() -> Result<(), SystemdErrors> {
     init_logs();
 
     let result: Result<(), SystemdErrors> = {
-        let connection = get_blocking_connection(UnitDBusLevel::System)?;
+        let connection = get_connection(UnitDBusLevel::System).await?;
         info!("Connect");
 
-        let message = connection.call_method(
-            Some(DESTINATION_SYSTEMD),
-            //"/org/freedesktop/systemd1/unit/avahi_2ddaemon_2eservice",
-            //"/",
-            //"/org/freedesktop/systemd1/unit",
-            "/org/freedesktop/systemd1/archlinux_2dkeyring_2dwkd_2dsync_2etimer",
-            //  Some("org.freedesktop.DBus.Properties"),
-            Some("org.freedesktop.DBus.Introspectable"),
-            "Introspect",
-            // &(UnitType::Service.interface()),
-            &(),
-        )?;
+        let message = connection
+            .call_method(
+                Some(DESTINATION_SYSTEMD),
+                //"/org/freedesktop/systemd1/unit/avahi_2ddaemon_2eservice",
+                //"/",
+                //"/org/freedesktop/systemd1/unit",
+                "/org/freedesktop/systemd1/archlinux_2dkeyring_2dwkd_2dsync_2etimer",
+                //  Some("org.freedesktop.DBus.Properties"),
+                Some("org.freedesktop.DBus.Introspectable"),
+                "Introspect",
+                // &(UnitType::Service.interface()),
+                &(),
+            )
+            .await?;
 
         info!("message {message:?}");
 
@@ -737,23 +745,24 @@ fn test_introspect() -> Result<(), SystemdErrors> {
 }
 
 #[ignore = "need a connection to a service"]
-#[test]
-fn test_introspect2() -> Result<(), SystemdErrors> {
+#[tokio::test]
+async fn test_introspect2() -> Result<(), SystemdErrors> {
     init_logs();
 
-    fn sub() -> Result<(), SystemdErrors> {
-        let connection = get_blocking_connection(UnitDBusLevel::System)?;
+    async fn sub() -> Result<(), SystemdErrors> {
+        let connection = get_connection(UnitDBusLevel::System).await?;
 
-        let proxy = Proxy::new(
+        let proxy = zbus::Proxy::new(
             &connection,
             DESTINATION_SYSTEMD,
             "/org/freedesktop/systemd1/unit/archlinux_2dkeyring_2dwkd_2dsync_2etimer",
             "org.freedesktop.DBus.Introspectable",
-        )?;
+        )
+        .await?;
 
         info!("Proxy {proxy:?}");
 
-        let xml = proxy.introspect()?;
+        let xml = proxy.introspect().await?;
 
         let root_node = zbus_xml::Node::from_reader(xml.as_bytes())?;
 
@@ -768,7 +777,7 @@ fn test_introspect2() -> Result<(), SystemdErrors> {
         Ok(())
     }
 
-    sub().map_err(|e| {
+    sub().await.map_err(|e| {
         warn!("ASTFGSDFGD {e:?}");
         e
     })

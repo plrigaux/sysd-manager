@@ -178,7 +178,11 @@ impl EnableUnitDialogImp {
                 }
 
                 let lambda = move |_params: Option<(UnitDBusLevel, String)>| {
-                    systemd::enable_unit_file(dbus_level, unit_file2.as_str(), flags)
+                    systemd::runtime().block_on(systemd::enable_unit_file(
+                        dbus_level,
+                        unit_file2.as_str(),
+                        flags,
+                    ))
                 };
 
                 let unit_control = self.unit_control.get().expect("unit_control not None");
@@ -251,7 +255,11 @@ impl EnableUnitDialogImp {
 
                 let lambda = move |params: Option<(UnitDBusLevel, String)>| {
                     if let Some((level, primary_name)) = params {
-                        systemd::disable_unit_file(level, &primary_name, flags)
+                        systemd::runtime().block_on(systemd::disable_unit_file(
+                            level,
+                            &primary_name,
+                            flags,
+                        ))
                     } else {
                         Err(SystemdErrors::NoUnit)
                     }

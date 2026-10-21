@@ -16,11 +16,7 @@ use tracing::{debug, info, warn};
 use zbus::proxy;
 use zvariant::OwnedObjectPath;
 
-use crate::{
-    errors::SystemdErrors,
-    sysd_proxy_service_name,
-    sysdbus::{get_blocking_connection, get_connection, run_context},
-};
+use crate::{errors::SystemdErrors, sysd_proxy_service_name, sysdbus::get_connection};
 
 static HEART_BEAT_HANDLE: OnceLock<JoinHandle<Result<(), SystemdErrors>>> = OnceLock::new();
 
@@ -76,18 +72,18 @@ fn ensure_proxy_up() {
     //TODO ensure_proxy_up
 }
 
-fn get_proxy<'a>() -> Result<SysDManagerComLinkProxyBlocking<'a>, SystemdErrors> {
-    let destination = run_context().destination_address();
-    let connection = get_blocking_connection(UnitDBusLevel::System)?;
+// fn get_proxy<'a>() -> Result<SysDManagerComLinkProxyBlocking<'a>, SystemdErrors> {
+//     let destination = run_context().destination_address();
+//     let connection = get_blocking_connection(UnitDBusLevel::System)?;
 
-    info!("BusName Destination {}", destination);
-    let proxy = SysDManagerComLinkProxyBlocking::builder(&connection)
-        // .path(path)?
-        .destination(destination)?
-        .build()?;
+//     info!("BusName Destination {}", destination);
+//     let proxy = SysDManagerComLinkProxyBlocking::builder(&connection)
+//         // .path(path)?
+//         .destination(destination)?
+//         .build()?;
 
-    Ok(proxy)
-}
+//     Ok(proxy)
+// }
 
 pub(crate) async fn get_proxy_async<'a>() -> Result<SysDManagerComLinkProxy<'a>, SystemdErrors> {
     let destination = super::RUN_CONTEXT
@@ -106,43 +102,43 @@ pub(crate) async fn get_proxy_async<'a>() -> Result<SysDManagerComLinkProxy<'a>,
     Ok(proxy)
 }
 
-pub fn start_unit(unit_name: &str, mode: &str) -> Result<String, SystemdErrors> {
-    let proxy = get_proxy()?;
+pub async fn start_unit(unit_name: &str, mode: &str) -> Result<String, SystemdErrors> {
+    let proxy = get_proxy_async().await?;
 
-    let s = proxy.start_unit(unit_name, mode)?;
+    let s = proxy.start_unit(unit_name, mode).await?;
     Ok(s.to_string())
 }
 
-pub fn stop_unit(unit_name: &str, mode: &str) -> Result<String, SystemdErrors> {
-    let proxy = get_proxy()?;
+pub async fn stop_unit(unit_name: &str, mode: &str) -> Result<String, SystemdErrors> {
+    let proxy = get_proxy_async().await?;
 
-    let s = proxy.stop_unit(unit_name, mode)?;
+    let s = proxy.stop_unit(unit_name, mode).await?;
     Ok(s.to_string())
 }
 
-pub fn restart_unit(unit_name: &str, mode: &str) -> Result<String, SystemdErrors> {
-    let proxy = get_proxy()?;
+pub async fn restart_unit(unit_name: &str, mode: &str) -> Result<String, SystemdErrors> {
+    let proxy = get_proxy_async().await?;
 
-    let s = proxy.restart_unit(unit_name, mode)?;
+    let s = proxy.restart_unit(unit_name, mode).await?;
     Ok(s.to_string())
 }
 
-pub fn clean_unit(unit_name: &str, what: &[&str]) -> Result<(), SystemdErrors> {
-    let proxy = get_proxy()?;
+pub async fn clean_unit(unit_name: &str, what: &[&str]) -> Result<(), SystemdErrors> {
+    let proxy = get_proxy_async().await?;
 
-    proxy.clean_unit(unit_name, what)?;
+    proxy.clean_unit(unit_name, what).await?;
     Ok(())
 }
 
-pub fn freeze_unit(unit_name: &str) -> Result<(), SystemdErrors> {
-    let proxy = get_proxy()?;
-    proxy.freeze_unit(unit_name)?;
+pub async fn freeze_unit(unit_name: &str) -> Result<(), SystemdErrors> {
+    let proxy = get_proxy_async().await?;
+    proxy.freeze_unit(unit_name).await?;
     Ok(())
 }
 
-pub fn thaw_unit(unit_name: &str) -> Result<(), SystemdErrors> {
-    let proxy: SysDManagerComLinkProxyBlocking<'_> = get_proxy()?;
-    proxy.thaw_unit(unit_name)?;
+pub async fn thaw_unit(unit_name: &str) -> Result<(), SystemdErrors> {
+    let proxy = get_proxy_async().await?;
+    proxy.thaw_unit(unit_name).await?;
     Ok(())
 }
 
@@ -217,21 +213,21 @@ pub fn map_unknown_service_to_proxy_error(action_err: SystemdErrors) -> SystemdE
     }
 }
 
-#[macro_export]
-macro_rules! proxy_call_blocking {
-    ($func:ident, $($param:expr),+) => {
-        match $crate::to_proxy::$func($($param),+) {
-            Ok(ok) => Ok(ok),
-            Err(SystemdErrors::ZFdoServiceUnknown(msg)) => {
-                warn!("Blocking ServiceUnkown: {:?} Func: {}", msg, stringify!($func));
-                $crate::to_proxy::lazy_start_proxy_block();
-                $crate::to_proxy::$func($($param),+)
-                .map_err(to_proxy::map_unknown_service_to_proxy_error)
-            },
-            Err(err) => Err(err)
-        }
-    }
-}
+// #[macro_export]
+// macro_rules! proxy_call_blocking {
+//     ($func:ident, $($param:expr),+) => {
+//         match $crate::to_proxy::$func($($param),+) {
+//             Ok(ok) => Ok(ok),
+//             Err(SystemdErrors::ZFdoServiceUnknown(msg)) => {
+//                 warn!("Blocking ServiceUnkown: {:?} Func: {}", msg, stringify!($func));
+//                 $crate::to_proxy::lazy_start_proxy_block();
+//                 $crate::to_proxy::$func($($param),+)
+//                 .map_err(to_proxy::map_unknown_service_to_proxy_error)
+//             },
+//             Err(err) => Err(err)
+//         }
+//     }
+// }
 
 #[macro_export]
 macro_rules! proxy_call_async {
@@ -292,22 +288,24 @@ pub async fn revert_unit_files(
         .map_err(|e| e.into())
 }
 
-pub fn enable_unit_files_with_flags(
+pub async fn enable_unit_files_with_flags(
     unit_files: &[&str],
     flags: u64,
 ) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
-    let mut proxy: SysDManagerComLinkProxyBlocking<'_> = get_proxy()?;
+    let mut proxy: SysDManagerComLinkProxy<'_> = get_proxy_async().await?;
     proxy
         .enable_unit_files_with_flags(unit_files, flags)
+        .await
         .map_err(|err| err.into())
 }
 
-pub fn disable_unit_files_with_flags(
+pub async fn disable_unit_files_with_flags(
     unit_files: &[&str],
     flags: u64,
 ) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
-    let mut proxy: SysDManagerComLinkProxyBlocking<'_> = get_proxy()?;
+    let mut proxy: SysDManagerComLinkProxy<'_> = get_proxy_async().await?;
     proxy
         .disable_unit_files_with_flags(unit_files, flags)
+        .await
         .map_err(|err| err.into())
 }

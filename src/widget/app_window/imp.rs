@@ -765,7 +765,7 @@ impl WindowImpl for AppWindowImpl {
     // Save window state right before the window will be closed
     fn close_request(&self) -> glib::Propagation {
         #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
-        if let Err(err) = systemd::shut_down_sysd_proxy() {
+        if let Err(err) = systemd::runtime().block_on(systemd::shut_down_sysd_proxy()) {
             warn!("Closing Proxy Error {err:?}");
         }
         // Save window size

@@ -134,7 +134,7 @@ impl SideControlPanelImpl {
                 &pgettext("action", "Freeze"),
                 true,
                 button,
-                systemd::freeze_unit,
+                systemd::freeze_unit_block,
                 Self::lambda_out,
             )
         }
@@ -148,7 +148,7 @@ impl SideControlPanelImpl {
                 &pgettext("action", "Thaw"),
                 true,
                 button,
-                systemd::thaw_unit,
+                systemd::thaw_unit_block,
                 Self::lambda_out,
             )
         }

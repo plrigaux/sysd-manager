@@ -83,7 +83,7 @@ impl CleanDialogImp {
 
         let lambda = move |params: Option<(UnitDBusLevel, String)>| {
             if let Some((level, primary_name)) = params {
-                systemd::clean_unit(level, &primary_name, &what)
+                systemd::runtime().block_on(systemd::clean_unit(level, &primary_name, &what))
             } else {
                 Err(SystemdErrors::NoUnit)
             }

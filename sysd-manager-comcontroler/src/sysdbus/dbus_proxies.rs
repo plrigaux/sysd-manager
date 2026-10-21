@@ -1,18 +1,17 @@
-use std::{collections::HashMap, sync::LazyLock};
+use std::collections::HashMap;
 
 use base::{
     enums::UnitDBusLevel,
     proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse, QueuedJobs},
 };
 use tokio::sync::OnceCell;
-use tracing::error;
 use zbus::proxy;
 use zvariant::{OwnedObjectPath, OwnedValue};
 
 use crate::{
     data::ListedLoadedUnit,
     errors::SystemdErrors,
-    sysdbus::{ListedUnitFile, get_blocking_connection, get_connection},
+    sysdbus::{ListedUnitFile, get_connection},
 };
 
 #[proxy(
@@ -178,56 +177,16 @@ pub(crate) trait Systemd1Manager {
 static SYSTEM_MANAGER: OnceCell<Systemd1ManagerProxy> = OnceCell::const_new();
 static SYSTEM_MANAGER_USER_SESSION: OnceCell<Systemd1ManagerProxy> = OnceCell::const_new();
 
-fn systemd_manager_blocking_() -> Result<Systemd1ManagerProxyBlocking<'static>, SystemdErrors> {
-    let conn = get_blocking_connection(base::enums::UnitDBusLevel::System)?;
-    let proxy = Systemd1ManagerProxyBlocking::builder(&conn).build()?;
-    Ok(proxy)
-}
-
-fn systemd_manager_session_blocking() -> Result<Systemd1ManagerProxyBlocking<'static>, SystemdErrors>
-{
-    let conn = get_blocking_connection(base::enums::UnitDBusLevel::UserSession)?;
-    let proxy = Systemd1ManagerProxyBlocking::builder(&conn).build()?;
-    Ok(proxy)
-}
-
-static SYSTEM_MANAGER_BLOCKING: LazyLock<Systemd1ManagerProxyBlocking> = LazyLock::new(|| {
-    systemd_manager_blocking_()
-        .inspect_err(|e| error!("{e:?}"))
-        .unwrap()
-});
-
-static SYSTEM_MANAGER_SESSION_BLOCKING: LazyLock<Systemd1ManagerProxyBlocking> =
-    LazyLock::new(|| {
-        systemd_manager_session_blocking()
-            .inspect_err(|e| error!("{e:?}"))
-            .unwrap()
-    });
-
-pub fn systemd_manager<'a>() -> &'a Systemd1ManagerProxyBlocking<'a> {
-    (&*SYSTEM_MANAGER_BLOCKING) as _
-}
-
-pub fn systemd_manager_session<'a>() -> &'a Systemd1ManagerProxyBlocking<'a> {
-    (&*SYSTEM_MANAGER_SESSION_BLOCKING) as _
-}
-
-pub fn systemd_manager_blocking<'a>(level: UnitDBusLevel) -> &'a Systemd1ManagerProxyBlocking<'a> {
-    match level {
-        UnitDBusLevel::System | UnitDBusLevel::Both => systemd_manager(),
-        UnitDBusLevel::UserSession => systemd_manager_session(),
-    }
-}
 pub async fn systemd_manager_async(
     level: UnitDBusLevel,
 ) -> Result<&'static Systemd1ManagerProxy<'static>, SystemdErrors> {
     match level {
-        UnitDBusLevel::System | UnitDBusLevel::Both => system_manager_system_async().await,
-        UnitDBusLevel::UserSession => system_manager_user_session_async().await,
+        UnitDBusLevel::System | UnitDBusLevel::Both => systemd_manager_system_async().await,
+        UnitDBusLevel::UserSession => systemd_manager_user_session_async().await,
     }
 }
 
-pub(crate) async fn system_manager_user_session_async()
+pub(crate) async fn systemd_manager_user_session_async()
 -> Result<&'static Systemd1ManagerProxy<'static>, SystemdErrors> {
     SYSTEM_MANAGER_USER_SESSION
         .get_or_try_init(async || -> Result<Systemd1ManagerProxy, SystemdErrors> {
@@ -238,7 +197,7 @@ pub(crate) async fn system_manager_user_session_async()
         .await
 }
 
-pub(crate) async fn system_manager_system_async()
+pub(crate) async fn systemd_manager_system_async()
 -> Result<&'static Systemd1ManagerProxy<'static>, SystemdErrors> {
     SYSTEM_MANAGER
         .get_or_try_init(async || -> Result<Systemd1ManagerProxy, SystemdErrors> {

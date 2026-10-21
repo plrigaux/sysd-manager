@@ -17,9 +17,9 @@ use crate::{
         UnitType,
     },
     errors::SystemdErrors,
+    runtime,
     sysdbus::dbus_proxies::{
-        JobRemovedStream, ZPropertiesProxy, ZPropertiesProxyBlocking, ZUnitInfoProxy,
-        ZUnitInfoProxyBlocking, systemd_manager_async, systemd_manager_blocking,
+        JobRemovedStream, ZPropertiesProxy, ZUnitInfoProxy, systemd_manager_async,
     },
 };
 use base::{
@@ -38,12 +38,7 @@ use std::{
 };
 use tokio::time::{sleep, timeout};
 use tracing::{debug, error, info, trace, warn};
-use zbus::{
-    Message,
-    blocking::{Connection, MessageIterator, Proxy, fdo},
-    message::Flags,
-    names::InterfaceName,
-};
+use zbus::{Connection, Message, MessageStream, Proxy, message::Flags};
 use zvariant::{Array, DynamicType, ObjectPath, OwnedValue, Str, Type};
 
 pub(crate) const DESTINATION_SYSTEMD: &str = "org.freedesktop.systemd1";
@@ -78,8 +73,6 @@ impl ListedUnitFile {
     }
 }
 
-pub static BLK_CON_SYST: RwLock<Option<Connection>> = RwLock::new(None);
-pub static BLK_CON_USER: RwLock<Option<Connection>> = RwLock::new(None);
 pub static CON_ASYNC_SYST: RwLock<Option<zbus::Connection>> = RwLock::new(None);
 pub static CON_ASYNC_USER: RwLock<Option<zbus::Connection>> = RwLock::new(None);
 
@@ -204,7 +197,7 @@ pub fn sysd_proxy_service_name() -> String {
 }
 
 #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
-pub fn shut_down_sysd_proxy() -> Result<(), SystemdErrors> {
+pub async fn shut_down_sysd_proxy() -> Result<(), SystemdErrors> {
     if !crate::proxy_switcher::PROXY_SWITCHER.stop_at_close() {
         info!(
             "Not closing Proxy {:?} as per user configuration",
@@ -216,19 +209,20 @@ pub fn shut_down_sysd_proxy() -> Result<(), SystemdErrors> {
     let sysd_proxy_unit_name = sysd_proxy_service_name();
     let object_path = crate::sysdbus::unit_dbus_path_from_name(&sysd_proxy_unit_name);
 
-    let connection = get_blocking_connection(UnitDBusLevel::System)?;
-    let unit_info_proxy = ZUnitInfoProxyBlocking::builder(&connection)
+    let connection = get_connection(UnitDBusLevel::System).await?;
+    let unit_info_proxy = ZUnitInfoProxy::builder(&connection)
         .path(object_path)?
-        .build()?;
+        .build()
+        .await?;
 
-    let state: ActiveState = unit_info_proxy.active_state()?.into();
+    let state: ActiveState = unit_info_proxy.active_state().await?.into();
 
     if state.is_inactive() {
         debug!("Proxy inactive -> No stopping");
         return Ok(());
     }
 
-    match unit_info_proxy.stop(StartStopMode::Fail.as_str()) {
+    match unit_info_proxy.stop(StartStopMode::Fail.as_str()).await {
         Ok(job_id) => info!("Send stop request for unit {sysd_proxy_unit_name}, job id {job_id}"),
         Err(error) => {
             error!("Error stopping unit {sysd_proxy_unit_name}: {error:?}");
@@ -236,39 +230,6 @@ pub fn shut_down_sysd_proxy() -> Result<(), SystemdErrors> {
     }
 
     Ok(())
-}
-
-pub(crate) fn get_blocking_connection(level: UnitDBusLevel) -> Result<Connection, SystemdErrors> {
-    let lock = match level {
-        UnitDBusLevel::UserSession => &BLK_CON_USER,
-        _ => &BLK_CON_SYST,
-    };
-
-    if let Some(ref conn) = *lock.read().unwrap() {
-        return Ok(conn.clone());
-    }
-
-    let connection = build_blocking_connection(level)?;
-
-    *lock.write().unwrap() = Some(connection.clone());
-
-    Ok(connection)
-}
-
-fn build_blocking_connection(level: UnitDBusLevel) -> Result<Connection, SystemdErrors> {
-    debug!("Getting connection Level {:?}, id {}", level, level as u32);
-    let connection_builder = match level {
-        UnitDBusLevel::UserSession => zbus::blocking::connection::Builder::session()?,
-        _ => zbus::blocking::connection::Builder::system()?,
-    };
-
-    let connection = connection_builder
-        .auth_mechanism(zbus::AuthMechanism::External)
-        .build()?;
-
-    debug!("Connection Sync: {connection:?}");
-
-    Ok(connection)
 }
 
 pub async fn get_connection(level: UnitDBusLevel) -> Result<zbus::Connection, SystemdErrors> {
@@ -325,17 +286,16 @@ async fn list_units_list_async(
     Ok(array)
 }
 
-/// Returns the current enablement status of the unit
-pub fn get_unit_file_state(
+pub async fn get_unit_file_state(
     level: UnitDBusLevel,
     unit_file: &str,
 ) -> Result<UnitFileStatus, SystemdErrors> {
-    let manager_proxy = systemd_manager_blocking(level);
-    let status: UnitFileStatus = manager_proxy.get_unit_file_state(unit_file)?.into();
+    let manager_proxy = systemd_manager_async(level).await?;
+    let status: UnitFileStatus = manager_proxy.get_unit_file_state(unit_file).await?.into();
     Ok(status)
 }
 
-fn call_systemd_manager_method<B>(
+async fn call_systemd_manager_method<B>(
     level: UnitDBusLevel,
     method: &str,
     body: &B,
@@ -343,7 +303,7 @@ fn call_systemd_manager_method<B>(
 where
     B: serde::ser::Serialize + DynamicType,
 {
-    let connection = get_blocking_connection(level)?;
+    let connection = get_connection(level).await?;
 
     call_method(
         &connection,
@@ -353,9 +313,10 @@ where
         method,
         body,
     )
+    .await
 }
 
-fn call_method<B>(
+async fn call_method<B>(
     connection: &Connection,
     destination: &str,
     path: &str,
@@ -368,6 +329,7 @@ where
 {
     connection
         .call_method(Some(destination), path, Some(iface), method, body)
+        .await
         .map_err(|e| SystemdErrors::from((e, method)))
 }
 
@@ -661,7 +623,7 @@ fn handle_start_stop_answer(
 //     )
 // }
 
-fn send_disenable_message<T, U>(
+async fn send_disenable_message<T, U>(
     level: UnitDBusLevel,
     method: &str,
     body: &T,
@@ -678,13 +640,13 @@ where
         .interface(INTERFACE_SYSTEMD_MANAGER)?
         .build(body)?;
 
-    let connection = get_blocking_connection(level)?;
+    let connection = get_connection(level).await?;
 
-    connection.send(&message)?;
+    connection.send(&message).await?;
 
-    let message_it = MessageIterator::from(connection);
+    let mut message_it = MessageStream::from(connection);
 
-    for message_res in message_it {
+    while let Some(message_res) = message_it.next().await {
         debug!("Message response {message_res:?}");
         let return_message = message_res?;
 
@@ -737,7 +699,7 @@ where
 }
 
 #[allow(dead_code)]
-fn get_unit_object_path_connection(
+async fn get_unit_object_path_connection(
     unit_name: &str,
     connection: &Connection,
 ) -> Result<ObjectPath<'static>, SystemdErrors> {
@@ -748,7 +710,8 @@ fn get_unit_object_path_connection(
         INTERFACE_SYSTEMD_MANAGER,
         METHOD_GET_UNIT,
         &(unit_name),
-    )?;
+    )
+    .await?;
 
     let body = message.body();
 
@@ -757,7 +720,7 @@ fn get_unit_object_path_connection(
     Ok(object_path.to_owned())
 }
 
-pub(super) fn kill_unit(
+pub(super) async fn kill_unit(
     level: UnitDBusLevel,
     unit_name: &str,
     mode: KillWho,
@@ -774,9 +737,10 @@ pub(super) fn kill_unit(
         &(unit_name, mode.as_str(), signal),
         handler,
     )
+    .await
 }
 
-pub(super) fn preset_unit_file(
+pub(super) async fn preset_unit_file(
     level: UnitDBusLevel,
     files: &[&str],
     runtime: bool,
@@ -799,9 +763,10 @@ pub(super) fn preset_unit_file(
         &(files, runtime, force),
         handler,
     )
+    .await
 }
 
-pub(super) fn link_unit_files(
+pub(super) async fn link_unit_files(
     level: UnitDBusLevel,
     files: &[&str],
     runtime: bool,
@@ -823,9 +788,10 @@ pub(super) fn link_unit_files(
         &(files, runtime, force),
         handler,
     )
+    .await
 }
 
-pub(super) fn reenable_unit_file(
+pub(super) async fn reenable_unit_file(
     level: UnitDBusLevel,
     files: &[&str],
     runtime: bool,
@@ -847,9 +813,10 @@ pub(super) fn reenable_unit_file(
         &(files, runtime, force),
         handler,
     )
+    .await
 }
 
-pub(super) fn reload_unit(
+pub(super) async fn reload_unit(
     level: UnitDBusLevel,
     unit_name: &str,
     mode: &str,
@@ -860,9 +827,10 @@ pub(super) fn reload_unit(
         &(unit_name, mode),
         handle_start_stop_answer,
     )
+    .await
 }
 
-pub(super) fn queue_signal_unit(
+pub(super) async fn queue_signal_unit(
     level: UnitDBusLevel,
     unit_name: &str,
     mode: KillWho,
@@ -881,6 +849,7 @@ pub(super) fn queue_signal_unit(
         &(unit_name, mode.as_str(), signal, value),
         handle_answer,
     )
+    .await
 }
 
 /* pub(super) fn clean_unit(
@@ -897,7 +866,7 @@ pub(super) fn queue_signal_unit(
     send_disenable_message(level, METHOD_CLEAN_UNIT, &(unit_name, what), handle_answer)
 } */
 
-pub(super) fn mask_unit_files(
+pub(super) async fn mask_unit_files(
     level: UnitDBusLevel,
     files: &[&str],
     runtime: bool,
@@ -923,9 +892,10 @@ pub(super) fn mask_unit_files(
         &(files, runtime, force),
         handle_answer,
     )
+    .await
 }
 
-pub(super) fn unmask_unit_files(
+pub(super) async fn unmask_unit_files(
     level: UnitDBusLevel,
     files: &[&str],
     runtime: bool,
@@ -950,6 +920,7 @@ pub(super) fn unmask_unit_files(
         &(files, runtime),
         handle_answer,
     )
+    .await
 }
 
 fn convert_to_string(value: &zvariant::Value) -> String {
@@ -1010,20 +981,20 @@ fn convert_to_string(value: &zvariant::Value) -> String {
     }
 }
 
-pub fn fetch_system_info(
+pub async fn fetch_system_info(
     level: UnitDBusLevel,
 ) -> Result<Vec<(UnitType, String, String)>, SystemdErrors> {
-    let res = change_p(level);
+    let res = change_p(level).await;
     warn!("res {res:?}");
-    fetch_system_unit_info(level, PATH_SYSTEMD, UnitType::Manager)
+    fetch_system_unit_info(level, PATH_SYSTEMD, UnitType::Manager).await
 }
 
-pub fn fetch_system_unit_info(
+pub async fn fetch_system_unit_info(
     level: UnitDBusLevel,
     object_path: &str,
     unit_type: UnitType,
 ) -> Result<Vec<(UnitType, String, String)>, SystemdErrors> {
-    let properties = fetch_system_unit_info_native(level, object_path, unit_type)?;
+    let properties = fetch_system_unit_info_native(level, object_path, unit_type).await?;
 
     let vec: Vec<_> = properties
         .into_iter()
@@ -1033,7 +1004,7 @@ pub fn fetch_system_unit_info(
     Ok(vec)
 }
 
-fn change_p(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
+async fn change_p(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
     let method = "Get";
 
     let body = ("org.freedesktop.systemd1.Manager", "LogLevel");
@@ -1044,13 +1015,13 @@ fn change_p(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
         .with_flags(Flags::AllowInteractiveAuth)?
         .build(&body)?;
 
-    let connection = get_blocking_connection(level)?;
+    let connection = get_connection(level).await?;
 
-    connection.send(&message)?;
+    connection.send(&message).await?;
 
-    let message_it = MessageIterator::from(connection);
+    let mut message_it = MessageStream::from(connection);
 
-    for message_res in message_it {
+    while let Some(message_res) = message_it.next().await {
         debug!("Message response {message_res:?}");
         let return_message = message_res?;
 
@@ -1090,21 +1061,22 @@ fn change_p(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
     ))
 }
 
-pub fn fetch_system_unit_info_native_map(
+pub async fn fetch_system_unit_info_native_map(
     level: UnitDBusLevel,
     object_path: &str,
     unit_type: UnitType,
 ) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
-    let connection = get_blocking_connection(level)?;
+    let connection = get_connection(level).await?;
 
     let interface_name = unit_type.interface();
 
     let mut properties =
-        fetch_unit_interface_all_properties(&connection, object_path, interface_name)?;
+        fetch_unit_interface_all_properties(&connection, object_path, interface_name).await?;
 
     if unit_type.extends_unit() {
         let unit_properties =
-            fetch_unit_interface_all_properties(&connection, object_path, INTERFACE_SYSTEMD_UNIT)?;
+            fetch_unit_interface_all_properties(&connection, object_path, INTERFACE_SYSTEMD_UNIT)
+                .await?;
 
         properties.extend(unit_properties);
     }
@@ -1113,41 +1085,33 @@ pub fn fetch_system_unit_info_native_map(
     Ok(properties)
 }
 
-pub fn fetch_system_unit_info_native(
+pub async fn fetch_system_unit_info_native(
     level: UnitDBusLevel,
     object_path: &str,
     unit_type: UnitType,
 ) -> Result<Vec<(UnitType, String, OwnedValue)>, SystemdErrors> {
-    let connection = get_blocking_connection(level)?;
+    let connection = get_connection(level).await?;
 
     debug!("Unit path: {object_path}");
-    let properties_proxy: zbus::blocking::fdo::PropertiesProxy =
-        fdo::PropertiesProxy::builder(&connection)
-            .destination(DESTINATION_SYSTEMD)?
-            .path(object_path)?
-            .build()?;
+    let properties_proxy = ZPropertiesProxy::builder(&connection)
+        .destination(DESTINATION_SYSTEMD)?
+        .path(object_path)?
+        .build()
+        .await?;
 
     let unit_interface = unit_type.interface();
 
-    let interface_name = InterfaceName::try_from(unit_interface)
-        .inspect_err(|err| {
-            error!("unit_type {:?}", unit_type);
-            error!("unit_interface {:?}", unit_interface);
-            error!("{:?}", err);
-        })
-        .unwrap();
-
     let mut properties: Vec<_> = properties_proxy
-        .get_all(interface_name)?
+        .get_all(unit_interface)
+        .await?
         .into_iter()
         .map(|(k, v)| (unit_type, k, v))
         .collect();
 
     if unit_type.extends_unit() {
-        let unit_interface_name = InterfaceName::try_from(INTERFACE_SYSTEMD_UNIT).unwrap();
-
         let unit_properties: Vec<_> = properties_proxy
-            .get_all(unit_interface_name)?
+            .get_all(INTERFACE_SYSTEMD_UNIT)
+            .await?
             .into_iter()
             .map(|(k, v)| (UnitType::Unit, k, v))
             .collect();
@@ -1159,27 +1123,28 @@ pub fn fetch_system_unit_info_native(
     Ok(properties)
 }
 
-pub fn fetch_unit(
+pub async fn fetch_unit(
     level: UnitDBusLevel,
     unit_primary_name: &str,
 ) -> Result<UnitInfo, SystemdErrors> {
-    let connection = get_blocking_connection(level)?;
+    let connection = get_connection(level).await?;
 
     let object_path = unit_dbus_path_from_name(unit_primary_name);
 
     debug!("path {object_path}");
 
-    let properties_proxy = ZUnitInfoProxyBlocking::builder(&connection)
+    let properties_proxy = ZUnitInfoProxy::builder(&connection)
         .destination(DESTINATION_SYSTEMD)?
         .path(object_path.clone())?
-        .build()?;
+        .build()
+        .await?;
 
-    let primary = properties_proxy.id()?;
-    let description = properties_proxy.description().unwrap_or_default();
-    let load_state = properties_proxy.load_state().unwrap_or_default();
-    let active_state_str = properties_proxy.active_state().unwrap_or_default();
-    let sub_state = properties_proxy.sub_state().unwrap_or_default();
-    let followed_unit = properties_proxy.following().unwrap_or_default();
+    let primary = properties_proxy.id().await?;
+    let description = properties_proxy.description().await.unwrap_or_default();
+    let load_state = properties_proxy.load_state().await.unwrap_or_default();
+    let active_state_str = properties_proxy.active_state().await.unwrap_or_default();
+    let sub_state = properties_proxy.sub_state().await.unwrap_or_default();
+    let followed_unit = properties_proxy.following().await.unwrap_or_default();
 
     let listed_unit = ListedLoadedUnit {
         primary_unit_name: primary,
@@ -1197,7 +1162,7 @@ pub fn fetch_unit(
 
     let unit = UnitInfo::from_listed_unit(listed_unit, level);
 
-    if let Ok(fragment_path) = properties_proxy.fragment_path() {
+    if let Ok(fragment_path) = properties_proxy.fragment_path().await {
         unit.set_file_path(Some(fragment_path));
     }
 
@@ -1209,14 +1174,14 @@ pub fn fetch_unit(
     Ok(unit)
 }
 
-pub(super) fn unit_get_dependencies(
-    dbus_level: UnitDBusLevel,
+pub(super) async fn unit_get_dependencies(
+    level: UnitDBusLevel,
     unit_name: &str,
     unit_object_path: &str,
     dependency_type: DependencyType,
     plain: bool,
 ) -> Result<Dependency, SystemdErrors> {
-    let connection = get_blocking_connection(dbus_level)?;
+    let connection = get_connection(level).await?;
     let dependencies_properties = dependency_type.properties();
     let mut units = HashSet::new();
 
@@ -1228,7 +1193,8 @@ pub(super) fn unit_get_dependencies(
         dependencies_properties,
         &connection,
         &mut units,
-    )?;
+    )
+    .await?;
 
     if plain {
         let mut all_children = BTreeSet::new();
@@ -1247,14 +1213,14 @@ fn flatit(parent: &Dependency, all_children: &mut BTreeSet<Dependency>) {
     }
 }
 
-fn reteive_dependencies(
+async fn reteive_dependencies(
     dependency: &mut Dependency,
     unit_object_path: &str,
     dependencies_properties: &[&str],
     connection: &Connection,
     units: &mut HashSet<String>,
 ) -> Result<(), SystemdErrors> {
-    let map = fetch_unit_all_properties(connection, unit_object_path)?;
+    let map = fetch_unit_all_properties(connection, unit_object_path).await?;
 
     dependency.state = map.get("ActiveState").into();
     let mut set = BTreeSet::new();
@@ -1285,13 +1251,14 @@ fn reteive_dependencies(
 
         let mut child_depency = Dependency::new(child_name);
 
-        reteive_dependencies(
+        Box::pin(reteive_dependencies(
             &mut child_depency,
             &objet_path,
             dependencies_properties,
             connection,
             units,
-        )?;
+        ))
+        .await?;
 
         dependency.children.insert(child_depency);
     }
@@ -1343,20 +1310,21 @@ fn hexchar(x: u8) -> char {
     TABLE[(x & 15) as usize]
 }
 
-pub fn get_unit_active_state(
-    dbus_level: UnitDBusLevel,
+pub async fn get_unit_active_state(
+    level: UnitDBusLevel,
     unit_path: &str,
 ) -> Result<ActiveState, SystemdErrors> {
-    let connection = get_blocking_connection(dbus_level)?;
+    let connection = get_connection(level).await?;
 
     let proxy = Proxy::new(
         &connection,
         DESTINATION_SYSTEMD,
         unit_path,
         INTERFACE_SYSTEMD_UNIT,
-    )?;
+    )
+    .await?;
 
-    let active_state: Str = proxy.get_property("ActiveState")?;
+    let active_state: Str = proxy.get_property("ActiveState").await?;
 
     Ok(ActiveState::from(active_state.as_str()))
 }
@@ -1368,11 +1336,12 @@ pub(crate) struct UnitProcessDeserialize {
     pub(crate) name: String,
 }
 
-pub(crate) fn retreive_unit_processes(
+pub(crate) async fn retreive_unit_processes(
     dbus_level: UnitDBusLevel,
     unit_name: &str,
 ) -> Result<Vec<UnitProcessDeserialize>, SystemdErrors> {
-    let message = call_systemd_manager_method(dbus_level, METHOD_GET_UNIT_PROCESSES, &(unit_name))?;
+    let message =
+        call_systemd_manager_method(dbus_level, METHOD_GET_UNIT_PROCESSES, &(unit_name)).await?;
 
     let unit_processes: Vec<UnitProcessDeserialize> = message.body().deserialize()?;
 
@@ -1498,23 +1467,24 @@ async fn collect_properties(
     Ok(())
 }
 
-fn fetch_unit_all_properties(
+async fn fetch_unit_all_properties(
     connection: &Connection,
     path: &str,
 ) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
-    fetch_unit_interface_all_properties(connection, path, INTERFACE_SYSTEMD_UNIT)
+    fetch_unit_interface_all_properties(connection, path, INTERFACE_SYSTEMD_UNIT).await
 }
 
-fn fetch_unit_interface_all_properties(
+async fn fetch_unit_interface_all_properties(
     connection: &Connection,
     path: &str,
     interface: &str,
 ) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
-    let p = ZPropertiesProxyBlocking::builder(connection)
+    let p = ZPropertiesProxy::builder(connection)
         .path(path)?
-        .build()?;
+        .build()
+        .await?;
 
-    let all_properties = p.get_all(interface)?;
+    let all_properties = p.get_all(interface).await?;
 
     // let proxy = Proxy::new(connection, DESTINATION_SYSTEMD, path, INTERFACE_PROPERTIES)?;
 
@@ -1581,22 +1551,23 @@ pub async fn fetch_unit_properties(
     Ok(output)
 }
 
-pub fn fetch_unit_property_blocking(
+pub async fn fetch_unit_property_blocking(
     level: UnitDBusLevel,
     unit_primary_name: &str,
     unit_type: UnitType,
     unit_property: &str,
 ) -> Result<OwnedValue, SystemdErrors> {
-    let connection = get_blocking_connection(level)?;
+    let connection = get_connection(level).await?;
 
     let path = unit_dbus_path_from_name(unit_primary_name);
-    let proxy = ZPropertiesProxyBlocking::builder(&connection)
+    let proxy = ZPropertiesProxy::builder(&connection)
         .path(path)?
-        .build()?;
+        .build()
+        .await?;
 
     let interface = unit_type.interface();
 
-    let value = proxy.get(interface, unit_property)?;
+    let value = proxy.get(interface, unit_property).await?;
 
     Ok(value)
 }
