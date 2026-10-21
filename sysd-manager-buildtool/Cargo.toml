@@ -13,10 +13,6 @@ keywords = ["dbus", "sysd-manager", "changelogs"]
 name = "tool_lib"
 path = "src/lib.rs"
 
-[[bin]]
-name = "tool"
-path = "src/main.rs"
-
 [features]
 default = []
 
