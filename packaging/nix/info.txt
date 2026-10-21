@@ -1,4 +1,0 @@
-nix-build -E 'with import <nixpkgs> {}; callPackage ./package.nix {}'
-
-
-sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
