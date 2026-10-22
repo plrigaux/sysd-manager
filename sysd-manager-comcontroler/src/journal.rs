@@ -240,7 +240,7 @@ pub fn get_unit_journal_events_continuous(
         let prefix = make_prefix(time_in_usec, name, pid, timestamp_style);
 
         let journal_event = JournalEvent::new_param(priority, time_in_usec, prefix, message);
-        println!("Push 1 event");
+        info!("Push 1 event");
         out_list.push(journal_event);
     }
     // Unreachable
