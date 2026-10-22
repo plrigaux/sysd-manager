@@ -26,7 +26,6 @@ use indexmap::IndexMap;
 use std::{cell::OnceCell, collections::HashMap, rc::Rc};
 use systemd::{enums::UnitType, runtime, socket_unit::SocketUnitInfo};
 use tracing::{info, warn};
-use zvariant::Value;
 
 pub fn construct_column_view(
     display_color: bool,
@@ -581,7 +580,7 @@ fn create_column_sorter(key: glib::Quark, prop_type: &str) -> Option<gtk::Custom
         "u" => custom_property_comapre::<u32>,
         "x" => custom_property_comapre::<i64>,
         "t" => custom_property_comapre::<u64>,
-        "v" => custom_property_comapre::<Value>,
+        "v" => custom_property_comapre::<zbus::Variant>,
         "s" => custom_property_comapre::<String>,
         _ => custom_property_comapre::<String>,
     };

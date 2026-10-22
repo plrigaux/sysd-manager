@@ -37,9 +37,9 @@ tracing.workspace = true
 tracing-subscriber.workspace = true
 zbus.workspace = true
 zbus_xml.workspace = true
-zvariant.workspace = true
-zvariant_derive = "5"
-zvariant_utils = "4"
+# zvariant.workspace = true
+# zvariant_derive = "5"
+# zvariant_utils = "4"
 
 
 [dev-dependencies]

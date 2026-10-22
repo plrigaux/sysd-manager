@@ -55,7 +55,7 @@ use tokio::{
     time::timeout,
 };
 use tracing::{error, info, warn};
-use zvariant::OwnedValue;
+use zbus::OwnedVariant;
 
 #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
 pub use sysdbus::shut_down_sysd_proxy;
@@ -937,7 +937,7 @@ pub fn fetch_system_info() -> Result<Vec<(UnitType, String, String)>, SystemdErr
 
 pub fn fetch_system_unit_info_native(
     unit: &UnitInfo,
-) -> Result<Vec<(UnitType, String, OwnedValue)>, SystemdErrors> {
+) -> Result<Vec<(UnitType, String, OwnedVariant)>, SystemdErrors> {
     let level = unit.dbus_level();
     let unit_type: UnitType = unit.unit_type();
     let object_path = unit.object_path();
@@ -951,7 +951,7 @@ pub fn fetch_system_unit_info_native(
 
 pub fn fetch_system_unit_info_native_map(
     unit: &UnitInfo,
-) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
+) -> Result<HashMap<String, OwnedVariant>, SystemdErrors> {
     let level = unit.dbus_level();
     let unit_type: UnitType = unit.unit_type();
     let object_path = unit.object_path();
@@ -1408,7 +1408,7 @@ pub fn fetch_unit_property_blocking(
     unit_primary_name: &str,
     unit_type: UnitType,
     unit_property: &str,
-) -> Result<OwnedValue, SystemdErrors> {
+) -> Result<OwnedVariant, SystemdErrors> {
     runtime().block_on(sysdbus::fetch_unit_property_blocking(
         level,
         unit_primary_name,

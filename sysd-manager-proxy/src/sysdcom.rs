@@ -1,5 +1,5 @@
 use base::proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse};
-use zbus::{proxy, zvariant::OwnedObjectPath};
+use zbus::{OwnedObjectPath, proxy};
 
 #[proxy(
     interface = "org.freedesktop.systemd1.Manager",

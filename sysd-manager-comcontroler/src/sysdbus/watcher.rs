@@ -6,14 +6,16 @@ use crate::{
 };
 use base::enums::UnitDBusLevel;
 use futures_util::stream::StreamExt;
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::{
+    num::NonZero,
+    time::{SystemTime, UNIX_EPOCH},
+};
 use tokio::{
     sync::{OnceCell, broadcast, oneshot},
     task::JoinHandle,
 };
 use tracing::{debug, error, info, warn};
-use zbus::{MatchRule, MessageStream};
-use zvariant::OwnedObjectPath;
+use zbus::{MatchRule, MessageStream, OwnedObjectPath};
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum SystemdSignal {
@@ -201,16 +203,16 @@ async fn signal_watcher(
     let rule = MatchRule::builder()
         .msg_type(zbus::message::Type::Signal)
         // .sender("org.freedesktop.DBus")?
-        .interface("org.freedesktop.systemd1.Manager")?
+        .interface("org.freedesktop.systemd1.Manager")
         // .member("NameOwnerChanged")?
         // .add_arg("org.freedesktop.zbus.MatchRuleStreamTest42")?
-        .build();
+        .build()?;
 
     let mut stream = MessageStream::for_match_rule(
         rule,
         &connection,
         // For such a specific match rule, we don't need a big queue.
-        Some(100),
+        NonZero::<usize>::new(100),
     )
     .await?;
 

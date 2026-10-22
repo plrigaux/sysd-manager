@@ -5,8 +5,7 @@ use base::{
     proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse, QueuedJobs},
 };
 use tokio::sync::OnceCell;
-use zbus::proxy;
-use zvariant::{OwnedObjectPath, OwnedValue};
+use zbus::{OwnedObjectPath, OwnedVariant, proxy};
 
 use crate::{
     data::ListedLoadedUnit,
@@ -19,9 +18,9 @@ use crate::{
     default_service = "org.freedesktop.systemd1"
 )]
 pub(crate) trait ZProperties {
-    fn get(&self, interface: &str, property_name: &str) -> Result<OwnedValue, zbus::Error>;
+    fn get(&self, interface: &str, property_name: &str) -> Result<OwnedVariant, zbus::Error>;
 
-    fn get_all(&self, interface: &str) -> Result<HashMap<String, OwnedValue>, zbus::Error>;
+    fn get_all(&self, interface: &str) -> Result<HashMap<String, OwnedVariant>, zbus::Error>;
 }
 
 #[proxy(

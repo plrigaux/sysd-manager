@@ -449,34 +449,34 @@ impl WindowImpl for InfoWindowImp {
 impl AdwWindowImpl for InfoWindowImp {}
 // ANCHOR_END: imp
 
-fn convert_to_string(value: &zvariant::Value) -> (String, bool) {
+fn convert_to_string(value: &zbus::Variant) -> (String, bool) {
     match value {
-        zvariant::Value::U8(i) => (i.to_string(), false),
-        zvariant::Value::Bool(b) => (b.to_string(), false),
-        zvariant::Value::I16(i) => (i.to_string(), false),
-        zvariant::Value::U16(i) => (i.to_string(), *i == u16::MAX),
-        zvariant::Value::I32(i) => (i.to_string(), false),
-        zvariant::Value::U32(i) => (i.to_string(), *i == u32::MAX),
-        zvariant::Value::I64(i) => (i.to_string(), false),
-        zvariant::Value::U64(i) => (i.to_string(), *i == U64MAX),
-        zvariant::Value::F64(i) => (i.to_string(), false),
-        zvariant::Value::Str(s) => {
+        zbus::Variant::U8(i) => (i.to_string(), false),
+        zbus::Variant::Bool(b) => (b.to_string(), false),
+        zbus::Variant::I16(i) => (i.to_string(), false),
+        zbus::Variant::U16(i) => (i.to_string(), *i == u16::MAX),
+        zbus::Variant::I32(i) => (i.to_string(), false),
+        zbus::Variant::U32(i) => (i.to_string(), *i == u32::MAX),
+        zbus::Variant::I64(i) => (i.to_string(), false),
+        zbus::Variant::U64(i) => (i.to_string(), *i == U64MAX),
+        zbus::Variant::F64(i) => (i.to_string(), false),
+        zbus::Variant::Str(s) => {
             let s = s.to_string();
             let empty = s.is_empty();
             (s, empty)
         }
-        zvariant::Value::Signature(s) => (s.to_string(), false),
-        zvariant::Value::ObjectPath(op) => {
+        zbus::Variant::Signature(s) => (s.to_string(), false),
+        zbus::Variant::ObjectPath(op) => {
             let s = op.to_string();
             let empty = s.is_empty();
             (s, empty)
         }
-        zvariant::Value::Value(v) => {
+        zbus::Variant::Variant(v) => {
             let s = v.to_string();
             let empty = s.is_empty();
             (s, empty)
         }
-        zvariant::Value::Array(a) => {
+        zbus::Variant::Array(a) => {
             if a.is_empty() {
                 ("[]".to_owned(), true)
             } else {
@@ -496,7 +496,7 @@ fn convert_to_string(value: &zvariant::Value) -> (String, bool) {
                 (d_str, is_empty)
             }
         }
-        zvariant::Value::Dict(d) => {
+        zbus::Variant::Dict(d) => {
             let mut d_str = String::from("{ ");
 
             for (mik, miv) in d.iter() {
@@ -507,7 +507,7 @@ fn convert_to_string(value: &zvariant::Value) -> (String, bool) {
             d_str.push_str(" }");
             (d_str, false)
         }
-        zvariant::Value::Structure(stc) => {
+        zbus::Variant::Structure(stc) => {
             let mut d_str = String::from("{ ");
 
             let mut it = stc.fields().iter().peekable();
@@ -526,7 +526,7 @@ fn convert_to_string(value: &zvariant::Value) -> (String, bool) {
             d_str.push_str(" }");
             (d_str, is_empty)
         }
-        zvariant::Value::Fd(fd) => (fd.to_string(), false),
-        //zvariant::Value::Maybe(maybe) => (maybe.to_string(), false),
+        zbus::Variant::Fd(fd) => (fd.to_string(), false),
+        //zbus::Variant::Maybe(maybe) => (maybe.to_string(), false),
     }
 }

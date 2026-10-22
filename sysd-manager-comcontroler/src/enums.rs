@@ -10,7 +10,7 @@ use glib::{self, EnumValue, value::ToValue};
 use std::{borrow::Cow, cell::RefCell, fmt::Display, str::FromStr};
 use strum::{EnumIter, IntoEnumIterator};
 use tracing::{info, warn};
-use zvariant::OwnedValue;
+use zbus::OwnedVariant;
 
 const MASKED: &str = "masked";
 const ENABLED: &str = "enabled";
@@ -539,8 +539,8 @@ impl From<&str> for ActiveState {
     }
 }
 
-impl From<Option<&OwnedValue>> for ActiveState {
-    fn from(value: Option<&OwnedValue>) -> Self {
+impl From<Option<&OwnedVariant>> for ActiveState {
+    fn from(value: Option<&OwnedVariant>) -> Self {
         match value {
             Some(value) => {
                 let state_str: &str = value.try_into().unwrap_or_default();
@@ -1068,11 +1068,11 @@ impl From<Option<String>> for LoadState {
     }
 }
 
-impl From<Option<&OwnedValue>> for LoadState {
-    fn from(value: Option<&OwnedValue>) -> Self {
-        let value: Option<&zvariant::Value> = value.map(|v| &**v);
+impl From<Option<&OwnedVariant>> for LoadState {
+    fn from(value: Option<&OwnedVariant>) -> Self {
+        let value: Option<&zbus::Variant> = value.map(|v| &**v);
         match value {
-            Some(zvariant::Value::Str(zvalue)) => zvalue.as_str().into(),
+            Some(zbus::Variant::Str(zvalue)) => zvalue.as_str().into(),
             _ => LoadState::Unknown,
         }
     }

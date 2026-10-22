@@ -89,7 +89,7 @@ impl SysDManagerProxy {
                 &subject,
                 "io.github.plrigaux.SysDManager",
                 map(),
-                CheckAuthorizationFlags::AllowUserInteraction.into(),
+                CheckAuthorizationFlags::ALLOW_USER_INTERACTION,
                 "",
             )
             .await;
@@ -190,9 +190,9 @@ pub async fn init_serve_connection(
     info!("DBus name {dbus_name}");
     info!("DBus path {dbus_path}");
 
-    let connection = zbus::connection::Builder::system()?
-        .name(dbus_name)?
-        .serve_at(dbus_path.clone(), proxy)?
+    let connection = zbus::connection::Builder::system()
+        .name(dbus_name)
+        .serve_at(dbus_path.clone(), proxy)
         .build()
         .await?;
 

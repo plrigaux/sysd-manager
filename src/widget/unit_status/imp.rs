@@ -32,7 +32,7 @@ use gtk::{
 use std::cell::OnceCell;
 use std::{cell::RefCell, rc::Rc};
 use tracing::{debug, warn};
-use zvariant::Value;
+use zbus::Variant;
 
 #[derive(Default, glib::Properties, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/unit_status_panel.ui")]
@@ -109,7 +109,7 @@ impl UnitStatusPanelImp {
         self.on_new_text();
 
         let has_reload_unit_capabilities = if let Some(value) = map.get("ExecReload")
-            && let Value::Array(array) = value as &Value
+            && let Variant::Array(array) = value as &Variant
             && !array.is_empty()
         {
             true

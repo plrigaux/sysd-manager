@@ -126,11 +126,11 @@ pub fn custom_num<T>(
 where
     T: std::fmt::Debug
         + std::default::Default
-        + for<'a> TryFrom<&'a zvariant::Value<'a>>
+        + for<'a> TryFrom<&'a zbus::Variant<'a>>
         + 'static
         + Copy,
-    for<'a> zvariant::Error:
-        std::convert::From<<T as std::convert::TryFrom<&'a zvariant::Value<'a>>>::Error>,
+    for<'a> zbus::Error:
+        std::convert::From<<T as std::convert::TryFrom<&'a zbus::Variant<'a>>>::Error>,
 {
     let value = unsafe { unit.qdata::<T>(key) }
         .map(|value_ptr| unsafe { value_ptr.as_ref() })

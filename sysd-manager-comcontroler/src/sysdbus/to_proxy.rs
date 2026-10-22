@@ -1,22 +1,19 @@
 #![allow(dead_code)]
 
-use std::sync::OnceLock;
-
+use crate::{errors::SystemdErrors, sysd_proxy_service_name, sysdbus::get_connection};
 use base::{
     consts::{MAX_HEART_BEAT_ELAPSE, MIN_HEART_BEAT_ELAPSE},
     enums::UnitDBusLevel,
     proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse},
 };
 use futures_util::stream::StreamExt;
+use std::sync::OnceLock;
 use tokio::{
     task::JoinHandle,
     time::{self, Duration},
 };
 use tracing::{debug, info, warn};
-use zbus::proxy;
-use zvariant::OwnedObjectPath;
-
-use crate::{errors::SystemdErrors, sysd_proxy_service_name, sysdbus::get_connection};
+use zbus::{OwnedObjectPath, proxy};
 
 static HEART_BEAT_HANDLE: OnceLock<JoinHandle<Result<(), SystemdErrors>>> = OnceLock::new();
 
@@ -95,7 +92,7 @@ pub(crate) async fn get_proxy_async<'a>() -> Result<SysDManagerComLinkProxy<'a>,
     info!("BusName Destination {}", destination);
     let proxy = SysDManagerComLinkProxy::builder(&connection)
         //.path(path)?
-        .destination(destination)?
+        .destination(destination)
         .build()
         .await?;
 

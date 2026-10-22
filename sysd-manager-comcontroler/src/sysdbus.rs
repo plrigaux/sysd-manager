@@ -17,7 +17,6 @@ use crate::{
         UnitType,
     },
     errors::SystemdErrors,
-    runtime,
     sysdbus::dbus_proxies::{
         JobRemovedStream, ZPropertiesProxy, ZUnitInfoProxy, systemd_manager_async,
     },
@@ -38,8 +37,10 @@ use std::{
 };
 use tokio::time::{sleep, timeout};
 use tracing::{debug, error, info, trace, warn};
-use zbus::{Connection, Message, MessageStream, Proxy, message::Flags};
-use zvariant::{Array, DynamicType, ObjectPath, OwnedValue, Str, Type};
+use zbus::{
+    Array, Connection, DynamicType, Message, MessageStream, ObjectPath, OwnedVariant, Proxy, Type,
+    message::Flags,
+};
 
 pub(crate) const DESTINATION_SYSTEMD: &str = "org.freedesktop.systemd1";
 pub(super) const INTERFACE_SYSTEMD_UNIT: &str = "org.freedesktop.systemd1.Unit";
@@ -211,7 +212,7 @@ pub async fn shut_down_sysd_proxy() -> Result<(), SystemdErrors> {
 
     let connection = get_connection(UnitDBusLevel::System).await?;
     let unit_info_proxy = ZUnitInfoProxy::builder(&connection)
-        .path(object_path)?
+        .path(object_path)
         .build()
         .await?;
 
@@ -252,12 +253,12 @@ pub async fn get_connection(level: UnitDBusLevel) -> Result<zbus::Connection, Sy
 async fn build_connection(level: UnitDBusLevel) -> Result<zbus::Connection, SystemdErrors> {
     debug!("Level {:?}, id {}", level, level as u32);
     let connection_builder = match level {
-        UnitDBusLevel::UserSession => zbus::connection::Builder::session()?,
-        _ => zbus::connection::Builder::system()?,
+        UnitDBusLevel::UserSession => zbus::connection::Builder::session(),
+        _ => zbus::connection::Builder::system(),
     };
 
     let connection = connection_builder
-        .auth_mechanism(zbus::AuthMechanism::External)
+        .auth_mechanism(zbus::conn::AuthMechanism::External)
         .build()
         .await?;
 
@@ -451,7 +452,7 @@ async fn complete_unit_info(
     object_path: &str,
 ) -> Result<UpdatedUnitInfo, SystemdErrors> {
     let unit_info_proxy = ZUnitInfoProxy::builder(connection)
-        .path(object_path)?
+        .path(object_path)
         .build()
         .await?;
 
@@ -577,13 +578,13 @@ fn handle_start_stop_answer(
 
     match body.signature() {
         //In some cases (mostly at program startup), systemd returns an empty signature
-        zvariant::Signature::Unit => {
+        zbus::Signature::Unit => {
             Err("Method call failed, unexpected signature 'Unit' (empty)".into())
         }
 
         _ => {
             // Expected signature is 'o' (object path)
-            let job_path: zvariant::ObjectPath = body.deserialize().inspect_err(|e| {
+            let job_path: zbus::ObjectPath = body.deserialize().inspect_err(|e| {
                 error!("deserialize error on call {} {:?}", method, e);
             })?;
 
@@ -634,10 +635,10 @@ where
     U: std::fmt::Debug,
 {
     info!("Try to {method}, message body: {:?}", body);
-    let message = Message::method_call(PATH_SYSTEMD, method)?
-        .with_flags(Flags::AllowInteractiveAuth)?
-        .destination(DESTINATION_SYSTEMD)?
-        .interface(INTERFACE_SYSTEMD_MANAGER)?
+    let message = Message::method_call(PATH_SYSTEMD, method)
+        .with_flags(Flags::ALLOW_INTERACTIVE_AUTH)
+        .destination(DESTINATION_SYSTEMD)
+        .interface(INTERFACE_SYSTEMD_MANAGER)
         .build(body)?;
 
     let connection = get_connection(level).await?;
@@ -715,7 +716,7 @@ async fn get_unit_object_path_connection(
 
     let body = message.body();
 
-    let object_path: zvariant::ObjectPath = body.deserialize()?;
+    let object_path: zbus::ObjectPath = body.deserialize()?;
 
     Ok(object_path.to_owned())
 }
@@ -923,22 +924,22 @@ pub(super) async fn unmask_unit_files(
     .await
 }
 
-fn convert_to_string(value: &zvariant::Value) -> String {
+fn convert_to_string(value: &zbus::Variant) -> String {
     match value {
-        zvariant::Value::U8(i) => i.to_string(),
-        zvariant::Value::Bool(b) => b.to_string(),
-        zvariant::Value::I16(i) => i.to_string(),
-        zvariant::Value::U16(i) => i.to_string(),
-        zvariant::Value::I32(i) => i.to_string(),
-        zvariant::Value::U32(i) => i.to_string(),
-        zvariant::Value::I64(i) => i.to_string(),
-        zvariant::Value::U64(i) => i.to_string(),
-        zvariant::Value::F64(i) => i.to_string(),
-        zvariant::Value::Str(s) => s.to_string(),
-        zvariant::Value::Signature(s) => s.to_string(),
-        zvariant::Value::ObjectPath(op) => op.to_string(),
-        zvariant::Value::Value(v) => v.to_string(),
-        zvariant::Value::Array(a) => {
+        zbus::Variant::U8(i) => i.to_string(),
+        zbus::Variant::Bool(b) => b.to_string(),
+        zbus::Variant::I16(i) => i.to_string(),
+        zbus::Variant::U16(i) => i.to_string(),
+        zbus::Variant::I32(i) => i.to_string(),
+        zbus::Variant::U32(i) => i.to_string(),
+        zbus::Variant::I64(i) => i.to_string(),
+        zbus::Variant::U64(i) => i.to_string(),
+        zbus::Variant::F64(i) => i.to_string(),
+        zbus::Variant::Str(s) => s.to_string(),
+        zbus::Variant::Signature(s) => s.to_string(),
+        zbus::Variant::ObjectPath(op) => op.to_string(),
+        zbus::Variant::Variant(v) => v.to_string(),
+        zbus::Variant::Array(a) => {
             let mut d_str = String::from("[ ");
 
             let mut it = a.iter().peekable();
@@ -952,7 +953,7 @@ fn convert_to_string(value: &zvariant::Value) -> String {
             d_str.push_str(" ]");
             d_str
         }
-        zvariant::Value::Dict(d) => {
+        zbus::Variant::Dict(d) => {
             let mut d_str = String::from("{ ");
             for (mik, miv) in d.iter() {
                 d_str.push_str(&convert_to_string(mik));
@@ -962,7 +963,7 @@ fn convert_to_string(value: &zvariant::Value) -> String {
             d_str.push_str(" }");
             d_str
         }
-        zvariant::Value::Structure(stc) => {
+        zbus::Variant::Structure(stc) => {
             let mut d_str = String::from("{ ");
 
             let mut it = stc.fields().iter().peekable();
@@ -976,8 +977,8 @@ fn convert_to_string(value: &zvariant::Value) -> String {
             d_str.push_str(" }");
             d_str
         }
-        zvariant::Value::Fd(fd) => fd.to_string(),
-        //zvariant::Value::Maybe(maybe) => maybe.to_string(),
+        zbus::Variant::Fd(fd) => fd.to_string(),
+        //zbus::Variant::Maybe(maybe) => maybe.to_string(),
     }
 }
 
@@ -1009,10 +1010,10 @@ async fn change_p(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
 
     let body = ("org.freedesktop.systemd1.Manager", "LogLevel");
 
-    let message = Message::method_call(PATH_SYSTEMD, method)?
-        .destination(DESTINATION_SYSTEMD)?
-        .interface("org.freedesktop.DBus.Properties")?
-        .with_flags(Flags::AllowInteractiveAuth)?
+    let message = Message::method_call(PATH_SYSTEMD, method)
+        .destination(DESTINATION_SYSTEMD)
+        .interface("org.freedesktop.DBus.Properties")
+        .with_flags(Flags::ALLOW_INTERACTIVE_AUTH)
         .build(&body)?;
 
     let connection = get_connection(level).await?;
@@ -1031,7 +1032,7 @@ async fn change_p(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
 
                 let body = return_message.body();
 
-                let return_msg: OwnedValue = body.deserialize()?;
+                let return_msg: OwnedVariant = body.deserialize()?;
 
                 info!("{method} Response {return_msg:?}");
 
@@ -1065,7 +1066,7 @@ pub async fn fetch_system_unit_info_native_map(
     level: UnitDBusLevel,
     object_path: &str,
     unit_type: UnitType,
-) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
+) -> Result<HashMap<String, OwnedVariant>, SystemdErrors> {
     let connection = get_connection(level).await?;
 
     let interface_name = unit_type.interface();
@@ -1089,13 +1090,13 @@ pub async fn fetch_system_unit_info_native(
     level: UnitDBusLevel,
     object_path: &str,
     unit_type: UnitType,
-) -> Result<Vec<(UnitType, String, OwnedValue)>, SystemdErrors> {
+) -> Result<Vec<(UnitType, String, OwnedVariant)>, SystemdErrors> {
     let connection = get_connection(level).await?;
 
     debug!("Unit path: {object_path}");
     let properties_proxy = ZPropertiesProxy::builder(&connection)
-        .destination(DESTINATION_SYSTEMD)?
-        .path(object_path)?
+        .destination(DESTINATION_SYSTEMD)
+        .path(object_path)
         .build()
         .await?;
 
@@ -1134,8 +1135,8 @@ pub async fn fetch_unit(
     debug!("path {object_path}");
 
     let properties_proxy = ZUnitInfoProxy::builder(&connection)
-        .destination(DESTINATION_SYSTEMD)?
-        .path(object_path.clone())?
+        .destination(DESTINATION_SYSTEMD)
+        .path(object_path.clone())
         .build()
         .await?;
 
@@ -1324,7 +1325,8 @@ pub async fn get_unit_active_state(
     )
     .await?;
 
-    let active_state: Str = proxy.get_property("ActiveState").await?;
+    //FIXME see if we can replace String with &str
+    let active_state = proxy.get_property::<String>("ActiveState").await?;
 
     Ok(ActiveState::from(active_state.as_str()))
 }
@@ -1458,7 +1460,7 @@ async fn collect_properties(
     for interface in root_node.interfaces() {
         let list: Vec<_> = interface
             .properties()
-            .iter()
+            // .iter()
             .map(|p| UnitPropertyFetch::new(p))
             .collect();
 
@@ -1470,7 +1472,7 @@ async fn collect_properties(
 async fn fetch_unit_all_properties(
     connection: &Connection,
     path: &str,
-) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
+) -> Result<HashMap<String, OwnedVariant>, SystemdErrors> {
     fetch_unit_interface_all_properties(connection, path, INTERFACE_SYSTEMD_UNIT).await
 }
 
@@ -1478,9 +1480,9 @@ async fn fetch_unit_interface_all_properties(
     connection: &Connection,
     path: &str,
     interface: &str,
-) -> Result<HashMap<String, OwnedValue>, SystemdErrors> {
+) -> Result<HashMap<String, OwnedVariant>, SystemdErrors> {
     let p = ZPropertiesProxy::builder(connection)
-        .path(path)?
+        .path(path)
         .build()
         .await?;
 
@@ -1488,7 +1490,7 @@ async fn fetch_unit_interface_all_properties(
 
     // let proxy = Proxy::new(connection, DESTINATION_SYSTEMD, path, INTERFACE_PROPERTIES)?;
 
-    // let all_properties: HashMap<String, OwnedValue> =
+    // let all_properties: HashMap<String, OwnedVariant> =
     //     match proxy.call("GetAll", &(INTERFACE_SYSTEMD_UNIT)) {
     //         Ok(m) => m,
     //         Err(e) => {
@@ -1510,7 +1512,7 @@ pub async fn fetch_unit_properties(
     let connection = get_connection(level).await?;
 
     let proxy = ZUnitInfoProxy::builder(&connection)
-        .path(path)?
+        .path(path)
         .build()
         .await?;
 
@@ -1529,7 +1531,7 @@ pub async fn fetch_unit_properties(
     }
 
     let props_zproxy = ZPropertiesProxy::builder(&connection)
-        .path(path)?
+        .path(path)
         .build()
         .await?;
 
@@ -1556,12 +1558,12 @@ pub async fn fetch_unit_property_blocking(
     unit_primary_name: &str,
     unit_type: UnitType,
     unit_property: &str,
-) -> Result<OwnedValue, SystemdErrors> {
+) -> Result<OwnedVariant, SystemdErrors> {
     let connection = get_connection(level).await?;
 
     let path = unit_dbus_path_from_name(unit_primary_name);
     let proxy = ZPropertiesProxy::builder(&connection)
-        .path(path)?
+        .path(path)
         .build()
         .await?;
 
@@ -1620,7 +1622,7 @@ pub async fn fetch_drop_in_paths(
     let connection = get_connection(level).await?;
 
     let unit_info_proxy = ZUnitInfoProxy::builder(&connection)
-        .path(object_path)?
+        .path(object_path)
         .build()
         .await?;
 

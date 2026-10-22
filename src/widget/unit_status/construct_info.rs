@@ -22,12 +22,12 @@ use systemd::{
     time_handling::{self, TimestampStyle},
 };
 use tracing::{debug, warn};
-use zvariant::{DynamicType, OwnedValue, Str, Value};
+use zbus::{OwnedVariant, Str, Variant};
 
 pub(crate) fn fill_all_info(
     unit: &UnitInfo,
     unit_writer: &mut UnitInfoWriter,
-) -> HashMap<String, OwnedValue> {
+) -> HashMap<String, OwnedVariant> {
     //let mut unit_info_tokens = Vec::new();
     fill_name_description(unit_writer, unit);
 
@@ -119,7 +119,7 @@ fn fill_row(unit_writer: &mut UnitInfoWriter, key_label: &str, value: &str) {
     unit_writer.insert(&s);
 }
 
-fn fill_dropin(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+fn fill_dropin(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedVariant>) {
     let value = get_value!(map, "DropInPaths");
 
     let drop_in_paths = get_array_str(value);
@@ -169,7 +169,7 @@ fn fill_dropin(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
 
 fn fill_active_state(
     unit_writer: &mut UnitInfoWriter,
-    map: &HashMap<String, OwnedValue>,
+    map: &HashMap<String, OwnedVariant>,
     unit: &UnitInfo,
     timestamp_style: TimestampStyle,
 ) {
@@ -204,7 +204,7 @@ fn fill_active_state(
 
 fn fill_duration(
     unit_writer: &mut UnitInfoWriter,
-    map: &HashMap<String, OwnedValue>,
+    map: &HashMap<String, OwnedVariant>,
     unit: &UnitInfo,
 ) {
     if !systemd::enums::UnitType::Target.eq(&unit.unit_type()) {
@@ -224,7 +224,7 @@ fn fill_duration(
     }
 }
 
-fn get_substate<'a>(map: &'a HashMap<String, OwnedValue>, unit: &UnitInfo) -> Option<&'a str> {
+fn get_substate<'a>(map: &'a HashMap<String, OwnedVariant>, unit: &UnitInfo) -> Option<&'a str> {
     let value = get_value!(map, "SubState", None);
     let value_str = value_to(value);
     unit.set_sub_state(value_str);
@@ -232,7 +232,7 @@ fn get_substate<'a>(map: &'a HashMap<String, OwnedValue>, unit: &UnitInfo) -> Op
 }
 
 fn add_since(
-    map: &HashMap<String, OwnedValue>,
+    map: &HashMap<String, OwnedVariant>,
     state: &str,
     timestamp_style: TimestampStyle,
 ) -> Option<(String, String)> {
@@ -255,7 +255,7 @@ fn add_since(
 
 fn fill_description(
     unit_writer: &mut UnitInfoWriter,
-    map: &HashMap<String, OwnedValue>,
+    map: &HashMap<String, OwnedVariant>,
     unit: &UnitInfo,
 ) {
     let value = get_value!(map, "Description");
@@ -267,7 +267,7 @@ fn fill_description(
 
 fn fill_load_state(
     unit_writer: &mut UnitInfoWriter,
-    map: &HashMap<String, OwnedValue>,
+    map: &HashMap<String, OwnedVariant>,
     unit: &UnitInfo,
 ) {
     let load_state: LoadState = map.get("LoadState").into();
@@ -289,7 +289,7 @@ fn fill_load_state(
             continue;
         };
 
-        if let Value::Str(inner_str) = value as &Value
+        if let Variant::Str(inner_str) = value as &Variant
             && !inner_str.is_empty()
         {
             all_none = false;
@@ -346,7 +346,7 @@ fn write_enabled_state(unit_writer: &mut UnitInfoWriter, state: &str) {
     };
 }
 
-fn fill_follows(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+fn fill_follows(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedVariant>) {
     let value = get_value!(map, "Following");
     let value: &str = value_to(value);
 
@@ -358,7 +358,7 @@ fn fill_follows(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedVal
     fill_row(unit_writer, "Follows:", &s);
 }
 
-fn fill_transient(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+fn fill_transient(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedVariant>) {
     let value = get_value!(map, "Transient");
 
     let transient = clean_message!(bool::try_from(value), "Wrong zvalue conversion");
@@ -369,7 +369,7 @@ fn fill_transient(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedV
     }
 }
 
-fn fill_status(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+fn fill_status(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedVariant>) {
     let value = get_value!(map, "StatusText");
     let value: &str = value_to(value);
 
@@ -381,7 +381,7 @@ fn fill_status(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
     }
 }
 
-fn fill_error(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+fn fill_error(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedVariant>) {
     let status_errno: i32 = value_some(map.get("StatusErrno"));
     let status_bus_error: &str = value_some(map.get("StatusBusError"));
     let status_varlink_error: &str = value_some(map.get("StatusVarlinkError"));
@@ -438,21 +438,21 @@ fn strerror(err_no: i32) -> Option<String> {
     }
 }
 
-fn fill_device(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+fn fill_device(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedVariant>) {
     fill_what_string(unit_writer, map, "SysFSPath", "Device:")
 }
 
-fn fill_where(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+fn fill_where(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedVariant>) {
     fill_what_string(unit_writer, map, "Where", "Where:")
 }
 
-fn fill_what(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+fn fill_what(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedVariant>) {
     fill_what_string(unit_writer, map, "What", "What:")
 }
 
 fn fill_what_string(
     unit_writer: &mut UnitInfoWriter,
-    map: &HashMap<String, OwnedValue>,
+    map: &HashMap<String, OwnedVariant>,
     key: &str,
     key_label: &str,
 ) {
@@ -462,10 +462,10 @@ fn fill_what_string(
     }
 }
 
-fn fill_docs(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+fn fill_docs(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedVariant>) {
     let value = get_value!(map, "Documentation");
 
-    let Value::Array(array) = value as &Value else {
+    let Variant::Array(array) = value as &Variant else {
         return;
     };
 
@@ -493,9 +493,9 @@ fn insert_doc(unit_writer: &mut UnitInfoWriter, doc: &str) {
     }
 }
 
-fn get_array_str<'a>(value: &'a Value<'a>) -> Vec<&'a str> {
-    match value as &Value {
-        Value::Array(a) => {
+fn get_array_str<'a>(value: &'a Variant<'a>) -> Vec<&'a str> {
+    match value as &Variant {
+        Variant::Array(a) => {
             let mut vec = Vec::with_capacity(a.len());
             for mi in a.iter() {
                 vec.push(value_to(mi));
@@ -503,13 +503,13 @@ fn get_array_str<'a>(value: &'a Value<'a>) -> Vec<&'a str> {
             vec
         }
         _ => {
-            warn!("Wrong zvalue conversion: {:?}", value.signature());
+            warn!("Wrong zvalue conversion: {:?}", value.value_signature());
             Vec::new()
         }
     }
 }
 
-fn fill_fd_store(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+fn fill_fd_store(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedVariant>) {
     let n_fd_store: u32 = value_some(map.get("NFileDescriptorStore"));
     let fd_store_max: u32 = value_some(map.get("FileDescriptorStoreMax"));
 
@@ -523,7 +523,7 @@ fn fill_fd_store(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedVa
     unit_writer.insert_grey(&format!(" (limit: {fd_store_max})\n"));
 }
 
-fn fill_memory(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+fn fill_memory(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedVariant>) {
     let memory_current = value_to_def(map.get("MemoryCurrent"), U64MAX);
 
     if memory_current == U64MAX {
@@ -585,7 +585,7 @@ fn fill_memory(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
 
     for (key, value, _, _) in memories.iter_mut() {
         if let Some(bus_value) = map.get(key as &str)
-            && let Value::U64(converted) = bus_value as &Value
+            && let Variant::U64(converted) = bus_value as &Variant
         {
             *value = *converted;
         }
@@ -639,7 +639,7 @@ fn is_limit_max(value: u64) -> bool {
 
 fn fill_main_pid(
     unit_writer: &mut UnitInfoWriter,
-    map: &HashMap<String, OwnedValue>,
+    map: &HashMap<String, OwnedVariant>,
     unit: &UnitInfo,
 ) {
     let main_pid = get_main_pid(map);
@@ -659,16 +659,16 @@ fn fill_main_pid(
     fill_row(unit_writer, "Main PID:", v)
 }
 
-fn get_main_pid(map: &HashMap<String, OwnedValue>) -> u32 {
+fn get_main_pid(map: &HashMap<String, OwnedVariant>) -> u32 {
     let value = get_value!(map, "MainPID", 0);
 
-    if let Value::U32(main_pid) = value as &Value {
+    if let Variant::U32(main_pid) = value as &Variant {
         return *main_pid;
     }
     0
 }
 
-#[derive(Clone, Value, Debug, OwnedValue)]
+#[derive(Clone, Variant, Debug, OwnedVariant)]
 struct ExecStart<'a> {
     path: Str<'a>,
     argv: Vec<Str<'a>>,
@@ -684,22 +684,22 @@ struct ExecStart<'a> {
     status: i32,
 }
 
-// Value: Array(Dynamic { child: Structure(Dynamic { fields: [Str, Array(Dynamic { child: Str }), Bool, U64, U64, U64, U64, U32, I32, I32] }) })
-fn get_exec_full(map: &HashMap<String, OwnedValue>) -> Option<ExecStart<'_>> {
+// Variant: Array(Dynamic { child: Structure(Dynamic { fields: [Str, Array(Dynamic { child: Str }), Bool, U64, U64, U64, U64, U32, I32, I32] }) })
+fn get_exec_full(map: &HashMap<String, OwnedVariant>) -> Option<ExecStart<'_>> {
     let value = get_value!(map, "ExecStart", None);
 
     debug!(
-        "ExecStart Signature {:?} Value: {:?}",
+        "ExecStart Signature {:?} Variant: {:?}",
         value.value_signature(),
         value
     );
 
-    let Value::Array(array) = value as &Value else {
+    let Variant::Array(array) = value as &Variant else {
         return None;
     };
 
     for idx in 0..array.len() {
-        let Ok(Some(val)) = array.get::<Value>(idx) else {
+        let Ok(Some(val)) = array.get::<Variant>(idx) else {
             warn!("Can't get value from array");
             continue;
         };
@@ -712,7 +712,7 @@ fn get_exec_full(map: &HashMap<String, OwnedValue>) -> Option<ExecStart<'_>> {
     None
 }
 
-fn get_exec(map: &HashMap<String, OwnedValue>) -> Option<String> {
+fn get_exec(map: &HashMap<String, OwnedVariant>) -> Option<String> {
     if let Some(exec_full) = get_exec_full(map)
         && let Some((_pre, last)) = exec_full.path.rsplit_once('/')
     {
@@ -721,7 +721,7 @@ fn get_exec(map: &HashMap<String, OwnedValue>) -> Option<String> {
     None
 }
 
-fn fill_cpu(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+fn fill_cpu(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedVariant>) {
     let cpu_usage_nsec = value_to_def(map.get("CPUUsageNSec"), U64MAX);
 
     if cpu_usage_nsec == U64MAX {
@@ -735,7 +735,7 @@ fn fill_cpu(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>)
     fill_row(unit_writer, "CPU:", &value_str)
 }
 
-fn fill_ip(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+fn fill_ip(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedVariant>) {
     let ip_ingress_bytes = value_to_def(map.get("IPIngressBytes"), U64MAX);
     let ip_egress_bytes = value_to_def(map.get("IPEgressBytes"), U64MAX);
 
@@ -754,7 +754,7 @@ fn fill_ip(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) 
     );
 }
 
-fn fill_io(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+fn fill_io(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedVariant>) {
     let io_read_bytes = value_to_def(map.get("IOReadBytes"), U64MAX);
     let io_write_bytes = value_to_def(map.get("IOWriteBytes"), U64MAX);
 
@@ -773,7 +773,7 @@ fn fill_io(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) 
     );
 }
 
-fn fill_tasks(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+fn fill_tasks(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedVariant>) {
     let tasks_current = value_to_def(map.get("TasksCurrent"), U64MAX);
 
     if tasks_current == U64MAX {
@@ -794,10 +794,10 @@ fn fill_tasks(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue
     //fill_row(unit_writer, "Tasks:", &tasks_info)
 }
 
-fn fill_invocation(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+fn fill_invocation(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedVariant>) {
     let value = get_value!(map, "InvocationID");
 
-    let Value::Array(array) = value as &Value else {
+    let Variant::Array(array) = value as &Variant else {
         return;
     };
 
@@ -807,12 +807,12 @@ fn fill_invocation(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, Owned
 
     let mut invocation = String::with_capacity(32);
     for idx in 0..array.len() {
-        let Ok(Some(val)) = array.get::<Value>(idx) else {
+        let Ok(Some(val)) = array.get::<Variant>(idx) else {
             warn!("Can't get value from array at index {idx}");
             continue;
         };
 
-        let Value::U8(converted) = val else {
+        let Variant::U8(converted) = val else {
             warn!("Can't convert value to u8");
             continue;
         };
@@ -825,7 +825,7 @@ fn fill_invocation(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, Owned
     fill_row(unit_writer, "Invocation:", &invocation)
 }
 
-#[derive(Clone, Value, OwnedValue)]
+#[derive(Clone, Variant, OwnedVariant)]
 struct TimersCalendar<'a> {
     timer_base: Str<'a>,
     calendar_specification: Str<'a>,
@@ -834,7 +834,7 @@ struct TimersCalendar<'a> {
 
 fn fill_trigger(
     unit_writer: &mut UnitInfoWriter,
-    map: &HashMap<String, OwnedValue>,
+    map: &HashMap<String, OwnedVariant>,
     unit: &UnitInfo,
     timestamp_style: TimestampStyle,
 ) {
@@ -859,7 +859,7 @@ fn fill_trigger(
     fill_row(unit_writer, "Trigger:", &trigger_msg);
 }
 
-#[derive(Clone, Value, OwnedValue)]
+#[derive(Clone, Variant, OwnedVariant)]
 struct TimersMonotonic<'a> {
     timer_base: Str<'a>,
     usec_offset: u64,
@@ -868,7 +868,7 @@ struct TimersMonotonic<'a> {
 
 fn fill_triggers(
     unit_writer: &mut UnitInfoWriter,
-    map: &HashMap<String, OwnedValue>,
+    map: &HashMap<String, OwnedVariant>,
     level: UnitDBusLevel,
 ) {
     let value = get_value!(map, "Triggers");
@@ -909,7 +909,7 @@ fn fill_triggers(
 //TODO add units states
 fn fill_triggered_by(
     unit_writer: &mut UnitInfoWriter,
-    map: &HashMap<String, OwnedValue>,
+    map: &HashMap<String, OwnedVariant>,
     level: UnitDBusLevel,
 ) {
     let value = get_value!(map, "TriggeredBy");
@@ -943,21 +943,21 @@ fn fill_triggered_by(
     }
 }
 
-#[derive(Value, OwnedValue)]
+#[derive(Variant, OwnedVariant)]
 struct ListenStruct<'a> {
     listen_type: Str<'a>,
     path: Str<'a>,
 }
 
-fn fill_listen(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+fn fill_listen(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedVariant>) {
     let value = get_value!(map, "Listen");
 
-    let Value::Array(array) = value as &Value else {
+    let Variant::Array(array) = value as &Variant else {
         return;
     };
 
     for i in 0..array.len() {
-        let Ok(Some(val_listen_stc)) = array.get::<Value>(i) else {
+        let Ok(Some(val_listen_stc)) = array.get::<Variant>(i) else {
             continue;
         };
 
@@ -971,7 +971,7 @@ fn fill_listen(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
     }
 }
 
-fn fill_accept(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValue>) {
+fn fill_accept(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedVariant>) {
     let accept = value_some(map.get("Accept"));
 
     if accept {
@@ -989,7 +989,7 @@ fn fill_accept(unit_writer: &mut UnitInfoWriter, map: &HashMap<String, OwnedValu
 
 fn fill_control_group(
     unit_writer: &mut UnitInfoWriter,
-    map: &HashMap<String, OwnedValue>,
+    map: &HashMap<String, OwnedVariant>,
     unit: &UnitInfo,
 ) {
     let value = get_value!(map, "ControlGroup");
@@ -1071,10 +1071,10 @@ fn print_process(
 const SUFFIX: [&str; 9] = ["B", "K", "M", "G", "T", "P", "E", "Z", "Y"];
 const UNIT: u64 = 1024;
 
-fn value_to<'a, 'b, T>(value: &'a Value<'b>) -> T
+fn value_to<'a, 'b, T>(value: &'a Variant<'b>) -> T
 where
-    T: std::default::Default + std::convert::TryFrom<&'a zvariant::Value<'b>>,
-    <T as TryFrom<&'a Value<'b>>>::Error: std::fmt::Debug,
+    T: std::default::Default + std::convert::TryFrom<&'a zbus::Variant<'b>>,
+    <T as TryFrom<&'a Variant<'b>>>::Error: std::fmt::Debug,
 {
     value
         .try_into()
@@ -1082,10 +1082,10 @@ where
         .unwrap_or_default()
 }
 
-fn value_some<'a, T>(value: Option<&'a OwnedValue>) -> T
+fn value_some<'a, T>(value: Option<&'a OwnedVariant>) -> T
 where
-    T: std::default::Default + std::convert::TryFrom<&'a zvariant::OwnedValue>,
-    <T as TryFrom<&'a OwnedValue>>::Error: std::fmt::Debug,
+    T: std::default::Default + std::convert::TryFrom<&'a zbus::OwnedVariant>,
+    <T as TryFrom<&'a OwnedVariant>>::Error: std::fmt::Debug,
 {
     value
         .and_then(|v| {
@@ -1096,10 +1096,10 @@ where
         .unwrap_or_default()
 }
 
-fn value_to_def<'a, T>(value: Option<&'a OwnedValue>, def: T) -> T
+fn value_to_def<'a, T>(value: Option<&'a OwnedVariant>, def: T) -> T
 where
-    T: std::default::Default + std::convert::TryFrom<&'a zvariant::OwnedValue>,
-    <T as TryFrom<&'a OwnedValue>>::Error: std::fmt::Debug,
+    T: std::default::Default + std::convert::TryFrom<&'a zbus::OwnedVariant>,
+    <T as TryFrom<&'a OwnedVariant>>::Error: std::fmt::Debug,
 {
     value
         .and_then(|v| {

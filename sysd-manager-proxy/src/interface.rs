@@ -2,13 +2,13 @@ use base::proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse};
 use tokio::{sync::OnceCell, time::Instant};
 use tracing::{debug, info, warn};
 use zbus::{
-    Connection, ObjectServer, interface, message::Header, object_server::SignalEmitter,
-    zvariant::OwnedObjectPath,
+    Connection, ObjectServer, OwnedObjectPath, interface, message::Header,
+    object_server::SignalEmitter,
 };
 
 use crate::{SysDManagerProxy, file, sysdcom};
 
-#[interface(name = "io.github.plrigaux.SysDManager", introspection_docs = true)]
+#[interface(name = "io.github.plrigaux.SysDManager")]
 impl SysDManagerProxy {
     pub async fn create_drop_in(
         &mut self,

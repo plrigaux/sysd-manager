@@ -1,7 +1,6 @@
 use crate::data::{PRIMARY, SYSD_SOCKET_LISTEN_IDX, UnitInfo, convert_to_string};
-
 use glib::{self, object::ObjectExt, subclass::types::ObjectSubclassIsExt};
-use zvariant::OwnedValue;
+use zbus::OwnedVariant;
 
 glib::wrapper! {
     pub struct SocketUnitInfo(ObjectSubclass<imp::SocketUnitInfoImpl>)
@@ -35,7 +34,7 @@ impl SocketUnitInfo {
     }
 
     pub fn display_custom_property(&self, key: glib::Quark) -> Option<String> {
-        unsafe { self.qdata::<OwnedValue>(key) }
+        unsafe { self.qdata::<OwnedVariant>(key) }
             .map(|value_ptr| unsafe { value_ptr.as_ref() })
             .and_then(|value| convert_to_string(value))
     }

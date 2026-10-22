@@ -8,7 +8,6 @@ use crate::{
 use futures_util::TryStreamExt;
 use test_base::{TEST_SERVICE, init_logs};
 use zbus::MessageStream;
-use zvariant::Value;
 
 #[ignore = "need a connection to a service"]
 #[test]
@@ -60,6 +59,20 @@ async fn test_list_unit_files_remote() -> Result<(), SystemdErrors> {
         debug!("{idx} - {}", unit_file.full_name);
         debug!("{}", unit_file.file_path);
     }
+
+    Ok(())
+}
+
+#[ignore = "need a connection to a service"]
+#[tokio::test]
+async fn test_system_connection() -> Result<(), SystemdErrors> {
+    init_logs();
+
+    let level = UnitDBusLevel::System;
+
+    let conn = get_connection(level).await;
+
+    let _conn = conn?;
 
     Ok(())
 }
@@ -179,7 +192,7 @@ pub async fn test_get_unit_path() -> Result<(), SystemdErrors> {
 
     let body = message.body();
 
-    let z: zvariant::ObjectPath = body.deserialize()?;
+    let z: zbus::ObjectPath = body.deserialize()?;
     //let z :String = body.deserialize()?;
 
     info!("obj {:?}", z.as_str());
@@ -499,8 +512,8 @@ async fn test_get_properties() -> Result<(), SystemdErrors> {
     let object_path = unit_dbus_path_from_name(TEST_SERVICE);
     debug!("Unit path: {object_path}");
     let properties_proxy = ZPropertiesProxy::builder(&connection)
-        .destination(DESTINATION_SYSTEMD)?
-        .path(object_path)?
+        .destination(DESTINATION_SYSTEMD)
+        .path(object_path)
         // .interface(INTERFACE_SYSTEMD_UNIT)?
         //  .interface(UnitType::Service.interface())?
         .build()
@@ -510,10 +523,10 @@ async fn test_get_properties() -> Result<(), SystemdErrors> {
 
     //let unit_interface_name = InterfaceName::try_from(INTERFACE_SYSTEMD_UNIT).unwrap();
 
-    let mut unit_properties: HashMap<String, OwnedValue> =
+    let mut unit_properties: HashMap<String, OwnedVariant> =
         properties_proxy.get_all(INTERFACE_SYSTEMD_UNIT).await?;
 
-    let properties: HashMap<String, OwnedValue> =
+    let properties: HashMap<String, OwnedVariant> =
         properties_proxy.get_all(INTERFACE_SYSTEMD_UNIT).await?;
 
     info!("Properties size {}", properties.len());
@@ -593,10 +606,10 @@ where
     T: serde::ser::Serialize + DynamicType,
     U: std::fmt::Debug,
 {
-    let message = Message::method_call(path, method)?
-        .with_flags(Flags::AllowInteractiveAuth)?
-        .destination(DESTINATION_SYSTEMD)?
-        .interface(INTERFACE_SYSTEMD_UNIT)?
+    let message = Message::method_call(path, method)
+        .with_flags(Flags::ALLOW_INTERACTIVE_AUTH)
+        .destination(DESTINATION_SYSTEMD)
+        .interface(INTERFACE_SYSTEMD_UNIT)
         .build(body)?;
 
     let connection = get_connection(level).await?;
@@ -718,7 +731,7 @@ async fn test_introspect() -> Result<(), SystemdErrors> {
 
         info!("signature {:?}", body.signature());
 
-        //let z: Vec<(String, OwnedValue)> = body.deserialize()?;
+        //let z: Vec<(String, OwnedVariant)> = body.deserialize()?;
 
         let z: String = body.deserialize()?;
         //let z :String = body.deserialize()?;
@@ -856,10 +869,10 @@ async fn test_get_properties2() -> Result<(), SystemdErrors> {
 
     info!("signature {:?}", body.signature().to_string());
 
-    //let z: Vec<(String, OwnedValue)> = body.deserialize()?;
+    //let z: Vec<(String, OwnedVariant)> = body.deserialize()?;
 
-    //let z: OwnedValue = body.deserialize()?;
-    let z: Value = body.deserialize()?;
+    //let z: OwnedVariant = body.deserialize()?;
+    let z: zbus::Variant = body.deserialize()?;
     //let z :String = body.deserialize()?;
 
     info!("obj {:?}", z);

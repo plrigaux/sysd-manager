@@ -1724,7 +1724,7 @@ impl UnitListPanelImp {
                                 == SOCKET_LISTEN_QUARK
                                     .get_or_init(|| SysdColumn::SocketListen.generate_quark())
                             {
-                                let listens = unit.insert_socket_listen(quark, owned_value);
+                                let listens = unit.insert_socket_listen(quark, owned_value.into());
                                 for idx in 1..listens {
                                     //Frankeinstein
                                     let usocket = SocketUnitInfo::from_unit_socket(unit, idx);
@@ -1733,9 +1733,9 @@ impl UnitListPanelImp {
                             } else if &quark
                                 == PATH_QUARK.get_or_init(|| SysdColumn::Path.generate_quark())
                             {
-                                let _listens = unit.insert_socket_listen(quark, owned_value);
+                                let _listens = unit.insert_socket_listen(quark, owned_value.into());
                             } else {
-                                unit.insert_unit_property_value(quark, owned_value)
+                                unit.insert_unit_property_value(quark, owned_value.into())
                             }
                         }
                     }
@@ -2216,13 +2216,13 @@ async fn send_unit_list(
     for handle in handles {
         let Ok(r) = handle
             .await
-            .inspect_err(|err| warn!("Unit List Join Error: {err:?}"))
+            .inspect_err(|err| error!("Unit List Join Error: {err:?}"))
         else {
             error = true;
             continue;
         };
 
-        let Ok(x) = r.inspect_err(|err| warn!("Unit List Call Error: {err:?}")) else {
+        let Ok(x) = r.inspect_err(|err| error!("Unit List Call Error: {err:?}")) else {
             error = true;
             continue;
         };

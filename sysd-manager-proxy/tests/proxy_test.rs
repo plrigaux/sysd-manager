@@ -38,7 +38,7 @@ async fn system() -> zbus::Result<zbus::Connection> {
 async fn system_proxy<'a>() -> zbus::Result<SysDProxyTesterProxy<'a>> {
     let conn = system().await?;
     let proxy = SysDProxyTesterProxy::builder(&conn)
-        .destination(DBUS_DESTINATION_DEV)?
+        .destination(DBUS_DESTINATION_DEV)
         .build()
         .await?;
 

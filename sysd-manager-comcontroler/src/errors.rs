@@ -36,7 +36,7 @@ pub enum SystemdErrors {
     ZNoSuchUnitProxy(String, String),
     ZJobTypeNotApplicable(String, String),
     ZUnitMasked(String, String),
-    ZVariantError(zvariant::Error),
+    ZVariantError(zbus::Error),
     ZBusFdoError(zbus::fdo::Error),
     ZFdoServiceUnknown(String),
     ProxyUnknown(String),
@@ -129,7 +129,7 @@ impl From<(zbus::Error, &str)> for SystemdErrors {
 
         match zb_error {
             zbus::Error::MethodError(owned_error_name, ref msg, _message) => {
-                let err_code = zvariant::Str::from(owned_error_name);
+                let err_code = zbus::Str::from(owned_error_name);
 
                 let err_code = err_code.as_str();
                 let message = msg.clone().unwrap_or_default();
@@ -213,12 +213,6 @@ impl From<Box<dyn std::error::Error>> for SystemdErrors {
     fn from(error: Box<dyn std::error::Error>) -> Self {
         let msg = format!("{error}");
         SystemdErrors::JournalError(msg)
-    }
-}
-
-impl From<zvariant::Error> for SystemdErrors {
-    fn from(value: zvariant::Error) -> Self {
-        SystemdErrors::ZVariantError(value)
     }
 }
 

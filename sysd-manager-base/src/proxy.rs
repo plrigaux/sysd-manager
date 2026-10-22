@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use zvariant::{OwnedObjectPath, Type};
+use zbus::{OwnedObjectPath, Type};
 
 #[derive(Debug, Type, Serialize, Deserialize)]
 pub struct DisEnAbleUnitFiles {

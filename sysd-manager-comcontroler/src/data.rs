@@ -8,7 +8,7 @@ use glib::{self, object::ObjectExt, subclass::types::ObjectSubclassIsExt};
 use serde::Deserialize;
 use std::{cmp::Ordering, fmt::Debug};
 use tracing::warn;
-use zvariant::{OwnedObjectPath, OwnedValue, Value};
+use zbus::{OwnedObjectPath, OwnedVariant, Variant};
 
 pub const SYSD_SOCKET_LISTEN_IDX: &str = "sysdSocketListenIdx";
 pub const PRIMARY: &str = "primary";
@@ -65,13 +65,13 @@ impl UnitInfo {
         self.imp().need_to_be_completed()
     }
 
-    pub fn insert_socket_listen(&self, quark: glib::Quark, value: OwnedValue) -> usize {
+    pub fn insert_socket_listen(&self, quark: glib::Quark, value: Variant) -> usize {
         let mut alen = 0;
-        if let Value::Array(array) = &value as &Value {
+        if let Variant::Array(array) = &value as &Variant {
             let mut new_array = Vec::with_capacity(array.len());
 
             for s in array.iter() {
-                if let Value::Structure(structure) = s {
+                if let Variant::Structure(structure) = s {
                     let f = structure.fields();
                     if f.len() == 2 {
                         let f0: String = f[0]
@@ -95,29 +95,29 @@ impl UnitInfo {
         alen
     }
 
-    pub fn insert_unit_property_value(&self, quark: glib::Quark, value: OwnedValue) {
-        //let value_ref = &value as &Value;
-        match &value as &Value {
-            Value::Bool(b) => unsafe { self.set_qdata(quark, *b) },
-            Value::U8(i) => unsafe { self.set_qdata(quark, *i) },
-            Value::I16(i) => unsafe { self.set_qdata(quark, *i) },
-            Value::U16(i) => unsafe { self.set_qdata(quark, *i) },
-            Value::I32(i) => unsafe { self.set_qdata(quark, *i) },
-            Value::U32(i) => unsafe { self.set_qdata(quark, *i) },
-            Value::I64(i) => unsafe { self.set_qdata(quark, *i) },
-            Value::U64(i) => unsafe { self.set_qdata(quark, *i) },
-            Value::F64(i) => unsafe { self.set_qdata(quark, *i) },
-            Value::Str(s) => {
+    pub fn insert_unit_property_value(&self, quark: glib::Quark, value: Variant) {
+        //let value_ref = &value as &Variant;
+        match &value as &Variant {
+            Variant::Bool(b) => unsafe { self.set_qdata(quark, *b) },
+            Variant::U8(i) => unsafe { self.set_qdata(quark, *i) },
+            Variant::I16(i) => unsafe { self.set_qdata(quark, *i) },
+            Variant::U16(i) => unsafe { self.set_qdata(quark, *i) },
+            Variant::I32(i) => unsafe { self.set_qdata(quark, *i) },
+            Variant::U32(i) => unsafe { self.set_qdata(quark, *i) },
+            Variant::I64(i) => unsafe { self.set_qdata(quark, *i) },
+            Variant::U64(i) => unsafe { self.set_qdata(quark, *i) },
+            Variant::F64(i) => unsafe { self.set_qdata(quark, *i) },
+            Variant::Str(s) => {
                 if s.is_empty() {
                     unsafe { self.steal_qdata::<String>(quark) };
                 } else {
                     unsafe { self.set_qdata(quark, s.to_string()) };
                 }
             }
-            Value::Signature(s) => unsafe { self.set_qdata(quark, s.to_string()) },
-            Value::ObjectPath(op) => unsafe { self.set_qdata(quark, op.to_string()) },
-            Value::Value(val) => unsafe { self.set_qdata(quark, val.to_string()) },
-            Value::Array(array) => {
+            Variant::Signature(s) => unsafe { self.set_qdata(quark, s.to_string()) },
+            Variant::ObjectPath(op) => unsafe { self.set_qdata(quark, op.to_string()) },
+            Variant::Variant(val) => unsafe { self.set_qdata(quark, val.to_string()) },
+            Variant::Array(array) => {
                 if array.is_empty() {
                     unsafe { self.steal_qdata::<String>(quark) };
                 } else {
@@ -136,7 +136,7 @@ impl UnitInfo {
                     unsafe { self.set_qdata(quark, d_str) };
                 }
             }
-            Value::Dict(d) => {
+            Variant::Dict(d) => {
                 let mut it = d.iter().peekable();
                 if it.peek().is_none() {
                     unsafe { self.steal_qdata::<String>(quark) };
@@ -158,7 +158,7 @@ impl UnitInfo {
                     unsafe { self.set_qdata(quark, d_str) };
                 }
             }
-            Value::Structure(stc) => {
+            Variant::Structure(stc) => {
                 let mut it = stc.fields().iter().peekable();
 
                 if it.peek().is_none() {
@@ -173,8 +173,8 @@ impl UnitInfo {
                     unsafe { self.set_qdata(quark, d_str) };
                 }
             }
-            Value::Fd(fd) => unsafe { self.set_qdata(quark, fd.to_string()) },
-            //Value::Maybe(maybe) => (maybe.to_string(), false),
+            Variant::Fd(fd) => unsafe { self.set_qdata(quark, fd.to_string()) },
+            //Variant::Maybe(maybe) => (maybe.to_string(), false),
         }
     }
 
@@ -192,7 +192,7 @@ impl UnitInfo {
     }
 
     pub fn display_custom_property(&self, key: glib::Quark) -> Option<String> {
-        unsafe { self.qdata::<OwnedValue>(key) }
+        unsafe { self.qdata::<Variant>(key) }
             .map(|value_ptr| unsafe { value_ptr.as_ref() })
             .and_then(|value| convert_to_string(value))
     }
@@ -452,7 +452,7 @@ impl PartialOrd for UnitProcess {
     }
 }
 
-#[derive(Deserialize, zvariant::Type, PartialEq, Debug)]
+#[derive(Deserialize, zbus::Type, PartialEq, Debug)]
 pub struct ListedLoadedUnit {
     pub primary_unit_name: String,
     pub description: String,
@@ -468,22 +468,22 @@ pub struct ListedLoadedUnit {
     pub job_object_path: OwnedObjectPath,
 }
 
-pub fn convert_to_string(value: &Value) -> Option<String> {
+pub fn convert_to_string(value: &Variant) -> Option<String> {
     match value {
-        Value::Bool(b) => Some(b.to_string()),
-        Value::U8(i) => Some(i.to_string()),
-        Value::I16(i) => Some(i.to_string()),
-        Value::U16(i) => Some(i.to_string()),
-        Value::I32(i) => Some(i.to_string()),
-        Value::U32(i) => Some(i.to_string()),
-        Value::I64(i) => Some(i.to_string()),
-        Value::U64(i) => Some(i.to_string()),
-        Value::F64(i) => Some(i.to_string()),
-        Value::Str(s) => Some(s.to_string()),
-        Value::Signature(s) => Some(s.to_string()),
-        Value::ObjectPath(op) => Some(op.to_string()),
-        Value::Value(v) => Some(v.to_string()),
-        Value::Array(a) => {
+        Variant::Bool(b) => Some(b.to_string()),
+        Variant::U8(i) => Some(i.to_string()),
+        Variant::I16(i) => Some(i.to_string()),
+        Variant::U16(i) => Some(i.to_string()),
+        Variant::I32(i) => Some(i.to_string()),
+        Variant::U32(i) => Some(i.to_string()),
+        Variant::I64(i) => Some(i.to_string()),
+        Variant::U64(i) => Some(i.to_string()),
+        Variant::F64(i) => Some(i.to_string()),
+        Variant::Str(s) => Some(s.to_string()),
+        Variant::Signature(s) => Some(s.to_string()),
+        Variant::ObjectPath(op) => Some(op.to_string()),
+        Variant::Variant(v) => Some(v.to_string()),
+        Variant::Array(a) => {
             if a.is_empty() {
                 None
             } else {
@@ -502,7 +502,7 @@ pub fn convert_to_string(value: &Value) -> Option<String> {
                 Some(d_str)
             }
         }
-        Value::Dict(d) => {
+        Variant::Dict(d) => {
             let mut it = d.iter().peekable();
             if it.peek().is_none() {
                 None
@@ -523,7 +523,7 @@ pub fn convert_to_string(value: &Value) -> Option<String> {
                 Some(d_str)
             }
         }
-        Value::Structure(stc) => {
+        Variant::Structure(stc) => {
             let mut it = stc.fields().iter().peekable();
 
             if it.peek().is_none() {
@@ -544,8 +544,8 @@ pub fn convert_to_string(value: &Value) -> Option<String> {
                 Some(d_str)
             }
         }
-        Value::Fd(fd) => Some(fd.to_string()),
-        //Value::Maybe(maybe) => (maybe.to_string(), false),
+        Variant::Fd(fd) => Some(fd.to_string()),
+        //Variant::Maybe(maybe) => (maybe.to_string(), false),
     }
 }
 
@@ -558,5 +558,5 @@ pub enum UnitPropertySetter {
     FragmentPath(String),
     UnitFilePreset(Preset),
     SubState(String),
-    Custom(glib::Quark, OwnedValue),
+    Custom(glib::Quark, OwnedVariant),
 }
