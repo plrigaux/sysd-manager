@@ -316,7 +316,7 @@ impl TextSearchEntryImp {
 
         let borrow = self.regex.borrow();
         let Some(re) = borrow.as_ref() else {
-            warn!("Find in text has no pattern");
+            debug!("Find in text has no pattern");
             return;
         };
 

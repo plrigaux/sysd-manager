@@ -823,8 +823,6 @@ pub fn get_unit_journal_continuous(
             err.type_id(),
             err
         );
-    } else {
-        info!("Ok journal tail thread finished");
     }
 }
 

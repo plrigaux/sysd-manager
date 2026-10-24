@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 1.0.3 -->
+<!-- Created with Cambalache 1.2.0 -->
 <interface>
   <!-- interface-name preferences.ui -->
   <requires lib="gtk" version="4.18"/>
@@ -83,7 +83,6 @@ You can set the application's Dbus level to &lt;u&gt;System&lt;/u&gt; if you wan
                 <child>
                   <object class="GtkButton" id="show_customize_button">
                     <property name="action-name">app.properties_selector_general</property>
-                    <property name="label" translatable="yes" context="unit search"/>
                     <property name="valign">baseline-center</property>
                     <child>
                       <object class="AdwButtonContent">

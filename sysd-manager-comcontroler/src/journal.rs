@@ -9,7 +9,7 @@ use crate::{
 };
 use base::enums::UnitDBusLevel;
 use chrono::{Local, Utc};
-use std::sync::mpsc::TryRecvError;
+use std::sync::mpsc::{self, TryRecvError};
 use sysd::{Journal, id128::Id128, journal::OpenOptions};
 use tracing::{debug, info, trace, warn};
 
@@ -39,11 +39,11 @@ pub(super) fn get_unit_journal_events(
     primary_name: String,
     level: UnitDBusLevel,
     boot_filter: BootFilter,
-    range: EventRange,
+    event_range: EventRange,
     message_max_char: usize,
     timestamp_style: TimestampStyle,
 ) -> Result<JournalEventChunk, SystemdErrors> {
-    let mut out_list = JournalEventChunk::new(range.batch_size + 10, range.what_grab);
+    let mut out_list = JournalEventChunk::new(event_range.batch_size + 10, event_range.what_grab);
 
     info!("Get journal Event {primary_name:?}");
     let mut journal_reader = create_journal_reader(&primary_name, level, boot_filter)?;
@@ -55,12 +55,12 @@ pub(super) fn get_unit_journal_events(
     let mut last_boot_id = String::new();
 
     //Position the indexer
-    position_crawler(&mut journal_reader, &range)?;
+    position_crawler(&mut journal_reader, &event_range)?;
 
     let mut last_time_in_usec: u64 = 0;
 
     loop {
-        if next(&mut journal_reader, range.what_grab)? == 0 {
+        if next(&mut journal_reader, event_range.what_grab)? == 0 {
             out_list.set_info(JournalEventChunkInfo::NoMore);
             break;
         }
@@ -68,11 +68,11 @@ pub(super) fn get_unit_journal_events(
         let time_in_usec = journal_reader.timestamp_usec()?;
 
         //if == 0 no limit
-        if range.batch_size != 0 && out_list.len() >= range.batch_size {
+        if event_range.batch_size != 0 && out_list.len() >= event_range.batch_size {
             info!(
                 "Journal log events  count ({}) reached the {} limit!",
                 out_list.len(),
-                range.batch_size
+                event_range.batch_size
             );
 
             //Ensure the time to be different
@@ -122,21 +122,28 @@ pub(super) fn get_unit_journal_events(
     Ok(out_list)
 }
 
-fn position_crawler(journal_reader: &mut Journal, range: &EventRange) -> Result<(), SystemdErrors> {
-    match range.what_grab {
+fn position_crawler(
+    journal_reader: &mut Journal,
+    event_range: &EventRange,
+) -> Result<(), SystemdErrors> {
+    match event_range.what_grab {
         WhatGrab::Newer => {
-            if let Some(newest_events_time) = range.newest_events_time {
+            if let Some(newest_events_time) = event_range.newest_events_time {
                 journal_reader.seek_realtime_usec(newest_events_time + 1)?;
             } else {
-                //Go to the end
-                // journal_reader.seek_tail()?;
-                journal_reader.seek_head()?;
-                //Go back to batch size
-                journal_reader.previous_skip(range.batch_size as u64)?;
+                if event_range.follow {
+                    //may be used to seek to the end of the journal, i.e. the position after the most recent available entry.
+                    journal_reader.seek_tail()?;
+                    //Go back to batch size
+                    journal_reader.previous_skip(event_range.batch_size as u64)?;
+                } else {
+                    // seeks to the beginning of the journal, i.e. to the position before the oldest available entry.
+                    journal_reader.seek_head()?;
+                }
             }
         }
         WhatGrab::Older => {
-            if let Some(oldest_events_time) = range.oldest_events_time {
+            if let Some(oldest_events_time) = event_range.oldest_events_time {
                 journal_reader.seek_realtime_usec(oldest_events_time - 1)?;
             } else {
                 journal_reader.seek_tail()?;
@@ -146,16 +153,35 @@ fn position_crawler(journal_reader: &mut Journal, range: &EventRange) -> Result<
     Ok(())
 }
 
+fn position_crawler_continuous(
+    journal_reader: &mut Journal,
+    event_range: &EventRange,
+) -> Result<u64, SystemdErrors> {
+    // dbg!(event_range);
+    let successfully_moved = if let Some(newest_events_time) = event_range.newest_events_time {
+        journal_reader.seek_tail()?;
+        let successfully_moved = journal_reader.previous()?;
+        journal_reader.seek_realtime_usec(newest_events_time + 1)?;
+        successfully_moved
+    } else {
+        //may be used to seek to the end of the journal, i.e. the position after the most recent available entry.
+        journal_reader.seek_tail()?;
+        // Get the previous entry to properly position the cursor at the very end
+        journal_reader.previous()?
+    };
+    Ok(successfully_moved)
+}
+
 #[allow(clippy::too_many_arguments)]
 pub fn get_unit_journal_events_continuous(
     unit_name: String,
     bus_level: UnitDBusLevel,
     range: EventRange,
-    journal_continuous_receiver: std::sync::mpsc::Receiver<()>,
-    sender: std::sync::mpsc::Sender<JournalEventChunk>,
+    journal_canceller_receiver: mpsc::Receiver<()>,
+    sender: mpsc::Sender<JournalEventChunk>,
     message_max_char: usize,
     timestamp_style: TimestampStyle,
-    check_for_new_journal_entry: fn(),
+    check_for_new_journal_entry_func: fn(),
 ) -> Result<(), SystemdErrors> {
     info!("Journal Continuous");
     let mut journal_reader = create_journal_reader(&unit_name, bus_level, BootFilter::Current)?;
@@ -164,15 +190,15 @@ pub fn get_unit_journal_events_continuous(
     let default_priority = "7".to_string();
 
     //Position the indexer
-    position_crawler(&mut journal_reader, &range)?;
+    let mut successfully_moved = position_crawler_continuous(&mut journal_reader, &range)?;
 
     let mut out_list = JournalEventChunk::new_info(8, JournalEventChunkInfo::Tail, range.what_grab);
 
     loop {
         let mut idx = 0;
         loop {
-            debug!("loop {} {:?}", unit_name, range.what_grab);
-            match journal_continuous_receiver.try_recv() {
+            debug!("journal loop {} {:?}", unit_name, range.what_grab);
+            match journal_canceller_receiver.try_recv() {
                 Ok(_) | Err(TryRecvError::Disconnected) => {
                     info!("Terminating journal loop for {unit_name:?}.");
                     return Ok(());
@@ -180,17 +206,19 @@ pub fn get_unit_journal_events_continuous(
                 Err(TryRecvError::Empty) => {}
             }
 
-            if next(&mut journal_reader, range.what_grab)? == 0 {
+            let nb = next(&mut journal_reader, range.what_grab)?;
+            if nb == 0 {
                 if !out_list.is_empty() {
                     if let Err(send_error) = sender.send(out_list) {
-                        warn!("Send Error: {send_error:?}")
+                        warn!("Send Error: {send_error:?}");
+                        return Err("Journal send Error".into());
                     }
 
                     glib::source::idle_add(move || {
-                        check_for_new_journal_entry(); //TODO validate if best
-
+                        check_for_new_journal_entry_func(); //TODO validate if best ways? Does it works with tokio?
                         glib::ControlFlow::Break
                     });
+
                     out_list = JournalEventChunk::new_info(
                         8,
                         JournalEventChunkInfo::Tail,
@@ -204,14 +232,23 @@ pub fn get_unit_journal_events_continuous(
                         idx += 1;
                     }
                     sysd::JournalWaitResult::Append => {
-                        debug!("New Results")
+                        debug!("Journal Wait New Results");
+
+                        if successfully_moved == 0 {
+                            println!("truy position ");
+                            journal_reader.seek_head()?;
+                            successfully_moved = 1;
+                        }
                     }
                     sysd::JournalWaitResult::Invalidate => {
-                        debug!("Invalidate")
+                        debug!("Invalidate");
+                        // Journal rotated; reset to tail or head depending on your needs
+                        journal_reader.seek_tail()?;
+                        journal_reader.previous()?;
                     }
                 }
             } else {
-                debug!("break");
+                debug!("{} new journal entry", nb);
                 break;
             }
         }
