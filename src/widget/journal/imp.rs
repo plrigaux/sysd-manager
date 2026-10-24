@@ -43,6 +43,7 @@ use gtk::{
 };
 use std::{
     cell::{Cell, OnceCell, RefCell},
+    sync::mpsc,
     thread,
 };
 use systemd::journal_data::BOOT_IDX;
@@ -129,6 +130,12 @@ pub struct JournalPanelImp {
     #[template_child]
     journal_text_view: TemplateChild<gtk::TextView>,
 
+    #[template_child]
+    up_but: TemplateChild<gtk::Button>,
+
+    #[template_child]
+    down_but: TemplateChild<gtk::Button>,
+
     text_search_entry: OnceCell<TextSearchEntry>,
 
     visible_on_page: Cell<bool>,
@@ -138,7 +145,7 @@ pub struct JournalPanelImp {
 
     boot_filter: RefCell<BootFilter>,
 
-    time_old_new: Cell<Option<(u64, u64)>>,
+    journal_event_times: Cell<Option<(u64, u64)>>,
 
     //old_to_recent_order: Cell<bool>,
     display_order: Cell<JournalDisplayOrder>,
@@ -146,6 +153,9 @@ pub struct JournalPanelImp {
     // settings: OnceCell<gio::Settings>,
     #[property(get, set= Self::set_wrap_word)]
     wrap_word: Cell<bool>,
+
+    event_added: Cell<bool>,
+    vupper: Cell<f64>,
 }
 
 #[gtk::template_callbacks]
@@ -327,19 +337,11 @@ impl JournalPanelImp {
         info!("journal_boot_id_entry_activated");
         self.set_boot_id_style();
     }
-
-    /*     #[template_callback]
-    fn journal_boot_id_entry_apply(&self, _entry: adw::EntryRow) {
-        info!("journal_boot_id_entry_apply");
-        self.set_boot_id_style();
-    } */
 }
 
 impl JournalPanelImp {
     pub fn set_text_search_entry(&self, text_search_entry: &TextSearchEntry) {
         let _ = self.text_search_entry.set(text_search_entry.clone());
-
-        // text_search_entry.set_text_view(self.unit_status_textview.as_ref());
     }
 
     pub(super) fn register(&self, app_window: &AppWindow) {
@@ -364,6 +366,7 @@ impl JournalPanelImp {
     }
 
     pub(crate) fn set_unit(&self, unit: Option<&UnitInfo>) {
+        self.set_or_send_cancelling(None);
         let unit = match unit {
             Some(u) => u,
             None => {
@@ -380,16 +383,18 @@ impl JournalPanelImp {
         //Assume that the ne unit is not None
         if old_unit.is_none_or(|o_unit| o_unit.primary() != unit.primary()) {
             self.new_text_view();
-            self.set_or_send_cancelling(None);
             self.update_journal_according_to_display_order(); //TODO CHECK if needed to be include tin if clause 
         }
     }
 
-    fn update_journal_according_to_display_order(&self) {
-        let grabber = match self.display_order.get() {
+    fn what_grab(&self) -> WhatGrab {
+        match self.display_order.get() {
             JournalDisplayOrder::Ascending => WhatGrab::Older,
             JournalDisplayOrder::Descending => WhatGrab::Newer,
-        };
+        }
+    }
+    fn update_journal_according_to_display_order(&self) {
+        let grabber = self.what_grab();
 
         self.update_journal(grabber);
     }
@@ -404,7 +409,7 @@ impl JournalPanelImp {
 
         let sender_op = self.cancel_continuous_sender.borrow();
         if sender_op.is_some() && grabbing == WhatGrab::Newer {
-            info!("Under tail management for newer event --> quit");
+            info!("Under tail (follow) management for newer event --> quit");
             return;
         }
 
@@ -425,21 +430,22 @@ impl JournalPanelImp {
         //let most_recent_time = self.most_recent_time.get();
 
         let (oldest_event_time, newest_event_time) = self
-            .time_old_new
+            .journal_event_times
             .get()
             .map_or_else(|| (None, None), |(a, b)| (Some(a), Some(b)));
 
         debug!("Call from time old {oldest_event_time:?} new {newest_event_time:?}");
 
-        let range = EventRange::new(
+        let event_range = EventRange::new(
             grabbing,
             journal_max_events_batch_size,
             oldest_event_time,
             newest_event_time,
+            self.follow_check.is_active(),
         );
 
         info!(
-            "Journal unit {:?} boot filter \"{boot_filter:?}\" Range {range:#?}",
+            "Journal unit {:?} boot filter \"{boot_filter:?}\" Range {event_range:#?}",
             unit.primary()
         );
 
@@ -463,7 +469,7 @@ impl JournalPanelImp {
                     primary_name,
                     level,
                     boot_filter,
-                    range,
+                    event_range,
                     message_max_char,
                     timestamp_style,
                 ) {
@@ -509,68 +515,85 @@ impl JournalPanelImp {
         }
     }
 
-    pub fn append_journal_event(&self, journal_event: JournalEventChunk) {
-        self.handle_journal_events(&journal_event);
-    }
-
-    fn handle_journal_events(&self, journal_events: &JournalEventChunk) {
+    pub(super) fn handle_journal_events(&self, journal_events: &JournalEventChunk) {
         let text_buffer = self.journal_text_view.buffer();
 
         let display_order = self.display_order.get();
 
-        let times = journal_events.times();
-        self.set_times(times);
+        let Some((new_small, new_big)) = journal_events.times() else {
+            warn!("Empty Journal Chunk");
+            return;
+        };
 
         let what_grab = journal_events.what_grab;
 
-        let (text_iter, journal_events_iter): (
+        if let Some((old_small, old_big)) = self.journal_event_times.get() {
+            if what_grab == WhatGrab::Newer && old_big > new_small {
+                warn!("OB {old_big} > NS {new_small}");
+            }
+            if what_grab == WhatGrab::Older && old_small < new_big {
+                warn!("OS {old_small} < NB {new_big}");
+            }
+        }
+
+        self.update_times(Some((new_small, new_big)));
+
+        let (text_iter, journal_events_iter, auto_scroll_to): (
             gtk::TextIter,
             Box<dyn Iterator<Item = &JournalEvent>>,
+            bool,
         ) = match (what_grab, display_order) {
-            (WhatGrab::Newer, JournalDisplayOrder::Ascending) => {
-                (text_buffer.start_iter(), Box::new(journal_events.iter()))
-            }
-            (WhatGrab::Newer, JournalDisplayOrder::Descending) => {
-                (text_buffer.end_iter(), Box::new(journal_events.iter()))
-            }
-            (WhatGrab::Older, JournalDisplayOrder::Ascending) => {
-                (text_buffer.end_iter(), Box::new(journal_events.iter()))
-            }
+            (WhatGrab::Newer, JournalDisplayOrder::Ascending) => (
+                text_buffer.start_iter(),
+                Box::new(journal_events.iter()),
+                self.follow_check.is_active(),
+            ),
+            (WhatGrab::Newer, JournalDisplayOrder::Descending) => (
+                text_buffer.end_iter(),
+                Box::new(journal_events.iter()),
+                self.follow_check.is_active(),
+            ),
+            (WhatGrab::Older, JournalDisplayOrder::Ascending) => (
+                text_buffer.end_iter(),
+                Box::new(journal_events.iter()),
+                false,
+            ),
             (WhatGrab::Older, JournalDisplayOrder::Descending) => (
                 text_buffer.start_iter(),
                 Box::new(journal_events.iter().rev()),
+                false,
             ),
         };
 
-        // dbg!(
-        //     self.follow_check.is_active(),
-        //     display_order,
-        //     journal_events.what_grab
-        // );
+        dbg!(
+            self.follow_check.is_active(),
+            display_order,
+            journal_events.what_grab
+        );
 
         let mut writer = UnitInfoWriter::new(text_buffer, text_iter);
-        const LEFT: &str = "left";
-        const RIGHT: &str = "right";
+        const LEFT_MARK: &str = "left";
+        const RIGHT_MARK: &str = "right";
 
-        let left_mark = match writer.buffer.mark(LEFT) {
+        let left_mark = match writer.buffer.mark(LEFT_MARK) {
             Some(mark) => {
                 writer.buffer.move_mark(&mark, &text_iter);
                 mark
             }
             None => {
-                let mark = gtk::TextMark::new(Some(LEFT), true);
+                let mark = gtk::TextMark::new(Some(LEFT_MARK), true);
                 writer.buffer.add_mark(&mark, &text_iter);
                 mark
             }
         };
 
-        let right_mark = match writer.buffer.mark(RIGHT) {
+        let right_mark = match writer.buffer.mark(RIGHT_MARK) {
             Some(mark) => {
                 writer.buffer.move_mark(&mark, &text_iter);
                 mark
             }
             None => {
-                let mark = gtk::TextMark::new(Some(RIGHT), false);
+                let mark = gtk::TextMark::new(Some(RIGHT_MARK), false);
                 writer.buffer.add_mark(&mark, &text_iter);
                 mark
             }
@@ -606,39 +629,7 @@ impl JournalPanelImp {
             text_search_entry.new_added_text(&writer.buffer, start_iter, end_iter);
         }
 
-        if what_grab == WhatGrab::Newer && self.follow_check.is_active() {
-            let mut end_iter = writer.buffer.end_iter();
-            //go to the beging of the line
-            end_iter.set_line_offset(0);
-
-            const SCROLL: &str = "scroll";
-            let scroll = match writer.buffer.mark(SCROLL) {
-                Some(mark) => {
-                    writer.buffer.move_mark(&mark, &end_iter);
-                    mark
-                }
-                None => {
-                    let mark = gtk::TextMark::new(Some(SCROLL), true);
-                    writer.buffer.add_mark(&mark, &end_iter);
-                    mark
-                }
-            };
-
-            let this = self.obj().clone();
-            glib::spawn_future_local(async move {
-                let text_view = this.imp().journal_text_view.get();
-                info!("scroll to {:?}", display_order);
-                match display_order {
-                    JournalDisplayOrder::Ascending => {
-                        // text_view.scroll_to_mark(&left_mark, 0.0, true, 0.0, 1.0);
-                        text_view.scroll_mark_onscreen(&left_mark);
-                    }
-                    JournalDisplayOrder::Descending => {
-                        text_view.scroll_mark_onscreen(&scroll);
-                    }
-                }
-            });
-        }
+        self.event_added.set(auto_scroll_to);
     }
 
     fn continuous_entry(&self) {
@@ -655,7 +646,7 @@ impl JournalPanelImp {
             PREFERENCES.journal_max_events_batch_size() as usize;
 
         let (oldest_event_time, newest_event_time) = self
-            .time_old_new
+            .journal_event_times
             .get()
             .map_or_else(|| (None, None), |(a, b)| (Some(a), Some(b)));
 
@@ -664,31 +655,32 @@ impl JournalPanelImp {
             journal_max_events_batch_size,
             oldest_event_time,
             newest_event_time,
+            self.follow_check.is_active(),
         );
 
-        let (journal_continuous_sender, journal_continuous_receiver) = std::sync::mpsc::channel();
+        let (journal_continuous_sender, journal_continuous_receiver) = mpsc::channel();
+        let (journal_event_sender, journal_event_receiver) = mpsc::channel();
 
-        let (sender, receiver) = std::sync::mpsc::channel();
-
-        //let (sender1, receiver1) = glib::MainContext::channel();
         let journal_panel = self.obj().clone();
         super::GLOBAL.with(|global| {
-            *global.borrow_mut() = Some((journal_panel, receiver));
+            *global.borrow_mut() = Some((journal_panel, journal_event_receiver));
         });
 
+        //Cancel previous thread
         self.set_or_send_cancelling(Some(journal_continuous_sender));
 
         let unit_name = unit.primary();
         let level = unit.dbus_level();
+        let message_max_char = PREFERENCES.journal_event_max_size() as usize;
+        let timestamp_style = PREFERENCES.timestamp_style();
+        info!("Call journal thread");
         thread::spawn(move || {
-            let message_max_char = PREFERENCES.journal_event_max_size() as usize;
-            let timestamp_style = PREFERENCES.timestamp_style();
             systemd::get_unit_journal_continuous(
                 unit_name,
                 level,
                 range,
                 journal_continuous_receiver,
-                sender,
+                journal_event_sender,
                 message_max_char,
                 timestamp_style,
                 super::check_for_new_journal_entry,
@@ -755,24 +747,27 @@ impl JournalPanelImp {
         }
     }
 
-    pub(super) fn set_times(&self, times: Option<(u64, u64)>) {
+    pub(super) fn update_times(&self, times: Option<(u64, u64)>) -> Option<(u64, u64)> {
         let Some((new_oldest_time, new_recent_time)) = times else {
-            return;
+            self.journal_event_times.set(None);
+            return None;
         };
 
-        if let Some((old_oldest_time, old_recent_time)) = self.time_old_new.get() {
+        if let Some((old_oldest_time, old_recent_time)) = self.journal_event_times.get() {
             let a = old_oldest_time.min(new_oldest_time);
             let b = old_recent_time.max(new_recent_time);
-            self.time_old_new.set(Some((a, b)));
+            self.journal_event_times.set(Some((a, b)));
         } else {
-            self.time_old_new
+            self.journal_event_times
                 .set(Some((new_oldest_time, new_recent_time)));
         }
+
+        self.journal_event_times.get()
     }
 
     fn new_text_view(&self) {
         debug!("new_text_view");
-        self.time_old_new.set(None);
+        self.journal_event_times.set(None);
 
         let buffer = self.journal_text_view.buffer();
 
@@ -780,10 +775,12 @@ impl JournalPanelImp {
 
         //clear logs
         buffer.set_text("");
+        self.vupper.set(0.0);
     }
 
     fn clean_refresh(&self) {
         self.new_text_view();
+        self.update_times(None);
         self.set_or_send_cancelling(None);
         self.update_journal_according_to_display_order();
     }
@@ -807,6 +804,47 @@ impl JournalPanelImp {
                 .set_wrap_mode(gtk::WrapMode::WordChar)
         } else {
             self.journal_text_view.set_wrap_mode(gtk::WrapMode::None)
+        }
+    }
+
+    fn scroll_down(&self) {
+        let vad = self.scrolled_window.vadjustment();
+        let value = vad.upper();
+        info!("Scroll down {}", value);
+        vad.set_value(value);
+    }
+
+    fn scroll_up(&self) {
+        let vad = self.scrolled_window.vadjustment();
+        let value = vad.lower();
+        info!("Scroll up {}", value);
+        vad.set_value(value);
+    }
+
+    fn on_vadjustement(&self) {
+        let what_grab = self.what_grab();
+        dbg!(
+            what_grab,
+            self.event_added.get(),
+            self.scrolled_window.vadjustment().upper()
+        );
+
+        if self.event_added.get() && self.follow_check.is_active() {
+            let vad = self.scrolled_window.vadjustment();
+            let value = vad.upper();
+            match what_grab {
+                WhatGrab::Newer => {
+                    if self.vupper.get() < value {
+                        self.scroll_down();
+                    }
+                }
+                WhatGrab::Older => {
+                    if self.vupper.get() < value {
+                        self.scroll_up();
+                    }
+                }
+            }
+            self.vupper.set(value);
         }
     }
 }
@@ -897,6 +935,21 @@ impl ObjectImpl for JournalPanelImp {
                 journal_panel.imp().set_or_send_cancelling(None);
             }
         });
+
+        let this = self.obj().clone();
+        self.up_but.connect_clicked(move |_| {
+            this.imp().scroll_up();
+        });
+
+        let this = self.obj().clone();
+        self.down_but.connect_clicked(move |_| {
+            this.imp().scroll_down();
+        });
+
+        let this = self.obj().clone();
+        self.scrolled_window
+            .vadjustment()
+            .connect_upper_notify(move |_| this.imp().on_vadjustement());
     }
 }
 impl WidgetImpl for JournalPanelImp {}

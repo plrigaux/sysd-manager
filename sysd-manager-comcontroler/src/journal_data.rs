@@ -110,6 +110,7 @@ pub struct EventRange {
     pub newest_events_time: Option<u64>,
     pub batch_size: usize,
     pub what_grab: WhatGrab,
+    pub follow: bool,
 }
 
 impl EventRange {
@@ -118,26 +119,16 @@ impl EventRange {
         batch_size: usize,
         oldest_events_time: Option<u64>,
         newest_events_time: Option<u64>,
+        follow: bool,
     ) -> Self {
         EventRange {
             oldest_events_time,
             newest_events_time,
             batch_size,
             what_grab,
+            follow,
         }
     }
-
-    /*     pub fn has_reached_end(&self, time: u64) -> bool {
-        if let Some(end) = self.end {
-            if self.oldest_first {
-                time >= end
-            } else {
-                time <= end
-            }
-        } else {
-            false
-        }
-    } */
 }
 
 #[derive(Debug)]

@@ -69,7 +69,7 @@ pub fn check_for_new_journal_entry() {
                             journal_events.info(),
                             journal_events.len()
                         );
-                        journal_panel.imp().append_journal_event(journal_events);
+                        journal_panel.imp().handle_journal_events(&journal_events);
                     }
                     Err(error) => {
                         warn!("Journal recv Error: {error}");
