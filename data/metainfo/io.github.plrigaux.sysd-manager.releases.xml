@@ -9,6 +9,25 @@
 			</ul>
 			<p>Changed</p>
 			<ul>
+				<li>Bus communication interface</li>
+			</ul>
+			<p>Fixed</p>
+			<p>Various journal behaviors</p>
+			<ul>
+				<li>Display newest events when follow (tail) option is checked</li>
+				<li>Always display empty information, when empty</li>
+				<li>When empty, now able to catch new events</li>
+			</ul>
+		</description>
+	</release>
+	<release version="2.24.1" date="2026-10-20">
+		<description>
+			<p>Added</p>
+			<ul>
+				<li>Fedora package</li>
+			</ul>
+			<p>Changed</p>
+			<ul>
 				<li>French translation</li>
 			</ul>
 			<p>Fixed</p>
@@ -1525,6 +1544,7 @@ session bus at the same time</li>
 	</release>
 	<release version="1.9.4" date="2025-01-21">
 		<description>
+			<p>This release worked on unit information</p>
 			<p>Added</p>
 			<ul>
 				<li>Add &quot;Error&quot; Section</li>

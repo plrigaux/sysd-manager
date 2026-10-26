@@ -1,6 +1,6 @@
 [package]
 name = "sysd-manager-comcontroler"
-version = "2.24.1"
+version = "2.24.2"
 edition.workspace = true
 rust-version.workspace = true
 authors.workspace = true
@@ -37,10 +37,6 @@ tracing.workspace = true
 tracing-subscriber.workspace = true
 zbus.workspace = true
 zbus_xml.workspace = true
-# zvariant.workspace = true
-# zvariant_derive = "5"
-# zvariant_utils = "4"
-
 
 [dev-dependencies]
 test-base.workspace = true
