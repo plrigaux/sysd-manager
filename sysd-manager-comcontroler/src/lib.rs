@@ -655,9 +655,10 @@ pub async fn enable_unit_file(
 
     #[cfg(any(feature = "flatpak", feature = "appimage"))]
     {
-        use crate::sysdbus::dbus_proxies::systemd_manager_blocking;
-        systemd_manager_blocking(level)
+        systemd_manager_async(level)
+            .await?
             .enable_unit_files_with_flags(&[unit_file], flags.bits_c() as u64)
+            .await
             .map_err(|err| err.into())
     }
 }
@@ -699,9 +700,10 @@ pub async fn disable_unit_file(
 
     #[cfg(any(feature = "flatpak", feature = "appimage"))]
     {
-        use crate::sysdbus::dbus_proxies::systemd_manager_blocking;
-        systemd_manager_blocking(level)
+        systemd_manager_async(level)
+            .await?
             .disable_unit_files_with_flags_and_install_info(&[unit_file], flags.bits_c() as u64)
+            .await
             .map_err(|err| err.into())
     }
 }
@@ -992,9 +994,9 @@ pub fn freeze_unit_block(params: Option<(UnitDBusLevel, String)>) -> Result<(), 
 }
 
 pub async fn freeze_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), SystemdErrors> {
-    if let Some((_level, primary_name)) = params {
+    if let Some((level, primary_name)) = params {
         #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
-        match _level {
+        match level {
             UnitDBusLevel::System | UnitDBusLevel::Both => {
                 if proxy_switcher::PROXY_SWITCHER.freeze() {
                     proxy_call_async!(freeze_unit, &primary_name)
@@ -1015,8 +1017,8 @@ pub async fn freeze_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), 
 
         #[cfg(any(feature = "flatpak", feature = "appimage"))]
         {
-            let proxy = systemd_manager();
-            proxy.freeze_unit(&primary_name)?;
+            let proxy = sysdbus::dbus_proxies::systemd_manager_async(level).await?;
+            proxy.freeze_unit(&primary_name).await?;
             Ok(())
         }
     } else {
@@ -1053,9 +1055,8 @@ pub async fn thaw_unit(params: Option<(UnitDBusLevel, String)>) -> Result<(), Sy
 
     #[cfg(any(feature = "flatpak", feature = "appimage"))]
     {
-        use crate::sysdbus::dbus_proxies::systemd_manager_blocking;
-        let proxy = systemd_manager_blocking(level);
-        proxy.thaw_unit(&primary_name)?;
+        let proxy = sysdbus::dbus_proxies::systemd_manager_async(level).await?;
+        proxy.thaw_unit(&primary_name).await?;
         Ok(())
     }
 }
@@ -1123,10 +1124,10 @@ pub async fn clean_unit(
 
     #[cfg(any(feature = "flatpak", feature = "appimage"))]
     {
-        use crate::sysdbus::dbus_proxies::systemd_manager_blocking;
-
-        systemd_manager_blocking(level)
+        let proxy = sysdbus::dbus_proxies::systemd_manager_async(level).await?;
+        proxy
             .clean_unit(unit_name, &clean_what)
+            .await
             .map_err(|err| err.into())
     }
 }
