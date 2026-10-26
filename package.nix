@@ -20,7 +20,7 @@ rustPlatform.buildRustPackage (finalAttrs: {
   # Only the files the build actually reads — avoids invalidating the build
   # on unrelated changes (docs, CI config, screenshots, etc.).
   src = lib.fileset.toSource {
-    root = .;
+    root = ./.;
     fileset = lib.fileset.unions [
       ./Cargo.toml
       ./Cargo.lock

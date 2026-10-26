@@ -83,7 +83,7 @@ def main():
 
 
 def create(release):
-    print(f"{color.BOLD}{color.DARK_ORANGE}Create Unbuntu Package{color.END}")
+    print(f"{color.BOLD}{color.DARK_ORANGE}Create Unbuntu Source Package{color.END}")
     set_up_dir()
     copy_source()
     vendor_dep()
@@ -229,6 +229,7 @@ def copy_source():
         "sysd-manager-test-base",
         "sysd-manager-base",
         "sysd-manager-buildtool",
+        "sysd-manager-packaging",
         # "vendor",
     ]
 
