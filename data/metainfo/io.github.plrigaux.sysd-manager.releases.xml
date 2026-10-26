@@ -1,12 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--File generated from CHANGELOG.md-->
 <releases>
-	<release version="2.24.1" date="2026-10-20">
+	<release version="2.24.1" date="2026-10-26">
 		<description>
-			<p>Added</p>
-			<ul>
-				<li>Fedora package</li>
-			</ul>
 			<p>Changed</p>
 			<ul>
 				<li>Bus communication interface</li>
