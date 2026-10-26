@@ -1,5 +1,4 @@
 import argparse
-import os
 import re
 import shutil
 import subprocess
@@ -31,10 +30,6 @@ def main():
     parser.add_argument("-r", "--release", help="Set the package release", type=int)
 
     args = parser.parse_args()
-
-    release = None
-    if args.release:
-        release = args.release
 
     match args.action:
         case "create":
