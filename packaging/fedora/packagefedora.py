@@ -26,7 +26,6 @@ def main():
             "upload",
             "build",
             "generate",
-            "logs",
             "cargologs",
             "cargo",
             "publish",
@@ -39,16 +38,9 @@ def main():
 
     args = parser.parse_args()
 
-    release = None
-    if args.release:
-        release = args.release
-
-    if not isinstance(release, int):
-        release = 1
-
     match args.action:
         case "create":
-            create(release)
+            create()
         case "package":
             build_package()
         case "generate":
@@ -56,10 +48,10 @@ def main():
         case "publish":
             publish()
         case "create_publish":
-            create_publish(release)
+            create_publish()
 
 
-def create(release):
+def create():
     print(f"{color.BOLD}{color.DARK_BLUE}Create Fedora Package{color.END}")
     cargo_build()
     generate_files()
@@ -124,8 +116,8 @@ def publish():
         print(f"{color.RED}No files found in the directory: {dir_path}.{color.RED}")
 
 
-def create_publish(release):
-    create(release)
+def create_publish():
+    create()
     publish()
 
 
