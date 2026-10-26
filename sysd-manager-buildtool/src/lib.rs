@@ -76,6 +76,7 @@ impl Release {
 enum LogToken {
     Item(String),
     Section(String),
+    Para(String),
 }
 
 pub fn extract_changelog(file_path: &Path) -> Result<Vec<Release>, ToolError> {
@@ -93,7 +94,7 @@ pub fn extract_changelog(file_path: &Path) -> Result<Vec<Release>, ToolError> {
 
     let mut vlogs = Vec::new();
 
-    let mut item_row = false;
+    // let mut item_row = false;
     for line in reader.lines() {
         let line = line?;
 
@@ -121,21 +122,34 @@ pub fn extract_changelog(file_path: &Path) -> Result<Vec<Release>, ToolError> {
             if let Some(vlog) = vlogs.last_mut() {
                 vlog.logs.push(LogToken::Section(tcap[1].to_owned()))
             }
-            item_row = false;
+            // item_row = false;
         } else if let Some(capture) = item_re.captures(&line) {
             debug!("Item {}", &capture[1]);
             if let Some(vlog) = vlogs.last_mut() {
                 vlog.logs.push(LogToken::Item(capture[1].to_owned()))
             }
-            item_row = true;
-        } else if item_row && follow_line_re.is_match(&line) {
-            warn!("LINE:{}", line);
-            if let Some(vlog) = vlogs.last_mut()
-                && let Some(LogToken::Item(pizza)) = vlog.logs.last_mut()
-            {
-                pizza.push(' ');
-                pizza.push_str(line.trim_ascii());
-            };
+            // item_row = true;
+            // } else if let Some(capture) = par_re.captures(&line) {
+            //     debug!("Item {}", &capture[1]);
+            //     if let Some(vlog) = vlogs.last_mut() {
+            //         vlog.logs.push(LogToken::Para(capture[1].to_owned()))
+            //     }
+            //     item_row = true;
+        } else if
+        /* item_row && */
+        follow_line_re.is_match(&line) {
+            info!("LINE:{}", line);
+            if let Some(vlog) = vlogs.last_mut() {
+                if let Some(LogToken::Item(pizza)) = vlog.logs.last_mut() {
+                    pizza.push(' ');
+                    pizza.push_str(line.trim_ascii());
+                } else if let Some(LogToken::Para(pizza)) = vlog.logs.last_mut() {
+                    pizza.push(' ');
+                    pizza.push_str(line.trim_ascii());
+                } else {
+                    vlog.logs.push(LogToken::Para(line.trim_ascii().to_owned()))
+                }
+            }
         }
     }
 
@@ -264,6 +278,11 @@ where
                 writer
                     .create_element(header_tag)
                     .write_text_content(BytesText::new(title))?;
+            }
+            LogToken::Para(content) => {
+                writer
+                    .create_element("p")
+                    .write_text_content(BytesText::new(content))?;
             }
             LogToken::Item(li) => {
                 let mut items = Vec::new();
