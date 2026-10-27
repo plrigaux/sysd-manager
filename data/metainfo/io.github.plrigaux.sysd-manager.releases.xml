@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--File generated from CHANGELOG.md-->
 <releases>
+	<release version="2.24.5" date="2026-10-27">
+		<description>
+			<p>Changed</p>
+			<ul>
+				<li>Russian translation</li>
+			</ul>
+		</description>
+	</release>
 	<release version="2.24.1" date="2026-10-26">
 		<description>
 			<p>Changed</p>

@@ -390,5 +390,9 @@
       <default>true</default>
       <summary>Preserve the unit browser filters across application restarts</summary>
     </key>
+    <key name="creator-close-window-on-create" type="b">
+      <default>true</default>
+      <summary>Close the unit's creation window on successful creation</summary>
+    </key>
   </schema>
 </schemalist>

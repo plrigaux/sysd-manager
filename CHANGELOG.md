@@ -9,6 +9,12 @@ If this project saves you or your company time, consider [sponsoring](https://gi
 
 <!-- ## [Unreleased] -->
 
+## [2.24.5] - 2026-10-27
+
+### Changed
+
+- Russian translation
+
 ## [2.24.1] - 2026-10-26
 
 ### Changed

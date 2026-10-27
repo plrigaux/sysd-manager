@@ -51,6 +51,11 @@ mod imp {
     };
     use tracing::{error, info, warn};
 
+    const SETTING_CREATOR_CLOSE_WINDOW_ON_CREATE: &str = "creator-close-window-on-create";
+    const SETTING_DAEMON_RELOAD_AFTER_CREATION: &str = "create-daemon-reload-after-creation";
+    const SETTING_ENABLE_AFTER_CREATION: &str = "create-enable-after-creation";
+    const SETTING_STARTS_AFTER_CREATION: &str = "create-start-after-creation";
+
     #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
     #[template(resource = "/io/github/plrigaux/sysd-manager/launch_creator_page.ui")]
     #[properties(wrapper_type = super::LaunchCreatorPage)]
@@ -64,6 +69,8 @@ mod imp {
         enable_switch: TemplateChild<adw::SwitchRow>,
         #[template_child]
         start_switch: TemplateChild<adw::SwitchRow>,
+        #[template_child]
+        close_on_create_checkbox: TemplateChild<gtk::CheckButton>,
 
         #[template_child]
         artefacts_group: TemplateChild<adw::PreferencesGroup>,
@@ -328,22 +335,32 @@ mod imp {
             let settings = systemd_gui::new_settings();
             settings
                 .bind(
-                    "create-daemon-reload-after-creation",
+                    SETTING_DAEMON_RELOAD_AFTER_CREATION,
                     &self.daemon_reload_switch.get(),
                     "active",
                 )
                 .build();
+
             settings
                 .bind(
-                    "create-enable-after-creation",
+                    SETTING_ENABLE_AFTER_CREATION,
                     &self.enable_switch.get(),
                     "active",
                 )
                 .build();
+
             settings
                 .bind(
-                    "create-start-after-creation",
+                    SETTING_STARTS_AFTER_CREATION,
                     &self.start_switch.get(),
+                    "active",
+                )
+                .build();
+
+            settings
+                .bind(
+                    SETTING_CREATOR_CLOSE_WINDOW_ON_CREATE,
+                    &self.close_on_create_checkbox.get(),
                     "active",
                 )
                 .build();
