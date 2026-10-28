@@ -1,11 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--File generated from CHANGELOG.md-->
 <releases>
-	<release version="2.24.5" date="2026-10-27">
+	<release version="2.24.5" date="2026-10-28">
 		<description>
+			<p>Added</p>
+			<ul>
+				<li>Option to close the create unit window on successful creation</li>
+			</ul>
 			<p>Changed</p>
 			<ul>
 				<li>Russian translation</li>
+			</ul>
+			<p>Fixed</p>
+			<ul>
+				<li>Unit Creation Window: fix validators for Service ExecStart and ExecReload</li>
+				<li>Unit Creation Window: Focus on unit after creation (when creation window is at
+autoclose)</li>
 			</ul>
 		</description>
 	</release>
@@ -44,7 +54,7 @@
 		<description>
 			<p>Added</p>
 			<ul>
-				<li>[Issue 80] Preserve Filters on the appplication restart</li>
+				<li>[Issue 80] Preserve Filters on the application restart</li>
 			</ul>
 			<p>Changed</p>
 			<ul>
@@ -322,7 +332,7 @@ enabled [Issue 67]</li>
 			</ul>
 			<p>Fixed</p>
 			<ul>
-				<li>[Issue 58] Services in currated list - Fix include unit files</li>
+				<li>[Issue 58] Services in curated list - Fix include unit files</li>
 				<li>[Issue 64] Unit File Color palette when switching Color Scheme Mode (Light and
 Dark)</li>
 				<li>[Issue 63] Unit Description and Unit Dependencies text color palette when
@@ -343,7 +353,7 @@ switching Color Scheme Mode (Light and Dark)</li>
 				<li>Create Unit wizard (under construction)</li>
 				<li>[Issue 59] Keyboard shortcuts Ctrl+W and Esc to close sub-windows, and Ctrl+Q to
 quit the application</li>
-				<li>[Issue 58] Add Services in currated list (Shift+Ctrl+S)</li>
+				<li>[Issue 58] Add Services in curated list (Shift+Ctrl+S)</li>
 			</ul>
 			<p>Fixed</p>
 			<ul>

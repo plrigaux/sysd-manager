@@ -854,56 +854,53 @@ impl UnitListPanelImp {
         if let Some(unit2) = self.units_map.borrow().get(&UnitKey::new(unit)) {
             self.unit.replace(Some(unit2.clone()));
         } else {
-            self.add_one_unit(unit, true);
+            self.add_one_unit(unit, true); // requires a delay
         }
 
-        //Don't select and focus if filter out
-        // if let Some(filter) = self.filter_list_model.borrow().filter()
-        //     && !filter.match_(unit)
-        // {
-        //     //Unselect
-        //     single_selection!(self).set_selected(gtk::INVALID_LIST_POSITION);
-        //     info!("Unit {unit_name} no Match");
-        //     return Some(unit.clone());
-        // }
+        let this = self.downgrade();
+        // delay needed to focus on the right row
+        let interval = Duration::from_millis(400); //FIXME find better
+        glib::timeout_add_local_once(interval, move || {
+            let this = upgrade!(this);
+            //Don't select and focus if filter out
+            let single_selection = this.single_selection();
+            let mut unit_found_position = None;
+            for position in 0..single_selection.n_items() {
+                let object = single_selection.item(position);
+                let Some(unit) = object.and_downcast_ref::<UnitInfo>() else {
+                    error!("item None");
+                    break;
+                };
 
-        let single_selection = self.single_selection.get().unwrap();
-        let mut unit_found_position = None;
-        for position in 0..single_selection.n_items() {
-            let object = single_selection.item(position);
-            let Some(unit) = object.and_downcast_ref::<UnitInfo>() else {
-                error!("item None");
-                break;
-            };
-
-            if unit_name == unit.primary() {
-                unit_found_position = Some(position);
-                break;
+                if unit_name == unit.primary() {
+                    unit_found_position = Some(position);
+                    break;
+                }
             }
-        }
 
-        info!("Sel {:?}", unit_found_position);
-        if let Some(row) = unit_found_position {
-            let fitems = self.filter_list_model().n_items();
-            if fitems > 0 {
-                info!("Scroll to row {row} fitems {fitems}");
-
-                units_browser!(self).scroll_to(
+            info!("Selection position {:?}", unit_found_position);
+            if let Some(row) = unit_found_position {
+                info!("Scroll to row {row} fitems {}", single_selection.n_items());
+                single_selection.set_selected(row);
+                units_browser!(this).scroll_to(
                     row, // to centerish on the selected unit
                     None,
                     gtk::ListScrollFlags::FOCUS | gtk::ListScrollFlags::SELECT,
                     None,
                 );
+            } else {
+                single_selection.set_selected(gtk::INVALID_LIST_POSITION);
             }
-        } else {
-            single_selection.set_selected(gtk::INVALID_LIST_POSITION);
-        }
-
+        });
         Some(unit.clone())
     }
 
     fn filter_list_model(&self) -> &gtk::FilterListModel {
         self.filter_list_model.get().unwrap()
+    }
+
+    fn single_selection(&self) -> &gtk::SingleSelection {
+        self.single_selection.get().unwrap()
     }
 
     fn set_unit_favorite(&self, unit: Option<&UnitInfo>) {
@@ -2292,16 +2289,18 @@ impl ObjectImpl for UnitListPanelImp {
 
         let unit_list_panel = self.obj().clone();
 
+        //Store -> Filter -> Sort -> Selection
         let list_store = gio::ListStore::new::<UnitInfo>();
         self.list_store
             .set(list_store.clone())
             .expect("Set only Once");
 
-        let sort_list_model = gtk::SortListModel::new(Some(list_store), None::<gtk::Sorter>);
         let filter_list_model =
-            gtk::FilterListModel::new(Some(sort_list_model.clone()), None::<gtk::Filter>);
+            gtk::FilterListModel::new(Some(list_store.clone()), None::<gtk::Filter>);
+        let sort_list_model =
+            gtk::SortListModel::new(Some(filter_list_model.clone()), None::<gtk::Sorter>);
         let single_selection = gtk::SingleSelection::builder()
-            .model(&filter_list_model)
+            .model(&sort_list_model)
             .autoselect(false)
             .build();
         let column_view = gtk::ColumnView::builder()

@@ -135,6 +135,7 @@ mod imp {
             }
 
             if self.close_on_create_checkbox.is_active() {
+                show_unit(&window, None);
                 window.close();
             }
         }
@@ -259,7 +260,6 @@ mod imp {
             let window = upgrade!(window);
             let creation_type = window.creation_type();
 
-            // let pizza = Ve
             let rows = match creation_type {
                 UnitCreateType::Service => {
                     vec![build_action_row(
@@ -414,6 +414,7 @@ mod imp {
         action_row.add_suffix(&show_file_button);
 
         let show_unit_button = gtk::Button::builder()
+            //Button label on last creation page to show unit in browser
             .label(pgettext("create_unit", "Unit"))
             .sensitive(false)
             //Tooltip Created new unit
@@ -424,7 +425,7 @@ mod imp {
         let window_wr = glib::object::ObjectExt::downgrade(window);
         show_unit_button.connect_clicked(move |_| {
             let window = upgrade!(window_wr);
-            show_unit(window, creator_type)
+            show_unit(&window, creator_type)
         });
         action_row.add_suffix(&show_unit_button);
 
@@ -453,7 +454,7 @@ mod imp {
         }
     }
 
-    fn show_unit(window: UnitCreatorWindow, unit_create_type: Option<UnitCreateType>) {
+    fn show_unit(window: &UnitCreatorWindow, unit_create_type: Option<UnitCreateType>) {
         let unit_name = window.unit_name(unit_create_type);
 
         let level = window.level();
