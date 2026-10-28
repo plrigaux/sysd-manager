@@ -125,12 +125,17 @@ mod imp {
                 row.unit_button.set_sensitive(true);
             }
 
+            let window = upgrade_opt!(self.window.get());
+
             if self.daemon_reload_switch.is_active() {
-                let window = upgrade_opt!(self.window.get());
                 let level = window.level();
                 info!("Call reload deamon");
 
-                self.daemon_reload(window, level);
+                self.daemon_reload(window.clone(), level);
+            }
+
+            if self.close_on_create_checkbox.is_active() {
+                window.close();
             }
         }
 

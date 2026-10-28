@@ -2,7 +2,8 @@ use super::*;
 use crate::{
     upgrade, upgrade_opt,
     widget::creator::{
-        CreateUnitErr, UnitCreateType, common,
+        CreateUnitErr, UnitCreateType,
+        common::{self},
         creator_page_service::standard_output::{StandardOutput, output_file_descriptor},
         mydropdown::MyDropDown,
         suggestion::SuggestionRow,
@@ -121,6 +122,12 @@ impl ObjectImpl for CreatorPageServiceImp {
         self.parent_constructed();
 
         let event_focus = gtk::EventControllerFocus::new();
+        event_focus.connect_enter(|event| {
+            if let Some(entry) = event.widget().and_downcast_ref::<adw::EntryRow>() {
+                entry.select_region(0, -1);
+            }
+        });
+
         event_focus.connect_leave(|event| {
             if let Some(entry) = event.widget().and_downcast_ref::<adw::EntryRow>() {
                 CreatorPageServiceImp::validate_entry_exec_start(entry);
@@ -130,6 +137,11 @@ impl ObjectImpl for CreatorPageServiceImp {
         self.exec_start_entry.add_controller(event_focus);
 
         let event_focus = gtk::EventControllerFocus::new();
+        event_focus.connect_enter(|event| {
+            if let Some(entry) = event.widget().and_downcast_ref::<adw::EntryRow>() {
+                entry.select_region(0, -1);
+            }
+        });
         event_focus.connect_leave(|event| {
             if let Some(entry) = event.widget().and_downcast_ref::<adw::EntryRow>() {
                 CreatorPageServiceImp::validate_entry_exec_reload(entry);
@@ -154,9 +166,7 @@ impl ObjectImpl for CreatorPageServiceImp {
             .connect_has_focus_notify(|entry| entry.select_region(0, -1));
         self.description_entry
             .connect_focus_on_click_notify(|entry| entry.select_region(0, -1));
-        self.exec_start_entry
-            .connect_has_focus_notify(|entry| entry.select_region(0, -1));
-        self.exec_start_entry
+        self.exec_reload_entry
             .connect_focus_on_click_notify(|entry| entry.select_region(0, -1));
         self.working_directory_entry
             .connect_has_focus_notify(|entry| entry.select_region(0, -1));
@@ -320,19 +330,7 @@ impl CreatorPageServiceImp {
         let name_err = if text.is_empty() {
             CreateUnitErr::Mandatory
         } else {
-            let path = Path::new(&text);
-
-            if !path.exists() {
-                CreateUnitErr::FileNotExits
-            } else if !path.is_file() {
-                CreateUnitErr::NotFile
-            } else if !is_executable(path) {
-                CreateUnitErr::NotExecutable
-            } else if !path.is_absolute() {
-                CreateUnitErr::NotAbsolute
-            } else {
-                CreateUnitErr::NoErr
-            }
+            Self::validate_exec(text)
         };
 
         let is_error = matches!(name_err, CreateUnitErr::Mandatory);
@@ -348,12 +346,45 @@ impl CreatorPageServiceImp {
         let name_err = if text.is_empty() {
             CreateUnitErr::NoErr
         } else {
-            let path = Path::new(&text);
+            Self::validate_exec(text)
+        };
+
+        let is_error = matches!(name_err, CreateUnitErr::Mandatory);
+        CreateUnitErr::apply_validation_result_error(entry, &name_err, "ExecReload", is_error);
+        !is_error
+    }
+
+    fn validate_exec(text: &str) -> CreateUnitErr {
+        let text_file_path = common::get_file_path_in_quotes(text);
+
+        let path = Path::new(text_file_path);
+
+        if !path.exists() {
+            CreateUnitErr::FileNotExits
+        } else if !path.is_file() {
+            CreateUnitErr::NotFile
+        } else if !is_executable(path) {
+            CreateUnitErr::NotExecutable
+        } else if !path.is_absolute() {
+            CreateUnitErr::NotAbsolute
+        } else {
+            CreateUnitErr::NoErr
+        }
+    }
+
+    fn validate_working_directory(entry: &adw::EntryRow) {
+        let text = entry.text();
+
+        let text = common::get_file_path_in_quotes(text.as_str());
+        let name_err = if text.is_empty() {
+            CreateUnitErr::NoErr
+        } else {
+            let path = Path::new(text);
 
             if !path.exists() {
                 CreateUnitErr::FileNotExits
-            } else if !path.is_file() {
-                CreateUnitErr::NotFile
+            } else if !path.is_dir() {
+                CreateUnitErr::NotDir
             } else if !is_executable(path) {
                 CreateUnitErr::NotExecutable
             } else if !path.is_absolute() {
@@ -363,37 +394,6 @@ impl CreatorPageServiceImp {
             }
         };
 
-        let is_error = matches!(name_err, CreateUnitErr::Mandatory);
-        CreateUnitErr::apply_validation_result_error(entry, &name_err, "ExecReload", is_error);
-        !is_error
-    }
-
-    fn validate_working_directory(entry: &adw::EntryRow) {
-        let text = entry.text();
-
-        let name_err = match common::get_file_path(text.as_str()) {
-            Ok(text) => {
-                if text.is_empty() {
-                    CreateUnitErr::NoErr
-                } else {
-                    let path = Path::new(text);
-
-                    if !path.exists() {
-                        CreateUnitErr::FileNotExits
-                    } else if !path.is_dir() {
-                        CreateUnitErr::NotDir
-                    } else if !is_executable(path) {
-                        CreateUnitErr::NotExecutable
-                    } else if !path.is_absolute() {
-                        CreateUnitErr::NotAbsolute
-                    } else {
-                        CreateUnitErr::NoErr
-                    }
-                }
-            }
-
-            Err(err) => err,
-        };
         CreateUnitErr::apply_validation_result(entry, &name_err, "WorkingDirectory");
     }
 
@@ -596,7 +596,7 @@ impl CreatorPageServiceImp {
         let create_service_page = self.obj().clone();
 
         let text = self.working_directory_entry.text();
-        let text = common::get_file_path(&text).unwrap_or_default();
+        let text = common::get_file_path_in_quotes(&text);
         if text.is_empty() {
             common::set_initial_folder(&file_dialog);
         } else {
@@ -629,6 +629,25 @@ impl CreatorPageServiceImp {
 
     #[template_callback]
     fn exec_start_dialog_clicked(&self, _button: gtk::Button) {
+        self.exec_dialog_clicked(
+            &self.exec_start_entry,
+            CreatorPageServiceImp::validate_entry_exec_start,
+        );
+    }
+
+    #[template_callback]
+    fn exec_reload_dialog_clicked(&self, _button: gtk::Button) {
+        self.exec_dialog_clicked(
+            &self.exec_reload_entry,
+            CreatorPageServiceImp::validate_entry_exec_reload,
+        );
+    }
+
+    fn exec_dialog_clicked(
+        &self,
+        entry: &adw::EntryRow,
+        validate_entry: fn(&adw::EntryRow) -> bool,
+    ) {
         let file_dialog = gtk::FileDialog::builder()
             //Button title of the executable selection widget
             .accept_label(pgettext("create_unit", "Select"))
@@ -636,10 +655,8 @@ impl CreatorPageServiceImp {
             .title(pgettext("create_unit", "Select executable"))
             .build();
 
-        let create_service_page = self.obj().clone();
-
-        let text = self.exec_start_entry.text();
-        let text = common::get_file_path(&text).unwrap_or_default();
+        let text = entry.text();
+        let text = common::get_file_path_in_quotes(&text);
         if text.is_empty() {
             common::set_initial_folder(&file_dialog);
         } else {
@@ -660,15 +677,15 @@ impl CreatorPageServiceImp {
         let win = self.window.get().and_then(|w| w.upgrade());
         let win = win.and_upcast_ref::<gtk::Window>();
 
+        let entry_wr = entry.downgrade();
         file_dialog.open(win, None::<&gio::Cancellable>, move |result| match result {
             Ok(file) => {
                 if let Some(path) = file.path() {
                     let mut file_path_str = path.display().to_string();
                     escape(&mut file_path_str);
-                    create_service_page
-                        .imp()
-                        .exec_start_entry
-                        .set_text(&file_path_str);
+                    let entry = upgrade!(entry_wr);
+                    entry.set_text(&file_path_str);
+                    (validate_entry)(&entry);
                 }
             }
             Err(e) => warn!("Unit File Selection Error {e:?}"),
@@ -732,14 +749,14 @@ impl CreatorPageServiceImp {
 
         entry
     }
+}
 
+impl CreatorPageServiceImp {
     fn remove_entry(&self, id: &str, w: &gtk::Widget) {
         self.service_group.remove(w);
         self.remove_track(id, w);
     }
-}
 
-impl CreatorPageServiceImp {
     pub(super) fn update_view(&self, page: &UnitFileCreatorPage) {
         self.fill_data();
         let data = self.file_data.borrow();
@@ -866,6 +883,7 @@ fn escape(file_path: &mut String) {
 
 #[cfg(test)]
 mod tests {
+
     use test_base::init_logs;
 
     use super::*;

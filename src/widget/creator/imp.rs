@@ -581,11 +581,11 @@ impl ObjectImpl for UnitCreatorWindowImp {
         };
 
         let create: gio::ActionEntry<_> = {
-            let window = self.obj().downgrade();
+            let window = self.downgrade();
             gio::ActionEntry::builder(&ACTION_CREATOR_CREATE[8..])
                 .activate(move |_, _, _| {
-                    let window = upgrade!(window);
-                    window.imp().save_unit_files();
+                    let this = upgrade!(window);
+                    this.save_unit_files();
                 })
                 .build()
         };

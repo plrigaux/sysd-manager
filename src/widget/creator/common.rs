@@ -45,7 +45,7 @@ pub fn set_initial_folder(file_dialog: &gtk::FileDialog) {
     }
 }
 
-pub fn get_file_path(text: &str) -> Result<&str, CreateUnitErr> {
+pub fn get_file_path_in_quotes(text: &str) -> &str {
     let text = text.trim_start();
     let mut begin = 0;
     let mut end = text.len();
@@ -61,15 +61,12 @@ pub fn get_file_path(text: &str) -> Result<&str, CreateUnitErr> {
                 begin = 1;
             } else {
                 end = idx;
-                in_quotes = false;
                 break;
             }
         }
     }
-    if in_quotes {
-        return Err(CreateUnitErr::Malformed);
-    }
-    Ok(&text[begin..end])
+
+    &text[begin..end]
 }
 
 #[cfg(test)]
@@ -79,18 +76,24 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_get_file() {
+    fn test_get_file_path() {
         init_logs();
-        assert_eq!(get_file_path("text"), Ok("text"));
-        assert_eq!(get_file_path("  text"), Ok("text"));
-        assert_eq!(get_file_path("  text   "), Ok("text"));
-        assert_eq!(get_file_path("  text -f  "), Ok("text"));
-        assert_eq!(get_file_path(r#""text asdf" xxx"#), Ok("text asdf"));
-        assert_eq!(get_file_path("\"\"text"), Ok(""));
+        assert_eq!(get_file_path_in_quotes("text"), "text");
+        assert_eq!(get_file_path_in_quotes("  text"), "text");
+        assert_eq!(get_file_path_in_quotes("  text   "), "text");
+        assert_eq!(get_file_path_in_quotes("  text -f  "), "text");
+        assert_eq!(get_file_path_in_quotes(r#""text asdf" xxx"#), "text asdf");
+        assert_eq!(get_file_path_in_quotes("\"\"text"), "");
+        assert_eq!(get_file_path_in_quotes(" \"file path\" -1"), "file path");
+        //Linux can have tailing spaces
+        assert_eq!(
+            get_file_path_in_quotes("       \"   file path \" -1"),
+            "   file path "
+        );
 
         assert_eq!(
-            get_file_path("/home/plr/bin/AppDir/etc"),
-            Ok("/home/plr/bin/AppDir/etc")
+            get_file_path_in_quotes("/home/plr/bin/AppDir/etc"),
+            "/home/plr/bin/AppDir/etc"
         );
     }
 }
