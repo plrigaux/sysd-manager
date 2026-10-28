@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-28 15:46-0400\n"
-"PO-Revision-Date: 2026-10-17 18:40+0000\n"
+"PO-Revision-Date: 2026-10-28 19:57+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -221,11 +221,10 @@ msgstr "Activer"
 
 #: data/interfaces/creator/Creator.ui:23
 msgid "How to jailbreak"
-msgstr ""
+msgstr "Comment jailbreaker"
 
 #. Flatpak jail break info
 #: data/interfaces/creator/Creator.ui:25
-#, fuzzy
 msgctxt "create_unit"
 msgid ""
 "The \"Create Unit\" needs to have some access rights to work properly.\n"
@@ -233,10 +232,10 @@ msgid ""
 "You need to \"jailbreak\" your Flatpak application to allow it to run sub-"
 "programs or to save files on the host system."
 msgstr ""
-"<b>Créer Unité</b> nécessite certains droits d'accès pour fonctionner "
+"\"Créer Unité\" nécessite certains droits d'accès pour fonctionner "
 "correctement.\n"
 "\n"
-"Vous devez <b>débrider</b> votre application Flatpak pour lui permettre "
+"Vous devez \"débrider\" votre application Flatpak pour lui permettre "
 "d'exécuter des sous-programmes ou d'enregistrer des fichiers sur le système "
 "hôte."
 
@@ -372,7 +371,7 @@ msgstr "Démarrer"
 #: data/interfaces/creator/creator_end_page.ui:41
 msgctxt "create_unit"
 msgid "Close this window after succesful creation"
-msgstr ""
+msgstr "Fermez cette fenêtre une fois la création effectuée avec succès"
 
 #. Creation end page action row title
 #: data/interfaces/creator/creator_end_page.ui:42
@@ -380,7 +379,7 @@ msgctxt ""
 "create_unit\n"
 "\n"
 msgid "Close on create"
-msgstr ""
+msgstr "Fermer lors de la création"
 
 #. Preference section title
 #. Prefererence group
