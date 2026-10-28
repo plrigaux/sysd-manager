@@ -38,7 +38,7 @@
                 </child>
                 <child>
                   <object class="AdwActionRow">
-                    <property name="subtitle" translatable="yes" context="create_unit" comments="Creation end page action row subtitle">Close this window after succesful creation</property>
+                    <property name="subtitle" translatable="yes" context="create_unit" comments="Creation end page action row subtitle">Close this window after successful creation</property>
                     <property name="title" translatable="yes" context="create_unit&#10;&#10;" comments="Creation end page action row title">Close on create</property>
                     <child>
                       <object class="GtkCheckButton" id="close_on_create_checkbox">
