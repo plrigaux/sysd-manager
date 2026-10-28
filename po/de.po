@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-28 15:46-0400\n"
+"POT-Creation-Date: 2026-10-28 15:58-0400\n"
 "PO-Revision-Date: 2025-09-26 15:40+0000\n"
 "Last-Translator: linusmuth <tropedat@mailbox.org>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/sysd-manager/"
@@ -360,7 +360,7 @@ msgstr ""
 #. Creation end page action row subtitle
 #: data/interfaces/creator/creator_end_page.ui:41
 msgctxt "create_unit"
-msgid "Close this window after succesful creation"
+msgid "Close this window after successful creation"
 msgstr ""
 
 #. Creation end page action row title
