@@ -2,6 +2,8 @@ import argparse
 import json
 import logging
 import os
+import sys
+from os import walk
 
 import oyaml as yaml
 
@@ -9,8 +11,6 @@ import build_aux.build_common as bcommon
 import build_aux.flatpak_cargo_generator as cargo_gen
 
 color = bcommon.color
-
-from os import walk
 
 G_RPM_VERSION = None
 G_SRPM_PATH = None
@@ -34,7 +34,8 @@ CARGO_SOURCES = "cargo-sources.json"
 
 def main():
 
-    os.chdir("..")
+    # os.chdir("..")
+    bcommon.position_on_root()
 
     parser = argparse.ArgumentParser(
         description="Flathub builder",
@@ -120,8 +121,8 @@ def clean():
         "builddir",
         ".flatpak-builder",
         CARGO_SOURCES,
-        "repo",
-        "tmp",
+        # "repo",
+        # "tmp",
         FLATPACK_BUILD_DIR,
     ]
 
@@ -145,6 +146,7 @@ def build(from_git: bool):
         [
             "flatpak",
             "run",
+            f"--filesystem={FLATPACK_BUILD_DIR}",
             "org.flatpak.Builder",
             "--force-clean",
             "--sandbox",
@@ -211,7 +213,7 @@ def run(logbus=False, log="info"):
     try:
         bcommon.cmd_run(cmd, env=env)
     except KeyboardInterrupt as ki:
-        print("Program closed by Keyboard Interrupt")
+        print("Program closed by Keyboard Interrupt", ki)
 
 
 def lint():
@@ -297,11 +299,12 @@ def diag():
 
 def ln(file: str):
 
+    curdir = os.getcwd()
     bcommon.cmd_run(
         [
             "ln",
             "-svfn",
-            f"../sysd-manager/{file}",
+            f"{curdir}/{file}",
             f"{FLATPACK_BUILD_DIR}/{file}",
         ]
     )
@@ -319,7 +322,7 @@ def set_required_files(from_git: bool):
     bcommon.cmd_run(
         [
             "cp",
-            # "-u",
+            "-u",
             "-r",
             "Cargo.toml",
             CARGO_LOCK,
@@ -329,8 +332,6 @@ def set_required_files(from_git: bool):
             "screenshots",
             "po",
             "sysd-manager-translating",
-            "sysd-manager-proxy",
-            "sysd-manager-comcontroler",
             "transtools",
             "tiny_daemon",
             "sysd-manager-proxy",
@@ -339,20 +340,40 @@ def set_required_files(from_git: bool):
             "sysd-manager-base",
             "sysd-manager-buildtool",
             "CHANGELOG.md",
+            #         # f"{MANIFEST_LOC}/{MANIFEST}",
             f"{FLATPACK_BUILD_DIR}",
         ]
     )
 
-    """     ln("src")
-    ln("data")
-    ln("screenshots")
-    ln("po")
-    ln("sysd-manager-translating")
-    ln("sysd-manager-proxy")
-    ln("sysd-manager-comcontroler")
-    ln("transtools")
-    ln("tiny_daemon") """
+    # ln("src")
+    # ln("data")
+    # ln("screenshots")
+    # ln("po")
+    # ln("sysd-manager-translating")
+    # ln("sysd-manager-proxy")
+    # ln("sysd-manager-comcontroler")
+    ln("sysd-manager-packaging")
+    # ln("transtools")
+    # ln("tiny_daemon")
 
+    # ln("Cargo.toml")
+    # ln(CARGO_LOCK)
+    # ln("src")
+    # ln("data")
+    # # ln("build.rs")
+    # ln("screenshots")
+    # ln("po")
+    # ln("sysd-manager-translating")
+    # ln("transtools")
+    # ln("tiny_daemon")
+    # ln("sysd-manager-proxy")
+    # ln("sysd-manager-comcontroler")
+    # ln("sysd-manager-test-base")
+    # ln("sysd-manager-base")
+    # ln("sysd-manager-buildtool")
+    # ln("sysd-manager-packaging")
+
+    # ln("CHANGELOG.md")
     set_manifest(from_git, FLATPACK_BUILD_DIR)
 
     # print(f"{color.CYAN}Generate a .gitignore{color.END}")
@@ -381,7 +402,7 @@ def set_manifest(from_git: bool, out_dir):
 
         if not commit:
             print(f"{color.RED}commit not found for tag {tag_name}")
-            exit(0)
+            sys.exit(0)
 
         print(
             f"Set tag {color.CYAN}{tag_name}{color.END} and commit {color.CYAN}{commit}{color.END} to manifest"

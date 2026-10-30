@@ -2,11 +2,11 @@ import os
 import pprint
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 from typing import Optional
 
 import git
-import tomllib
 
 
 class color:
