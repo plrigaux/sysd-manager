@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--File generated from CHANGELOG.md-->
 <releases>
+	<release version="2.24.6" date="2026-10-30">
+		<description>
+			<p>Fixed</p>
+			<ul>
+				<li>Provide a Flatpak workaround regading the no unit returned issues</li>
+			</ul>
+		</description>
+	</release>
 	<release version="2.24.5" date="2026-10-28">
 		<description>
 			<p>Added</p>

@@ -220,6 +220,7 @@ destructive-action
                     <property name="halign">start</property>
                     <property name="icon-name">user-trash-symbolic</property>
                     <property name="label">Delete Unit File ➚</property>
+                    <property name="visible">False</property>
                   </object>
                 </child>
               </object>

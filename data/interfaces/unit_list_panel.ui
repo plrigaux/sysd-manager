@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 1.0 -->
+<!-- Created with Cambalache 1.2.0 -->
 <interface>
   <!-- interface-name unit_list_panel.ui -->
   <requires lib="gio" version="2.44"/>
@@ -129,7 +129,9 @@
           <object class="AdwViewStackPage">
             <property name="child">
               <object class="AdwStatusPage">
-                <property name="description" translatable="yes" context="list page description">No units returned, set environment variable &lt;b&gt;RUST_LOG=info&lt;/b&gt; to see what happened.</property>
+                <property name="description" translatable="yes" context="list page description">:wNo units returned, set environment variable &lt;b&gt;RUST_LOG=info&lt;/b&gt; to see what happened.
+
+For troubleshooting, please refer to this &lt;a href="https://github.com/plrigaux/sysd-manager/wiki/Troubleshoot"&gt;wiki&lt;/a&gt;</property>
                 <property name="icon-name">sad-computer-symbolic</property>
                 <property name="title" translatable="yes" context="list page title">Something went wrong</property>
               </object>

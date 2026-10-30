@@ -9,6 +9,11 @@ If this project saves you or your company time, consider [sponsoring](https://gi
 
 <!-- ## [Unreleased] -->
 
+## [2.24.6] - 2026-10-30
+
+### Fixed
+- Provide a Flatpak workaround regading the no unit returned issues
+
 ## [2.24.5] - 2026-10-28
 
 ### Added
