@@ -25,6 +25,7 @@
   <ui template-class="UnitPopMenu" filename="unit_pop_menu.ui"/>
   <ui template-class="TextSearchEntry" filename="text_search_entry.ui"/>
   <ui template-class="UnitStatusPanel" filename="unit_status_panel.ui"/>
+  <ui template-class="UnitFileDeleteDialog" filename="unit_file_delete.ui"/>
   <ui template-class="UnitPropertiesSelectorDialog" filename="unit_properties_selector.ui">
     <requires>UnitPropertiesSelectionPanel</requires>
   </ui>
@@ -39,5 +40,4 @@
     <requires>UnitControlPanel</requires>
     <requires>UnitListPanel</requires>
   </ui>
-  <ui template-class="UnitFileDeleteDialog" filename="unit_file_delete.ui"/>
 </cambalache-project>

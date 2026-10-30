@@ -1,10 +1,11 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Created with Cambalache 1.2.0 -->
 <interface>
+  <!-- interface-name unit_file_delete.ui -->
   <requires lib="gtk" version="4.18"/>
   <requires lib="libadwaita" version="1.6"/>
   <template class="UnitFileDeleteDialog" parent="AdwAlertDialog">
-    <property name="body">fherterth</property>
+    <property name="body">fherterth dfgdf</property>
     <property name="body-use-markup">True</property>
     <property name="default-response">Cancel</property>
     <property name="extra-child">
@@ -13,7 +14,8 @@
           <object class="GtkLabel">
             <property name="halign">baseline-fill</property>
             <property name="hexpand">True</property>
-            <property name="label">Are you sure</property>
+            <property name="label">&lt;b&gt;Are you sure?&lt;/b&gt;</property>
+            <property name="use-markup">True</property>
           </object>
         </child>
         <child>
@@ -25,5 +27,11 @@
         </child>
       </object>
     </property>
+    <signal name="response" handler="response_cb" swapped="True"/>
+    <!-- Custom template fragments -->
+    <responses>
+      <response id="cancel" translatable="yes">_Cancel</response>
+      <response id="delete" translatable="yes" appearance="destructive">_Delete</response>
+    </responses>
   </template>
 </interface>
