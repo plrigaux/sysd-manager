@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 1.2.0 -->
+<interface>
+  <requires lib="gtk" version="4.18"/>
+  <requires lib="libadwaita" version="1.6"/>
+  <template class="UnitFileDeleteDialog" parent="AdwAlertDialog">
+    <property name="body">fherterth</property>
+    <property name="body-use-markup">True</property>
+    <property name="default-response">Cancel</property>
+    <property name="extra-child">
+      <object class="GtkBox">
+        <child>
+          <object class="GtkLabel">
+            <property name="halign">baseline-fill</property>
+            <property name="hexpand">True</property>
+            <property name="label">Are you sure</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkSwitch">
+            <property name="halign">end</property>
+            <property name="valign">center</property>
+            <property name="vexpand">True</property>
+          </object>
+        </child>
+      </object>
+    </property>
+  </template>
+</interface>

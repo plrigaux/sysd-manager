@@ -277,6 +277,17 @@ pub async fn write_on_disk(
     Ok(bytes_written)
 }
 
+pub async fn delete_file(file_path: &Path) -> Result<(), SysdBaseError> {
+    if let Err(err) = delete_file_io(file_path).await {
+        if err.kind() == std::io::ErrorKind::PermissionDenied && getuid() != 0 {
+            delete_with_priviledge(file_path).await
+        } else {
+            Err(err)?
+        }?;
+    }
+    Ok(())
+}
+
 async fn create_dir_all_with_priviledge(dir_path: &Path) -> Result<(), SysdBaseError> {
     let prog_n_args = args!["pkexec", "mkdir", "-p", dir_path];
     execute_command(None, &prog_n_args).await?;
@@ -288,6 +299,12 @@ pub async fn write_with_priviledge(file_path: &Path, text: &str) -> Result<u64, 
     let input = text.as_bytes();
     execute_command(Some(input), &prog_n_args).await?;
     Ok(input.len() as u64)
+}
+
+pub async fn delete_with_priviledge(file_path: &Path) -> Result<(), SysdBaseError> {
+    let prog_n_args = args!["pkexec", "rm", file_path];
+    execute_command(None, &prog_n_args).await?;
+    Ok(())
 }
 
 pub async fn execute_command(
@@ -400,6 +417,11 @@ pub async fn save_io(
     let bytes_written = test_bytes.len();
 
     Ok(bytes_written as u64)
+}
+
+pub async fn delete_file_io(file_path: impl AsRef<Path>) -> Result<(), std::io::Error> {
+    fs::remove_file(file_path).await?;
+    Ok(())
 }
 
 pub const FLATPAK_SPAWN: &str = "flatpak-spawn";

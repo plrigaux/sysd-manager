@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 1.0 -->
+<!-- Created with Cambalache 1.2.0 -->
 <interface>
   <!-- interface-name side_control_panel.ui -->
   <requires lib="gtk" version="4.18"/>
@@ -205,6 +205,21 @@ This is a stronger version of &lt;b&gt;disable&lt;/b&gt;, since it prohibits all
                     <property name="label" translatable="yes" context="control" comments="button">_Link ➚</property>
                     <property name="tooltip-markup" translatable="yes" context="control" comments="tooltip">Link unit files (that are located outside of the usual unit search paths) into the unit search path</property>
                     <property name="use-underline">True</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="delete_unit_file_button">
+                <property name="css-classes">flat
+destructive-action
+</property>
+                <signal name="clicked" handler="delete_unit_file_button_clicked" swapped="True"/>
+                <child>
+                  <object class="AdwButtonContent">
+                    <property name="halign">start</property>
+                    <property name="icon-name">user-trash-symbolic</property>
+                    <property name="label">Delete Unit File ➚</property>
                   </object>
                 </child>
               </object>

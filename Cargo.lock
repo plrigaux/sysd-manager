@@ -603,16 +603,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cstr-argument"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b6bd9c8e659a473bce955ae5c35b116af38af11a7acb0b480e01f3ed348aeb40"
-dependencies = [
- "cfg-if",
- "memchr",
-]
-
-[[package]]
 name = "ctr"
 version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1945,9 +1935,9 @@ checksum = "b6d2cec3eae94f9f509c767b45932f1ada8350c4bdb85af2fcab4a3c14807981"
 
 [[package]]
 name = "libsystemd-sys"
-version = "0.9.4"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "976306de183e6046819ef6505888d00996214766a3f4660a2ed5761c84a20aed"
+checksum = "4a685c42724c1b3f80ef38bcde1a3b63812cf3541ae16aa2fe689aba0f14f244"
 dependencies = [
  "build-env",
  "cfg-if",
@@ -3386,11 +3376,10 @@ dependencies = [
 
 [[package]]
 name = "systemd"
-version = "0.10.1"
+version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "01e9d1976a15b86245def55d20d52b5818e1a1e81aa030b6a608d3ce57709423"
+checksum = "4f746dc1df122b4fd71667e8eef21b5532a2b80f82687b74d3b0f7fbd6c8e95a"
 dependencies = [
- "cstr-argument",
  "foreign-types",
  "libc",
  "libsystemd-sys",

@@ -13,20 +13,21 @@ use crate::{
         clean_dialog::CleanUnitDialog,
         control_action_dialog::{ControlActionDialog, ControlActionType},
         kill_panel::KillPanel,
-        unit_control_panel::{UnitControlPanel, work_around_dialog},
+        unit_control_panel::{
+            UnitControlPanel, side_control_panel::SideControlPanel, work_around_dialog,
+        },
+        unit_file_delete::UnitFileDeleteDialog,
     },
 };
+use adw::prelude::*;
 use base::enums::UnitDBusLevel;
 use gtk::{
     gio::{self, MENU_ATTRIBUTE_TARGET},
     glib::{self, Variant, VariantTy},
-    prelude::*,
     subclass::prelude::*,
 };
-use tracing::{error, warn};
-
-use super::SideControlPanel;
 use strum::IntoEnumIterator;
+use tracing::{error, warn};
 
 #[derive(Default, gtk::CompositeTemplate, glib::Properties)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/side_control_panel.ui")]
@@ -65,6 +66,8 @@ pub struct SideControlPanelImpl {
     reenable_button: TemplateChild<gtk::Button>,
     #[template_child]
     link_button: TemplateChild<gtk::Button>,
+    #[template_child]
+    delete_unit_file_button: TemplateChild<gtk::Button>,
 
     kill_signal_window: RefCell<Option<KillPanel>>,
     queue_signal_window: RefCell<Option<KillPanel>>,
@@ -242,6 +245,13 @@ impl SideControlPanelImpl {
         self.show_dialog(ControlActionType::Link);
     }
 
+    #[template_callback]
+    fn delete_unit_file_button_clicked(&self) {
+        let dialog = UnitFileDeleteDialog::default();
+
+        dialog.present(self.app_window().as_ref());
+    }
+
     fn show_dialog(&self, action: ControlActionType) {
         let app_window = self.app_window();
 
@@ -408,6 +418,8 @@ impl SideControlPanelImpl {
         self.reload_unit_button.set_sensitive(sensitive);
         self.preset_button.set_sensitive(sensitive);
         self.reenable_button.set_sensitive(sensitive);
+        self.link_button.set_sensitive(sensitive);
+        self.delete_unit_file_button.set_sensitive(sensitive);
     }
 
     fn app_window(&self) -> Option<AppWindow> {

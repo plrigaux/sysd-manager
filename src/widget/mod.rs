@@ -12,6 +12,7 @@ pub mod signals_dialog;
 pub mod text_search;
 pub mod unit_control_panel;
 pub mod unit_dependencies_panel;
+pub(crate) mod unit_file_delete;
 pub mod unit_file_panel;
 pub mod unit_list;
 pub mod unit_properties_selector;

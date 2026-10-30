@@ -47,6 +47,7 @@ pub enum SystemdErrors {
     Timeout(Duration),
     JobRemoved(String),
     ZFileNotFound(String),
+    Systemd(sysd::Error),
 }
 
 impl SystemdErrors {
@@ -267,5 +268,11 @@ impl From<SysdBaseError> for SystemdErrors {
                 SystemdErrors::Custom(format!("Program exit code {}", exit_code))
             }
         }
+    }
+}
+
+impl From<sysd::Error> for SystemdErrors {
+    fn from(value: sysd::Error) -> Self {
+        SystemdErrors::Systemd(value)
     }
 }
