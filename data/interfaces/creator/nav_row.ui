@@ -5,7 +5,6 @@
   <requires lib="gtk" version="4.18"/>
   <requires lib="libadwaita" version="1.4"/>
   <template class="NavigationRow" parent="GtkBox">
-    <property name="css-classes">view</property>
     <property name="margin-bottom">5</property>
     <property name="margin-end">5</property>
     <property name="margin-start">5</property>
@@ -15,6 +14,7 @@
       <object class="GtkBox">
         <property name="margin-bottom">5</property>
         <property name="margin-top">5</property>
+        <property name="spacing">5</property>
         <child>
           <object class="GtkBox">
             <property name="hexpand">True</property>
@@ -36,12 +36,23 @@
                 <property name="css-classes">pill</property>
                 <property name="halign">start</property>
                 <property name="valign">center</property>
-                <child>
-                  <object class="AdwButtonContent">
-                    <property name="icon-name">go-previous-symbolic</property>
-                    <property name="label">Previous</property>
+                <property name="child">
+                  <object class="GtkBox">
+                    <property name="halign">baseline-fill</property>
+                    <property name="spacing">5</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="halign">end</property>
+                        <property name="icon-name">go-previous-symbolic</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label" translatable="yes" context="create_unit" comments="Navigation Button">Previous</property>
+                      </object>
+                    </child>
                   </object>
-                </child>
+                  </property>
               </object>
             </child>
           </object>
@@ -56,12 +67,23 @@
                 <property name="css-classes">pill</property>
                 <property name="halign">end</property>
                 <property name="valign">center</property>
-                <child>
-                  <object class="AdwButtonContent">
-                    <property name="icon-name">document-text</property>
-                    <property name="label">File</property>
+                <property name="child">
+                  <object class="GtkBox">
+                    <property name="halign">baseline-fill</property>
+                    <property name="spacing">5</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="halign">end</property>
+                        <property name="icon-name">document-text</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label" translatable="yes" context="create_unit" comments="Navigation Button">File</property>
+                      </object>
+                    </child>
                   </object>
-                </child>
+                  </property>
               </object>
             </child>
             <child>
@@ -76,7 +98,7 @@
                     <property name="spacing">5</property>
                     <child>
                       <object class="GtkLabel">
-                        <property name="label">Next</property>
+                        <property name="label" translatable="yes" context="create_unit" comments="Navigation Button">Next</property>
                       </object>
                     </child>
                     <child>

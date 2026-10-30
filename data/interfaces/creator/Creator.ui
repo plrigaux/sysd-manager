@@ -9,7 +9,6 @@
       <object class="AdwToolbarView">
         <property name="content">
           <object class="GtkBox">
-            <property name="css-classes">view</property>
             <property name="orientation">vertical</property>
             <child>
               <object class="AdwToastOverlay" id="toast_overlay">
@@ -38,9 +37,6 @@ You need to "jailbreak" your Flatpak application to allow it to run sub-programs
                 </property>
               </object>
             </child>
-            <child>
-              <object class="NavigationRow" id="nav_row"/>
-            </child>
           </object>
         </property>
         <property name="top-bar-style">raised</property>
@@ -57,6 +53,16 @@ You need to "jailbreak" your Flatpak application to allow it to run sub-programs
                 <property name="label">Advanced Mode </property>
               </object>
             </child>
+          </object>
+        </child>
+        <child type="bottom">
+          <object class="AdwHeaderBar">
+            <property name="show-back-button">False</property>
+            <property name="show-end-title-buttons">False</property>
+            <property name="show-start-title-buttons">False</property>
+            <property name="title-widget">
+              <object class="NavigationRow" id="nav_row"/>
+            </property>
           </object>
         </child>
       </object>

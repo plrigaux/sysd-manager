@@ -8,10 +8,6 @@
   <ui template-class="LaunchCreatorPage" filename="creator_end_page.ui"/>
   <ui template-class="UnitFileCreatorPage" filename="unit_file_creator_page.ui"/>
   <ui template-class="UnitFileCreatorFirstPage" filename="create_first.ui"/>
-  <ui>
-    <content><![CDATA[<interface/>
-]]></content>
-  </ui>
   <ui template-class="MyDropDown" filename="mydrop.ui"/>
   <ui template-class="UnitCreatorWindow" filename="Creator.ui">
     <requires>NavigationRow</requires>
