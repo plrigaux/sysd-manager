@@ -27,6 +27,7 @@
         </child>
       </object>
     </property>
+    <property name="heading">Delete Unit</property>
     <signal name="response" handler="response_cb" swapped="True"/>
     <!-- Custom template fragments -->
     <responses>

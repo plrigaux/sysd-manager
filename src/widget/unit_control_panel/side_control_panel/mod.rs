@@ -12,8 +12,8 @@ mod imp;
 
 glib::wrapper! {
     pub struct SideControlPanel(ObjectSubclass<imp::SideControlPanelImpl>)
-    @extends gtk::Box, gtk::Widget,
-    @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::Orientable;
+    @extends gtk::Popover, gtk::Widget,
+    @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::Native, gtk::ShortcutManager;
 }
 
 impl SideControlPanel {

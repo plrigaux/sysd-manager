@@ -85,9 +85,8 @@ pub struct UnitControlPanelImpl {
     #[template_child]
     reload_unit_button: TemplateChild<adw::SplitButton>,
 
-    #[template_child]
-    more_action_popover: TemplateChild<gtk::Popover>,
-
+    // #[template_child]
+    // more_action_popover: TemplateChild<gtk::Popover>,
     #[template_child]
     start_modes: TemplateChild<gtk::Box>,
 
@@ -177,15 +176,17 @@ impl UnitControlPanelImpl {
             .set(app_window.clone())
             .expect("app_window set once");
 
-        let unit_control_panel = self.obj().clone();
-        let more_action_panel = SideControlPanel::new(&unit_control_panel);
+        self.show_more_button
+            .set_popover(Some(&SideControlPanel::new(&self.obj())));
+        // let unit_control_panel = self.obj().clone();
+        // let more_action_panel = SideControlPanel::new(&unit_control_panel);
 
-        self.more_action_popover.set_child(Some(&more_action_panel));
+        // self.more_action_popover.set_child(Some(&more_action_panel));
 
-        let more_action_panel = more_action_panel.clone();
-        self.more_action_popover.connect_show(move |_popover| {
-            more_action_panel.more_action_popover_shown();
-        });
+        // let more_action_panel = more_action_panel.clone();
+        // self.more_action_popover.connect_show(move |_popover| {
+        //     more_action_panel.more_action_popover_shown();
+        // });
 
         let action_start_unit = {
             let cpanel = self.obj().clone();

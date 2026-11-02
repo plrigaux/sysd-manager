@@ -1,8 +1,3 @@
-use std::cell::RefCell;
-
-use gettextrs::pgettext;
-use glib::WeakRef;
-
 use crate::{
     consts::{MENU_ACTION, WIN_MENU_ACTION},
     systemd::{self, data::UnitInfo, enums::StartStopMode, errors::SystemdErrors},
@@ -21,11 +16,14 @@ use crate::{
 };
 use adw::prelude::*;
 use base::enums::UnitDBusLevel;
+use gettextrs::pgettext;
+use glib::WeakRef;
 use gtk::{
     gio::{self, MENU_ATTRIBUTE_TARGET},
     glib::{self, Variant, VariantTy},
     subclass::prelude::*,
 };
+use std::cell::RefCell;
 use strum::IntoEnumIterator;
 use tracing::{error, warn};
 
@@ -79,7 +77,7 @@ pub struct SideControlPanelImpl {
 impl ObjectSubclass for SideControlPanelImpl {
     const NAME: &'static str = "SideControlPanel";
     type Type = super::SideControlPanel;
-    type ParentType = gtk::Box;
+    type ParentType = gtk::Popover;
 
     fn class_init(klass: &mut Self::Class) {
         // The layout manager determines how child widgets are laid out.
@@ -196,12 +194,15 @@ impl SideControlPanelImpl {
         let app_window = self.app_window();
 
         if let Some(unit_control_panel) = self.control_panel() {
+            self.obj().popdown();
             let clean_dialog = CleanUnitDialog::new(&unit_control_panel);
 
             clean_dialog.set_transient_for(app_window.as_ref());
             //clean_dialog.set_modal(true);
 
             clean_dialog.present();
+            // clean_dialog.focus();
+            // gtk::prelude::GtkWindowExt::focus(&clean_dialog);
         }
     }
 
@@ -247,6 +248,7 @@ impl SideControlPanelImpl {
 
     #[template_callback]
     fn delete_unit_file_button_clicked(&self) {
+        self.obj().popdown();
         let dialog = UnitFileDeleteDialog::default();
 
         dialog.present(self.app_window().as_ref());
@@ -256,6 +258,7 @@ impl SideControlPanelImpl {
         let app_window = self.app_window();
 
         if let Some(parent) = self.control_panel() {
+            self.obj().popdown();
             let dialog = ControlActionDialog::new(&parent, action);
             dialog.set_transient_for(app_window.as_ref());
 
@@ -409,6 +412,8 @@ impl SideControlPanelImpl {
             false
         };
 
+        self.enable_unit_file_button.set_sensitive(sensitive);
+        self.disable_unit_file.set_sensitive(sensitive);
         self.send_kill_button.set_sensitive(sensitive);
         self.queue_signal_button.set_sensitive(sensitive);
         self.freeze_button.set_sensitive(sensitive);
@@ -444,8 +449,12 @@ impl ObjectImpl for SideControlPanelImpl {
         let popover = gtk::PopoverMenu::from_model(Some(&menu));
 
         self.reload_unit_button.set_popover(Some(&popover));
+
+        self.obj().connect_show(move |popover| {
+            popover.imp().more_action_popover_shown();
+        });
     }
 }
 
 impl WidgetImpl for SideControlPanelImpl {}
-impl BoxImpl for SideControlPanelImpl {}
+impl PopoverImpl for SideControlPanelImpl {}

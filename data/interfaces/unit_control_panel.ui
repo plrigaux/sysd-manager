@@ -134,9 +134,6 @@
             <child>
               <object class="GtkMenuButton" id="show_more_button">
                 <property name="label">test</property>
-                <property name="popover">
-                  <object class="GtkPopover" id="more_action_popover"/>
-                </property>
                 <child>
                   <object class="AdwButtonContent">
                     <property name="can-shrink">True</property>

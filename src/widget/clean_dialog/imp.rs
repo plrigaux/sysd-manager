@@ -36,7 +36,9 @@ pub struct CleanDialogImp {
     clean_button: TemplateChild<gtk::Button>,
 
     #[template_child]
-    window_title: TemplateChild<adw::WindowTitle>,
+    window_title: TemplateChild<gtk::Label>,
+    #[template_child]
+    window_subtitle: TemplateChild<gtk::Label>,
 
     check_buttons: OnceCell<HashMap<String, gtk::CheckButton>>,
 
@@ -112,7 +114,7 @@ impl CleanDialogImp {
             }
         };
 
-        self.window_title.set_subtitle(&sub_title);
+        self.window_subtitle.set_label(&sub_title);
 
         self.set_send_button_sensitivity();
     }
