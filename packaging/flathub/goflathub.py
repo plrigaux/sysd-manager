@@ -464,6 +464,26 @@ def deploy():
     generate(FLATHUB_DIR)
 
     bcommon.cmd_run(
+        ["git", "fetch", "origin", "master:master"], cwd=FLATHUB_DIR, on_fail_exit=False
+    )
+
+    #     Step 1 Clone the repository or update your local repository with the latest changes.
+
+    # git pull origin master
+
+    # Step 2 Switch to the base branch of the pull request.
+
+    # git checkout master
+
+    # Step 3 Merge the head branch into the base branch.
+
+    # git merge new_version
+
+    # Step 4 Push the changes.
+
+    # git push -u origin master
+
+    bcommon.cmd_run(
         ["git", "config", "pull.rebase", "true"], cwd=FLATHUB_DIR, on_fail_exit=False
     )
     bcommon.cmd_run(["git", "pull"], cwd=FLATHUB_DIR, on_fail_exit=False)
