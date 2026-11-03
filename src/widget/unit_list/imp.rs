@@ -813,7 +813,8 @@ impl UnitListPanelImp {
         let Some(unit) = unit else {
             self.unit.replace(None);
             self.set_unit_favorite(None);
-            single_selection.set_selected(gtk::INVALID_LIST_POSITION);
+            self.single_selection()
+                .set_selected(gtk::INVALID_LIST_POSITION);
             return None;
         };
 
