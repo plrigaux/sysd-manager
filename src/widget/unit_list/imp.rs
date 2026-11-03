@@ -813,6 +813,7 @@ impl UnitListPanelImp {
         let Some(unit) = unit else {
             self.unit.replace(None);
             self.set_unit_favorite(None);
+            single_selection.set_selected(gtk::INVALID_LIST_POSITION);
             return None;
         };
 
@@ -870,7 +871,7 @@ impl UnitListPanelImp {
             info!("Selection position {:?}", unit_found_position);
             if let Some(row) = unit_found_position {
                 info!("Scroll to row {row} fitems {}", single_selection.n_items());
-                single_selection.set_selected(row);
+                // single_selection.set_selected(row);
                 units_browser!(this).scroll_to(
                     row, // to centerish on the selected unit
                     None,

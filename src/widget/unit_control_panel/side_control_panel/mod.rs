@@ -52,8 +52,4 @@ impl SideControlPanel {
             );
         }
     }
-
-    pub fn more_action_popover_shown(&self) {
-        self.imp().more_action_popover_shown();
-    }
 }

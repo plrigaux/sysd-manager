@@ -1,6 +1,6 @@
 glib::wrapper! {
     pub struct UnitFileDeleteDialog(ObjectSubclass<imp::UnitFileDeleteDialogImp>)
-        @extends adw::AlertDialog, adw::Dialog, gtk::Widget,
+        @extends  adw::Dialog, gtk::Widget,
         @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::ShortcutManager;
 }
 
@@ -18,7 +18,7 @@ impl Default for UnitFileDeleteDialog {
 }
 
 mod imp {
-    use adw::subclass::{alert_dialog::AdwAlertDialogImpl, dialog::AdwDialogImpl};
+    use adw::subclass::dialog::AdwDialogImpl;
     use glib::subclass::{object::ObjectImpl, types::ObjectSubclass};
     use gtk::subclass::widget::*;
     use tracing::info;
@@ -39,7 +39,7 @@ mod imp {
     impl ObjectSubclass for UnitFileDeleteDialogImp {
         const NAME: &'static str = "UnitFileDeleteDialog";
         type Type = super::UnitFileDeleteDialog;
-        type ParentType = adw::AlertDialog;
+        type ParentType = adw::Dialog;
 
         fn class_init(klass: &mut Self::Class) {
             // The layout manager determines how child widgets are laid out.
@@ -56,7 +56,6 @@ mod imp {
         fn constructed(&self) {}
     }
 
-    impl AdwAlertDialogImpl for UnitFileDeleteDialogImp {}
     impl AdwDialogImpl for UnitFileDeleteDialogImp {}
     impl WidgetImpl for UnitFileDeleteDialogImp {}
 }

@@ -4,35 +4,58 @@
   <!-- interface-name unit_file_delete.ui -->
   <requires lib="gtk" version="4.18"/>
   <requires lib="libadwaita" version="1.6"/>
-  <template class="UnitFileDeleteDialog" parent="AdwAlertDialog">
-    <property name="body">fherterth dfgdf</property>
-    <property name="body-use-markup">True</property>
-    <property name="default-response">Cancel</property>
-    <property name="extra-child">
-      <object class="GtkBox">
-        <child>
-          <object class="GtkLabel">
-            <property name="halign">baseline-fill</property>
-            <property name="hexpand">True</property>
-            <property name="label">&lt;b&gt;Are you sure?&lt;/b&gt;</property>
-            <property name="use-markup">True</property>
+  <template class="UnitFileDeleteDialog" parent="AdwDialog">
+    <property name="child">
+      <object class="AdwToolbarView">
+        <property name="content">
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <property name="spacing">5</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="css-classes">title-2</property>
+                <property name="label">Delete Unit File</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkCheckButton">
+                <property name="css-classes">selection-mode</property>
+                <property name="label">Are you sure</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkBox">
+                <child>
+                  <object class="GtkButton">
+                    <property name="css-classes">pill</property>
+                    <property name="halign">start</property>
+                    <property name="label">Cancel</property>
+                    <property name="valign">center</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton">
+                    <property name="css-classes">destructive-action
+pill</property>
+                    <property name="halign">end</property>
+                    <property name="label">Delete</property>
+                    <property name="valign">center</property>
+                  </object>
+                </child>
+              </object>
+            </child>
           </object>
-        </child>
-        <child>
-          <object class="GtkSwitch">
-            <property name="halign">end</property>
-            <property name="valign">center</property>
-            <property name="vexpand">True</property>
-          </object>
+        </property>
+        <child type="top">
+          <object class="AdwHeaderBar"/>
         </child>
       </object>
     </property>
-    <property name="heading">Delete Unit</property>
-    <signal name="response" handler="response_cb" swapped="True"/>
-    <!-- Custom template fragments -->
-    <responses>
-      <response id="cancel" translatable="yes">_Cancel</response>
-      <response id="delete" translatable="yes" appearance="destructive">_Delete</response>
-    </responses>
+    <property name="content-height">200</property>
+    <property name="content-width">200</property>
+    <property name="title">fgydfghfg</property>
+    <style>
+      <class name="alert"/>
+    </style>
   </template>
 </interface>
