@@ -1,6 +1,9 @@
 use tracing::{debug, warn};
 
-use crate::{gtk::subclass::prelude::*, widget::unit_list::UnitListPanel};
+use crate::{
+    gtk::subclass::prelude::*,
+    widget::{unit_control_panel::UnitControlPanel, unit_list::UnitListPanel},
+};
 use gtk::prelude::*;
 
 glib::wrapper! {
@@ -14,10 +17,11 @@ impl UnitPopMenu {
         units_browser: &gtk::ColumnView,
         unit_list_panel: &UnitListPanel,
         filtered_list: &gtk::FilterListModel,
+        control_panel: &UnitControlPanel,
     ) -> Self {
         let obj: UnitPopMenu = glib::Object::new();
         obj.imp()
-            .set_gesture(units_browser, unit_list_panel, filtered_list);
+            .set_gesture(units_browser, unit_list_panel, filtered_list, control_panel);
         obj
     }
 
@@ -37,6 +41,7 @@ mod imp {
         upgrade,
         widget::{
             InterPanelMessage, highlight_unit_text, set_favorite_info,
+            unit_control_panel::{UnitControlPanel, side_control_panel::SideControlPanel},
             unit_list::{UnitCuratedList, UnitListPanel},
         },
     };
@@ -106,6 +111,9 @@ mod imp {
 
         #[template_child]
         toggle_favorite_button_content: TemplateChild<adw::ButtonContent>,
+
+        #[template_child]
+        more_options_menubutton: TemplateChild<gtk::MenuButton>,
 
         // pub(super) units_browser: OnceCell<WeakRef<gtk::ColumnView>>,
         pub(super) unit_list_panel: OnceCell<WeakRef<UnitListPanel>>,
@@ -227,6 +235,7 @@ mod imp {
             units_browser: &gtk::ColumnView,
             unit_list_panel: &UnitListPanel,
             filtered_list: &gtk::FilterListModel,
+            control_panel: &UnitControlPanel,
         ) {
             self.obj().set_parent(units_browser);
 
@@ -312,6 +321,9 @@ mod imp {
             });
 
             units_browser.add_controller(gesture);
+
+            let popover = SideControlPanel::new(control_panel, Some(self.obj().as_ref()));
+            self.more_options_menubutton.set_popover(Some(&popover));
         }
 
         pub(super) fn refresh_buttons_style(&self) {

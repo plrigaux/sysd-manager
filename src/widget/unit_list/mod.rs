@@ -43,8 +43,8 @@ impl UnitListPanel {
         app_window: &AppWindow,
         refresh_unit_list_button: &gtk::Button,
     ) {
-        let obj = self.imp();
-        obj.register_selection_change(app_window, refresh_unit_list_button);
+        self.imp()
+            .register_selection_change(app_window, refresh_unit_list_button);
     }
 
     pub fn button_search_toggled(&self, toggle_button_is_active: bool) {

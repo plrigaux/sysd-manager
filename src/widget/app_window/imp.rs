@@ -132,10 +132,9 @@ impl ObjectImpl for AppWindowImpl {
         }
         // self.load_window_size();
         let app_window = self.obj();
+        self.unit_control_panel.set_app_window(&app_window);
         self.unit_list_panel
             .register_selection_change(&app_window, &self.refresh_unit_list_button);
-
-        self.unit_control_panel.set_app_window(&app_window);
 
         self.setup_dropdown();
 
@@ -757,6 +756,10 @@ impl AppWindowImpl {
 
     pub fn cached_list_boots_mut(&self) -> RefMut<'_, Option<Vec<Rc<BootCol>>>> {
         self.list_boots.borrow_mut()
+    }
+
+    pub(super) fn get_control_panel(&self) -> &UnitControlPanel {
+        &self.unit_control_panel
     }
 }
 

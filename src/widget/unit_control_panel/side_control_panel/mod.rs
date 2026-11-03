@@ -17,9 +17,12 @@ glib::wrapper! {
 }
 
 impl SideControlPanel {
-    pub fn new(unit_control_panel: &UnitControlPanel) -> Self {
+    pub fn new(
+        unit_control_panel: &UnitControlPanel,
+        parent_pop: Option<&impl IsA<gtk::Popover>>,
+    ) -> Self {
         let obj: SideControlPanel = glib::Object::new();
-        obj.imp().init(unit_control_panel);
+        obj.imp().init(unit_control_panel, parent_pop);
         obj
     }
 

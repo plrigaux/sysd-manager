@@ -589,6 +589,16 @@ impl UnitListPanelImp {
                 unit_list_panel.imp().unit_property_filters.replace(map);
             });
         }
+
+        let units_browser = units_browser!(self);
+
+        let pop = pop_menu::UnitPopMenu::new(
+            units_browser,
+            &self.obj(),
+            self.filter_list_model(),
+            app_window.get_control_panel(),
+        );
+        let _ = self.pop_menu.set(pop);
     }
 
     fn set_list_preserve_filter(&self, value: bool) {
@@ -2379,9 +2389,6 @@ impl ObjectImpl for UnitListPanelImp {
             .build();
 
         units_browser.connect_activate(|_a, row| info!("Unit row position {row}")); //TODO make selection
-
-        let pop = pop_menu::UnitPopMenu::new(units_browser, &self.obj(), self.filter_list_model());
-        let _ = self.pop_menu.set(pop);
 
         force_expand_on_the_last_visible_column(&units_browser.columns());
 

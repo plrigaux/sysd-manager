@@ -2,7 +2,7 @@ use glib::Object;
 use gtk::{gio, glib, subclass::prelude::*};
 use systemd::errors::SystemdErrors;
 
-use crate::systemd::data::UnitInfo;
+use crate::{systemd::data::UnitInfo, widget::unit_control_panel::UnitControlPanel};
 
 use super::{InterPanelMessage, signals_dialog::SignalsWindow};
 
@@ -63,6 +63,10 @@ impl AppWindow {
 
     pub fn set_signal_window(&self, signals_window: Option<&SignalsWindow>) {
         self.imp().signals_window.replace(signals_window.cloned());
+    }
+
+    pub fn get_control_panel(&self) -> &UnitControlPanel {
+        self.imp().get_control_panel()
     }
 }
 

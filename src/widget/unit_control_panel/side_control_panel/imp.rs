@@ -2,6 +2,7 @@ use crate::{
     consts::{MENU_ACTION, WIN_MENU_ACTION},
     systemd::{self, data::UnitInfo, enums::StartStopMode, errors::SystemdErrors},
     systemd_gui::is_dark,
+    upgrade,
     widget::{
         InterPanelMessage,
         app_window::AppWindow,
@@ -323,7 +324,11 @@ impl SideControlPanelImpl {
         )));
     }
 
-    pub(super) fn init(&self, unit_control_panel: &UnitControlPanel) {
+    pub(super) fn init(
+        &self,
+        unit_control_panel: &UnitControlPanel,
+        parent_pop: Option<&impl IsA<gtk::Popover>>,
+    ) {
         self.control_panel.set(Some(unit_control_panel));
         let default_mode = StartStopMode::default();
         self.reload_unit_mode_changed(default_mode);
@@ -352,6 +357,14 @@ impl SideControlPanelImpl {
         self.app_window()
             .expect("AppWindow has to be set")
             .add_action_entries([reload_params_action_entry]);
+
+        if let Some(parent_pop) = parent_pop {
+            let parent_pop = parent_pop.downgrade();
+            self.obj().connect_closed(move |_| {
+                let parent_pop = upgrade!(parent_pop);
+                parent_pop.popdown();
+            });
+        }
     }
 
     pub fn set_inter_message(&self, action: &InterPanelMessage) {

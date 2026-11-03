@@ -177,7 +177,10 @@ impl UnitControlPanelImpl {
             .expect("app_window set once");
 
         self.show_more_button
-            .set_popover(Some(&SideControlPanel::new(&self.obj())));
+            .set_popover(Some(&SideControlPanel::new(
+                &self.obj(),
+                None::<&gtk::Popover>,
+            )));
         // let unit_control_panel = self.obj().clone();
         // let more_action_panel = SideControlPanel::new(&unit_control_panel);
 
