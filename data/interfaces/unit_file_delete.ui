@@ -5,28 +5,57 @@
   <requires lib="gtk" version="4.18"/>
   <requires lib="libadwaita" version="1.6"/>
   <template class="UnitFileDeleteDialog" parent="AdwDialog">
+    <property name="can-close">False</property>
     <property name="child">
       <object class="AdwToolbarView">
         <property name="content">
           <object class="GtkBox">
+            <property name="margin-bottom">20</property>
+            <property name="margin-end">5</property>
+            <property name="margin-start">5</property>
+            <property name="margin-top">20</property>
             <property name="orientation">vertical</property>
-            <property name="spacing">5</property>
+            <property name="spacing">10</property>
             <child>
               <object class="GtkLabel">
                 <property name="css-classes">title-2</property>
-                <property name="label">Delete Unit File</property>
+                <property name="label" translatable="yes" comments="Dialog title">Delete Unit File?</property>
               </object>
             </child>
             <child>
-              <object class="GtkCheckButton">
-                <property name="css-classes">selection-mode</property>
-                <property name="label">Are you sure</property>
+              <object class="GtkLabel">
+                <property name="label">This operation is irreversible</property>
+                <property name="margin-top">10</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLinkButton" id="file_path_link"/>
+            </child>
+            <child>
+              <object class="GtkBox">
+                <property name="halign">center</property>
+                <property name="spacing">10</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="css-classes">heading</property>
+                    <property name="label">Are you sure?</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkSwitch" id="are_you_sure_switch">
+                    <property name="valign">center</property>
+                  </object>
+                </child>
               </object>
             </child>
             <child>
               <object class="GtkBox">
+                <property name="margin-bottom">5</property>
+                <property name="margin-end">5</property>
+                <property name="margin-start">5</property>
+                <property name="margin-top">5</property>
                 <child>
-                  <object class="GtkButton">
+                  <object class="GtkButton" id="cancel_button">
                     <property name="css-classes">pill</property>
                     <property name="halign">start</property>
                     <property name="label">Cancel</property>
@@ -34,11 +63,17 @@
                   </object>
                 </child>
                 <child>
-                  <object class="GtkButton">
+                  <object class="GtkBox">
+                    <property name="hexpand">True</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton" id="delete_button">
                     <property name="css-classes">destructive-action
 pill</property>
                     <property name="halign">end</property>
                     <property name="label">Delete</property>
+                    <property name="sensitive">False</property>
                     <property name="valign">center</property>
                   </object>
                 </child>
@@ -46,14 +81,10 @@ pill</property>
             </child>
           </object>
         </property>
-        <child type="top">
-          <object class="AdwHeaderBar"/>
-        </child>
       </object>
     </property>
-    <property name="content-height">200</property>
-    <property name="content-width">200</property>
-    <property name="title">fgydfghfg</property>
+    <property name="follows-content-size">True</property>
+    <property name="presentation-mode">floating</property>
     <style>
       <class name="alert"/>
     </style>

@@ -211,6 +211,7 @@ impl SideControlPanelImpl {
         let app_window = self.app_window();
 
         if let Some(control_panel) = self.control_panel() {
+            self.obj().popdown();
             let enable_unit_dialog =
                 ControlActionDialog::new(&control_panel, ControlActionType::EnableUnitFiles);
 
@@ -248,8 +249,18 @@ impl SideControlPanelImpl {
 
     #[template_callback]
     fn delete_unit_file_button_clicked(&self) {
+        let Some(unit) = self.current_unit() else {
+            error!("No unit");
+            return;
+        };
+
+        let Some(file_path) = unit.file_path() else {
+            warn!("No file path for unit {}", unit.primary());
+            return;
+        };
+
         self.obj().popdown();
-        let dialog = UnitFileDeleteDialog::default();
+        let dialog = UnitFileDeleteDialog::new(file_path);
 
         dialog.present(self.app_window().as_ref());
     }
@@ -385,6 +396,7 @@ impl SideControlPanelImpl {
         };
 
         if create_new {
+            self.obj().popdown();
             let kill_signal_window = new_kill_window_fn(unit.as_ref(), is_dark(), &self.obj());
             kill_signal_window.present();
 
