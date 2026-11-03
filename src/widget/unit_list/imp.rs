@@ -275,8 +275,7 @@ pub struct UnitListPanelImp {
 
     unit: RefCell<Option<UnitInfo>>,
 
-    pub force_selected_index: Cell<Option<u32>>,
-
+    // pub force_selected_index: Cell<Option<u32>>,
     #[property(name = "display-color", get, set)]
     pub display_color: Cell<bool>,
 
@@ -762,33 +761,23 @@ impl UnitListPanelImp {
                     selected_unit_name
                 );
 
-                if let Some(index) = list_store.find_with_equal_func(|object| {
-                    let unit = object
-                        .downcast_ref::<UnitInfo>()
-                        .expect("Needs to be UnitInfo");
+                for position in 0..single_selection.n_items() {
+                    let object = single_selection.item(position);
+                    let Some(unit) = object.and_downcast_ref::<UnitInfo>() else {
+                        error!("item {position} not UnitInfo");
+                        break;
+                    };
 
-                    unit.primary().eq(&selected_unit_name)
-                }) {
-                    info!(
-                        "Force selection to index {index:?} to select unit {selected_unit_name:?}"
-                    );
-                    single_selection.select_item(index, true);
-                    //unit_list.set_force_to_select(index);
-                    force_selected_index = index;
+                    if selected_unit_name == unit.primary() {
+                        force_selected_index = position;
+                        break;
+                    }
                 }
             }
 
-            //Set selection
-            unit_list
-                .imp()
-                .force_selected_index
-                .set(Some(force_selected_index));
-            refresh_unit_list_button.set_sensitive(true);
-            // unit_list.imp().set_sorter();
-
             //cause no scrollwindow v adjustment
             if n_items > 0 {
-                unit_list.imp().focus_on_row();
+                unit_list.imp().focus_on_row(force_selected_index);
             }
             panel_stack.set_visible_child_name(UNIT_LIST_VIEW_PAGE);
 
@@ -1970,16 +1959,12 @@ impl UnitListPanelImp {
         });
     }
 
-    fn focus_on_row(&self) {
-        let Some(mut force_selected_index) = self.force_selected_index.get() else {
-            return;
-        };
+    fn focus_on_row(&self, force_selected_index: u32) {
+        // let Some(force_selected_index) = self.force_selected_index.get() else {
+        //     return;
+        // };
 
-        self.force_selected_index.set(None);
-
-        if force_selected_index == gtk::INVALID_LIST_POSITION {
-            force_selected_index = 0;
-        }
+        // self.force_selected_index.set(None);
 
         let fitems = self.filter_list_model().n_items();
         if fitems == 0 {
@@ -1989,26 +1974,28 @@ impl UnitListPanelImp {
             return;
         }
 
+        if force_selected_index == gtk::INVALID_LIST_POSITION {
+            self.single_selection()
+                .set_selected(gtk::INVALID_LIST_POSITION);
+            return;
+        }
+
         info!("Focus on selected unit list row (index {force_selected_index})");
 
         let units_browser = units_browser!(self).clone();
 
         //needs a bit of time to rendering  the list, then I found this hack
-        glib::spawn_future_local(async move {
+        let interval = Duration::from_millis(100); //FIXME find better
+        glib::timeout_add_local_once(interval, move || {
+            // glib::spawn_future_local(async move {
             // Deactivate the button until the operation is done
-            gio::spawn_blocking(move || {
-                let sleep_duration = Duration::from_millis(100);
-                std::thread::sleep(sleep_duration);
-            })
-            .await
-            .expect("Task needs to finish successfully.");
 
             // Set sensitivity of button to `enable_button`
 
             units_browser.scroll_to(
                 force_selected_index, // to centerish on the selected unit
                 None,
-                gtk::ListScrollFlags::FOCUS,
+                gtk::ListScrollFlags::FOCUS | gtk::ListScrollFlags::SELECT,
                 None,
             );
         });
@@ -2377,7 +2364,7 @@ impl ObjectImpl for UnitListPanelImp {
             self.scrolled_window
                 .vadjustment()
                 .connect_changed(move |_adjustment| {
-                    unit_list.imp().focus_on_row();
+                    unit_list.imp().focus_on_row(gtk::INVALID_LIST_POSITION);
                 });
         }
 
