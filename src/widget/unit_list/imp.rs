@@ -586,7 +586,9 @@ impl UnitListPanelImp {
             let unit_list_panel = self.obj().clone();
             glib::spawn_future_local(async move {
                 let map = unit_prop_filter::load_filters(&unit_list_panel);
+                let search_bar_open = !map.is_empty();
                 unit_list_panel.imp().unit_property_filters.replace(map);
+                unit_list_panel.imp().button_search_toggled(search_bar_open);
             });
         }
 
