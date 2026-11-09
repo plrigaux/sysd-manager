@@ -16,12 +16,16 @@ impl UnitPopMenu {
     pub fn new(
         units_browser: &gtk::ColumnView,
         unit_list_panel: &UnitListPanel,
-        filtered_list: &gtk::FilterListModel,
+        single_selection: &gtk::SingleSelection,
         control_panel: &UnitControlPanel,
     ) -> Self {
         let obj: UnitPopMenu = glib::Object::new();
-        obj.imp()
-            .set_gesture(units_browser, unit_list_panel, filtered_list, control_panel);
+        obj.imp().set_gesture(
+            units_browser,
+            unit_list_panel,
+            single_selection,
+            control_panel,
+        );
         obj
     }
 
@@ -234,7 +238,7 @@ mod imp {
             &self,
             units_browser: &gtk::ColumnView,
             unit_list_panel: &UnitListPanel,
-            filtered_list: &gtk::FilterListModel,
+            single_selection: &gtk::SingleSelection,
             control_panel: &UnitControlPanel,
         ) {
             self.obj().set_parent(units_browser);
@@ -244,7 +248,7 @@ mod imp {
                 .build();
 
             let units_browser_wr = units_browser.downgrade();
-            let filtered_list = filtered_list.downgrade();
+            let single_selection = single_selection.downgrade();
             let unit_list_panel = unit_list_panel.downgrade();
 
             let _ = self.unit_list_panel.set(unit_list_panel.clone());
@@ -255,7 +259,7 @@ mod imp {
                 debug!("Pressed n_press: {n_press} x: {x} y: {y}");
 
                 let units_browser = upgrade!(units_browser_wr);
-                let filtered_list = upgrade!(filtered_list);
+                let single_selection = upgrade!(single_selection);
 
                 let pop_up = upgrade!(pop_up);
 
@@ -286,7 +290,10 @@ mod imp {
                     child_op = child.next_sibling();
                 }
 
-                debug!("Line id {line_id} list count {}", filtered_list.n_items());
+                debug!(
+                    "Line id {line_id} list count {}",
+                    single_selection.n_items()
+                );
 
                 if line_id < 0 {
                     warn!("Some wrongs line_no {line_id}");
@@ -294,7 +301,7 @@ mod imp {
                 }
 
                 let line_id = line_id as u32;
-                if let Some(object) = filtered_list.item(line_id) {
+                if let Some(object) = single_selection.item(line_id) {
                     let unit = object.downcast_ref::<UnitInfo>().expect("Ok");
                     info!(
                         "Pointing on Unit {} state {}",
@@ -307,10 +314,10 @@ mod imp {
                     pop_up.imp().set_unit(Some(unit));
                     pop_up.set_pointing_to(Some(&gdk::Rectangle::new(x as i32, y as i32, 1, 1)));
                     pop_up.popup();
-                } else if line_id >= filtered_list.n_items() {
+                } else if line_id >= single_selection.n_items() {
                     warn!(
                         "Line id: {line_id} is over or equals the number of lines {}",
-                        filtered_list.n_items()
+                        single_selection.n_items()
                     );
                 } else {
                     warn!("Menu right click. Something wrong");

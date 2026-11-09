@@ -597,7 +597,7 @@ impl UnitListPanelImp {
         let pop = pop_menu::UnitPopMenu::new(
             units_browser,
             &self.obj(),
-            self.filter_list_model(),
+            self.single_selection(),
             app_window.get_control_panel(),
         );
         let _ = self.pop_menu.set(pop);
