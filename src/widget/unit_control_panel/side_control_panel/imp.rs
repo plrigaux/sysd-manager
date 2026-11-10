@@ -199,11 +199,8 @@ impl SideControlPanelImpl {
             let clean_dialog = CleanUnitDialog::new(&unit_control_panel);
 
             clean_dialog.set_transient_for(app_window.as_ref());
-            //clean_dialog.set_modal(true);
 
             clean_dialog.present();
-            // clean_dialog.focus();
-            // gtk::prelude::GtkWindowExt::focus(&clean_dialog);
         }
     }
 
@@ -261,9 +258,14 @@ impl SideControlPanelImpl {
         };
 
         self.obj().popdown();
-        let dialog = UnitFileDeleteDialog::new(file_path);
 
-        dialog.present(self.app_window().as_ref());
+        let app_window = self.app_window();
+        if let Some(parent) = self.control_panel() {
+            let dialog = UnitFileDeleteDialog::new(file_path, &unit.primary(), parent);
+            dialog.set_transient_for(app_window.as_ref());
+            dialog.set_modal(true);
+            dialog.present();
+        }
     }
 
     fn show_dialog(&self, action: ControlActionType) {
@@ -426,11 +428,13 @@ impl SideControlPanelImpl {
     }
 
     pub fn more_action_popover_shown(&self) {
-        let unit_option = self.current_unit();
-
-        let sensitive = if let Some(unit) = unit_option {
-            self.clean_button
-                .set_sensitive(unit.active_state().is_inactive());
+        let sensitive = if let Some(unit) = self.current_unit() {
+            let is_inactive = unit.active_state().is_inactive();
+            let can_delete = unit.enable_status().can_delete_file();
+            dbg!(can_delete);
+            self.clean_button.set_sensitive(is_inactive);
+            self.delete_unit_file_button
+                .set_sensitive(is_inactive & can_delete);
             true
         } else {
             self.clean_button.set_sensitive(false);
@@ -449,7 +453,6 @@ impl SideControlPanelImpl {
         self.preset_button.set_sensitive(sensitive);
         self.reenable_button.set_sensitive(sensitive);
         self.link_button.set_sensitive(sensitive);
-        self.delete_unit_file_button.set_sensitive(sensitive);
     }
 
     fn app_window(&self) -> Option<AppWindow> {

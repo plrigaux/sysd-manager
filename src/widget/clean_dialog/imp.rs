@@ -1,6 +1,14 @@
 use std::{cell::OnceCell, collections::HashMap};
 
+use crate::{
+    systemd::{self, data::UnitInfo, enums::CleanOption, errors::SystemdErrors},
+    widget::{
+        close_window_shortcut,
+        unit_control_panel::{UnitControlPanel, work_around_dialog},
+    },
+};
 use adw::{prelude::*, subclass::window::AdwWindowImpl};
+use base::enums::UnitDBusLevel;
 use gettextrs::pgettext;
 use gtk::{
     glib::{self},
@@ -13,15 +21,6 @@ use gtk::{
     },
 };
 use strum::IntoEnumIterator;
-
-use crate::{
-    systemd::{self, data::UnitInfo, enums::CleanOption, errors::SystemdErrors},
-    widget::{
-        close_window_shortcut,
-        unit_control_panel::{UnitControlPanel, work_around_dialog},
-    },
-};
-use base::enums::UnitDBusLevel;
 use tracing::{info, warn};
 
 use super::CleanUnitDialog;

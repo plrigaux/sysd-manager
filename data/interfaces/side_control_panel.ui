@@ -16,12 +16,29 @@
             <child>
               <object class="GtkButton" id="enable_unit_file_button">
                 <property name="child">
-                  <object class="AdwButtonContent">
-                    <property name="halign">start</property>
-                    <property name="icon-name">check-round-outline2-symbolic</property>
-                    <property name="label" translatable="yes" context="control" comments="button">_Enable Unit File ➚</property>
-                    <property name="tooltip-text">Send a signal to a process or a group of processes</property>
-                    <property name="use-underline">True</property>
+                  <object class="GtkBox">
+                    <property name="spacing">5</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="icon-name">check-round-outline2-symbolic</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label" translatable="yes" context="control" comments="button">_Enable Unit File</property>
+                        <property name="use-underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="hexpand">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="icon-name">pop-out</property>
+                      </object>
+                    </child>
                   </object>
                 </property>
                 <property name="css-classes">flat</property>
@@ -30,57 +47,128 @@
             </child>
             <child>
               <object class="GtkButton" id="disable_unit_file">
+                <property name="child">
+                  <object class="GtkBox">
+                    <property name="spacing">5</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="icon-name">circle-crossed-symbolic</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label" translatable="yes" context="control" comments="button">D_isable Unit File</property>
+                        <property name="use-underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="hexpand">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="icon-name">pop-out</property>
+                      </object>
+                    </child>
+                  </object>
+                </property>
                 <property name="css-classes">flat</property>
                 <signal name="clicked" handler="disable_unit_files_button_clicked" swapped="True"/>
-                <child>
-                  <object class="AdwButtonContent">
-                    <property name="halign">start</property>
-                    <property name="icon-name">circle-crossed-symbolic</property>
-                    <property name="label" translatable="yes" context="control" comments="button">D_isable Unit File ➚</property>
-                    <property name="tooltip-markup" translatable="yes" context="control" comments="tooltip">Unmask the selected unit file. This will undo the effect of &lt;b&gt;Mask&lt;/b&gt;</property>
-                    <property name="use-underline">True</property>
-                  </object>
-                </child>
               </object>
             </child>
             <child>
               <object class="GtkButton" id="send_kill_button">
                 <property name="child">
-                  <object class="AdwButtonContent">
-                    <property name="halign">start</property>
-                    <property name="icon-name">send-symbolic</property>
-                    <property name="label" translatable="yes" context="control" comments="button">Send _Kill Signal ➚</property>
-                    <property name="tooltip-text" translatable="yes" context="control" comments="tooltip">Send a signal to a process or a group of processes</property>
-                    <property name="use-underline">True</property>
+                  <object class="GtkBox">
+                    <property name="spacing">5</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="icon-name">send-symbolic</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label" translatable="yes" context="control" comments="button">Send _Kill Signal</property>
+                        <property name="use-underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="hexpand">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="icon-name">pop-out</property>
+                      </object>
+                    </child>
                   </object>
                 </property>
                 <property name="css-classes">flat</property>
+                <property name="tooltip-text" translatable="yes" context="control" comments="tooltip">Send a signal to a process or a group of processes</property>
                 <signal name="clicked" handler="kill_button_clicked" swapped="True"/>
               </object>
             </child>
             <child>
               <object class="GtkButton" id="queue_signal_button">
                 <property name="child">
-                  <object class="AdwButtonContent">
-                    <property name="halign">start</property>
-                    <property name="icon-name">send-alt-symbolic</property>
-                    <property name="label" translatable="yes" context="control" comments="button">_Queue Signal ➚</property>
-                    <property name="tooltip-text" translatable="yes" context="control" comments="tooltip">Queue a signal to a process or a group of processes</property>
-                    <property name="use-underline">True</property>
+                  <object class="GtkBox">
+                    <property name="spacing">5</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="icon-name">send-alt-symbolic</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label" translatable="yes" context="control" comments="button">_Queue Signal</property>
+                        <property name="use-underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="hexpand">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="icon-name">pop-out</property>
+                      </object>
+                    </child>
                   </object>
                 </property>
                 <property name="css-classes">flat</property>
+                <property name="tooltip-text" translatable="yes" context="control" comments="tooltip">Queue a signal to a process or a group of processes</property>
                 <signal name="clicked" handler="send_signal_button_clicked" swapped="True"/>
               </object>
             </child>
             <child>
               <object class="GtkButton" id="clean_button">
                 <property name="child">
-                  <object class="AdwButtonContent">
-                    <property name="halign">start</property>
-                    <property name="icon-name">empty-trash-bin-symbolic</property>
-                    <property name="label" translatable="yes" context="control" comments="button">_Clean ➚</property>
-                    <property name="use-underline">True</property>
+                  <object class="GtkBox">
+                    <property name="spacing">5</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="icon-name">empty-trash-bin-symbolic</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label" translatable="yes" context="control" comments="button">_Clean</property>
+                        <property name="use-underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="hexpand">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="icon-name">pop-out</property>
+                      </object>
+                    </child>
                   </object>
                 </property>
                 <property name="css-classes">flat</property>
@@ -119,19 +207,37 @@
             </child>
             <child>
               <object class="GtkButton" id="mask_button">
+                <property name="child">
+                  <object class="GtkBox">
+                    <property name="spacing">5</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="icon-name">venetian-mask-symbolic</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label" translatable="yes" context="control" comments="button">M_ask</property>
+                        <property name="use-underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="hexpand">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="icon-name">pop-out</property>
+                      </object>
+                    </child>
+                  </object>
+                </property>
                 <property name="css-classes">flat</property>
-                <signal name="clicked" handler="mask_button_clicked" swapped="True"/>
-                <child>
-                  <object class="AdwButtonContent">
-                    <property name="halign">start</property>
-                    <property name="icon-name">venetian-mask-symbolic</property>
-                    <property name="label" translatable="yes" context="control" comments="button">M_ask ➚</property>
-                    <property name="tooltip-markup" translatable="yes" context="control" comments="tooltip">Mask the selected unit. This will link these unit files to &lt;u&gt;/dev/null&lt;/u&gt;, making it impossible to start them. 
+                <property name="tooltip-markup" translatable="yes" context="control" comments="tooltip">Mask the selected unit. This will link these unit files to &lt;u&gt;/dev/null&lt;/u&gt;, making it impossible to start them. 
 This is a stronger version of &lt;b&gt;disable&lt;/b&gt;, since it prohibits all kinds of activation of the unit, including enablement and manual activation. 
 &lt;b&gt;Use this option with care.&lt;/b&gt;</property>
-                    <property name="use-underline">True</property>
-                  </object>
-                </child>
+                <signal name="clicked" handler="mask_button_clicked" swapped="True"/>
               </object>
             </child>
             <child>
@@ -173,12 +279,13 @@ This is a stronger version of &lt;b&gt;disable&lt;/b&gt;, since it prohibits all
                     <property name="spacing">5</property>
                     <child>
                       <object class="GtkImage">
-                    <property name="icon-name">org.gnome.Settings-system-symbolic</property>
+                        <property name="icon-name">org.gnome.Settings-system-symbolic</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkLabel">
-                    <property name="label" translatable="yes" context="control" comments="button">_Preset</property>
+                        <property name="label" translatable="yes" context="control" comments="button">_Preset</property>
+                        <property name="tooltip-text" translatable="yes" context="control" comments="button tooltip">Enables/disables one or more unit files according to the preset policy</property>
                         <property name="use-underline">True</property>
                       </object>
                     </child>
@@ -199,6 +306,7 @@ This is a stronger version of &lt;b&gt;disable&lt;/b&gt;, since it prohibits all
             <child>
               <object class="GtkButton" id="reenable_button">
                 <property name="css-classes">flat</property>
+                <property name="tooltip-text" translatable="yes" context="control" comments="button tooltip">Disabling and enabling the unit quickly one after the other in an atomic fashion. This is useful to apply updated [Install] information contained in unit files</property>
                 <signal name="clicked" handler="reenable_unit_files_button_clicked" swapped="True"/>
                 <child>
                   <object class="GtkBox">
@@ -231,6 +339,7 @@ This is a stronger version of &lt;b&gt;disable&lt;/b&gt;, since it prohibits all
             <child>
               <object class="GtkButton" id="link_button">
                 <property name="css-classes">flat</property>
+                <property name="tooltip-text" translatable="yes" context="control" comments="button tooltip">links unit files (that are located outside of the usual unit search paths) into the unit search path</property>
                 <signal name="clicked" handler="link_unit_files_button_clicked" swapped="True"/>
                 <child>
                   <object class="GtkBox">
@@ -291,6 +400,9 @@ This is a stronger version of &lt;b&gt;disable&lt;/b&gt;, since it prohibits all
                 <property name="css-classes">flat
 destructive-action
 </property>
+                <property name="tooltip-markup" translatable="yes" context="control" comments="delete button tooltip">Completely delete a systemd unit file and remove it from the system.
+                  
+&lt;u&gt;Note:&lt;/u&gt; the unit must be &lt;b&gt;disabled&lt;/b&gt; and &lt;b&gt;inactive&lt;/b&gt;.</property>
                 <signal name="clicked" handler="delete_unit_file_button_clicked" swapped="True"/>
               </object>
             </child>

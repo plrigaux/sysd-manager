@@ -68,6 +68,7 @@ pub struct ProxySwitcher {
     restart: RwLock<bool>,
     reload_unit: RwLock<bool>,
     clean: RwLock<bool>,
+    delete: RwLock<bool>,
     freeze: RwLock<bool>,
     thaw: RwLock<bool>,
     enable_unit_file: RwLock<bool>,
@@ -116,6 +117,10 @@ impl ProxySwitcher {
 
     pub fn clean(&self) -> bool {
         *self.clean.read().unwrap()
+    }
+
+    pub fn delete_file(&self) -> bool {
+        *self.delete.read().unwrap()
     }
 
     pub fn set_clean(&self, value: bool) {

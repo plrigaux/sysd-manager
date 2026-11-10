@@ -1,30 +1,39 @@
 use glib::subclass::types::ObjectSubclassIsExt;
 
+use crate::widget::unit_control_panel::UnitControlPanel;
+
 glib::wrapper! {
     pub struct UnitFileDeleteDialog(ObjectSubclass<imp::UnitFileDeleteDialogImp>)
-        @extends  adw::Dialog, gtk::Widget,
-        @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::ShortcutManager;
+        @extends  adw::Window, gtk::Window, gtk::Widget,
+        @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget, gtk::Native, gtk::Root, gtk::ShortcutManager;
+
 }
 
 impl UnitFileDeleteDialog {
-    pub fn new(file_path: String) -> UnitFileDeleteDialog {
+    pub fn new(
+        file_path: String,
+        unit_name: &str,
+        unit_control: UnitControlPanel,
+    ) -> UnitFileDeleteDialog {
         let obj: UnitFileDeleteDialog = glib::Object::new();
-        obj.imp().set_file_path(file_path);
+        obj.imp().set_data(file_path, unit_name, unit_control);
         obj
     }
 }
 
 mod imp {
-    use std::cell::OnceCell;
-
-    use crate::upgrade;
-    use adw::{prelude::*, subclass::dialog::AdwDialogImpl};
+    use crate::{upgrade, widget::unit_control_panel::UnitControlPanel};
+    use adw::{prelude::*, subclass::window::AdwWindowImpl};
+    use base::enums::UnitDBusLevel;
+    use gettextrs::pgettext;
     use glib::subclass::{
         object::ObjectImpl,
-        types::{ObjectSubclass, ObjectSubclassExt, ObjectSubclassIsExt},
+        types::{ObjectSubclass, ObjectSubclassExt},
     };
-    use gtk::subclass::widget::*;
-    use tracing::info;
+    use gtk::subclass::prelude::*;
+    use std::cell::OnceCell;
+    use systemd::{data::UnitInfo, errors::SystemdErrors};
+    use tracing::{error, info};
 
     #[derive(Default, gtk::CompositeTemplate)]
     #[template(resource = "/io/github/plrigaux/sysd-manager/unit_file_delete.ui")]
@@ -37,8 +46,11 @@ mod imp {
         file_path_link: TemplateChild<gtk::LinkButton>,
         #[template_child]
         are_you_sure_switch: TemplateChild<gtk::Switch>,
+        #[template_child]
+        window_title: TemplateChild<adw::WindowTitle>,
 
         pub(super) file_path: OnceCell<String>,
+        unit_control: OnceCell<UnitControlPanel>,
     }
 
     #[gtk::template_callbacks]
@@ -48,11 +60,57 @@ mod imp {
             info!("Unit delete response {}", response)
         }
 
-        pub(super) fn set_file_path(&self, file_path: String) {
+        pub(super) fn set_data(
+            &self,
+            file_path: String,
+            unit_name: &str,
+            unit_control: UnitControlPanel,
+        ) {
+            self.window_title.set_subtitle(unit_name);
             self.file_path_link
                 .set_uri(&format!("file://{}", file_path));
             self.file_path_link.set_label(&file_path);
             let _ = self.file_path.set(file_path);
+            let _ = self.unit_control.set(unit_control);
+        }
+
+        fn delete_button_clicked(&self, button: &gtk::Button) {
+            let lambda_out = {
+                let this = self.obj().clone();
+                move |method: &str,
+                      unit: Option<&UnitInfo>,
+                      result: Result<(), SystemdErrors>,
+                      _control: &UnitControlPanel| {
+                    if let Err(error) = result {
+                        error!("Delete Unit File {:?}", error)
+                    }
+                }
+            };
+
+            let Some(file_path) = self.file_path.get() else {
+                error!("No file path!");
+                return;
+            };
+
+            let file_path = file_path.clone();
+            let lambda = move |params: Option<(UnitDBusLevel, String)>| {
+                if let Some((level, _)) = params {
+                    systemd::runtime().block_on(systemd::delete_unit_file(level, &file_path))
+                } else {
+                    Err(SystemdErrors::NoUnit)
+                }
+            };
+
+            self.unit_control
+                .get()
+                .expect("unit_control not None")
+                .call_method(
+                    /*Message answer*/ &pgettext("delete", "Delete Unit File"),
+                    true,
+                    button,
+                    lambda,
+                    lambda_out,
+                );
         }
     }
 
@@ -60,7 +118,7 @@ mod imp {
     impl ObjectSubclass for UnitFileDeleteDialogImp {
         const NAME: &'static str = "UnitFileDeleteDialog";
         type Type = super::UnitFileDeleteDialog;
-        type ParentType = adw::Dialog;
+        type ParentType = adw::Window;
 
         fn class_init(klass: &mut Self::Class) {
             // The layout manager determines how child widgets are laid out.
@@ -75,19 +133,17 @@ mod imp {
 
     impl ObjectImpl for UnitFileDeleteDialogImp {
         fn constructed(&self) {
+            self.parent_constructed();
             let this = self.obj().downgrade();
             self.cancel_button.connect_clicked(move |_| {
                 let this = upgrade!(this);
-                this.force_close();
+                this.close();
             });
 
-            let this = self.obj().downgrade();
-            self.delete_button.connect_clicked(move |_| {
+            let this = self.downgrade();
+            self.delete_button.connect_clicked(move |button| {
                 let this = upgrade!(this);
-                if let Some(file_path) = this.imp().file_path.get() {
-                    info!("Deleting {:?}", file_path);
-                }
-                this.force_close();
+                this.delete_button_clicked(button);
             });
 
             let this = self.downgrade();
@@ -99,6 +155,14 @@ mod imp {
         }
     }
 
-    impl AdwDialogImpl for UnitFileDeleteDialogImp {}
     impl WidgetImpl for UnitFileDeleteDialogImp {}
+    impl WindowImpl for UnitFileDeleteDialogImp {
+        // Save window state right before the window will be closed
+        fn close_request(&self) -> glib::Propagation {
+            self.parent_close_request();
+
+            glib::Propagation::Proceed
+        }
+    }
+    impl AdwWindowImpl for UnitFileDeleteDialogImp {}
 }

@@ -102,6 +102,7 @@ pub enum UnitFileStatus {
     MaskedRuntime,
     Static,
     Transient,
+    NotFound,
     Unknown,
 }
 
@@ -145,6 +146,7 @@ impl UnitFileStatus {
             'b' => UnitFileStatus::Bad,
             'g' => UnitFileStatus::Generated,
             't' => UnitFileStatus::Transient,
+            'n' => UnitFileStatus::NotFound,
             _ => {
                 warn!("Unknown State: {enablement_status}");
                 UnitFileStatus::Unknown
@@ -167,6 +169,7 @@ impl UnitFileStatus {
             UnitFileStatus::EnabledRuntime => "enabled-runtime",
             UnitFileStatus::LinkedRuntime => "linked-runtime",
             UnitFileStatus::MaskedRuntime => "masked-runtime",
+            UnitFileStatus::NotFound => "not-found",
             UnitFileStatus::Unknown => "",
         }
     }
@@ -248,6 +251,8 @@ impl UnitFileStatus {
                 "list",
                 "Completely disabled, so that any start operation on it fails (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span> or transiently in <span fgcolor='#62a0ea'>/run/systemd/systemd/</span>).",
             )),
+            //tooltip column cell
+            UnitFileStatus::NotFound => Some(pgettext("list", "The unit file does not exist")),
         }
     }
 
@@ -282,6 +287,17 @@ impl UnitFileStatus {
         s.push_str(tag);
         s.push('>');
         s
+    }
+
+    pub fn can_delete_file(&self) -> bool {
+        matches!(
+            self,
+            UnitFileStatus::Disabled
+                | UnitFileStatus::Bad
+                | UnitFileStatus::Masked
+                | UnitFileStatus::MaskedRuntime
+                | UnitFileStatus::Static
+        )
     }
 }
 
