@@ -40,6 +40,7 @@ pub trait SysDManagerComLink {
         content: &str,
     ) -> zbus::fdo::Result<()>;
     fn save_file(&mut self, file_name: &str, content: &str) -> zbus::fdo::Result<u64>;
+    fn delete_file(&mut self, file_path: &str) -> zbus::fdo::Result<()>;
     fn create_file(&mut self, file_name: &str, content: &str) -> zbus::fdo::Result<u64>;
 
     fn revert_unit_files(&self, file_names: &[&str]) -> zbus::fdo::Result<Vec<DisEnAbleUnitFiles>>;
@@ -265,6 +266,11 @@ pub async fn save_file(file_path: &str, content: &str) -> Result<u64, SystemdErr
         .save_file(file_path, content)
         .await
         .map_err(|e| e.into())
+}
+
+pub async fn delete_file(file_path: &str) -> Result<(), SystemdErrors> {
+    let mut proxy = get_proxy_async().await?;
+    proxy.delete_file(file_path).await.map_err(|e| e.into())
 }
 
 pub async fn create_file(file_path: &str, content: &str) -> Result<u64, SystemdErrors> {

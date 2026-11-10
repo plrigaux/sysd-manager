@@ -1132,6 +1132,23 @@ pub async fn clean_unit(
     }
 }
 
+pub async fn delete_unit_file(level: UnitDBusLevel, file_path: &str) -> Result<(), SystemdErrors> {
+    info!("Deleting file {file_path:?}");
+
+    let user_session = level.user_session();
+    //TODO check the case of /run
+
+    #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
+    if user_session || !proxy_switcher::PROXY_SWITCHER.delete_file() {
+        file::delete_file(file_path, user_session).await
+    } else {
+        proxy_call_async!(delete_file, file_path)
+    }
+
+    #[cfg(any(feature = "flatpak", feature = "appimage"))]
+    file::delete_file(file_path, user_session).await
+}
+
 pub fn mask_unit_files(
     level: UnitDBusLevel,
     primary_name: &str,

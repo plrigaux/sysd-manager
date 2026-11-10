@@ -4,10 +4,10 @@
   <!-- interface-name unit_file_delete.ui -->
   <requires lib="gtk" version="4.18"/>
   <requires lib="libadwaita" version="1.6"/>
-  <template class="UnitFileDeleteDialog" parent="AdwDialog">
-    <property name="can-close">False</property>
-    <property name="child">
+  <template class="UnitFileDeleteDialog" parent="AdwWindow">
+    <property name="content">
       <object class="AdwToolbarView">
+        <property name="bottom-bar-style">raised</property>
         <property name="content">
           <object class="GtkBox">
             <property name="margin-bottom">20</property>
@@ -15,7 +15,7 @@
             <property name="margin-start">5</property>
             <property name="margin-top">20</property>
             <property name="orientation">vertical</property>
-            <property name="spacing">10</property>
+            <property name="spacing">5</property>
             <child>
               <object class="GtkLabel">
                 <property name="css-classes">title-2</property>
@@ -29,31 +29,53 @@
               </object>
             </child>
             <child>
-              <object class="GtkLinkButton" id="file_path_link"/>
-            </child>
-            <child>
-              <object class="GtkBox">
-                <property name="halign">center</property>
-                <property name="spacing">10</property>
+              <object class="AdwPreferencesGroup">
+                <property name="header-suffix">
+                  <object class="GtkBox">
+                    <child>
+                      <object class="GtkSwitch" id="are_you_sure_switch">
+                        <property name="valign">center</property>
+                      </object>
+                    </child>
+                  </object>
+                </property>
+                <property name="separate-rows">True</property>
+                <property name="title">Are you sure?</property>
+                <property name="valign">center</property>
                 <child>
-                  <object class="GtkLabel">
-                    <property name="css-classes">heading</property>
-                    <property name="label">Are you sure?</property>
+                  <object class="AdwActionRow">
+                    <property name="title">File</property>
+                    <child>
+                      <object class="GtkLinkButton" id="file_path_link"/>
+                    </child>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkSwitch" id="are_you_sure_switch">
-                    <property name="valign">center</property>
+                  <object class="AdwSwitchRow" id="reload_daemon_switch">
+                    <property name="subtitle">Reload  the  systemd  manager configuration</property>
+                    <property name="title">Daemon reload</property>
                   </object>
                 </child>
               </object>
             </child>
-            <child>
+          </object>
+        </property>
+        <property name="top-bar-style">raised</property>
+        <child type="top">
+          <object class="AdwHeaderBar">
+            <property name="title-widget">
+              <object class="AdwWindowTitle" id="window_title">
+                <property name="title">Delete Unit File</property>
+              </object>
+            </property>
+          </object>
+        </child>
+        <child type="bottom">
+          <object class="AdwHeaderBar">
+            <property name="show-back-button">False</property>
+            <property name="show-end-title-buttons">False</property>
+            <property name="title-widget">
               <object class="GtkBox">
-                <property name="margin-bottom">5</property>
-                <property name="margin-end">5</property>
-                <property name="margin-start">5</property>
-                <property name="margin-top">5</property>
                 <child>
                   <object class="GtkButton" id="cancel_button">
                     <property name="css-classes">pill</property>
@@ -78,15 +100,11 @@ pill</property>
                   </object>
                 </child>
               </object>
-            </child>
+            </property>
           </object>
-        </property>
+        </child>
       </object>
     </property>
-    <property name="follows-content-size">True</property>
-    <property name="presentation-mode">floating</property>
-    <style>
-      <class name="alert"/>
-    </style>
+    <property name="modal">True</property>
   </template>
 </interface>

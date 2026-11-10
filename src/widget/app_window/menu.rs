@@ -1,17 +1,10 @@
-use std::collections::BTreeSet;
-use std::env;
-use std::fmt::Write;
-
-use crate::consts::{ACTION_APP_ANALYZE_BLAME, ACTION_DAEMON_RELOAD_BUS};
-use crate::systemd_gui;
-use crate::widget::close_window_shortcut;
 use crate::{
     analyze::build_analyze_window,
-    consts::ACTION_APP_DAEMON_RELOAD,
-    systemd,
+    consts::{ACTION_APP_ANALYZE_BLAME, ACTION_APP_DAEMON_RELOAD_BUS},
+    systemd, systemd_gui,
     widget::{
         app_window::AppWindow,
-        info_window,
+        close_window_shortcut, info_window,
         preferences::{
             PreferencesDialog,
             data::{DbusLevel, PREFERENCES},
@@ -20,11 +13,11 @@ use crate::{
     },
 };
 use adw::prelude::*;
-use base::consts::APP_ID;
-use base::enums::UnitDBusLevel;
+use base::{consts::APP_ID, enums::UnitDBusLevel};
 use gettextrs::gettext;
 use glib::VariantTy;
 use gtk::{gdk, gio, glib, prelude::ActionMapExtManual};
+use std::{collections::BTreeSet, env, fmt::Write};
 use systemd::format2;
 use tracing::{error, info, warn};
 
@@ -159,29 +152,8 @@ pub fn on_startup(app: &adw::Application) {
     }
     app.set_accels_for_action(ACTION_NAME_PROXY_MANAGEMENT, &["<Ctrl>period"]);
 
-    let daemon_reload_all_units: gio::ActionEntry<adw::Application> =
-        gio::ActionEntry::builder(&ACTION_APP_DAEMON_RELOAD[4..])
-            .activate(|application: &adw::Application, simple_action, _variant| {
-                let simple_action = simple_action.clone();
-                let application = application.clone();
-
-                let Some(app_win_op) = application
-                    .active_window()
-                    .and_downcast_ref::<AppWindow>()
-                    .cloned()
-                else {
-                    error!("Not an AppWindow");
-                    return;
-                };
-
-                let dbus_level = PREFERENCES.dbus_level();
-
-                daemon_reload_with_dialog(simple_action, app_win_op, dbus_level);
-            })
-            .build();
-
     let daemon_reload_all_units_with_bus: gio::ActionEntry<adw::Application> =
-        gio::ActionEntry::builder(ACTION_DAEMON_RELOAD_BUS)
+        gio::ActionEntry::builder(&ACTION_APP_DAEMON_RELOAD_BUS[4..])
             .activate(
                 |application: &adw::Application, simple_action, variant: Option<&glib::Variant>| {
                     let Some(app_win_op) = application
@@ -192,11 +164,13 @@ pub fn on_startup(app: &adw::Application) {
                         error!("Not an AppWindow");
                         return;
                     };
-                    let user_session = variant.and_then(|v| v.get::<bool>());
-                    let dbus_level = match user_session {
-                        Some(true) => DbusLevel::UserSession,
-                        Some(false) => DbusLevel::System,
-                        None => {
+                    let dbus_level = variant.and_then(|v| v.get::<u8>());
+                    info!("Daemon Reload {:?}", dbus_level);
+                    let dbus_level = match dbus_level {
+                        Some(0) => DbusLevel::System,
+                        Some(1) => DbusLevel::UserSession,
+                        Some(2) => DbusLevel::SystemAndSession,
+                        _ => {
                             warn!("No user session specified, using default");
                             PREFERENCES.dbus_level()
                         }
@@ -205,7 +179,7 @@ pub fn on_startup(app: &adw::Application) {
                     daemon_reload_with_dialog(simple_action, app_win_op, dbus_level);
                 },
             )
-            .parameter_type(Some(VariantTy::BOOLEAN))
+            .parameter_type(Some(VariantTy::BYTE))
             .build();
 
     app.set_accels_for_action(ACTION_NAME_PREFERENCES, &["<Ctrl>comma"]);
@@ -215,7 +189,6 @@ pub fn on_startup(app: &adw::Application) {
         analyze_blame,
         systemd_info,
         preferences_action_entry,
-        daemon_reload_all_units,
         signals,
         daemon_reload_all_units_with_bus,
     ]);

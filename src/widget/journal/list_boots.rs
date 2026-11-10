@@ -449,7 +449,6 @@ mod imp {
     }
 
     impl WidgetImpl for ListBootsWindowImp {}
-
     impl WindowImpl for ListBootsWindowImp {
         // Save window state right before the window will be closed
         fn close_request(&self) -> glib::Propagation {

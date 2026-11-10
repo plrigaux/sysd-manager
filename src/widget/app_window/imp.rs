@@ -1,6 +1,6 @@
 use crate::{
     consts::{
-        ACTION_APP_ANALYZE_BLAME, ACTION_APP_CREATE_UNIT, ACTION_APP_DAEMON_RELOAD,
+        ACTION_APP_ANALYZE_BLAME, ACTION_APP_CREATE_UNIT, ACTION_APP_DAEMON_RELOAD_BUS,
         ACTION_APP_DISPLAY_UNIT, ACTION_APP_LIST_BOOT, ACTION_APP_PROPERTIES_SELECTOR,
         ACTION_APP_SEARCH_UNITS, ACTION_FIND_IN_TEXT_OPEN, ACTION_PROPERTIES_SELECTOR_GENERAL,
         ACTION_UNIT_PROPERTIES_DISPLAY, ACTION_WIN_CHANGE_BUS,
@@ -264,10 +264,12 @@ impl ObjectImpl for AppWindowImpl {
             Some(ACTION_APP_ANALYZE_BLAME),
         );
 
-        main_menu.append(
-            Some(&pgettext("menu", "Daemon Reload")),
-            Some(ACTION_APP_DAEMON_RELOAD),
+        let menu_item = gio::MenuItem::new(Some(&pgettext("menu", "Daemon Reload")), None);
+        menu_item.set_action_and_target_value(
+            Some(ACTION_APP_DAEMON_RELOAD_BUS),
+            Some(&255u8.to_variant()),
         );
+        main_menu.append_item(&menu_item);
 
         main_menu.append(
             Some(&pgettext("menu", "Systemd Info")),
@@ -656,7 +658,10 @@ impl AppWindowImpl {
         application.set_accels_for_action("app.debug", &["<Ctrl>1"]);
         application.set_accels_for_action(APP_ACTION_UNIT_PROPERTIES_DISPLAY, &["<Ctrl>p"]);
         application.set_accels_for_action(WIN_ACTION_SAVE_UNIT_FILE, &["<Ctrl>s"]);
-        application.set_accels_for_action(ACTION_APP_DAEMON_RELOAD, &["<Ctrl>r"]);
+        application.set_accels_for_action(
+            &format!("{ACTION_APP_DAEMON_RELOAD_BUS}(byte 255)"),
+            &["<Ctrl>r"],
+        );
         application.set_accels_for_action(ACTION_FIND_IN_TEXT_OPEN, &["<Shift><Ctrl>f"]);
         application.set_accels_for_action(ACTION_APP_CREATE_UNIT, &["<Shift><Ctrl>c"]);
         application.set_accels_for_action("win.close", &["<Ctrl>w"]);
@@ -760,6 +765,10 @@ impl AppWindowImpl {
 
     pub(super) fn get_control_panel(&self) -> &UnitControlPanel {
         &self.unit_control_panel
+    }
+
+    pub(super) fn add_one_unit(&self, unit: &UnitInfo, add_unit: bool) {
+        self.unit_list_panel.add_one_unit(unit, add_unit);
     }
 }
 

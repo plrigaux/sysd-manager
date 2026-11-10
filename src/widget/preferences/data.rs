@@ -43,11 +43,11 @@ const AUTO: &str = "auto";
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default, EnumIter, glib::Enum)]
 #[enum_type(name = "DbusLevel")]
 pub enum DbusLevel {
-    #[enum_value(name = "session")]
-    UserSession,
-
     #[enum_value(name = "system")]
     System,
+
+    #[enum_value(name = "session")]
+    UserSession,
 
     #[default]
     #[enum_value(name = "system_session")]
@@ -94,8 +94,8 @@ impl From<&str> for DbusLevel {
 impl From<i32> for DbusLevel {
     fn from(level: i32) -> Self {
         match level {
-            0 => DbusLevel::UserSession,
-            1 => DbusLevel::System,
+            0 => DbusLevel::System,
+            1 => DbusLevel::UserSession,
             _ => DbusLevel::SystemAndSession,
         }
     }

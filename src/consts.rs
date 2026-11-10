@@ -17,10 +17,7 @@ pub const ACTION_APP_ANALYZE_BLAME: &str = "app.analyze_blame";
 pub const ACTION_APP_CREATE_UNIT: &str = "app.create-unit";
 
 pub const ACTION_APP_SEARCH_UNITS: &str = "app.search_units";
-pub const ACTION_APP_DAEMON_RELOAD: &str = "app.daemon-reload";
-
-pub const ACTION_DAEMON_RELOAD_BUS: &str = "daemon-reload-bus";
-pub const APP_ACTION_DAEMON_RELOAD_BUS: &str = concat!(APP, ACTION_DAEMON_RELOAD_BUS);
+pub const ACTION_APP_DAEMON_RELOAD_BUS: &str = "app.daemon-reload-bus";
 
 pub const ACTION_APP_PROPERTIES_SELECTOR: &str = "app.properties_selector";
 pub const ACTION_WIN_RESET_ALL_COLUMNS: &str = "win.reset-all-columns";

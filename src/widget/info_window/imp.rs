@@ -1,4 +1,5 @@
 use adw::subclass::window::AdwWindowImpl;
+use gettextrs::gettext;
 use gtk::{gio, glib, prelude::*, subclass::prelude::*};
 use std::cell::{OnceCell, RefCell};
 use std::cmp::Ordering;
@@ -178,7 +179,8 @@ impl InfoWindowImp {
             warn!("Store not supposed to be None");
         };
 
-        self.obj().set_title(Some("Systemd Info"));
+        //Window title
+        self.window_title.set_title(&gettext("Systemd Info"));
     }
 
     fn create_filter(&self) -> gtk::CustomFilter {

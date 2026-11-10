@@ -881,6 +881,12 @@ impl UnitControlPanelImpl {
             self.highlight_controls(unit);
         }
     }
+
+    pub(crate) fn remove_unit(&self, unit: &UnitInfo) {
+        if let Some(window) = self.app_window() {
+            window.add_one_unit(unit, false);
+        }
+    }
 }
 
 #[glib::derived_properties]

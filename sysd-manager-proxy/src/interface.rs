@@ -32,6 +32,7 @@ impl SysDManagerProxy {
         file_path: &str,
         content: &str,
     ) -> zbus::fdo::Result<u64> {
+        info!("Saving file: {}", file_path);
         self.check_autorisation(header).await?;
         file::save(file_path, content).await
     }
@@ -39,10 +40,10 @@ impl SysDManagerProxy {
     pub async fn create_file(
         &mut self,
         #[zbus(header)] header: Header<'_>,
-
         file_path: &str,
         content: &str,
     ) -> zbus::fdo::Result<u64> {
+        info!("Creating file: {}", file_path);
         self.check_autorisation(header).await?;
         file::create(file_path, content).await
     }
@@ -256,6 +257,18 @@ impl SysDManagerProxy {
             .reload()
             .await
             .inspect_err(|e| warn!("Error while calling reload on sysdbus proxy: {:?}", e))
+    }
+
+    async fn delete_file(
+        &self,
+        #[zbus(header)] header: Header<'_>,
+
+        file_path: &str,
+    ) -> zbus::fdo::Result<()> {
+        info!("Delete file: {}", file_path);
+        self.check_autorisation(header).await?;
+        debug!("Polkit autorized");
+        file::delete(file_path).await
     }
 
     async fn enable_unit_files_with_flags(

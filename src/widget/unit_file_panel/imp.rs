@@ -1,7 +1,7 @@
 use super::flatpak;
 use crate::{
     consts::{
-        ACTION_SAVE_UNIT_FILE, APP_ACTION_DAEMON_RELOAD_BUS, SETTING_FIND_IN_TEXT,
+        ACTION_APP_DAEMON_RELOAD_BUS, ACTION_SAVE_UNIT_FILE, SETTING_FIND_IN_TEXT,
         UNIT_FILE_LINE_NUMBER_ACTION,
     },
     systemd::{
@@ -278,7 +278,7 @@ impl UnitFilePanelImp {
                 // Suggest to reload all unit configuation
                 let button_label = gettext("Daemon Reload");
                 let action = Some(ToastAction::new_t(
-                    APP_ACTION_DAEMON_RELOAD_BUS,
+                    ACTION_APP_DAEMON_RELOAD_BUS,
                     button_label,
                     user_session.to_variant(),
                 ));
@@ -1036,7 +1036,7 @@ impl UnitFilePanelImp {
                         msg,
                         true,
                         Some(ToastAction::new_t(
-                            APP_ACTION_DAEMON_RELOAD_BUS,
+                            ACTION_APP_DAEMON_RELOAD_BUS,
                             button_label,
                             level.user_session().to_variant(),
                         )),

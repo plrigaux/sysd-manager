@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 1.0 -->
+<!-- Created with Cambalache 1.2.0 -->
 <interface>
   <!-- interface-name clean_dialog.ui -->
-  <requires lib="gtk" version="4.16"/>
-  <requires lib="libadwaita" version="1.6"/>
+  <requires lib="gtk" version="4.20"/>
+  <requires lib="libadwaita" version="1.8"/>
   <template class="MASK_UNIT_DIALOG" parent="AdwWindow">
     <property name="content">
       <object class="AdwToolbarView">

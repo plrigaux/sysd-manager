@@ -74,7 +74,7 @@ use std::{
     sync::OnceLock,
     time::{Duration, SystemTime},
 };
-use systemd::{SystemdSignal, errors::SystemdErrors, init_signal_watcher, runtime};
+use systemd::{SystemdSignal, init_signal_watcher, runtime};
 use tokio::{
     sync::{broadcast::Receiver, mpsc},
     task::AbortHandle,
@@ -1008,7 +1008,7 @@ impl UnitListPanelImp {
         }
     }
 
-    fn add_one_unit(&self, unit: &UnitInfo, add_unit: bool) {
+    pub(super) fn add_one_unit(&self, unit: &UnitInfo, add_unit: bool) {
         let view = self.selected_list_view.get();
 
         if !self.can_add_unit_to_view(view, unit) {
@@ -1055,36 +1055,35 @@ impl UnitListPanelImp {
             } else {
                 info!("Removing unit {:?}", unit.primary());
 
-                match systemd::get_unit_file_state_block(unit.dbus_level(), &unit.primary()) {
-                    Ok(state) => unit.set_enable_status(state),
-                    Err(SystemdErrors::ZFileNotFound(_)) => {
-                        let Some(list_store) = panel.imp().list_store.get() else {
-                            error!("list_store not initialized");
-                            return;
-                        };
+                // match systemd::get_unit_file_state_block(unit.dbus_level(), &unit.primary()) {
+                //     Ok(state) => unit.set_enable_status(state),
+                //     Err(SystemdErrors::ZFileNotFound(_)) => {
+                let Some(list_store) = panel.imp().list_store.get() else {
+                    error!("list_store not initialized");
+                    return;
+                };
 
-                        let unit_name = unit.primary();
-                        if let Some(position) = list_store.find_with_equal_func(|object| {
-                            let Some(unit_item) = object.downcast_ref::<UnitInfo>() else {
-                                error!("item.downcast_ref::<UnitInfo>()");
-                                return false;
-                            };
+                let unit_name = unit.primary();
+                if let Some(position) = list_store.find_with_equal_func(|object| {
+                    let Some(unit_item) = object.downcast_ref::<UnitInfo>() else {
+                        error!("item.downcast_ref::<UnitInfo>()");
+                        return false;
+                    };
 
-                            unit_name == unit_item.primary()
-                        }) {
-                            list_store.remove(position);
-                        }
-
-                        let key = UnitKey::new(&unit);
-                        let mut unit_map = panel.imp().units_map.borrow_mut();
-                        unit_map.remove(&key);
-                        let count = panel.loaded_units_count();
-                        panel.set_loaded_units_count(count + 1);
-                        let count = panel.unit_files_count();
-                        panel.set_unit_files_count(count + 1);
-                    }
-                    Err(err) => warn!("{:?}", err),
+                    unit_name == unit_item.primary()
+                }) {
+                    list_store.remove(position);
                 }
+
+                let key = UnitKey::new(&unit);
+                let mut unit_map = panel.imp().units_map.borrow_mut();
+                unit_map.remove(&key);
+                let count = panel.loaded_units_count();
+                panel.set_loaded_units_count(count + 1);
+                let count = panel.unit_files_count();
+                panel.set_unit_files_count(count + 1);
+                // }                    Err(err) => warn!("{:?}", err),
+                // }
             }
         });
     }
@@ -1634,6 +1633,8 @@ impl UnitListPanelImp {
         };
         let list_store = list_store.clone();
 
+        let refresh_unit_list_button = upgrade!(self.refresh_unit_list_button);
+
         glib::spawn_future_local(async move {
             let units_list: Vec<_> = units_map
                 .borrow()
@@ -1764,6 +1765,7 @@ impl UnitListPanelImp {
             }
 
             unit_list.imp().set_sorter();
+            refresh_unit_list_button.set_sensitive(true);
         });
     }
 

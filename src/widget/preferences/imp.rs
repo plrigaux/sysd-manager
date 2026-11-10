@@ -46,7 +46,7 @@ pub struct PreferencesDialogImpl {
     settings: OnceCell<Settings>,
 
     #[template_child]
-    journal_colors: TemplateChild<gtk::Switch>,
+    journal_colors: TemplateChild<adw::SwitchRow>,
 
     #[template_child]
     unit_file_line_numbers: TemplateChild<adw::SwitchRow>,
@@ -124,6 +124,9 @@ pub struct PreferencesDialogImpl {
     proxy_create_file_switch: TemplateChild<adw::SwitchRow>,
 
     #[template_child]
+    proxy_delete_file_switch: TemplateChild<adw::SwitchRow>,
+
+    #[template_child]
     proxy_revert_unit_file_switch: TemplateChild<adw::SwitchRow>,
 
     #[template_child]
@@ -162,7 +165,6 @@ impl PreferencesDialogImpl {
     fn journal_switch_state_set(&self, state: bool) -> bool {
         info!("journal_colors_switch {state}");
 
-        self.journal_colors.set_state(state);
         PREFERENCES.set_journal_colors(state);
 
         true
@@ -331,7 +333,7 @@ impl PreferencesDialogImpl {
         let journal_colors = PREFERENCES.journal_colors();
         let is_app_first_connection = PREFERENCES.is_app_first_connection();
 
-        self.journal_colors.set_state(journal_colors);
+        self.journal_colors.set_active(journal_colors);
         self.journal_colors.set_active(journal_colors);
 
         let journal_max_events = PREFERENCES.journal_max_events_batch_size();
@@ -547,12 +549,13 @@ impl ObjectImpl for PreferencesDialogImpl {
                 proxy_switcher::{
                     KEY_PREF_PROXY_START_AT_STARTUP, KEY_PREF_PROXY_STOP_AT_CLOSE,
                     KEY_PREF_USE_PROXY_CLEAN, KEY_PREF_USE_PROXY_CREATE_DROP_IN,
-                    KEY_PREF_USE_PROXY_CREATE_FILE, KEY_PREF_USE_PROXY_DISABLE_UNIT_FILE,
-                    KEY_PREF_USE_PROXY_ENABLE_UNIT_FILE, KEY_PREF_USE_PROXY_FREEZE,
-                    KEY_PREF_USE_PROXY_RELOAD_DAEMON, KEY_PREF_USE_PROXY_RELOAD_UNIT,
-                    KEY_PREF_USE_PROXY_RESTART, KEY_PREF_USE_PROXY_REVERT_UNIT_FILE,
-                    KEY_PREF_USE_PROXY_SAVE_FILE, KEY_PREF_USE_PROXY_START,
-                    KEY_PREF_USE_PROXY_STOP, KEY_PREF_USE_PROXY_THAW, PROXY_SWITCHER,
+                    KEY_PREF_USE_PROXY_CREATE_FILE, KEY_PREF_USE_PROXY_DELETE_FILE,
+                    KEY_PREF_USE_PROXY_DISABLE_UNIT_FILE, KEY_PREF_USE_PROXY_ENABLE_UNIT_FILE,
+                    KEY_PREF_USE_PROXY_FREEZE, KEY_PREF_USE_PROXY_RELOAD_DAEMON,
+                    KEY_PREF_USE_PROXY_RELOAD_UNIT, KEY_PREF_USE_PROXY_RESTART,
+                    KEY_PREF_USE_PROXY_REVERT_UNIT_FILE, KEY_PREF_USE_PROXY_SAVE_FILE,
+                    KEY_PREF_USE_PROXY_START, KEY_PREF_USE_PROXY_STOP, KEY_PREF_USE_PROXY_THAW,
+                    PROXY_SWITCHER,
                 },
             };
 
@@ -662,6 +665,14 @@ impl ObjectImpl for PreferencesDialogImpl {
 
             settings
                 .bind::<adw::SwitchRow>(
+                    KEY_PREF_USE_PROXY_DELETE_FILE,
+                    self.proxy_delete_file_switch.as_ref(),
+                    "active",
+                )
+                .build();
+
+            settings
+                .bind::<adw::SwitchRow>(
                     KEY_PREF_USE_PROXY_REVERT_UNIT_FILE,
                     self.proxy_revert_unit_file_switch.as_ref(),
                     "active",
@@ -742,6 +753,16 @@ impl ObjectImpl for PreferencesDialogImpl {
                 PROXY_SWITCHER.set_save_file(switch.is_active());
             });
 
+            self.proxy_create_file_switch
+                .connect_active_notify(|switch| {
+                    PROXY_SWITCHER.set_create_file(switch.is_active());
+                });
+
+            self.proxy_delete_file_switch
+                .connect_active_notify(|switch| {
+                    PROXY_SWITCHER.set_delete_file(switch.is_active());
+                });
+
             self.start_proxy_at_startup_switch
                 .connect_active_notify(|switch| {
                     PROXY_SWITCHER.set_start_at_startup(switch.is_active());
@@ -765,6 +786,7 @@ impl ObjectImpl for PreferencesDialogImpl {
             let proxy_create_dropin_switch = self.proxy_create_dropin_switch.clone();
             let proxy_save_file = self.proxy_save_file_switch.clone();
             let proxy_create_file_switch = self.proxy_create_file_switch.clone();
+            let proxy_delete_file_switch = self.proxy_delete_file_switch.clone();
             let proxy_revert_unit_file_switch = self.proxy_revert_unit_file_switch.clone();
             let start_proxy_at_startup_switch = self.start_proxy_at_startup_switch.clone();
             let stop_proxy_at_close_switch = self.stop_proxy_at_close_switch.clone();
@@ -783,6 +805,7 @@ impl ObjectImpl for PreferencesDialogImpl {
                 proxy_create_dropin_switch,
                 proxy_save_file,
                 proxy_create_file_switch,
+                proxy_delete_file_switch,
                 proxy_revert_unit_file_switch,
                 start_proxy_at_startup_switch,
                 stop_proxy_at_close_switch,

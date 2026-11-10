@@ -120,6 +120,10 @@ impl UnitListPanel {
     pub fn on_close_request(&self) {
         self.imp().on_close_request();
     }
+
+    pub fn add_one_unit(&self, unit: &UnitInfo, add_unit: bool) {
+        self.imp().add_one_unit(unit, add_unit);
+    }
 }
 
 pub fn get_clean_col_title(title: &str) -> String {

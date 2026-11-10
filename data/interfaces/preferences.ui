@@ -152,15 +152,10 @@ You can set the application's Dbus level to &lt;u&gt;System&lt;/u&gt; if you wan
           <object class="AdwPreferencesGroup">
             <property name="title">Journal</property>
             <child>
-              <object class="AdwActionRow">
+              <object class="AdwSwitchRow" id="journal_colors">
                 <property name="subtitle" translatable="yes" context="preference" comments="subtitle">To see the logs in color</property>
                 <property name="title" translatable="yes" context="preference" comments="title">Journal colors</property>
-                <child>
-                  <object class="GtkSwitch" id="journal_colors">
-                    <property name="valign">baseline-center</property>
-                    <signal name="state-set" handler="journal_switch_state_set" swapped="True"/>
-                  </object>
-                </child>
+                    <signal name="activated" handler="journal_switch_state_set" swapped="True"/>
               </object>
             </child>
             <child>
@@ -193,9 +188,6 @@ You can set the application's Dbus level to &lt;u&gt;System&lt;/u&gt; if you wan
                 <property name="subtitle-lines">2</property>
                 <property name="title" translatable="yes" context="preference" comments="title">Journal's event max size</property>
                 <signal name="changed" handler="journal_event_max_size_changed" swapped="True"/>
-                <child>
-                  <object class="AdwSwitchRow"/>
-                </child>
               </object>
             </child>
             <child>
@@ -320,6 +312,12 @@ You can set the application's Dbus level to &lt;u&gt;System&lt;/u&gt; if you wan
               <object class="AdwSwitchRow" id="proxy_create_file_switch">
                 <property name="subtitle" translatable="yes" context="preference">&lt;b&gt;Create file&lt;/b&gt; through the Proxy</property>
                 <property name="title" translatable="yes" context="preference">Create file</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwSwitchRow" id="proxy_delete_file_switch">
+                <property name="subtitle" translatable="yes" context="preference" comments="switch subtitle">&lt;b&gt;Delete file&lt;/b&gt; through the Proxy</property>
+                <property name="title" translatable="yes" context="preference">Delete file</property>
               </object>
             </child>
           </object>

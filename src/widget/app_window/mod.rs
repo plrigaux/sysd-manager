@@ -68,6 +68,10 @@ impl AppWindow {
     pub fn get_control_panel(&self) -> &UnitControlPanel {
         self.imp().get_control_panel()
     }
+
+    pub fn add_one_unit(&self, unit: &UnitInfo, add_unit: bool) {
+        self.imp().add_one_unit(unit, add_unit);
+    }
 }
 
 pub struct ToastAction<'a> {

@@ -44,6 +44,28 @@ pub async fn save_text_to_file(
     })
 }
 
+pub async fn delete_file(file_path: &str, user_session: bool) -> Result<(), SystemdErrors> {
+    path_safe_guard(user_session, file_path)?;
+    let host_file_path = if user_session {
+        flatpak_host_file_path(file_path)
+    } else {
+        PathBuf::from(file_path)
+    };
+
+    info!(
+        "Try to delete File: {} with priviledge {}",
+        host_file_path.display(),
+        !user_session
+    );
+
+    if user_session {
+        base::file::delete_file(&host_file_path).await?
+    } else {
+        base::file::delete_with_priviledge(&host_file_path).await?
+    };
+    Ok(())
+}
+
 #[cfg(any(feature = "flatpak", feature = "appimage"))]
 mod no_proxy {
 

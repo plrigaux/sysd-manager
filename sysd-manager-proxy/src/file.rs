@@ -94,6 +94,11 @@ pub async fn create(file_path: &str, content: &str) -> zbus::fdo::Result<u64> {
     transform_error(result)
 }
 
+pub async fn delete(file_path: &str) -> zbus::fdo::Result<()> {
+    let result = base::file::delete_file_io(file_path).await;
+    transform_error(result)
+}
+
 #[cfg(test)]
 mod test {
     use std::path::PathBuf;

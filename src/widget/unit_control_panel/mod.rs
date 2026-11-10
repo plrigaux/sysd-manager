@@ -115,6 +115,10 @@ impl UnitControlPanel {
     pub(super) fn current_unit(&self) -> Option<UnitInfo> {
         self.imp().current_unit()
     }
+
+    pub fn remove_unit(&self, unit: &UnitInfo) {
+        self.imp().remove_unit(unit)
+    }
 }
 
 pub fn work_around_dialog(cmd: &str, err: &SystemdErrors, method: &str, window: &gtk::Window) {

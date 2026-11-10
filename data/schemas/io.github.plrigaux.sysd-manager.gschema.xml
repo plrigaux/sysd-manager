@@ -310,6 +310,10 @@
       <default>true</default>
       <summary>Use Proxy to Reload Systemd Manager Configuration</summary>
     </key>
+    <key name="pref-daemon-reload-option-after-delete-unit" type="b">
+      <default>false</default>
+      <summary>Option to reload systemd configuration after deleting unit</summary>
+    </key>
     <key name="pref-use-proxy-create-drop-in" type="b">
       <default>true</default>
       <summary>Use the proxy for the Create drop in actions</summary>
@@ -321,6 +325,10 @@
     <key name="pref-use-proxy-create-file" type="b">
       <default>true</default>
       <summary>Use the proxy for the Create file actions</summary>
+    </key>
+    <key name="pref-use-proxy-delete-file" type="b">
+      <default>true</default>
+      <summary>Use the proxy for the Delete file actions</summary>
     </key>
     <key name="pref-use-proxy-revert-unit-file" type="b">
       <default>true</default>
