@@ -40,6 +40,7 @@ SysD Manager provides an intuitive graphical interface for managing systemd unit
 | Enable/disable units and runtime enablement | ✅ |
 | Start, stop, and restart units | ✅ |
 | Edit unit files and manage drop-ins | ✅ |
+| Delete unit files | ✅ |
 | View and navigate unit dependencies | ✅ |
 | Clean, freeze, and thaw operations | ✅ |
 | Real-time journal monitoring | ✅ |
@@ -143,6 +144,8 @@ Portable application that runs on most Linux distributions.
 ---
 ### Method 4: RPM
 
+<img width="100" src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Fedora_logo.svg"/>
+
 For distros using RPM, ALT Linux is making builds for different archrtectures. 
 Packages available [here](https://packages.altlinux.org/en/sisyphus/binary/sysd-manager/).
 
@@ -168,6 +171,8 @@ sudo dpkg -i sysd-mangager-<version>_amd64.deb
 > **Note** There is no PPA yet, because the distro's Rust version is too old :(.
 
 ### Method 7: Ubuntu
+
+<img width="100" src="https://upload.wikimedia.org/wikipedia/commons/7/7b/Ubuntu-logo-no-wordmark-solid-o-2022.svg"/>
 
 You can install SysD Manager from PPA for the __stonking__ release
 
