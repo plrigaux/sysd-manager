@@ -1,6 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--File generated from CHANGELOG.md-->
 <releases>
+	<release version="2.25.0" date="2026-11-13">
+		<description>
+			<p>Added</p>
+			<ul>
+				<li>Delete Unit File option [Issue 84]</li>
+				<li>More option in the browser popup menu</li>
+				<li>Polish translation</li>
+			</ul>
+			<p>Changed</p>
+			<ul>
+				<li>Russian translation</li>
+			</ul>
+			<p>Fixed</p>
+			<ul>
+				<li>Provide a Flatpak workaround regading the no unit returned issues</li>
+			</ul>
+		</description>
+		<issues>
+			<issue url="https://github.com/plrigaux/sysd-manager/issues/84">Issue 84</issue>
+		</issues>
+	</release>
 	<release version="2.24.6" date="2026-10-30">
 		<description>
 			<p>Fixed</p>
