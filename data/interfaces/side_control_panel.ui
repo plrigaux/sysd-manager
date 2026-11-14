@@ -401,7 +401,7 @@ This is a stronger version of &lt;b&gt;disable&lt;/b&gt;, since it prohibits all
 destructive-action
 </property>
                 <property name="tooltip-markup" translatable="yes" context="control" comments="delete button tooltip">Completely delete a systemd unit file and remove it from the system.
-                  
+
 &lt;u&gt;Note:&lt;/u&gt; the unit must be &lt;b&gt;disabled&lt;/b&gt; and &lt;b&gt;inactive&lt;/b&gt;.</property>
                 <signal name="clicked" handler="delete_unit_file_button_clicked" swapped="True"/>
               </object>

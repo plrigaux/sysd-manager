@@ -252,7 +252,7 @@ impl UnitFileStatus {
                 "Completely disabled, so that any start operation on it fails (permanently in <span fgcolor='#62a0ea'>/etc/systemd/system/</span> or transiently in <span fgcolor='#62a0ea'>/run/systemd/systemd/</span>).",
             )),
             //tooltip column cell
-            UnitFileStatus::NotFound => Some(pgettext("list", "The unit file does not exist")),
+            UnitFileStatus::NotFound => Some(pgettext("list", "The unit file doesn't exist")),
         }
     }
 

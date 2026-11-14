@@ -155,7 +155,7 @@ You can set the application's Dbus level to &lt;u&gt;System&lt;/u&gt; if you wan
               <object class="AdwSwitchRow" id="journal_colors">
                 <property name="subtitle" translatable="yes" context="preference" comments="subtitle">To see the logs in color</property>
                 <property name="title" translatable="yes" context="preference" comments="title">Journal colors</property>
-                    <signal name="activated" handler="journal_switch_state_set" swapped="True"/>
+                <signal name="activated" handler="journal_switch_state_set" swapped="True"/>
               </object>
             </child>
             <child>
