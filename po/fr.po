@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-13 22:23-0500\n"
-"PO-Revision-Date: 2026-10-28 20:03+0000\n"
+"PO-Revision-Date: 2026-11-14 22:31+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 2026.11.dev0\n"
+"X-Generator: Weblate 2026.12.dev0\n"
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -114,10 +114,9 @@ msgstr "Nettoyer"
 
 #. button
 #: data/interfaces/clean_dialog.ui:64
-#, fuzzy
 msgctxt "clean"
 msgid "Cancel"
-msgstr "_Annuler"
+msgstr "Annuler"
 
 #. entry title
 #: data/interfaces/control_action_dialog.ui:28
@@ -460,21 +459,18 @@ msgstr ""
 
 #. Navigation Button
 #: data/interfaces/creator/nav_row.ui:51
-#, fuzzy
 msgctxt "create_unit"
 msgid "Previous"
-msgstr "Match précédent"
+msgstr "Précédent"
 
 #. Navigation Button
 #: data/interfaces/creator/nav_row.ui:82
-#, fuzzy
 msgctxt "create_unit"
 msgid "File"
 msgstr "Fichier"
 
 #. Navigation Button
 #: data/interfaces/creator/nav_row.ui:101
-#, fuzzy
 msgctxt "create_unit"
 msgid "Next"
 msgstr "Suivant"
@@ -1145,16 +1141,14 @@ msgstr "Créer fichier"
 
 #. switch subtitle
 #: data/interfaces/preferences.ui:319
-#, fuzzy
 msgctxt "preference"
 msgid "<b>Delete file</b> through the Proxy"
-msgstr "<b>Enregistrer le fichier</b> via le Proxy"
+msgstr "<b>Supprimer le fichier</b> via le Proxy"
 
 #: data/interfaces/preferences.ui:320
-#, fuzzy
 msgctxt "preference"
 msgid "Delete file"
-msgstr "Créer fichier"
+msgstr "Supprimer fichier"
 
 #: data/interfaces/preferences.ui:328
 msgctxt "preference"
@@ -1385,24 +1379,21 @@ msgstr "Afficher les Automounts"
 
 #. button
 #: data/interfaces/side_control_panel.ui:28
-#, fuzzy
 msgctxt "control"
 msgid "_Enable Unit File"
-msgstr "Activer le fichier d'unité"
+msgstr "_Activer le fichier d'unité"
 
 #. button
 #: data/interfaces/side_control_panel.ui:60
-#, fuzzy
 msgctxt "control"
 msgid "D_isable Unit File"
-msgstr "Désactiver le fichier de l'unité"
+msgstr "Désact_iver le fichier de l'unité"
 
 #. button
 #: data/interfaces/side_control_panel.ui:92
-#, fuzzy
 msgctxt "control"
 msgid "Send _Kill Signal"
-msgstr "Envoyer un signal _Kill ➚"
+msgstr "Envoyer un signal _Kill"
 
 #. tooltip
 #: data/interfaces/side_control_panel.ui:109
@@ -1412,10 +1403,9 @@ msgstr "Envoyer un signal à un processus ou à un groupe de processus"
 
 #. button
 #: data/interfaces/side_control_panel.ui:125
-#, fuzzy
 msgctxt "control"
 msgid "_Queue Signal"
-msgstr "Envoyer un signal _Queue ➚"
+msgstr "Envoyer un signal _Queue"
 
 #. tooltip
 #: data/interfaces/side_control_panel.ui:142
@@ -1425,10 +1415,9 @@ msgstr "Envoyer un signal à un processus ou à un groupe de processus"
 
 #. button
 #: data/interfaces/side_control_panel.ui:158
-#, fuzzy
 msgctxt "control"
 msgid "_Clean"
-msgstr "Nettoyer"
+msgstr "_Nettoyer"
 
 #. tooltip
 #: data/interfaces/side_control_panel.ui:175
@@ -1462,10 +1451,9 @@ msgstr "Décongeler l'unité spécifiée"
 
 #. button
 #: data/interfaces/side_control_panel.ui:220
-#, fuzzy
 msgctxt "control"
 msgid "M_ask"
-msgstr "Masquer ➚"
+msgstr "_Masquer"
 
 #. tooltip
 #: data/interfaces/side_control_panel.ui:237
@@ -1511,20 +1499,17 @@ msgstr "Demander à l'unité spécifiée de recharger sa configuration"
 
 #. button
 #: data/interfaces/side_control_panel.ui:287
-#, fuzzy
 msgctxt "control"
 msgid "_Preset"
-msgstr "Prérégler"
+msgstr "_Prérégler"
 
 #. button tooltip
 #: data/interfaces/side_control_panel.ui:288
-#, fuzzy
 msgctxt "control"
 msgid "Enables/disables one or more unit files according to the preset policy"
 msgstr ""
 "Activer ou désactiver un ou plusieurs fichiers d'unité en fonction de la "
-"politique de préréglageActiver ou désactiver un ou plusieurs fichiers "
-"d'unité en fonction de la politique de préréglage"
+"politique de préréglage"
 
 #. button tooltip
 #: data/interfaces/side_control_panel.ui:309
@@ -1534,40 +1519,37 @@ msgid ""
 "fashion. This is useful to apply updated [Install] information contained in "
 "unit files"
 msgstr ""
+"Désactiver puis réactiver l’unité rapidement, de manière atomique. Cette "
+"opération est utile pour appliquer des informations [Install] mises à jour, "
+"contenues dans les fichiers d’unité"
 
 #. button
 #: data/interfaces/side_control_panel.ui:321
-#, fuzzy
 msgctxt "control"
 msgid "_Reenable"
-msgstr "Réactiver"
+msgstr "_Réactiver"
 
 #. button tooltip
 #: data/interfaces/side_control_panel.ui:342
-#, fuzzy
 msgctxt "control"
 msgid ""
 "links unit files (that are located outside of the usual unit search paths) "
 "into the unit search path"
 msgstr ""
-"Lier des fichiers d'unité (qui sont situés à l'extérieur des chemins de "
-"recherche habituels) dans le chemin de recherche de l'unitéLier des fichiers "
-"d'unité (qui sont situés à l'extérieur des chemins de recherche habituels) "
-"dans le chemin de recherche de l'unité"
+"lie des fichiers d'unités (situés en dehors des chemins de recherche "
+"d'unités habituels) au chemin de recherche d'unités"
 
 #. button
 #: data/interfaces/side_control_panel.ui:354
-#, fuzzy
 msgctxt "control"
 msgid "_Link"
-msgstr "Lier"
+msgstr "_Lier"
 
 #. button
 #: data/interfaces/side_control_panel.ui:384
-#, fuzzy
 msgctxt "control"
 msgid "_Delete Unit File"
-msgstr "Prérégler le fichier de l'unité"
+msgstr "_Supprimer le fichier d’unité"
 
 #. delete button tooltip
 #: data/interfaces/side_control_panel.ui:403
@@ -1577,6 +1559,9 @@ msgid ""
 "                  \n"
 "<u>Note:</u> the unit must be <b>disabled</b> and <b>inactive</b>."
 msgstr ""
+"Supprimez complètement un fichier d’unité systemd et retirez-le du système.\n"
+"\n"
+"<u>Remarque :</u> l’unité doit être <b>désactivée</b> et <b>inactive</b>."
 
 #. description
 #: data/interfaces/signals_window.ui:24
@@ -1765,9 +1750,8 @@ msgstr "Aucune dépendances"
 
 #. Dialog title
 #: data/interfaces/unit_file_delete.ui:22
-#, fuzzy
 msgid "Delete Unit File?"
-msgstr "Prérégler le fichier de l'unité"
+msgstr "Supprimer le fichier d’unité ?"
 
 #. button
 #: data/interfaces/unit_file_panel.ui:66
@@ -1879,6 +1863,11 @@ msgid ""
 "For troubleshooting, please refer to this <a href=\"https://github.com/"
 "plrigaux/sysd-manager/wiki/Troubleshoot\">wiki</a>"
 msgstr ""
+"Aucune unité renvoyée ; définissez la variable d'environnement <b>"
+"RUST_LOG=info</b> pour comprendre ce qui s'est passé.\n"
+"\n"
+"Pour le dépannage, veuillez consulter ce <a href=\"https://github.com/"
+"plrigaux/sysd-manager/wiki/Troubleshoot\">wiki</a>."
 
 #: data/interfaces/unit_list_panel.ui:136
 msgctxt "list page title"
@@ -1994,7 +1983,6 @@ msgstr "Listes organisées"
 
 #. in the pop menu
 #: data/interfaces/unit_pop_menu.ui:214
-#, fuzzy
 msgctxt "controls"
 msgid "_More…"
 msgstr "_Plus…"
@@ -2549,7 +2537,6 @@ msgstr "N'est pas une Unité"
 
 #. Window title
 #: src/widget/info_window/imp.rs:183
-#, fuzzy
 msgid "Systemd Info"
 msgstr "Systemd information"
 
@@ -3178,10 +3165,9 @@ msgstr "Filtrer les dépendances par types"
 
 #. Message answer
 #: src/widget/unit_file_delete.rs:138
-#, fuzzy
 msgctxt "delete"
 msgid "Delete Unit File"
-msgstr "Prérégler le fichier de l'unité"
+msgstr "Supprimer le fichier d'unité"
 
 #: src/widget/unit_file_panel/flatpak.rs:16
 msgctxt "warning"
@@ -3865,10 +3851,9 @@ msgstr ""
 
 #. tooltip column cell
 #: sysd-manager-comcontroler/src/enums.rs:255
-#, fuzzy
 msgctxt "list"
 msgid "The unit file does not exist"
-msgstr "Le fichier n'existe pas"
+msgstr "Le fichier d'unité n'existe pas"
 
 #: sysd-manager-comcontroler/src/enums.rs:470
 msgctxt "active state"
