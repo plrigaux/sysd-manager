@@ -31,6 +31,7 @@ data/interfaces/signals_window.ui
 data/interfaces/text_search_entry.ui
 data/interfaces/unit_control_panel.ui
 data/interfaces/unit_dependencies_panel.ui
+data/interfaces/unit_file_delete.ui
 data/interfaces/unit_file_panel.ui
 data/interfaces/unit_info.ui
 data/interfaces/unit_list_filter.ui
@@ -112,6 +113,7 @@ src/widget/unit_control_panel/side_control_panel/imp.rs
 src/widget/unit_control_panel/side_control_panel/mod.rs
 src/widget/unit_dependencies_panel/imp.rs
 src/widget/unit_dependencies_panel/mod.rs
+src/widget/unit_file_delete.rs
 src/widget/unit_file_panel/flatpak.rs
 src/widget/unit_file_panel/imp.rs
 src/widget/unit_file_panel/mod.rs
