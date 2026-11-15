@@ -1,13 +1,11 @@
 mod imp;
 
+use super::unit_control_panel::UnitControlPanel;
 use gtk::{
     glib::{self},
     subclass::prelude::ObjectSubclassIsExt,
 };
 
-use super::unit_control_panel::UnitControlPanel;
-
-// ANCHOR: mod
 glib::wrapper! {
     pub struct CleanUnitDialog(ObjectSubclass<imp::CleanDialogImp>)
     @extends adw::Window, gtk::Window, gtk::Widget,

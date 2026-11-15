@@ -990,6 +990,25 @@ pub async fn fetch_system_info(
     fetch_system_unit_info(level, PATH_SYSTEMD, UnitType::Manager).await
 }
 
+pub async fn fetch_systemd_manager_properties(
+    level: UnitDBusLevel,
+) -> Result<HashMap<String, OwnedVariant>, SystemdErrors> {
+    // fetch_system_unit_info(level, PATH_SYSTEMD, UnitType::Manager).await
+
+    let connection = get_connection(level).await?;
+
+    let properties_proxy = ZPropertiesProxy::builder(&connection)
+        .destination(DESTINATION_SYSTEMD)
+        .path(PATH_SYSTEMD)
+        .build()
+        .await?;
+
+    let unit_interface = UnitType::Manager.interface();
+
+    let properties = properties_proxy.get_all(unit_interface).await?;
+    Ok(properties)
+}
+
 pub async fn fetch_system_unit_info(
     level: UnitDBusLevel,
     object_path: &str,

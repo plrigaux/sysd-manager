@@ -1,6 +1,9 @@
 use crate::{
     analyze::build_analyze_window,
-    consts::{ACTION_APP_ANALYZE_BLAME, ACTION_APP_DAEMON_RELOAD_BUS},
+    consts::{
+        ACTION_APP_ANALYZE_BLAME, ACTION_APP_DAEMON_RELOAD_BUS, ACTION_APP_SYSTEMD_MANAGER,
+        ACTION_APP_SYSTEMD_PARAMS,
+    },
     systemd, systemd_gui,
     widget::{
         app_window::AppWindow,
@@ -10,6 +13,7 @@ use crate::{
             data::{DbusLevel, PREFERENCES},
         },
         signals_dialog::SignalsWindow,
+        systemd_manager::SystemdManagerDialog,
     },
 };
 use adw::prelude::*;
@@ -95,7 +99,22 @@ pub fn on_startup(app: &adw::Application) {
         })
         .build();
 
-    let systemd_info = gio::ActionEntry::builder("systemd_info")
+    let systemd_info = gio::ActionEntry::builder(&ACTION_APP_SYSTEMD_MANAGER[4..])
+        .activate(|application: &adw::Application, _, _| {
+            // let systemd_info_window = info_window::InfoWindow::new(None);
+            let systemd_info_window = SystemdManagerDialog::new();
+
+            if let Some(first_window) = application.windows().first() {
+                systemd_info_window.set_transient_for(Some(first_window));
+                systemd_info_window.set_modal(false);
+            }
+            application.add_window(&systemd_info_window);
+
+            systemd_info_window.present();
+        })
+        .build();
+
+    let systemd_params = gio::ActionEntry::builder(&ACTION_APP_SYSTEMD_PARAMS[4..])
         .activate(|application: &adw::Application, _, _| {
             let systemd_info_window = info_window::InfoWindow::new(None);
             systemd_info_window.fill_systemd_info();
@@ -188,6 +207,7 @@ pub fn on_startup(app: &adw::Application) {
         about,
         analyze_blame,
         systemd_info,
+        systemd_params,
         preferences_action_entry,
         signals,
         daemon_reload_all_units_with_bus,

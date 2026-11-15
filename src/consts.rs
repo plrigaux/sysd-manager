@@ -15,6 +15,8 @@ pub const APP: &str = "app.";
 pub const ACTION_APP_LIST_BOOT: &str = "app.list_boots";
 pub const ACTION_APP_ANALYZE_BLAME: &str = "app.analyze_blame";
 pub const ACTION_APP_CREATE_UNIT: &str = "app.create-unit";
+pub const ACTION_APP_SYSTEMD_MANAGER: &str = "app.systemd-manager";
+pub const ACTION_APP_SYSTEMD_PARAMS: &str = "app.systemd-params";
 
 pub const ACTION_APP_SEARCH_UNITS: &str = "app.search_units";
 pub const ACTION_APP_DAEMON_RELOAD_BUS: &str = "app.daemon-reload-bus";

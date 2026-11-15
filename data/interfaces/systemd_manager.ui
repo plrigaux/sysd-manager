@@ -1,0 +1,166 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 1.2.0 -->
+<interface>
+  <!-- interface-name systemd_manager.ui -->
+  <requires lib="gtk" version="4.6"/>
+  <requires lib="libadwaita" version="1.9"/>
+  <template class="SystemdManagerDialog" parent="AdwWindow">
+    <property name="content">
+      <object class="AdwToolbarView">
+        <property name="content">
+          <object class="AdwViewStack" id="systemd_manager_stack">
+            <property name="enable-transitions">True</property>
+            <property name="hhomogeneous">False</property>
+            <child>
+              <object class="AdwViewStackPage">
+                <property name="child">
+                  <object class="GtkScrolledWindow">
+                    <property name="child">
+                      <object class="GtkGrid">
+                        <property name="column-spacing">5</property>
+                        <property name="margin-bottom">5</property>
+                        <property name="margin-end">5</property>
+                        <property name="margin-start">5</property>
+                        <property name="margin-top">5</property>
+                        <property name="row-spacing">5</property>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="label">Version</property>
+                            <property name="xalign">0.0</property>
+                            <layout>
+                              <property name="column">0</property>
+                              <property name="row">0</property>
+                            </layout>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="sm_version_label">
+                            <property name="selectable">True</property>
+                            <property name="xalign">0.0</property>
+                            <layout>
+                              <property name="column">1</property>
+                              <property name="row">0</property>
+                            </layout>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="label">Features</property>
+                            <property name="xalign">0.0</property>
+                            <property name="yalign">0.0</property>
+                            <layout>
+                              <property name="column">0</property>
+                              <property name="row">1</property>
+                            </layout>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="sm_features_label">
+                            <property name="max-width-chars">100</property>
+                            <property name="selectable">True</property>
+                            <property name="use-markup">True</property>
+                            <property name="wrap">True</property>
+                            <property name="xalign">0.0</property>
+                            <layout>
+                              <property name="column">1</property>
+                              <property name="row">1</property>
+                            </layout>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="label">Unit Paths</property>
+                            <property name="xalign">0.0</property>
+                            <property name="yalign">0.0</property>
+                            <layout>
+                              <property name="column">0</property>
+                              <property name="row">2</property>
+                            </layout>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="sm_unit_path_label">
+                            <property name="selectable">True</property>
+                            <property name="use-markup">True</property>
+                            <property name="wrap">True</property>
+                            <property name="xalign">0.0</property>
+                            <layout>
+                              <property name="column">1</property>
+                              <property name="row">2</property>
+                            </layout>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton">
+                            <property name="action-name">app.systemd-params</property>
+                            <property name="child">
+                              <object class="AdwButtonContent">
+                                <property name="icon-name">view-app-grid-symbolic</property>
+                                <property name="label">Show all _Properties</property>
+                                <property name="use-underline">True</property>
+                              </object>
+                            </property>
+                            <layout>
+                              <property name="column">0</property>
+                              <property name="row">3</property>
+                            </layout>
+                          </object>
+                        </child>
+                      </object>
+                    </property>
+                  </object>
+                </property>
+                <property name="icon-name">dialog-information</property>
+                <property name="name">info</property>
+                <property name="title">Systemd Manager</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwViewStackPage">
+                <property name="child">
+                  <object class="AdwStatusPage">
+                    <property name="child">
+                      <object class="GtkLabel">
+                        <property name="label">test</property>
+                      </object>
+                    </property>
+                    <property name="description">xxxx</property>
+                    <property name="title">test</property>
+                  </object>
+                </property>
+                <property name="icon-name">power-profile-power-saver-symbolic</property>
+                <property name="name">file</property>
+                <property name="section-title">File</property>
+                <property name="title">File</property>
+              </object>
+            </child>
+            <child>
+              <object class="AdwViewStackPage">
+                <property name="child">
+                  <object class="AdwStatusPage">
+                    <property name="description">ertwert</property>
+                    <property name="title">wertwertywey</property>
+                  </object>
+                </property>
+                <property name="icon-name">application-exit-symbolic</property>
+                <property name="name">xxx</property>
+                <property name="section-title">xxxx</property>
+              </object>
+            </child>
+          </object>
+        </property>
+        <child type="top">
+          <object class="AdwHeaderBar">
+            <property name="title-widget">
+              <object class="AdwViewSwitcher">
+                <property name="policy">wide</property>
+                <property name="stack">systemd_manager_stack</property>
+              </object>
+            </property>
+          </object>
+        </child>
+      </object>
+    </property>
+    <property name="default-height">600</property>
+  </template>
+</interface>

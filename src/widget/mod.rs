@@ -10,6 +10,7 @@ pub mod kill_panel;
 pub mod menu_button;
 pub mod preferences;
 pub mod signals_dialog;
+pub mod systemd_manager;
 pub mod text_search;
 pub mod unit_control_panel;
 pub mod unit_dependencies_panel;

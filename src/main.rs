@@ -10,11 +10,12 @@ mod systemd_gui;
 mod utils;
 mod widget;
 
-use crate::consts::ACTION_APP_CREATE_UNIT;
-use crate::systemd_gui::set_is_dark;
+use crate::{
+    consts::{ACTION_APP_CREATE_UNIT, ACTION_APP_SYSTEMD_MANAGER},
+    systemd_gui::set_is_dark,
+};
 use adw::prelude::AdwApplicationExt;
-use base::enums::UnitDBusLevel;
-use base::{RunMode, consts::APP_ID};
+use base::{RunMode, consts::APP_ID, enums::UnitDBusLevel};
 use clap::{Parser, Subcommand};
 use dotenv::dotenv;
 use gettextrs::gettext;
@@ -147,7 +148,7 @@ fn main() -> glib::ExitCode {
     });
 
     app.connect_activate(move |application| {
-        build_ui(application, unit.as_ref(), args.create);
+        build_ui(application, unit.as_ref(), args.create, args.manager);
 
         //Start the Proxy after the app is loaded
         #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
@@ -189,7 +190,12 @@ fn load_css_ress(resource: &str) {
     );
 }
 
-fn build_ui(application: &adw::Application, unit: Option<&UnitInfo>, create: bool) {
+fn build_ui(
+    application: &adw::Application,
+    unit: Option<&UnitInfo>,
+    create: bool,
+    systemd_manager: bool,
+) {
     let window = AppWindow::new(application);
 
     let style_manager = application.style_manager();
@@ -235,6 +241,15 @@ fn build_ui(application: &adw::Application, unit: Option<&UnitInfo>, create: boo
                 warn!("Activate {ACTION_APP_CREATE_UNIT} {:?} Failed", err);
             };
         });
+    } else if systemd_manager {
+        let window = window.clone();
+        glib::spawn_future_local(async move {
+            if let Err(err) =
+                gtk::prelude::WidgetExt::activate_action(&window, ACTION_APP_SYSTEMD_MANAGER, None)
+            {
+                warn!("Activate {ACTION_APP_SYSTEMD_MANAGER} {:?} Failed", err);
+            };
+        });
     }
 
     glib_unix::unix_signal_add_local(2, move || {
@@ -251,7 +266,7 @@ fn build_ui(application: &adw::Application, unit: Option<&UnitInfo>, create: boo
 }
 
 /// A GUI interface to manage systemd units
-#[derive(Parser, Debug)]
+#[derive(Parser, Debug, Clone)]
 #[command(version, about, long_about = None)]
 struct Args {
     /// Name of the unit
@@ -277,6 +292,10 @@ struct Args {
     /// Open create unit Window
     #[arg(short, long, default_value_t = false)]
     create: bool,
+
+    /// Open Systemd Manager Window
+    #[arg(short, long, default_value_t = false)]
+    manager: bool,
 
     #[command(subcommand)]
     command: Option<Command>,

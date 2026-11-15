@@ -935,6 +935,13 @@ pub fn fetch_system_info() -> Result<Vec<(UnitType, String, String)>, SystemdErr
     runtime().block_on(sysdbus::fetch_system_info(UnitDBusLevel::System))
 }
 
+pub fn fetch_systemd_manager_properties(
+    level: UnitDBusLevel,
+) -> Result<HashMap<String, OwnedVariant>, SystemdErrors> {
+    //TODO check with Session (user)
+    runtime().block_on(sysdbus::fetch_systemd_manager_properties(level))
+}
+
 pub fn fetch_system_unit_info_native(
     unit: &UnitInfo,
 ) -> Result<Vec<(UnitType, String, OwnedVariant)>, SystemdErrors> {

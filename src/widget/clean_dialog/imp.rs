@@ -1,5 +1,4 @@
-use std::{cell::OnceCell, collections::HashMap};
-
+use super::CleanUnitDialog;
 use crate::{
     systemd::{self, data::UnitInfo, enums::CleanOption, errors::SystemdErrors},
     widget::{
@@ -20,10 +19,9 @@ use gtk::{
         },
     },
 };
+use std::{cell::OnceCell, collections::HashMap};
 use strum::IntoEnumIterator;
 use tracing::{info, warn};
-
-use super::CleanUnitDialog;
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/clean_dialog.ui")]
