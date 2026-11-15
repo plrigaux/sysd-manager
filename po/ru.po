@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-13 22:23-0500\n"
-"PO-Revision-Date: 2026-10-30 19:51+0000\n"
+"PO-Revision-Date: 2026-11-16 09:42+0000\n"
 "Last-Translator: Andrei Stepanov <adem@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/ru/>\n"
@@ -18,13 +18,13 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 2026.11.dev0\n"
+"X-Generator: Weblate 2026.12.dev0\n"
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:9
 msgid "SysD Manager"
-msgstr "SysD Менеджер"
+msgstr "SysD Manager"
 
 #. Desktop File GenericName
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:6
@@ -65,7 +65,7 @@ msgstr "Зависимости юнита"
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:60
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:65
 msgid "Unit File"
-msgstr "Юнит-Файл"
+msgstr "Юнит-файл"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:70
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:75
@@ -87,18 +87,18 @@ msgstr "Открыть панель поиска"
 
 #: data/interfaces/app_window.ui:54
 msgid "To select system or session bus"
-msgstr "Для выбора системной шины или шины сеанса"
+msgstr "Выбор системной шины или шины сеанса"
 
 #. selector of differents units list
 #: data/interfaces/app_window.ui:61
 msgctxt "menu"
 msgid "Curated Lists"
-msgstr "Тематические списки"
+msgstr "Подборки списков"
 
 #: data/interfaces/app_window.ui:62
 msgctxt "tooltip"
 msgid "To display different units' presentation and subset"
-msgstr "Для отображения различных представлений и подмножеств юнитов"
+msgstr "Отображение разных представлений и подмножеств юнитов"
 
 #: data/interfaces/app_window.ui:69
 msgctxt "top button tooltip"
@@ -114,10 +114,9 @@ msgstr "Очистить"
 
 #. button
 #: data/interfaces/clean_dialog.ui:64
-#, fuzzy
 msgctxt "clean"
 msgid "Cancel"
-msgstr "_Отмена"
+msgstr "Отмена"
 
 #. entry title
 #: data/interfaces/control_action_dialog.ui:28
@@ -457,24 +456,21 @@ msgstr ""
 
 #. Navigation Button
 #: data/interfaces/creator/nav_row.ui:51
-#, fuzzy
 msgctxt "create_unit"
 msgid "Previous"
-msgstr "Предыдущий результат"
+msgstr "Назад"
 
 #. Navigation Button
 #: data/interfaces/creator/nav_row.ui:82
-#, fuzzy
 msgctxt "create_unit"
 msgid "File"
 msgstr "Файл"
 
 #. Navigation Button
 #: data/interfaces/creator/nav_row.ui:101
-#, fuzzy
 msgctxt "create_unit"
 msgid "Next"
-msgstr "Следующий"
+msgstr "Далее"
 
 #: data/interfaces/ex_menu_button.ui:40
 msgctxt "extented menu button"
@@ -547,7 +543,7 @@ msgstr "Все события"
 #: data/interfaces/journal_panel.ui:118
 msgctxt "journal"
 msgid "Boot id"
-msgstr "ID загрузки"
+msgstr "Идентификатор загрузки"
 
 #. wiki link
 #: data/interfaces/journal_panel.ui:165
@@ -561,9 +557,7 @@ msgctxt "journal"
 msgid ""
 "Either there are no log events to display, or you don't have permission to "
 "access them."
-msgstr ""
-"Журнал не содержит новых событий для отображения, либо у вас нет прав для "
-"просмотра"
+msgstr "Либо событий для отображения нет, либо у вас нет прав на их просмотр."
 
 #. title
 #: data/interfaces/journal_panel.ui:171
@@ -638,7 +632,7 @@ msgstr "Смещение"
 #: data/interfaces/list_boots.ui:52
 msgctxt "boot list column"
 msgid "Boot Id"
-msgstr "Id загрузки"
+msgstr "Идентификатор загрузки"
 
 #: data/interfaces/list_boots.ui:60
 msgctxt "boot list column"
@@ -698,7 +692,7 @@ msgstr "Принудительно"
 #: data/interfaces/mask_unit_dialog.ui:48
 msgctxt "mask"
 msgid "Ensure that the unit will be also stopped"
-msgstr "Гарантировать остановку юнита"
+msgstr "Гарантировать, что юнит также будет остановлен"
 
 #. title
 #: data/interfaces/mask_unit_dialog.ui:49
@@ -710,7 +704,7 @@ msgstr "Остановить Сейчас"
 #: data/interfaces/mask_unit_dialog.ui:54
 msgctxt "mask"
 msgid "Argument for the stopping mode"
-msgstr "Аргумент для режима остановки"
+msgstr "Аргумент режима остановки"
 
 #. title
 #: data/interfaces/mask_unit_dialog.ui:55
@@ -816,7 +810,7 @@ msgstr "Список юнитов"
 #: data/interfaces/preferences.ui:70
 msgctxt "preference"
 msgid "Display Colors on unit list table cells, according to their content."
-msgstr "Цветовое выделение ячеек списка юнитов по содержимому."
+msgstr "Цветовое выделение ячеек списка юнитов по их содержимому."
 
 #. title
 #: data/interfaces/preferences.ui:71
@@ -840,7 +834,7 @@ msgstr "Показывать сводку итогов"
 #: data/interfaces/preferences.ui:99
 msgctxt "preference"
 msgid "Search and filtering case insensitivity default option"
-msgstr "Поиск и фильтрация по умолчанию не чувствительны к регистру"
+msgstr "По умолчанию поиск и фильтрация не чувствительны к регистру"
 
 #. title
 #: data/interfaces/preferences.ui:100
@@ -852,7 +846,7 @@ msgstr "Не чувствительны к регистру"
 #: data/interfaces/preferences.ui:105
 msgctxt "preference"
 msgid "Display Unit's Active Status as an icon rather than text"
-msgstr "Отображать состояние активности юнита в виде значка, а не текста"
+msgstr "Отображать статус активности юнита в виде значка, а не текста"
 
 #. title
 #: data/interfaces/preferences.ui:106
@@ -957,8 +951,8 @@ msgid ""
 "Journal's event maximum characters\n"
 "<i>0 to no limit</i>"
 msgstr ""
-"Максимальное количество символов в событии журнала\n"
-"<i>0 - без ограничений</i>"
+"Максимальное число символов в событии журнала\n"
+"<i>0 — без ограничений</i>"
 
 #. title
 #: data/interfaces/preferences.ui:189
@@ -1104,12 +1098,12 @@ msgstr "Действия"
 #: data/interfaces/preferences.ui:301
 msgctxt "preference"
 msgid "Create a <b>Drop-in</b> file through the Proxy"
-msgstr "Создать <b>drop-in</b> файл через прокси"
+msgstr "Создать файл <b>Drop-in</b> через прокси"
 
 #: data/interfaces/preferences.ui:302
 msgctxt "preference"
 msgid "Create Drop-in"
-msgstr "Создать drop-in"
+msgstr "Создать файл Drop-in"
 
 #: data/interfaces/preferences.ui:307
 msgctxt "preference"
@@ -1133,16 +1127,14 @@ msgstr "Создать файл"
 
 #. switch subtitle
 #: data/interfaces/preferences.ui:319
-#, fuzzy
 msgctxt "preference"
 msgid "<b>Delete file</b> through the Proxy"
-msgstr "<b>Создать файл</b> через прокси"
+msgstr "<b>Удалять файл</b> через прокси"
 
 #: data/interfaces/preferences.ui:320
-#, fuzzy
 msgctxt "preference"
 msgid "Delete file"
-msgstr "Создать файл"
+msgstr "Удалить файл"
 
 #: data/interfaces/preferences.ui:328
 msgctxt "preference"
@@ -1299,7 +1291,7 @@ msgstr "Сохранить выбранный юнит-файл"
 #: data/interfaces/shortcuts.ui:140
 msgctxt "shortcut window"
 msgid "Curated Lists"
-msgstr "Тематические списки"
+msgstr "Подборки списков"
 
 #. subtitle
 #: data/interfaces/shortcuts.ui:144
@@ -1372,21 +1364,18 @@ msgstr "Показать автомонтирования"
 
 #. button
 #: data/interfaces/side_control_panel.ui:28
-#, fuzzy
 msgctxt "control"
 msgid "_Enable Unit File"
-msgstr "Включить юнит-файл"
+msgstr "_Включить юнит-файл"
 
 #. button
 #: data/interfaces/side_control_panel.ui:60
-#, fuzzy
 msgctxt "control"
 msgid "D_isable Unit File"
-msgstr "Отключить юнит-файл"
+msgstr "О_тключить юнит-файл"
 
 #. button
 #: data/interfaces/side_control_panel.ui:92
-#, fuzzy
 msgctxt "control"
 msgid "Send _Kill Signal"
 msgstr "Отправить сигнал _Kill ➚"
@@ -1399,10 +1388,9 @@ msgstr "Отправить сигнал процессу или группе п�
 
 #. button
 #: data/interfaces/side_control_panel.ui:125
-#, fuzzy
 msgctxt "control"
 msgid "_Queue Signal"
-msgstr "Сигнал _ очереди ➚"
+msgstr "Сигнал _очереди ➚"
 
 #. tooltip
 #: data/interfaces/side_control_panel.ui:142
@@ -1412,10 +1400,9 @@ msgstr "Передача сигнала в очередь процессу ил�
 
 #. button
 #: data/interfaces/side_control_panel.ui:158
-#, fuzzy
 msgctxt "control"
 msgid "_Clean"
-msgstr "Очистить"
+msgstr "_Очистить"
 
 #. tooltip
 #: data/interfaces/side_control_panel.ui:175
@@ -1425,7 +1412,7 @@ msgid ""
 "specified unit. \n"
 "<u>Note:</u> the unit must be <b>inactive</b> to be cleaned."
 msgstr ""
-"Удалить конфигурацию, состояние, кэш, логи или данные времени выполнения "
+"Удалить конфигурацию, состояние, кэш, журналы или данные времени выполнения "
 "указанного юнита.\n"
 "<u>Примечание:</u> для очистки юнит должен быть <b>неактивен</b>."
 
@@ -1449,10 +1436,9 @@ msgstr "Возобновить работу указанного юнита"
 
 #. button
 #: data/interfaces/side_control_panel.ui:220
-#, fuzzy
 msgctxt "control"
 msgid "M_ask"
-msgstr "Замаскировать ➚"
+msgstr "За_маскировать ➚"
 
 #. tooltip
 #: data/interfaces/side_control_panel.ui:237
@@ -1464,11 +1450,11 @@ msgid ""
 "of activation of the unit, including enablement and manual activation. \n"
 "<b>Use this option with care.</b>"
 msgstr ""
-"Замаскировать выбранный юнит. При этом файлы юнита будут связаны с <u>/dev/"
-"null</u>, что сделает невозможным его запуск.\n"
-"Это более строгая версия команды <b>disable</b>, поскольку она запрещает все "
-"виды активации юнита, включая автоматический запуск и ручной запуск.\n"
-"<b>Используйте эту опцию с осторожностью.</b>"
+"Замаскировать выбранный юнит. Файлы юнита будут связаны с <u>/dev/null</u>, "
+"что сделает невозможным его запуск.\n"
+"Это более строгая версия <b>disable</b>: она запрещает все виды активации "
+"юнита, включая автоматический и ручной запуск.\n"
+"<b>Используйте с осторожностью.</b>"
 
 #. button
 #: data/interfaces/side_control_panel.ui:251
@@ -1498,19 +1484,17 @@ msgstr "Перезагрузить конфигурацию указанного
 
 #. button
 #: data/interfaces/side_control_panel.ui:287
-#, fuzzy
 msgctxt "control"
 msgid "_Preset"
-msgstr "Применить preset-правила"
+msgstr "_Применить preset-правила"
 
 #. button tooltip
 #: data/interfaces/side_control_panel.ui:288
-#, fuzzy
 msgctxt "control"
 msgid "Enables/disables one or more unit files according to the preset policy"
 msgstr ""
-"Включить или отключить один или несколько юнитов в соответствии с preset-"
-"политикой"
+"Включает или отключает один или несколько юнит-файлов в соответствии с "
+"preset-политикой"
 
 #. button tooltip
 #: data/interfaces/side_control_panel.ui:309
@@ -1520,38 +1504,36 @@ msgid ""
 "fashion. This is useful to apply updated [Install] information contained in "
 "unit files"
 msgstr ""
+"Быстрое последовательное отключение и включение юнита атомарным образом. "
+"Полезно для применения обновлённой информации [Install] из юнит-файлов"
 
 #. button
 #: data/interfaces/side_control_panel.ui:321
-#, fuzzy
 msgctxt "control"
 msgid "_Reenable"
-msgstr "Повторно включить"
+msgstr "_Перевключить"
 
 #. button tooltip
 #: data/interfaces/side_control_panel.ui:342
-#, fuzzy
 msgctxt "control"
 msgid ""
 "links unit files (that are located outside of the usual unit search paths) "
 "into the unit search path"
 msgstr ""
-"Добавляет файлы юнитов (расположенные вне стандартных путей поиска) в путь "
-"поиска systemd"
+"Добавляет юнит-файлы (расположенные вне стандартных путей поиска) в путь "
+"поиска юнитов systemd"
 
 #. button
 #: data/interfaces/side_control_panel.ui:354
-#, fuzzy
 msgctxt "control"
 msgid "_Link"
-msgstr "Добавить в путь поиска"
+msgstr "_Добавить в путь поиска"
 
 #. button
 #: data/interfaces/side_control_panel.ui:384
-#, fuzzy
 msgctxt "control"
 msgid "_Delete Unit File"
-msgstr "Применить preset к юнит-файлу"
+msgstr "_Удалить юнит-файл"
 
 #. delete button tooltip
 #: data/interfaces/side_control_panel.ui:403
@@ -1561,6 +1543,9 @@ msgid ""
 "                  \n"
 "<u>Note:</u> the unit must be <b>disabled</b> and <b>inactive</b>."
 msgstr ""
+"Полностью удалить юнит-файл systemd и убрать его из системы.\n"
+"                  \n"
+"<u>Примечание:</u> юнит должен быть <b>отключён</b> и <b>неактивен</b>."
 
 #. description
 #: data/interfaces/signals_window.ui:24
@@ -1646,7 +1631,7 @@ msgstr "Следующий результат"
 #: data/interfaces/unit_control_panel.ui:27
 msgctxt "control info"
 msgid "Enabled"
-msgstr "Включен"
+msgstr "Включён"
 
 #: data/interfaces/unit_control_panel.ui:50
 msgctxt "control tooltip"
@@ -1749,9 +1734,8 @@ msgstr "Нет зависимостей"
 
 #. Dialog title
 #: data/interfaces/unit_file_delete.ui:22
-#, fuzzy
 msgid "Delete Unit File?"
-msgstr "Применить preset к юнит-файлу"
+msgstr "Удалить юнит-файл?"
 
 #. button
 #: data/interfaces/unit_file_panel.ui:66
@@ -1775,13 +1759,13 @@ msgstr "Нет юнит-файла"
 #: data/interfaces/unit_file_panel.ui:110
 msgctxt "menu"
 msgid "Revert Drop-in"
-msgstr "Откатить drop-in"
+msgstr "Откатить файл Drop-in"
 
 #. Unit file drop-in operations menu section
 #: data/interfaces/unit_file_panel.ui:113
 msgctxt "menu"
 msgid "Create Drop-in"
-msgstr "Создать drop-in"
+msgstr "Создать файл Drop-in"
 
 #. Unit file drop-in operations menu item
 #: data/interfaces/unit_file_panel.ui:116
@@ -1840,19 +1824,19 @@ msgstr "Скрыть общую сводку"
 #: data/interfaces/unit_list_panel.ui:99
 msgctxt "list info"
 msgid "Loaded"
-msgstr "Загруженные"
+msgstr "Загруженных"
 
 #. short version
 #: data/interfaces/unit_list_panel.ui:100
 msgctxt "list info"
 msgid "Files"
-msgstr "Файлы"
+msgstr "Файлов"
 
 #. short version
 #: data/interfaces/unit_list_panel.ui:101
 msgctxt "list info"
 msgid "Units"
-msgstr "Юниты"
+msgstr "Юнитов"
 
 #: data/interfaces/unit_list_panel.ui:132
 msgctxt "list page description"
@@ -1863,6 +1847,11 @@ msgid ""
 "For troubleshooting, please refer to this <a href=\"https://github.com/"
 "plrigaux/sysd-manager/wiki/Troubleshoot\">wiki</a>"
 msgstr ""
+":wНе возвращено ни одного юнита; задайте переменную окружения <b>"
+"RUST_LOG=info</b>, чтобы увидеть, что произошло.\n"
+"\n"
+"Для устранения неполадок обратитесь к этой <a href=\"https://github.com/"
+"plrigaux/sysd-manager/wiki/Troubleshoot\">wiki-странице</a>"
 
 #: data/interfaces/unit_list_panel.ui:136
 msgctxt "list page title"
@@ -1974,11 +1963,10 @@ msgstr "Переключить общую сводку"
 #: data/interfaces/unit_pop_menu.ui:178
 msgctxt "controls"
 msgid "Curated Lists"
-msgstr "Тематические списки"
+msgstr "Подборки списков"
 
 #. in the pop menu
 #: data/interfaces/unit_pop_menu.ui:214
-#, fuzzy
 msgctxt "controls"
 msgid "_More…"
 msgstr "_Ещё…"
@@ -2533,7 +2521,6 @@ msgstr "Не юнит"
 
 #. Window title
 #: src/widget/info_window/imp.rs:183
-#, fuzzy
 msgid "Systemd Info"
 msgstr "Сведения о systemd"
 
@@ -2851,7 +2838,7 @@ msgstr "Добавить {} в избранное"
 #: src/widget/preferences/data.rs:69
 msgctxt "dbus"
 msgid "User Session Bus"
-msgstr "Шина пользовательского сеанса"
+msgstr "Шина сеанса пользователя"
 
 #. browser dbus option
 #: src/widget/preferences/data.rs:71
@@ -2863,7 +2850,7 @@ msgstr "Системная шина"
 #: src/widget/preferences/data.rs:73
 msgctxt "dbus"
 msgid "System & User Session Bus"
-msgstr "Системная и пользовательская сессионная шина"
+msgstr "Шина системы и сеанса пользователя"
 
 #. preference color scheme option
 #: src/widget/preferences/data.rs:166
@@ -3158,10 +3145,9 @@ msgstr "Фильтровать зависимости по типам"
 
 #. Message answer
 #: src/widget/unit_file_delete.rs:138
-#, fuzzy
 msgctxt "delete"
 msgid "Delete Unit File"
-msgstr "Применить preset к юнит-файлу"
+msgstr "Удалить юнит-файл"
 
 #: src/widget/unit_file_panel/flatpak.rs:16
 msgctxt "warning"
@@ -3281,7 +3267,7 @@ msgstr "Юнит-файл"
 #: src/widget/unit_file_panel/imp.rs:598
 msgctxt "file"
 msgid "Drop In"
-msgstr "Drop-in"
+msgstr "Файл Drop-in"
 
 #. Create Drop in file name
 #: src/widget/unit_file_panel/imp.rs:909
@@ -3293,7 +3279,7 @@ msgstr "Редактирование"
 msgctxt "file"
 msgid "Note: you can change the drop-in file name by modifying the above line"
 msgstr ""
-"Примечание: вы можете изменить имя drop-in файла, отредактировав строку выше"
+"Примечание: вы можете изменить имя файла Drop-in, отредактировав строку выше"
 
 #: src/widget/unit_file_panel/imp.rs:929
 msgctxt "file"
@@ -3302,7 +3288,7 @@ msgid ""
 "drop-in file"
 msgstr ""
 "Всё, что находится между этой строкой и комментарием ниже, станет содержимым "
-"drop-in файла"
+"файла Drop-in"
 
 #. Create Drop in file footer
 #: src/widget/unit_file_panel/imp.rs:938
@@ -3511,7 +3497,7 @@ msgstr "Шина"
 #: src/widget/unit_list/imp/construct.rs:726
 msgctxt "list column"
 msgid "Preset"
-msgstr "Preset"
+msgstr "Применить preset"
 
 #: src/widget/unit_list/imp/construct.rs:745
 msgctxt "list column"
@@ -3832,10 +3818,9 @@ msgstr ""
 
 #. tooltip column cell
 #: sysd-manager-comcontroler/src/enums.rs:255
-#, fuzzy
 msgctxt "list"
 msgid "The unit file does not exist"
-msgstr "Файл не существует"
+msgstr "Юнит-файл не существует"
 
 #: sysd-manager-comcontroler/src/enums.rs:470
 msgctxt "active state"
