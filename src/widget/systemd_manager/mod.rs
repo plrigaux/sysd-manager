@@ -1,6 +1,6 @@
 mod imp;
 
-use super::unit_control_panel::UnitControlPanel;
+use base::enums::UnitDBusLevel;
 use gtk::{
     glib::{self},
     subclass::prelude::ObjectSubclassIsExt,
@@ -14,9 +14,10 @@ glib::wrapper! {
 }
 
 impl SystemdManagerDialog {
-    pub fn new() -> Self {
+    pub fn new(level: UnitDBusLevel) -> Self {
         let obj: SystemdManagerDialog = glib::Object::new();
-        // let imp = obj.imp();
+        let imp = obj.imp();
+        imp.set_level(level);
 
         obj
     }

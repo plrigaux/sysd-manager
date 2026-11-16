@@ -1,6 +1,10 @@
-use std::{cell::RefCell, collections::HashMap};
+use std::{
+    cell::{Cell, RefCell},
+    collections::HashMap,
+};
 
 use adw::{prelude::*, subclass::window::AdwWindowImpl};
+use base::enums::UnitDBusLevel;
 use gtk::{
     glib::{self},
     subclass::{
@@ -8,9 +12,15 @@ use gtk::{
         widget::{CompositeTemplateClass, CompositeTemplateInitializingExt, WidgetImpl},
     },
 };
+use systemd::data::UnitInfo;
 use tracing::{error, info, warn};
 
-use crate::utils::palette::{green, red};
+use crate::{
+    systemd_gui::is_dark,
+    upgrade,
+    utils::palette::{green, red},
+    widget::{InterPanelMessage, unit_file_panel::UnitFilePanel},
+};
 
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/systemd_manager.ui")]
@@ -21,8 +31,15 @@ pub struct SystemdManagerDialogImp {
     sm_features_label: TemplateChild<gtk::Label>,
     #[template_child]
     sm_unit_path_label: TemplateChild<gtk::Label>,
+    #[template_child]
+    window_title: TemplateChild<adw::WindowTitle>,
+    #[template_child]
+    sm_file_panel: TemplateChild<UnitFilePanel>,
+    #[template_child]
+    systemd_manager_stack: TemplateChild<adw::ViewStack>,
 
     properties: RefCell<HashMap<String, zbus::OwnedVariant>>,
+    level: Cell<UnitDBusLevel>,
 }
 
 impl SystemdManagerDialogImp {
@@ -54,18 +71,38 @@ impl SystemdManagerDialogImp {
 
         s.sort();
 
-        let mut p = String::new();
+        let mut path_label_text = String::new();
         let mut first = true;
-        for pp in s {
-            p.push_str(&pp);
+        for path in s {
+            path_label_text.push_str(&path);
             if first {
                 first = false;
             } else {
-                p.push('\n');
+                path_label_text.push('\n');
             }
         }
 
-        self.sm_unit_path_label.set_label(&p);
+        self.sm_unit_path_label.set_label(&path_label_text);
+    }
+
+    pub(crate) fn set_level(&self, level: base::enums::UnitDBusLevel) {
+        self.level.set(level);
+        self.window_title.set_subtitle(&level.nice_label());
+
+        let unit = UnitInfo::from_unit_key("systemd.manager", level);
+
+        let file_path = match level {
+            UnitDBusLevel::UserSession => "/etc/systemd/user.conf",
+            _ => "/etc/systemd/system.conf",
+        };
+
+        unit.set_file_path(Some(file_path));
+
+        self.sm_file_panel
+            .set_inter_message(&InterPanelMessage::UnitChange(Some(&unit)));
+
+        self.sm_file_panel
+            .set_inter_message(&InterPanelMessage::IsDark(is_dark()));
     }
 }
 
@@ -121,8 +158,9 @@ impl ObjectImpl for SystemdManagerDialogImp {
             info!("Show Systemd Manager Dialog");
             let systemd_manager_window = systemd_manager_window.clone();
             glib::spawn_future_local(async move {
-                match systemd::fetch_systemd_manager_properties(base::enums::UnitDBusLevel::System)
-                {
+                match systemd::fetch_systemd_manager_properties(
+                    systemd_manager_window.imp().level.get(),
+                ) {
                     Ok(map) => {
                         systemd_manager_window.imp().properties.replace(map);
                         systemd_manager_window.imp().fill_data();
@@ -131,6 +169,17 @@ impl ObjectImpl for SystemdManagerDialogImp {
                 }
             });
         });
+
+        let dialog_weak_ref = self.downgrade();
+        self.systemd_manager_stack
+            .connect_visible_child_name_notify(move |view_stack| {
+                let dialog = upgrade!(dialog_weak_ref);
+                if view_stack.visible_child_name().as_deref() == Some("file") {
+                    dialog
+                        .sm_file_panel
+                        .set_inter_message(&InterPanelMessage::PanelVisible(true));
+                }
+            });
     }
 }
 

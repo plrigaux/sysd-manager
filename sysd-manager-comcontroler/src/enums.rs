@@ -609,6 +609,7 @@ impl UnitType {
             "timer" => UnitType::Timer,
             "snapshot" => UnitType::Snapshot,
             "unit" => UnitType::Unit,
+            "manager" => UnitType::Manager,
             _ => {
                 warn!("Unknown Unit Type name: {unit_type}");
                 UnitType::Unknown

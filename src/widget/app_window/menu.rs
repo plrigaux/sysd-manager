@@ -102,7 +102,12 @@ pub fn on_startup(app: &adw::Application) {
     let systemd_info = gio::ActionEntry::builder(&ACTION_APP_SYSTEMD_MANAGER[4..])
         .activate(|application: &adw::Application, _, _| {
             // let systemd_info_window = info_window::InfoWindow::new(None);
-            let systemd_info_window = SystemdManagerDialog::new();
+            let level = match PREFERENCES.dbus_level() {
+                DbusLevel::System => UnitDBusLevel::System,
+                DbusLevel::UserSession => UnitDBusLevel::UserSession,
+                DbusLevel::SystemAndSession => UnitDBusLevel::System,
+            };
+            let systemd_info_window = SystemdManagerDialog::new(level);
 
             if let Some(first_window) = application.windows().first() {
                 systemd_info_window.set_transient_for(Some(first_window));
