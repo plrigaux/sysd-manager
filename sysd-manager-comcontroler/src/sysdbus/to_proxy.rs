@@ -61,6 +61,8 @@ pub trait SysDManagerComLink {
     fn hello(msg: String) -> zbus::fdo::Result<()>;
 
     fn heart_beat(&self) -> zbus::fdo::Result<u64>;
+    fn reset_failed_unit(&self, unit_name: &str) -> zbus::fdo::Result<()>;
+    fn reset_failed(&self) -> zbus::fdo::Result<()>;
 }
 
 ///1 Ensure that the  proxy is up and running
@@ -311,4 +313,17 @@ pub async fn disable_unit_files_with_flags(
         .disable_unit_files_with_flags(unit_files, flags)
         .await
         .map_err(|err| err.into())
+}
+
+pub async fn reset_failed_unit(unit_name: &str) -> Result<(), SystemdErrors> {
+    let proxy: SysDManagerComLinkProxy<'_> = get_proxy_async().await?;
+    proxy
+        .reset_failed_unit(unit_name)
+        .await
+        .map_err(|err| err.into())
+}
+
+pub async fn reset_failed() -> Result<(), SystemdErrors> {
+    let proxy: SysDManagerComLinkProxy<'_> = get_proxy_async().await?;
+    proxy.reset_failed().await.map_err(|err| err.into())
 }

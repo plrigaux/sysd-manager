@@ -2,7 +2,7 @@ use crate::{
     analyze::build_analyze_window,
     consts::{
         ACTION_APP_ANALYZE_BLAME, ACTION_APP_DAEMON_RELOAD_BUS, ACTION_APP_SYSTEMD_MANAGER,
-        ACTION_APP_SYSTEMD_PARAMS,
+        ACTION_APP_SYSTEMD_MANAGER_RESET_FAILED, ACTION_APP_SYSTEMD_PARAMS,
     },
     systemd, systemd_gui,
     widget::{
@@ -18,7 +18,7 @@ use crate::{
 };
 use adw::prelude::*;
 use base::{consts::APP_ID, enums::UnitDBusLevel};
-use gettextrs::gettext;
+use gettextrs::{gettext, pgettext};
 use glib::VariantTy;
 use gtk::{gdk, gio, glib, prelude::ActionMapExtManual};
 use std::{collections::BTreeSet, env, fmt::Write};
@@ -206,6 +206,30 @@ pub fn on_startup(app: &adw::Application) {
             .parameter_type(Some(VariantTy::BYTE))
             .build();
 
+    let reset_failed: gio::ActionEntry<adw::Application> =
+        gio::ActionEntry::builder(&ACTION_APP_SYSTEMD_MANAGER_RESET_FAILED[4..])
+            .activate(
+                |application: &adw::Application,
+                 simple_action,
+                 _variant: Option<&glib::Variant>| {
+                    let Some(app_win_op) = application
+                        .active_window()
+                        .and_downcast_ref::<AppWindow>()
+                        .cloned()
+                    else {
+                        error!("Not an AppWindow");
+                        return;
+                    };
+                    let dbus_level = match PREFERENCES.dbus_level() {
+                        DbusLevel::UserSession => UnitDBusLevel::UserSession,
+                        _ => UnitDBusLevel::System,
+                    };
+                    let simple_action = simple_action.clone();
+                    app_win_op.reset_failed(simple_action, dbus_level);
+                },
+            )
+            .build();
+
     app.set_accels_for_action(ACTION_NAME_PREFERENCES, &["<Ctrl>comma"]);
 
     app.add_action_entries([
@@ -216,6 +240,7 @@ pub fn on_startup(app: &adw::Application) {
         preferences_action_entry,
         signals,
         daemon_reload_all_units_with_bus,
+        reset_failed,
     ]);
 }
 
@@ -287,22 +312,7 @@ fn daemon_reload(
     glib::spawn_future_local(async move {
         simple_action.set_enabled(false);
 
-        let (sender, receiver) = tokio::sync::oneshot::channel();
-        systemd::runtime().spawn(async move {
-            let response = systemd::daemon_reload(dbus_level).await;
-            if let Err(e) = sender.send(response) {
-                error!("Channel closed unexpectedly: {e:?}");
-            }
-        });
-
-        let Ok(response) = receiver
-            .await
-            .inspect_err(|err| error!("Tokio channel dropped {err:?}"))
-        else {
-            return;
-        };
-
-        match response {
+        match systemd::runtime().block_on(async move { systemd::daemon_reload(dbus_level).await }) {
             Ok(_) => {
                 info!("All units reloaded! {:?}", dbus_level);
                 let instance_level = dbus_level.message();
@@ -316,8 +326,11 @@ fn daemon_reload(
             }
             Err(e) => {
                 error!("Daemon Reload failed {e:?}");
-                let msg = gettext("Daemon Reload failed!");
-                let msg = format!("<red>{msg}</red>");
+
+                let msg = format2!(
+                    pgettext("toast", "Daemon Reload failed!\nReason: <red>{}</red>."),
+                    e.human_error_type(),
+                );
                 add_toast(&app_win_op, &msg);
             }
         }

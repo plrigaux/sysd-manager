@@ -67,6 +67,8 @@ pub struct SideControlPanelImpl {
     link_button: TemplateChild<gtk::Button>,
     #[template_child]
     delete_unit_file_button: TemplateChild<gtk::Button>,
+    #[template_child]
+    reset_failed_button: TemplateChild<gtk::Button>,
 
     kill_signal_window: RefCell<Option<KillPanel>>,
     queue_signal_window: RefCell<Option<KillPanel>>,
@@ -268,6 +270,20 @@ impl SideControlPanelImpl {
         }
     }
 
+    #[template_callback]
+    fn reset_failed_unit_clicked(&self, button: &gtk::Button) {
+        if let Some(parent) = self.control_panel() {
+            parent.call_method(
+                //action name
+                &pgettext("action", "Reset failed"),
+                true,
+                button,
+                systemd::reset_failed_unit_block,
+                Self::lambda_out,
+            )
+        }
+    }
+
     fn show_dialog(&self, action: ControlActionType) {
         let app_window = self.app_window();
 
@@ -453,6 +469,7 @@ impl SideControlPanelImpl {
         self.preset_button.set_sensitive(sensitive);
         self.reenable_button.set_sensitive(sensitive);
         self.link_button.set_sensitive(sensitive);
+        self.reset_failed_button.set_sensitive(sensitive);
     }
 
     fn app_window(&self) -> Option<AppWindow> {

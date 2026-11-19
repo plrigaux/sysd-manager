@@ -1540,3 +1540,68 @@ pub fn get_unit_file_state_block(
 ) -> Result<UnitFileStatus, SystemdErrors> {
     runtime().block_on(sysdbus::get_unit_file_state(level, unit_file))
 }
+
+pub fn reset_failed_unit_block(
+    params: Option<(UnitDBusLevel, String)>,
+) -> Result<(), SystemdErrors> {
+    let Some((level, unit_name)) = params else {
+        return Err(SystemdErrors::NoUnit);
+    };
+    runtime().block_on(reset_failed_unit(level, &unit_name))
+}
+
+pub async fn reset_failed_unit(level: UnitDBusLevel, unit_name: &str) -> Result<(), SystemdErrors> {
+    #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
+    match level {
+        UnitDBusLevel::System | UnitDBusLevel::Both => {
+            if proxy_switcher::PROXY_SWITCHER.clean() {
+                proxy_call_async!(reset_failed_unit, unit_name)
+            } else {
+                let proxy = sysdbus::dbus_proxies::systemd_manager_system_async().await?;
+                proxy
+                    .reset_failed_unit(unit_name)
+                    .await
+                    .map_err(|err| err.into())
+            }
+        }
+        UnitDBusLevel::UserSession => sysdbus::dbus_proxies::systemd_manager_user_session_async()
+            .await?
+            .reset_failed_unit(unit_name)
+            .await
+            .map_err(|err| err.into()),
+    }
+
+    #[cfg(any(feature = "flatpak", feature = "appimage"))]
+    {
+        let proxy = sysdbus::dbus_proxies::systemd_manager_async(level).await?;
+        proxy
+            .reset_failed_unit(unit_name)
+            .await
+            .map_err(|err| err.into())
+    }
+}
+
+pub async fn reset_failed(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
+    #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
+    match level {
+        UnitDBusLevel::System | UnitDBusLevel::Both => {
+            if proxy_switcher::PROXY_SWITCHER.clean() {
+                proxy_call_async!(reset_failed)
+            } else {
+                let proxy = sysdbus::dbus_proxies::systemd_manager_system_async().await?;
+                proxy.reset_failed().await.map_err(|err| err.into())
+            }
+        }
+        UnitDBusLevel::UserSession => sysdbus::dbus_proxies::systemd_manager_user_session_async()
+            .await?
+            .reset_failed()
+            .await
+            .map_err(|err| err.into()),
+    }
+
+    #[cfg(any(feature = "flatpak", feature = "appimage"))]
+    {
+        let proxy = sysdbus::dbus_proxies::systemd_manager_async(level).await?;
+        proxy.reset_failed().await.map_err(|err| err.into())
+    }
+}

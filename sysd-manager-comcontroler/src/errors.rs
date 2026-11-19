@@ -83,6 +83,13 @@ impl SystemdErrors {
                 //Error message displayed to user
                 pgettext("error", "SysD Manager Proxy issue")
             }
+            SystemdErrors::ZBusFdoError(err) => {
+                if let zbus::fdo::Error::AuthFailed(_) = err {
+                    pgettext("error", "Authentication didn't work")
+                } else {
+                    self.to_string()
+                }
+            }
             _ => self.to_string(),
         }
     }
