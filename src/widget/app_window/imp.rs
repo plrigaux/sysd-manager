@@ -2,7 +2,8 @@ use crate::{
     consts::{
         ACTION_APP_ANALYZE_BLAME, ACTION_APP_CREATE_UNIT, ACTION_APP_DAEMON_RELOAD_BUS,
         ACTION_APP_DISPLAY_UNIT, ACTION_APP_LIST_BOOT, ACTION_APP_PROPERTIES_SELECTOR,
-        ACTION_APP_SEARCH_UNITS, ACTION_APP_SYSTEMD_MANAGER, ACTION_APP_SYSTEMD_PARAMS,
+        ACTION_APP_SEARCH_UNITS, ACTION_APP_SYSTEMD_MANAGER,
+        ACTION_APP_SYSTEMD_MANAGER_RESET_FAILED, ACTION_APP_SYSTEMD_PARAMS,
         ACTION_FIND_IN_TEXT_OPEN, ACTION_PROPERTIES_SELECTOR_GENERAL,
         ACTION_UNIT_PROPERTIES_DISPLAY, ACTION_WIN_CHANGE_BUS,
         APP_ACTION_PROPERTIES_SELECTOR_GENERAL, APP_ACTION_UNIT_PROPERTIES_DISPLAY,
@@ -38,8 +39,8 @@ use std::{
     rc::Rc,
 };
 use strum::IntoEnumIterator;
-use systemd::{errors::SystemdErrors, journal_data::BootCol};
-use tracing::{debug, info, warn};
+use systemd::{errors::SystemdErrors, format2, journal_data::BootCol};
+use tracing::{debug, error, info, warn};
 
 const WINDOW_WIDTH: &str = "window-width";
 const WINDOW_HEIGHT: &str = "window-height";
@@ -265,18 +266,6 @@ impl ObjectImpl for AppWindowImpl {
             Some(ACTION_APP_ANALYZE_BLAME),
         );
 
-        let menu_item = gio::MenuItem::new(Some(&pgettext("menu", "Daemon Reload")), None);
-        menu_item.set_action_and_target_value(
-            Some(ACTION_APP_DAEMON_RELOAD_BUS),
-            Some(&255u8.to_variant()),
-        );
-        main_menu.append_item(&menu_item);
-
-        main_menu.append(
-            Some(&pgettext("menu", "Systemd Info")),
-            Some(ACTION_APP_SYSTEMD_MANAGER),
-        );
-
         main_menu.append(
             Some(&pgettext("menu", "List Boots")),
             Some(ACTION_APP_LIST_BOOT),
@@ -291,6 +280,26 @@ impl ObjectImpl for AppWindowImpl {
             Some(&pgettext("menu", "Create Unit")),
             Some(ACTION_APP_CREATE_UNIT),
         );
+
+        let menu_section = gio::Menu::new();
+
+        menu_section.append(
+            Some(&pgettext("menu", "Systemd Info")),
+            Some(ACTION_APP_SYSTEMD_MANAGER),
+        );
+
+        let menu_item = gio::MenuItem::new(Some(&pgettext("menu", "Daemon Reload")), None);
+        menu_item.set_action_and_target_value(
+            Some(ACTION_APP_DAEMON_RELOAD_BUS),
+            Some(&255u8.to_variant()),
+        );
+        menu_section.append_item(&menu_item);
+
+        menu_section.append(
+            Some(&pgettext("menu", "Reset Failed")),
+            Some(ACTION_APP_SYSTEMD_MANAGER_RESET_FAILED),
+        );
+        main_menu.append_section(Some(&pgettext("menu", "Systemd Manager")), &menu_section);
 
         let menu_section = gio::Menu::new();
 
@@ -770,6 +779,47 @@ impl AppWindowImpl {
 
     pub(super) fn add_one_unit(&self, unit: &UnitInfo, add_unit: bool) {
         self.unit_list_panel.add_one_unit(unit, add_unit);
+    }
+
+    pub(super) fn reset_failed(&self, simple_action: gio::SimpleAction, dbus_level: UnitDBusLevel) {
+        let this = self.obj().clone();
+        glib::spawn_future_local(async move {
+            simple_action.set_enabled(false);
+
+            match systemd::runtime()
+                .block_on(async move { systemd::reset_failed(dbus_level).await })
+            {
+                Ok(_) => {
+                    info!("Reset all units <b>failed</b> state {:?}", dbus_level);
+                    let instance_level = dbus_level.message();
+
+                    let instance_level = format!("<b>{}</b>", instance_level);
+                    let msg = format2!(
+                        "Reset all units <b>failed</b> state at {} level",
+                        instance_level
+                    );
+                    this.imp().add_toast(&msg);
+                }
+                Err(e) => {
+                    error!("Reset Failed call failed! {e:?}");
+
+                    let msg = format2!(
+                        pgettext(
+                            "toast",
+                            "Reset all units <b>failed</b> state, failed!\nReason: <red>{}</red>."
+                        ),
+                        e.human_error_type(),
+                    );
+
+                    this.imp().add_toast(&msg);
+                }
+            }
+            simple_action.set_enabled(true);
+        });
+    }
+
+    fn add_toast(&self, toast_msg: &str) {
+        self.add_toast_message(toast_msg, true, None);
     }
 }
 

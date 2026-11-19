@@ -32,4 +32,7 @@ pub trait SysDManagerComLink {
         files: &[&str],
         flags: u64,
     ) -> zbus::fdo::Result<DisEnAbleUnitFilesResponse>;
+
+    fn reset_failed_unit(&self, unit_name: &str) -> zbus::fdo::Result<()>;
+    fn reset_failed(&self) -> zbus::fdo::Result<()>;
 }

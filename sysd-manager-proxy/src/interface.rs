@@ -71,7 +71,7 @@ impl SysDManagerProxy {
         let mut last_heart_beat = self.last_heart_beat.lock().await;
         *last_heart_beat = Instant::now();
 
-        info!("received heart beat");
+        debug!("received heart beat");
         Ok(self.heart_beat_delay)
     }
 
@@ -317,6 +317,34 @@ impl SysDManagerProxy {
                     e
                 )
             })
+    }
+
+    async fn reset_failed(&self, #[zbus(header)] header: Header<'_>) -> zbus::fdo::Result<()> {
+        info!("Reset Failed all units");
+        let proxy: &sysdcom::SysDManagerComLinkProxy<'_> = get_proxy().await?;
+        self.check_autorisation(header).await?;
+        debug!("Polkit autorized");
+        proxy
+            .reload()
+            .await
+            .inspect_err(|e| warn!("Error while calling reset failed on sysdbus proxy: {:?}", e))
+    }
+
+    async fn reset_failed_unit(
+        &self,
+        #[zbus(header)] header: Header<'_>,
+        unit_name: &str,
+    ) -> zbus::fdo::Result<()> {
+        info!("Reset Failed Unit: {}", unit_name);
+        let proxy: &sysdcom::SysDManagerComLinkProxy<'_> = get_proxy().await?;
+        self.check_autorisation(header).await?;
+        debug!("Polkit autorized");
+        proxy.reset_failed_unit(unit_name).await.inspect_err(|e| {
+            warn!(
+                "Error while calling reset failed unit on sysdbus proxy: {:?}",
+                e
+            )
+        })
     }
 }
 

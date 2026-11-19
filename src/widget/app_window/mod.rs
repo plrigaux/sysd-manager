@@ -1,3 +1,4 @@
+use base::enums::UnitDBusLevel;
 use glib::Object;
 use gtk::{gio, glib, subclass::prelude::*};
 use systemd::errors::SystemdErrors;
@@ -71,6 +72,10 @@ impl AppWindow {
 
     pub fn add_one_unit(&self, unit: &UnitInfo, add_unit: bool) {
         self.imp().add_one_unit(unit, add_unit);
+    }
+
+    pub fn reset_failed(&self, simple_action: gio::SimpleAction, dbus_level: UnitDBusLevel) {
+        self.imp().reset_failed(simple_action, dbus_level);
     }
 }
 

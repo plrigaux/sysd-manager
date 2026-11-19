@@ -171,6 +171,8 @@ pub(crate) trait Systemd1Manager {
 
     fn subscribe(&self) -> Result<(), zbus::Error>;
     fn unsubscribe(&self) -> Result<(), zbus::Error>;
+    fn reset_failed_unit(&self, unit_name: &str) -> zbus::fdo::Result<()>;
+    fn reset_failed(&self) -> zbus::fdo::Result<()>;
 }
 
 static SYSTEM_MANAGER: OnceCell<Systemd1ManagerProxy> = OnceCell::const_new();

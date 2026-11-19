@@ -20,7 +20,7 @@ use std::{
     sync::{Arc, OnceLock},
     time::Duration,
 };
-use tracing::{debug, info, warn};
+use tracing::{debug, info, trace, warn};
 use tracing_subscriber::{EnvFilter, fmt};
 use zbus::{Connection, message::Header};
 use zbus_polkit::policykit1::{AuthorityProxy, CheckAuthorizationFlags, Subject};
@@ -95,15 +95,15 @@ impl SysDManagerProxy {
             .await;
 
         match authorization_result {
-            Ok(a) => {
-                debug!("is_authorized {}", a.is_authorized);
-                if a.is_authorized {
+            Ok(authorization_result) => {
+                debug!("is_authorized {}", authorization_result.is_authorized);
+                if authorization_result.is_authorized {
                     Ok(())
-                } else if a.is_challenge {
-                    let msg = format!("{:?}", a.details);
+                } else if authorization_result.is_challenge {
+                    let msg = format!("{:?}", authorization_result.details);
                     Err(zbus::fdo::Error::InteractiveAuthorizationRequired(msg))
                 } else {
-                    let msg = format!("{:?}", a.details);
+                    let msg = format!("{:?}", authorization_result.details);
                     Err(zbus::fdo::Error::AuthFailed(msg))
                 }
             }
@@ -160,13 +160,13 @@ pub async fn init_serve_connection(
     if heart_beat {
         tokio::spawn(async move {
             loop {
-                debug!("Sleep {:?}", heart_beat_delay);
+                trace!("Sleep {:?}", heart_beat_delay);
                 sleep(heart_beat_delay).await;
-                debug!("Wake");
+                trace!("Wake");
                 let last_heart_beat = last_heart_beat.lock().await;
                 let elapsed = last_heart_beat.elapsed();
 
-                debug!("Check Heart Beat {:?} {:?}", elapsed, time_trigger);
+                trace!("Check Heart Beat {:?} {:?}", elapsed, time_trigger);
                 if elapsed > time_trigger {
                     warn!("Time trigger busted! {:?}", last_heart_beat.elapsed());
                     std::process::exit(0);

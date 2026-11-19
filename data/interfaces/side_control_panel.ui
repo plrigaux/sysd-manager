@@ -406,6 +406,35 @@ destructive-action
                 <signal name="clicked" handler="delete_unit_file_button_clicked" swapped="True"/>
               </object>
             </child>
+            <child>
+              <object class="GtkButton" id="reset_failed_button">
+                <property name="child">
+                  <object class="GtkBox">
+                    <property name="spacing">5</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="icon-name">object-rotate-right-symbolic</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="label" translatable="yes" context="control" comments="button">_Reset failed</property>
+                        <property name="use-underline">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="hexpand">True</property>
+                      </object>
+                    </child>
+                  </object>
+                </property>
+                <property name="css-classes">flat
+</property>
+                <property name="tooltip-markup" translatable="yes" context="control" comments="Reset failed button tooltip">Resets the &lt;b&gt;failed&lt;/b&gt; state of this unit</property>
+                <signal name="clicked" handler="reset_failed_unit_clicked" swapped="True"/>
+              </object>
+            </child>
           </object>
         </property>
         <property name="propagate-natural-height">True</property>

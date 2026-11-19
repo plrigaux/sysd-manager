@@ -18,6 +18,7 @@ pub const ACTION_APP_CREATE_UNIT: &str = "app.create-unit";
 pub const ACTION_APP_SYSTEMD_MANAGER: &str = "app.systemd-manager";
 pub const ACTION_APP_SYSTEMD_PARAMS: &str = "app.systemd-params";
 
+pub const ACTION_APP_SYSTEMD_MANAGER_RESET_FAILED: &str = "app.systemd-manager-reset-failed";
 pub const ACTION_APP_SEARCH_UNITS: &str = "app.search_units";
 pub const ACTION_APP_DAEMON_RELOAD_BUS: &str = "app.daemon-reload-bus";
 

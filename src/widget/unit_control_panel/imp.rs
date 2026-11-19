@@ -844,7 +844,7 @@ impl UnitControlPanelImpl {
                     } else {
                         format2!(
                             // toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
-                            pgettext("toast", "{} failed.\nReason: <red>{}</red>."),
+                            pgettext("toast", "{} failed.\nReason: <red>{}</red>"),
                             &method_name,
                             error.human_error_type()
                         )
