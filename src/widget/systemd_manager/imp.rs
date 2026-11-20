@@ -1,4 +1,5 @@
 use crate::{
+    systemd_gui::new_settings,
     upgrade,
     utils::palette::{green, red},
     widget::close_window_shortcut,
