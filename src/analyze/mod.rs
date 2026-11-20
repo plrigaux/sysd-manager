@@ -28,7 +28,10 @@ pub fn build_analyze_window() -> Result<adw::Window, SystemdErrors> {
         ))
         .css_classes(["raised"])
         .build();
-    let toolbar = adw::ToolbarView::builder().content(&analyze_box).build();
+    let toolbar = adw::ToolbarView::builder()
+        .content(&analyze_box)
+        .top_bar_style(adw::ToolbarStyle::Raised)
+        .build();
     toolbar.add_top_bar(&header);
     let window = adw::Window::builder()
         .default_height(600)
@@ -55,7 +58,8 @@ fn build_analyze() -> Result<(gtk::Box, gio::ListStore, gtk::Label, adw::ViewSta
     let label_str = pgettext("analyze blame", "Total Time:");
 
     let total_time_box = gtk::Box::builder()
-        .spacing(5)
+        .margin_top(5)
+        .margin_bottom(5)
         .halign(gtk::Align::Center)
         .build();
 

@@ -232,6 +232,10 @@
       <default>(600,-1)</default>
       <summary>The Create Unit Window</summary>
     </key>
+    <key name="systemd-manager-window-size" type="(ii)">
+      <default>(600,-1)</default>
+      <summary>The Systemd Manager Window size</summary>
+    </key>
     <key name="create-unit-type-selection" type="s">
       <choices>
         <choice value="service"/>

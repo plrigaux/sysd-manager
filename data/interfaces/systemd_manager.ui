@@ -9,14 +9,12 @@
       <object class="AdwToolbarView">
         <property name="content">
           <object class="GtkBox">
+            <property name="margin-bottom">5</property>
+            <property name="margin-end">5</property>
+            <property name="margin-start">5</property>
+            <property name="margin-top">5</property>
             <property name="orientation">vertical</property>
             <property name="vexpand">True</property>
-            <child>
-              <object class="AdwViewSwitcher">
-                <property name="policy">wide</property>
-                <property name="stack">systemd_manager_stack</property>
-              </object>
-            </child>
             <child>
               <object class="AdwViewStack" id="systemd_manager_stack">
                 <property name="enable-transitions">True</property>
@@ -26,78 +24,16 @@
                     <property name="child">
                       <object class="GtkScrolledWindow">
                         <property name="child">
-                          <object class="GtkGrid">
-                            <property name="column-spacing">5</property>
-                            <property name="margin-bottom">5</property>
-                            <property name="margin-end">5</property>
-                            <property name="margin-start">5</property>
-                            <property name="margin-top">5</property>
-                            <property name="row-spacing">5</property>
+                          <object class="GtkBox">
+                            <property name="orientation">vertical</property>
                             <child>
-                              <object class="GtkLabel">
-                                <property name="label">Version</property>
-                                <property name="xalign">0.0</property>
-                                <layout>
-                                  <property name="column">0</property>
-                                  <property name="row">0</property>
-                                </layout>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkLabel" id="sm_version_label">
-                                <property name="selectable">True</property>
-                                <property name="xalign">0.0</property>
-                                <layout>
-                                  <property name="column">1</property>
-                                  <property name="row">0</property>
-                                </layout>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkLabel">
-                                <property name="label">Features</property>
-                                <property name="xalign">0.0</property>
-                                <property name="yalign">0.0</property>
-                                <layout>
-                                  <property name="column">0</property>
-                                  <property name="row">1</property>
-                                </layout>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkLabel" id="sm_features_label">
-                                <property name="max-width-chars">100</property>
-                                <property name="selectable">True</property>
-                                <property name="use-markup">True</property>
-                                <property name="wrap">True</property>
-                                <property name="xalign">0.0</property>
-                                <layout>
-                                  <property name="column">1</property>
-                                  <property name="row">1</property>
-                                </layout>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkLabel">
-                                <property name="label">Unit Paths</property>
-                                <property name="xalign">0.0</property>
-                                <property name="yalign">0.0</property>
-                                <layout>
-                                  <property name="column">0</property>
-                                  <property name="row">2</property>
-                                </layout>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="GtkLabel" id="sm_unit_path_label">
-                                <property name="selectable">True</property>
-                                <property name="use-markup">True</property>
-                                <property name="wrap">True</property>
-                                <property name="xalign">0.0</property>
-                                <layout>
-                                  <property name="column">1</property>
-                                  <property name="row">2</property>
-                                </layout>
+                              <object class="GtkGrid" id="param_grid">
+                                <property name="column-spacing">5</property>
+                                <property name="margin-bottom">5</property>
+                                <property name="margin-end">5</property>
+                                <property name="margin-start">5</property>
+                                <property name="margin-top">5</property>
+                                <property name="row-spacing">5</property>
                               </object>
                             </child>
                             <child>
@@ -110,10 +46,7 @@
                                     <property name="use-underline">True</property>
                                   </object>
                                 </property>
-                                <layout>
-                                  <property name="column">0</property>
-                                  <property name="row">3</property>
-                                </layout>
+                                <property name="halign">start</property>
                               </object>
                             </child>
                           </object>
@@ -129,36 +62,42 @@
                 <child>
                   <object class="AdwViewStackPage">
                     <property name="child">
-                      <object class="UnitFilePanel" id="sm_file_panel"/>
-                    </property>
-                    <property name="icon-name">power-profile-power-saver-symbolic</property>
-                    <property name="name">file</property>
-                    <property name="section-title">File</property>
-                    <property name="title">File</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="AdwViewStackPage">
-                    <property name="child">
-                      <object class="AdwStatusPage">
-                        <property name="description">ertwert</property>
-                        <property name="title">wertwertywey</property>
+                      <object class="GtkBox" id="file_container">
+                        <property name="margin-bottom">5</property>
+                        <property name="margin-end">5</property>
+                        <property name="margin-start">5</property>
+                        <property name="margin-top">5</property>
+                        <property name="orientation">vertical</property>
                       </object>
                     </property>
-                    <property name="icon-name">application-exit-symbolic</property>
-                    <property name="name">xxx</property>
-                    <property name="section-title">xxxx</property>
+                    <property name="icon-name">text-x-generic-symbolic</property>
+                    <property name="name">file</property>
+                    <property name="title">Files</property>
                   </object>
                 </child>
               </object>
             </child>
           </object>
         </property>
+        <property name="top-bar-style">raised</property>
         <child type="top">
           <object class="AdwHeaderBar">
             <property name="title-widget">
-              <object class="AdwWindowTitle" id="window_title">
-                <property name="title">Systemd Manager</property>
+              <object class="GtkBox">
+                <property name="margin-top">7</property>
+                <property name="orientation">vertical</property>
+                <property name="spacing">8</property>
+                <child>
+                  <object class="AdwWindowTitle" id="window_title">
+                    <property name="title">Systemd Manager</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwViewSwitcher">
+                    <property name="policy">wide</property>
+                    <property name="stack">systemd_manager_stack</property>
+                  </object>
+                </child>
               </object>
             </property>
           </object>

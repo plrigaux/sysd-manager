@@ -26,9 +26,7 @@
   <ui template-class="TextSearchEntry" filename="text_search_entry.ui"/>
   <ui template-class="UnitStatusPanel" filename="unit_status_panel.ui"/>
   <ui template-class="UnitFileDeleteDialog" filename="unit_file_delete.ui"/>
-  <ui template-class="SystemdManagerDialog" filename="systemd_manager.ui">
-    <requires>UnitFilePanel</requires>
-  </ui>
+  <ui template-class="SystemdManagerDialog" filename="systemd_manager.ui"/>
   <ui template-class="UnitPropertiesSelectorDialog" filename="unit_properties_selector.ui">
     <requires>UnitPropertiesSelectionPanel</requires>
   </ui>

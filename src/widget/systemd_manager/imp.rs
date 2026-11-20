@@ -1,10 +1,11 @@
-use std::{
-    cell::{Cell, RefCell},
-    collections::HashMap,
+use crate::{
+    upgrade,
+    utils::palette::{green, red},
+    widget::close_window_shortcut,
 };
-
 use adw::{prelude::*, subclass::window::AdwWindowImpl};
 use base::enums::UnitDBusLevel;
+use gettextrs::pgettext;
 use gtk::{
     glib::{self},
     subclass::{
@@ -12,51 +13,70 @@ use gtk::{
         widget::{CompositeTemplateClass, CompositeTemplateInitializingExt, WidgetImpl},
     },
 };
+use std::{
+    cell::{Cell, RefCell},
+    collections::HashMap,
+    path::PathBuf,
+};
 use systemd::data::UnitInfo;
+use tokio::fs;
 use tracing::{error, info, warn};
 
-use crate::{
-    systemd_gui::is_dark,
-    upgrade,
-    utils::palette::{green, red},
-    widget::{InterPanelMessage, unit_file_panel::UnitFilePanel},
-};
-
+const WINDOW_SIZE: &str = "systemd-manager-window-size";
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/systemd_manager.ui")]
 pub struct SystemdManagerDialogImp {
     #[template_child]
-    sm_version_label: TemplateChild<gtk::Label>,
-    #[template_child]
-    sm_features_label: TemplateChild<gtk::Label>,
-    #[template_child]
-    sm_unit_path_label: TemplateChild<gtk::Label>,
-    #[template_child]
     window_title: TemplateChild<adw::WindowTitle>,
     #[template_child]
-    sm_file_panel: TemplateChild<UnitFilePanel>,
-    #[template_child]
     systemd_manager_stack: TemplateChild<adw::ViewStack>,
+    #[template_child]
+    file_container: TemplateChild<gtk::Box>,
+    #[template_child]
+    param_grid: TemplateChild<gtk::Grid>,
 
     properties: RefCell<HashMap<String, zbus::OwnedVariant>>,
     level: Cell<UnitDBusLevel>,
 }
 
 impl SystemdManagerDialogImp {
+    fn param_label(&self, label: &str, row: i32) {
+        let label = gtk::Label::builder()
+            .label(label)
+            .xalign(0.0)
+            .yalign(0.0)
+            .build();
+        self.param_grid.attach(&label, 0, row, 1, 1);
+    }
+
+    fn data_label(&self, label: &str, row: i32) {
+        let label = gtk::Label::builder()
+            .label(label)
+            .xalign(0.0)
+            .use_markup(true)
+            .wrap(true)
+            .selectable(true)
+            .build();
+        self.param_grid.attach(&label, 1, row, 1, 1);
+    }
+
     fn fill_data(&self) {
         let map = self.properties.borrow();
 
-        let s = get_var(&map, "Version");
+        let mut row = 0;
+        let param_label = pgettext("manager", "Version");
+        self.param_label(&param_label, row);
 
-        self.sm_version_label.set_label(s);
+        let data_label = get_var(&map, "Version");
+        self.data_label(data_label, row);
 
-        let s = get_var(&map, "Features");
+        let features = get_var(&map, "Features");
 
         let red = red().get_color();
         let green = green().get_color();
         let mut color_features = String::new();
 
-        for feature in s.split(' ') {
+        for feature in features.split(' ') {
             let color = if feature.starts_with('+') { green } else { red };
 
             color_features.push_str("<span fgcolor='");
@@ -66,15 +86,19 @@ impl SystemdManagerDialogImp {
             color_features.push_str("</span> ");
         }
 
-        self.sm_features_label.set_label(&color_features);
-        let mut s = get_var2(&map, "UnitPath");
+        row += 1;
+        let param_label = pgettext("manager", "Features");
+        self.param_label(&param_label, row);
 
-        s.sort();
+        self.data_label(&color_features, row);
+        let mut paths = get_var2(&map, "UnitPath");
+
+        paths.sort();
 
         let mut path_label_text = String::new();
         let mut first = true;
-        for path in s {
-            path_label_text.push_str(&path);
+        for path in paths.iter() {
+            path_label_text.push_str(path);
             if first {
                 first = false;
             } else {
@@ -82,7 +106,18 @@ impl SystemdManagerDialogImp {
             }
         }
 
-        self.sm_unit_path_label.set_label(&path_label_text);
+        row += 1;
+        let param_label = pgettext("manager", "Log Level");
+        self.param_label(&param_label, row);
+
+        let log_level = get_var(&map, "LogLevel");
+        self.data_label(log_level, row);
+
+        row += 1;
+        let param_label = pgettext("manager", "Unit Paths");
+        self.param_label(&param_label, row);
+
+        self.data_label(&path_label_text, row);
     }
 
     pub(crate) fn set_level(&self, level: base::enums::UnitDBusLevel) {
@@ -97,12 +132,48 @@ impl SystemdManagerDialogImp {
         };
 
         unit.set_file_path(Some(file_path));
+    }
 
-        self.sm_file_panel
-            .set_inter_message(&InterPanelMessage::UnitChange(Some(&unit)));
+    pub fn save_window_context(&self) -> Result<(), glib::BoolError> {
+        let size = self.obj().default_size().to_variant();
 
-        self.sm_file_panel
-            .set_inter_message(&InterPanelMessage::IsDark(is_dark()));
+        let settings = new_settings();
+
+        settings.set_value(WINDOW_SIZE, &size)?;
+
+        Ok(())
+    }
+
+    fn load_window_size(&self) {
+        // Get the window state from `settings`
+        let settings = new_settings();
+
+        let size = settings.value(WINDOW_SIZE);
+
+        let (width, height) = size.get::<(i32, i32)>().unwrap();
+
+        // Set the size of the window
+        self.obj().set_default_size(width, height);
+    }
+
+    fn write_file_section(&self, title_label: &str, files: Vec<String>) {
+        if !files.is_empty() {
+            let link = gtk::Label::builder()
+                .label(title_label)
+                .halign(gtk::Align::Start)
+                .css_classes(["title-2"])
+                .build();
+            self.file_container.append(&link);
+        }
+
+        for preset_file in files {
+            let link = gtk::LinkButton::builder()
+                .uri(format!("file://{}", preset_file))
+                .label(preset_file)
+                .halign(gtk::Align::Start)
+                .build();
+            self.file_container.append(&link);
+        }
     }
 }
 
@@ -153,6 +224,8 @@ impl ObjectImpl for SystemdManagerDialogImp {
     fn constructed(&self) {
         self.parent_constructed();
         info!("New Systemd Manager");
+        close_window_shortcut(self.obj().as_ref());
+        self.load_window_size();
 
         self.obj().connect_show(|systemd_manager_window| {
             info!("Show Systemd Manager Dialog");
@@ -171,18 +244,124 @@ impl ObjectImpl for SystemdManagerDialogImp {
         });
 
         let dialog_weak_ref = self.downgrade();
-        self.systemd_manager_stack
-            .connect_visible_child_name_notify(move |view_stack| {
-                let dialog = upgrade!(dialog_weak_ref);
-                if view_stack.visible_child_name().as_deref() == Some("file") {
-                    dialog
-                        .sm_file_panel
-                        .set_inter_message(&InterPanelMessage::PanelVisible(true));
-                }
-            });
+        glib::spawn_future_local(async move {
+            let dialog = upgrade!(dialog_weak_ref);
+            //TODO do dropin
+            let (system_files, user_files) = systemd::runtime().block_on(get_conf());
+
+            let title_label = pgettext("manager", "Configuration System");
+            dialog.write_file_section(&title_label, system_files);
+
+            let title_label = pgettext("manager", "Configuration User");
+            dialog.write_file_section(&title_label, user_files);
+        });
+
+        let dialog_weak_ref = self.downgrade();
+        glib::spawn_future_local(async move {
+            let dialog = upgrade!(dialog_weak_ref);
+            let preset_files = systemd::runtime().block_on(get_preset());
+
+            let title_label = pgettext("manager", "Preset");
+            dialog.write_file_section(&title_label, preset_files);
+        });
     }
 }
 
+async fn get_preset() -> Vec<String> {
+    let preset_dir = [
+        "/etc/systemd/system-preset",
+        "/run/systemd/system-preset",
+        "/usr/local/lib/systemd/system-preset",
+        "/usr/lib/systemd/system-preset",
+        "/etc/systemd/user-preset",
+        "/run/systemd/user-preset",
+        "/usr/local/lib/systemd/user-preset",
+        "/usr/lib/systemd/user-preset",
+        "/etc/systemd/initrd-preset",
+        "/run/systemd/initrd-preset",
+        "/usr/local/lib/systemd/initrd-preset",
+        "/usr/lib/systemd/initrd-preset",
+    ];
+    let mut files = Vec::new();
+
+    for dir in preset_dir {
+        if let Err(e) = find_files(dir, "preset", &mut files).await {
+            warn!("find preset file error {:?}", e);
+        }
+    }
+    files
+}
+
+async fn find_files(dir: &str, extension: &str, results: &mut Vec<String>) -> std::io::Result<()> {
+    let dir = PathBuf::from(dir);
+
+    if !dir.is_dir() {
+        return Ok(());
+    }
+
+    let mut entries = fs::read_dir(dir).await?;
+
+    let mut dir_files = Vec::new();
+    while let Some(entry) = entries.next_entry().await? {
+        let path = entry.path();
+
+        if path.is_file()
+            && let Some(ext) = path.extension()
+            && ext == extension
+        {
+            dir_files.push(path.to_string_lossy().to_string());
+        }
+    }
+
+    dir_files.sort();
+
+    results.append(&mut dir_files);
+    Ok(())
+}
+
+async fn get_conf() -> (Vec<String>, Vec<String>) {
+    let conf_dir = [
+        "/etc/systemd/",
+        "/run/systemd/",
+        "/usr/local/lib/systemd/",
+        "/usr/lib/systemd/",
+    ];
+
+    let mut system_files = Vec::new();
+    let mut user_files = Vec::new();
+
+    for dir in conf_dir {
+        let dir = PathBuf::from(dir);
+
+        if !dir.is_dir() {
+            continue;
+        }
+
+        let file = dir.join("system.conf");
+
+        if file.exists() {
+            system_files.push(file.to_string_lossy().to_string());
+        }
+
+        let file = dir.join("user.conf");
+
+        if file.exists() {
+            user_files.push(file.to_string_lossy().to_string());
+        }
+    }
+
+    (system_files, user_files)
+}
+
 impl WidgetImpl for SystemdManagerDialogImp {}
-impl WindowImpl for SystemdManagerDialogImp {}
+impl WindowImpl for SystemdManagerDialogImp {
+    fn close_request(&self) -> glib::Propagation {
+        if let Err(err) = self.save_window_context() {
+            error!("Failed to save window state {:?}", err);
+        }
+
+        self.parent_close_request();
+        glib::Propagation::Proceed
+    }
+}
 impl AdwWindowImpl for SystemdManagerDialogImp {}
