@@ -443,20 +443,9 @@ impl UnitFilePanelImp {
 
         let unit_file_panel = self.obj().clone();
         glib::spawn_future_local(async move {
-            let (sender, receiver) = tokio::sync::oneshot::channel();
+            let result = crate::systemd::runtime()
+                .block_on(async move { systemd::fetch_drop_in_paths(level, &object_path).await });
 
-            crate::systemd::runtime().spawn(async move {
-                let response = systemd::fetch_drop_in_paths(level, &object_path).await;
-
-                if let Err(e) = sender.send(response) {
-                    error!("Channel closed unexpectedly: {e:?}");
-                }
-            });
-
-            let Ok(result) = receiver.await else {
-                error!("Tokio channel dropped");
-                return;
-            };
             match result {
                 Ok(drop_in_files) => {
                     unit_file_panel.imp().set_dropins(&drop_in_files);

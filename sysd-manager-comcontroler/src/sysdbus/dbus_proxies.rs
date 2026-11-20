@@ -5,7 +5,7 @@ use base::{
     proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse, QueuedJobs},
 };
 use tokio::sync::OnceCell;
-use zbus::{OwnedObjectPath, OwnedVariant, proxy};
+use zbus::{OwnedObjectPath, OwnedVariant, fdo, proxy};
 
 use crate::{
     data::ListedLoadedUnit,
@@ -56,7 +56,7 @@ pub(crate) trait ZUnitInfo {
     fn unit_file_preset(&self) -> Result<String, zbus::Error>;
 
     #[zbus(property)]
-    fn drop_in_paths(&self) -> Result<Vec<String>, zbus::Error>;
+    fn drop_in_paths(&self) -> fdo::Result<Vec<String>>;
 
     fn stop(&self, mode: &str) -> Result<OwnedObjectPath, zbus::Error>;
 }
