@@ -202,10 +202,7 @@ async fn signal_watcher(
     };
     let rule = MatchRule::builder()
         .msg_type(zbus::message::Type::Signal)
-        // .sender("org.freedesktop.DBus")?
         .interface("org.freedesktop.systemd1.Manager")
-        // .member("NameOwnerChanged")?
-        // .add_arg("org.freedesktop.zbus.MatchRuleStreamTest42")?
         .build()?;
 
     let mut stream = MessageStream::for_match_rule(

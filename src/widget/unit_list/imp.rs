@@ -1021,7 +1021,7 @@ impl UnitListPanelImp {
         //TODO need set of use cases to test
         glib::spawn_future_local(async move {
             if add_unit {
-                info!("Adding unit {:?}", unit.primary());
+                info!("Adding unit {} {:?}", unit.dbus_level(), unit.primary());
 
                 //FIXME not complete to the view (could miss some params)
                 //FIXME calling bellow migth freeze the app because it continiouly make receive add unit or remove unit signals
@@ -1053,7 +1053,7 @@ impl UnitListPanelImp {
                     }
                 }
             } else {
-                info!("Removing unit {:?}", unit.primary());
+                info!("Removing unit {} {:?}", unit.dbus_level(), unit.primary());
 
                 // match systemd::get_unit_file_state_block(unit.dbus_level(), &unit.primary()) {
                 //     Ok(state) => unit.set_enable_status(state),
@@ -1063,14 +1063,13 @@ impl UnitListPanelImp {
                     return;
                 };
 
-                let unit_name = unit.primary();
                 if let Some(position) = list_store.find_with_equal_func(|object| {
                     let Some(unit_item) = object.downcast_ref::<UnitInfo>() else {
                         error!("item.downcast_ref::<UnitInfo>()");
                         return false;
                     };
 
-                    unit_name == unit_item.primary()
+                    unit.equals(unit_item)
                 }) {
                     list_store.remove(position);
                 }
@@ -1082,8 +1081,6 @@ impl UnitListPanelImp {
                 panel.set_loaded_units_count(count + 1);
                 let count = panel.unit_files_count();
                 panel.set_unit_files_count(count + 1);
-                // }                    Err(err) => warn!("{:?}", err),
-                // }
             }
         });
     }
@@ -2047,7 +2044,7 @@ async fn unit_load_batch(sender: mpsc::Sender<SystemdSignal>) {
                 Ok(SystemdSignal::UnitNew(_, _)) | Ok(SystemdSignal::UnitRemoved(_, _,))
             )
         })
-        .chunks_timeout(100, Duration::from_millis(500));
+        .chunks_timeout(200, Duration::from_millis(500));
 
     tokio::pin!(batch_stream);
 

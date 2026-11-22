@@ -71,6 +71,13 @@ impl SystemdManagerDialogImp {
         let data_label = get_var(&map, "Version");
         self.data_label(data_label, row);
 
+        row += 1;
+
+        let param_label = pgettext("manager", "Architecture");
+        self.param_label(&param_label, row);
+        let data_label = get_var(&map, "Architecture");
+        self.data_label(data_label, row);
+
         let features = get_var(&map, "Features");
 
         let red = red().get_color();
@@ -158,11 +165,15 @@ impl SystemdManagerDialogImp {
     }
 
     fn write_file_section(&self, title_label: &str, files: Vec<String>) {
+        self.write_file_section_sub(title_label, files, "title-2")
+    }
+
+    fn write_file_section_sub(&self, title_label: &str, files: Vec<String>, section_style: &str) {
         if !files.is_empty() {
             let link = gtk::Label::builder()
                 .label(title_label)
                 .halign(gtk::Align::Start)
-                .css_classes(["title-2"])
+                .css_classes([section_style])
                 .build();
             self.file_container.append(&link);
         }
@@ -247,14 +258,25 @@ impl ObjectImpl for SystemdManagerDialogImp {
         let dialog_weak_ref = self.downgrade();
         glib::spawn_future_local(async move {
             let dialog = upgrade!(dialog_weak_ref);
-            //TODO do dropin
+
             let (system_files, user_files) = systemd::runtime().block_on(get_conf());
+            let (system_dropins, user_dropins) = systemd::runtime().block_on(get_dropins());
 
             let title_label = pgettext("manager", "Configuration System");
             dialog.write_file_section(&title_label, system_files);
 
+            let title_label = pgettext("manager", "Drop-ins");
+            dialog.write_file_section_sub(&title_label, system_dropins, "title-4");
+
             let title_label = pgettext("manager", "Configuration User");
             dialog.write_file_section(&title_label, user_files);
+
+            let title_label = pgettext("manager", "Drop-ins");
+            dialog.write_file_section_sub(&title_label, user_dropins, "title-4");
+
+            let dbus_policies = systemd::runtime().block_on(get_dbus_policies());
+            let title_label = pgettext("manager", "D-Bus Policies");
+            dialog.write_file_section(&title_label, dbus_policies);
         });
 
         let dialog_weak_ref = self.downgrade();
@@ -293,7 +315,10 @@ async fn get_preset() -> Vec<String> {
     files
 }
 
-async fn find_files(dir: &str, extension: &str, results: &mut Vec<String>) -> std::io::Result<()> {
+async fn find_files<T>(dir: T, extension: &str, results: &mut Vec<String>) -> std::io::Result<()>
+where
+    PathBuf: From<T>,
+{
     let dir = PathBuf::from(dir);
 
     if !dir.is_dir() {
@@ -331,6 +356,14 @@ async fn get_conf() -> (Vec<String>, Vec<String>) {
     let mut system_files = Vec::new();
     let mut user_files = Vec::new();
 
+    if let Some(home) = std::env::home_dir() {
+        let file = home.join(".config/systemd/user.conf");
+
+        if file.exists() {
+            user_files.push(file.to_string_lossy().to_string());
+        }
+    }
+
     for dir in conf_dir {
         let dir = PathBuf::from(dir);
 
@@ -352,6 +385,57 @@ async fn get_conf() -> (Vec<String>, Vec<String>) {
     }
 
     (system_files, user_files)
+}
+
+async fn get_dropins() -> (Vec<String>, Vec<String>) {
+    let conf_dir = [
+        "/etc/systemd/",
+        "/run/systemd/",
+        "/usr/local/lib/systemd/",
+        "/usr/lib/systemd/",
+    ];
+
+    let mut system_dropins = Vec::new();
+    let mut user_dropins = Vec::new();
+
+    for dir in conf_dir {
+        let dir = PathBuf::from(dir);
+
+        if !dir.is_dir() {
+            continue;
+        }
+
+        let d_dir = dir.join("system.conf.d");
+
+        if let Err(e) = find_files(d_dir, "conf", &mut system_dropins).await {
+            warn!("find dropin file error {:?}", e);
+        }
+
+        let d_dir = dir.join("user.conf.d");
+
+        if let Err(e) = find_files(d_dir, "conf", &mut user_dropins).await {
+            warn!("find dropin file error {:?}", e);
+        }
+    }
+    (system_dropins, user_dropins)
+}
+
+async fn get_dbus_policies() -> Vec<String> {
+    let conf_dir = [
+        "/usr/share/dbus-1/system.d/org.freedesktop.systemd1.conf",
+        "/etc/dbus-1/system.d/org.freedesktop.systemd1.conf",
+    ];
+
+    let mut system_dropins = Vec::new();
+
+    for file in conf_dir {
+        let filep = PathBuf::from(file);
+
+        if filep.is_file() {
+            system_dropins.push(file.to_string());
+        }
+    }
+    system_dropins
 }
 
 impl WidgetImpl for SystemdManagerDialogImp {}

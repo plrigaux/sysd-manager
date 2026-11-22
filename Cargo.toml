@@ -82,7 +82,7 @@ zbus = { version = "6", default-features = false, features = [
   "proxy",
   "tokio",
 ] }
-zbus_polkit = "6"
+zbus_polkit = "7"
 zbus_xml = "6"
 
 [dependencies]

@@ -55,7 +55,7 @@
                       </object>
                     </property>
                     <property name="icon-name">dialog-information</property>
-                    <property name="name">file</property>
+                    <property name="name">info</property>
                     <property name="title">Systemd Manager</property>
                   </object>
                 </child>
