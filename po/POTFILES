@@ -28,6 +28,7 @@ data/interfaces/shortcuts.ui
 data/interfaces/side_control_panel.ui
 data/interfaces/signal_row.ui
 data/interfaces/signals_window.ui
+data/interfaces/systemd_manager.ui
 data/interfaces/text_search_entry.ui
 data/interfaces/unit_control_panel.ui
 data/interfaces/unit_dependencies_panel.ui
@@ -103,6 +104,8 @@ src/widget/preferences/mod.rs
 src/widget/preferences/style_scheme.rs
 src/widget/signals_dialog/imp.rs
 src/widget/signals_dialog/mod.rs
+src/widget/systemd_manager/imp.rs
+src/widget/systemd_manager/mod.rs
 src/widget/text_search/imp.rs
 src/widget/text_search/mod.rs
 src/widget/unit_control_panel/controls.rs

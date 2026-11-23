@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-13 22:23-0500\n"
+"POT-Creation-Date: 2026-11-23 10:27-0500\n"
 "PO-Revision-Date: 2026-10-06 18:51+0000\n"
 "Last-Translator: Pavel Borecki <pavel.borecki@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/sysd-manager/"
@@ -107,7 +107,7 @@ msgstr "Znovu načíst seznam jednotek"
 
 #. button
 #. Message answer
-#: data/interfaces/clean_dialog.ui:53 src/widget/clean_dialog/imp.rs:97
+#: data/interfaces/clean_dialog.ui:53 src/widget/clean_dialog/imp.rs:95
 msgctxt "clean"
 msgid "Clean"
 msgstr "Čisté"
@@ -1587,8 +1587,20 @@ msgstr "Přednastavený soubor jednotky"
 msgctxt "control"
 msgid ""
 "Completely delete a systemd unit file and remove it from the system.\n"
-"                  \n"
+"\n"
 "<u>Note:</u> the unit must be <b>disabled</b> and <b>inactive</b>."
+msgstr ""
+
+#. button
+#: data/interfaces/side_control_panel.ui:421
+msgctxt "control"
+msgid "_Reset failed"
+msgstr ""
+
+#. Reset failed button tooltip
+#: data/interfaces/side_control_panel.ui:434
+msgctxt "control"
+msgid "Resets the <b>failed</b> state of this unit"
 msgstr ""
 
 #. description
@@ -1886,8 +1898,8 @@ msgstr "Jednotky"
 #: data/interfaces/unit_list_panel.ui:132
 msgctxt "list page description"
 msgid ""
-":wNo units returned, set environment variable <b>RUST_LOG=info</b> to see "
-"what happened.\n"
+"No units returned, set environment variable <b>RUST_LOG=info</b> to see what "
+"happened.\n"
 "\n"
 "For troubleshooting, please refer to this <a href=\"https://github.com/"
 "plrigaux/sysd-manager/wiki/Troubleshoot\">wiki</a>"
@@ -2053,107 +2065,132 @@ msgid "Analyze Blame"
 msgstr "Analýza a hledání potíží"
 
 #. label total
-#: src/analyze/mod.rs:55
+#: src/analyze/mod.rs:58
 msgctxt "analyze blame"
 msgid "Total Time:"
 msgstr "Celkový čas:"
 
 #. place holder, lees likely to be displaied
-#: src/analyze/mod.rs:77
+#: src/analyze/mod.rs:81
 #, fuzzy
 msgctxt "analyze blame"
 msgid "seconds…"
 msgstr "sekund …"
 
 #. column header
-#: src/analyze/mod.rs:154
+#: src/analyze/mod.rs:158
 msgctxt "analyze blame"
 msgid "Init time (ms)"
 msgstr "Inicializace (ms)"
 
 #. column header
-#: src/analyze/mod.rs:159
+#: src/analyze/mod.rs:163
 msgctxt "analyze blame"
 msgid "Running units"
 msgstr "Spuštěné jednotky"
 
-#: src/analyze/mod.rs:216
+#: src/analyze/mod.rs:220
 #, fuzzy, rust-format
 msgctxt "analyze blame"
 msgid "{} seconds"
 msgstr "sekund …"
 
 #. Just a simple log that it's all ok. Need to set env RUST_LOG="info" to see it
-#: src/main.rs:116
+#: src/main.rs:117
 msgid "Program starting up"
 msgstr "Program se spouští"
 
-#: src/widget/app_window/imp.rs:263
+#: src/widget/app_window/imp.rs:264
 msgctxt "menu"
 msgid "Analyze Blame"
 msgstr "Analýza a hledání potíží"
 
-#: src/widget/app_window/imp.rs:267
-msgctxt "menu"
-msgid "Daemon Reload"
-msgstr "Znovunačíst proces služby"
-
-#: src/widget/app_window/imp.rs:275
-msgctxt "menu"
-msgid "Systemd Info"
-msgstr "Informace o systemd"
-
-#: src/widget/app_window/imp.rs:280
+#: src/widget/app_window/imp.rs:269
 msgctxt "menu"
 msgid "List Boots"
 msgstr "Vypsat zavedení systému"
 
-#: src/widget/app_window/imp.rs:285
+#: src/widget/app_window/imp.rs:274
 msgctxt "menu"
 msgid "Watch Signals"
 msgstr "Hlídat signály"
 
-#: src/widget/app_window/imp.rs:290
+#: src/widget/app_window/imp.rs:279
 #, fuzzy
 msgctxt "menu"
 msgid "Create Unit"
 msgstr "Vytvořit jednotku"
 
-#: src/widget/app_window/imp.rs:297
+#: src/widget/app_window/imp.rs:286
+#, fuzzy
+msgctxt "menu"
+msgid "Systemd Manager"
+msgstr "SysD Manager"
+
+#: src/widget/app_window/imp.rs:290
+msgctxt "menu"
+msgid "Daemon Reload"
+msgstr "Znovunačíst proces služby"
+
+#: src/widget/app_window/imp.rs:298
+#, fuzzy
+msgctxt "menu"
+msgid "Reset Failed"
+msgstr "Vytvoření se nezdařilo! {}"
+
+#: src/widget/app_window/imp.rs:301
+#, fuzzy
+msgctxt "menu"
+msgid "Manager"
+msgstr "SysD Manager"
+
+#: src/widget/app_window/imp.rs:306
 msgctxt "menu"
 msgid "Preferences"
 msgstr "Předvolby"
 
-#: src/widget/app_window/imp.rs:303
+#: src/widget/app_window/imp.rs:312
 msgctxt "menu"
 msgid "Proxy Preferences"
 msgstr "Předvolby proxy"
 
-#: src/widget/app_window/imp.rs:308
+#: src/widget/app_window/imp.rs:317
 msgctxt "menu"
 msgid "Keyboard Shortcuts"
 msgstr "Klávesové zkratky"
 
-#: src/widget/app_window/imp.rs:312
+#: src/widget/app_window/imp.rs:321
 msgctxt "menu"
 msgid "About"
 msgstr "O aplikaci"
 
-#: src/widget/app_window/imp.rs:693
+#: src/widget/app_window/imp.rs:702
 msgctxt "toast"
 msgid "Check Proxy"
 msgstr ""
 
-#: src/widget/app_window/menu.rs:294
-msgid "Daemon Reload failed!"
-msgstr "Znovunačtení procesu služby se nezdařilo!"
+#: src/widget/app_window/imp.rs:808
+#, rust-format
+msgctxt "toast"
+msgid ""
+"Reset all units <b>failed</b> state, failed!\n"
+"Reason: <red>{}</red>."
+msgstr ""
+
+#: src/widget/app_window/menu.rs:331
+#, fuzzy, rust-format
+msgctxt "toast"
+msgid ""
+"Daemon Reload failed!\n"
+"Reason: <red>{}</red>."
+msgstr "Znovunačtení procesu služby se nezdařilo na úrovni {}"
 
 #. about dialogue
-#: src/widget/app_window/menu.rs:343
+#: src/widget/app_window/menu.rs:381
 msgid "Thank you for your support"
 msgstr "Děkuji za vaši podporu"
 
-#: src/widget/clean_dialog/imp.rs:112
+#: src/widget/clean_dialog/imp.rs:110
 msgctxt "clean"
 msgid "No Unit Selected"
 msgstr "Nevybrána žádná jednotka"
@@ -2878,14 +2915,14 @@ msgid "Equivalent to SIGSYS"
 msgstr "Ekvivalent k SIGIO"
 
 #. tooltip for action button
-#: src/widget/mod.rs:58
+#: src/widget/mod.rs:59
 #, rust-format
 msgctxt "controls"
 msgid "Remove {} from Favorites"
 msgstr ""
 
 #. tooltip for action button
-#: src/widget/mod.rs:64
+#: src/widget/mod.rs:65
 #, rust-format
 msgctxt "controls"
 msgid "Add {} to Favorites"
@@ -2968,6 +3005,63 @@ msgstr ""
 msgctxt "pref file style"
 msgid "None"
 msgstr ""
+
+#: src/widget/systemd_manager/imp.rs:68
+#, fuzzy
+msgctxt "manager"
+msgid "Version"
+msgstr "Uživatelská relace"
+
+#: src/widget/systemd_manager/imp.rs:76
+msgctxt "manager"
+msgid "Architecture"
+msgstr ""
+
+#: src/widget/systemd_manager/imp.rs:98
+msgctxt "manager"
+msgid "Features"
+msgstr ""
+
+#: src/widget/systemd_manager/imp.rs:118
+#, fuzzy
+msgctxt "manager"
+msgid "Log Level"
+msgstr "DBus úroveň"
+
+#: src/widget/systemd_manager/imp.rs:125
+#, fuzzy
+msgctxt "manager"
+msgid "Unit Paths"
+msgstr "Stav jednotky"
+
+#: src/widget/systemd_manager/imp.rs:265
+#, fuzzy
+msgctxt "manager"
+msgid "Configuration System"
+msgstr "Nastavit zobrazované sloupce"
+
+#: src/widget/systemd_manager/imp.rs:268 src/widget/systemd_manager/imp.rs:274
+#, fuzzy
+msgctxt "manager"
+msgid "Drop-ins"
+msgstr "Vytvořit drop-in"
+
+#: src/widget/systemd_manager/imp.rs:271
+#, fuzzy
+msgctxt "manager"
+msgid "Configuration User"
+msgstr "Nastavit zobrazované sloupce"
+
+#: src/widget/systemd_manager/imp.rs:278
+msgctxt "manager"
+msgid "D-Bus Policies"
+msgstr ""
+
+#: src/widget/systemd_manager/imp.rs:287
+#, fuzzy
+msgctxt "manager"
+msgid "Preset"
+msgstr "Přednastavené"
 
 #. find count
 #. find count initial
@@ -3144,7 +3238,7 @@ msgstr ""
 msgctxt "toast"
 msgid ""
 "{} failed.\n"
-"Reason: <red>{}</red>."
+"Reason: <red>{}</red>"
 msgstr ""
 
 #: src/widget/unit_control_panel/mod.rs:140
@@ -3171,28 +3265,34 @@ msgid "Fail! {}"
 msgstr ""
 
 #. action name
-#: src/widget/unit_control_panel/side_control_panel/imp.rs:136
+#: src/widget/unit_control_panel/side_control_panel/imp.rs:138
 #, fuzzy
 msgctxt "action"
 msgid "Freeze"
 msgstr "Zamrazit"
 
 #. action name
-#: src/widget/unit_control_panel/side_control_panel/imp.rs:150
+#: src/widget/unit_control_panel/side_control_panel/imp.rs:152
 #, fuzzy
 msgctxt "action"
 msgid "Thaw"
 msgstr "Rozmrazit"
 
 #. action name
-#: src/widget/unit_control_panel/side_control_panel/imp.rs:184
+#: src/widget/unit_control_panel/side_control_panel/imp.rs:186
 #, fuzzy
 msgctxt "action"
 msgid "Reload"
 msgstr "Znovu načíst jednotku"
 
 #. action name
-#: src/widget/unit_control_panel/side_control_panel/imp.rs:303
+#: src/widget/unit_control_panel/side_control_panel/imp.rs:278
+msgctxt "action"
+msgid "Reset failed"
+msgstr ""
+
+#. action name
+#: src/widget/unit_control_panel/side_control_panel/imp.rs:319
 msgctxt "action"
 msgid "Unmask"
 msgstr ""
@@ -3293,13 +3393,13 @@ msgid "File {} saved successfully!"
 msgstr ""
 
 #. Suggest to reload all unit configuation
-#: src/widget/unit_file_panel/imp.rs:279 src/widget/unit_file_panel/imp.rs:1034
+#: src/widget/unit_file_panel/imp.rs:279 src/widget/unit_file_panel/imp.rs:1023
 #, fuzzy
 msgid "Daemon Reload"
 msgstr "Znovu načíst proces služba"
 
 #: src/widget/unit_file_panel/imp.rs:296 src/widget/unit_file_panel/imp.rs:310
-#: src/widget/unit_file_panel/imp.rs:1050
+#: src/widget/unit_file_panel/imp.rs:1039
 msgctxt "file"
 msgid "Not able to save file, permission not granted!"
 msgstr ""
@@ -3317,34 +3417,34 @@ msgid ""
 " Because: {}"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:504
+#: src/widget/unit_file_panel/imp.rs:493
 msgctxt "file"
 msgid "File not found! You may need to perform \"Daemon Reload\""
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:596
+#: src/widget/unit_file_panel/imp.rs:585
 #, fuzzy
 msgctxt "file"
 msgid "Unit File"
 msgstr "Soubor jednotky"
 
-#: src/widget/unit_file_panel/imp.rs:598
+#: src/widget/unit_file_panel/imp.rs:587
 msgctxt "file"
 msgid "Drop In"
 msgstr ""
 
 #. Create Drop in file name
-#: src/widget/unit_file_panel/imp.rs:909
+#: src/widget/unit_file_panel/imp.rs:898
 msgctxt "file"
 msgid "Editing"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:919
+#: src/widget/unit_file_panel/imp.rs:908
 msgctxt "file"
 msgid "Note: you can change the drop-in file name by modifying the above line"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:929
+#: src/widget/unit_file_panel/imp.rs:918
 msgctxt "file"
 msgid ""
 "Anything between here and the comment below will become the contents of the "
@@ -3352,30 +3452,30 @@ msgid ""
 msgstr ""
 
 #. Create Drop in file footer
-#: src/widget/unit_file_panel/imp.rs:938
+#: src/widget/unit_file_panel/imp.rs:927
 msgctxt "file"
 msgid "Edits below this comment will be discarded"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:1026
+#: src/widget/unit_file_panel/imp.rs:1015
 #, fuzzy, rust-format
 msgctxt "file"
 msgid "Unit {} reverted successfully!"
 msgstr "Jednotka {} vytvořena!"
 
-#: src/widget/unit_file_panel/imp.rs:1071
+#: src/widget/unit_file_panel/imp.rs:1060
 msgctxt "file"
 msgid "Not able to revert unit, permission not granted!"
 msgstr ""
 
-#: src/widget/unit_file_panel/imp.rs:1079
+#: src/widget/unit_file_panel/imp.rs:1068
 msgctxt "file"
 msgid "Not able to revert unit, an error happened!"
 msgstr ""
 
 #. Menu item label for status menu
 #. Show Line Number Menu Item
-#: src/widget/unit_file_panel/imp.rs:1187
+#: src/widget/unit_file_panel/imp.rs:1176
 #, fuzzy
 msgctxt "file"
 msgid "Display Line Numbers"
@@ -3797,7 +3897,7 @@ msgstr "Přidat do oblíbených"
 #: sysd-manager-comcontroler/src/enums.rs:53
 #: sysd-manager-comcontroler/src/enums.rs:180
 #: sysd-manager-comcontroler/src/enums.rs:415
-#: sysd-manager-comcontroler/src/enums.rs:1037
+#: sysd-manager-comcontroler/src/enums.rs:1038
 msgid "not set"
 msgstr ""
 
@@ -3884,7 +3984,7 @@ msgstr ""
 #: sysd-manager-comcontroler/src/enums.rs:255
 #, fuzzy
 msgctxt "list"
-msgid "The unit file does not exist"
+msgid "The unit file doesn't exist"
 msgstr "Jednotka nemá žádný související soubor"
 
 #: sysd-manager-comcontroler/src/enums.rs:470
@@ -3931,90 +4031,90 @@ msgid "Unit is active and a new mount is being activated in its namespace."
 msgstr ""
 
 #. subtitle to detail who to kill Main
-#: sysd-manager-comcontroler/src/enums.rs:765
+#: sysd-manager-comcontroler/src/enums.rs:766
 msgctxt "kill"
 msgid "Only the main unit's process"
 msgstr ""
 
 #. subtitle to detail who to kill Control
-#: sysd-manager-comcontroler/src/enums.rs:767
+#: sysd-manager-comcontroler/src/enums.rs:768
 #, fuzzy
 msgctxt "kill"
 msgid "Only the unit's controled processes"
 msgstr "Procesy související s jednotkou"
 
 #. subtitle to detail who to kill All
-#: sysd-manager-comcontroler/src/enums.rs:769
+#: sysd-manager-comcontroler/src/enums.rs:770
 #, fuzzy
 msgctxt "kill"
 msgid "All unit's processes"
 msgstr "Procesy k dispozici"
 
 #. menu option
-#: sysd-manager-comcontroler/src/enums.rs:819
+#: sysd-manager-comcontroler/src/enums.rs:820
 msgctxt "dependency"
 msgid "Forward"
 msgstr ""
 
 #. menu option
-#: sysd-manager-comcontroler/src/enums.rs:821
+#: sysd-manager-comcontroler/src/enums.rs:822
 msgctxt "dependency"
 msgid "Reverse"
 msgstr ""
 
 #. menu option
-#: sysd-manager-comcontroler/src/enums.rs:823
+#: sysd-manager-comcontroler/src/enums.rs:824
 msgctxt "dependency"
 msgid "After"
 msgstr ""
 
 #. menu option
-#: sysd-manager-comcontroler/src/enums.rs:825
+#: sysd-manager-comcontroler/src/enums.rs:826
 msgctxt "dependency"
 msgid "Before"
 msgstr ""
 
 #. clean options
-#: sysd-manager-comcontroler/src/enums.rs:979
+#: sysd-manager-comcontroler/src/enums.rs:980
 #, fuzzy
 msgctxt "clean"
 msgid "_Runtime"
 msgstr "Běhové"
 
 #. clean options
-#: sysd-manager-comcontroler/src/enums.rs:981
+#: sysd-manager-comcontroler/src/enums.rs:982
 #, fuzzy
 msgctxt "clean"
 msgid "_State"
 msgstr "Stav"
 
 #. clean options
-#: sysd-manager-comcontroler/src/enums.rs:983
+#: sysd-manager-comcontroler/src/enums.rs:984
 msgctxt "clean"
 msgid "Cac_he"
 msgstr ""
 
 #. clean options
-#: sysd-manager-comcontroler/src/enums.rs:985
+#: sysd-manager-comcontroler/src/enums.rs:986
 msgctxt "clean"
 msgid "_Logs"
 msgstr ""
 
 #. clean options
-#: sysd-manager-comcontroler/src/enums.rs:987
+#: sysd-manager-comcontroler/src/enums.rs:988
 #, fuzzy
 msgctxt "clean"
 msgid "_Configuration"
 msgstr "Nastavit zobrazované sloupce"
 
 #. clean options
-#: sysd-manager-comcontroler/src/enums.rs:989
+#: sysd-manager-comcontroler/src/enums.rs:990
 msgctxt "clean"
 msgid "_File Descriptor Store"
 msgstr ""
 
 #. clean options
-#: sysd-manager-comcontroler/src/enums.rs:991
+#: sysd-manager-comcontroler/src/enums.rs:992
 msgctxt "clean"
 msgid "_All"
 msgstr ""
@@ -4040,6 +4140,11 @@ msgstr ""
 msgctxt "error"
 msgid "SysD Manager Proxy issue"
 msgstr "SysD Manager"
+
+#: sysd-manager-comcontroler/src/errors.rs:88
+msgctxt "error"
+msgid "Authentication didn't work"
+msgstr ""
 
 #. time style option
 #: sysd-manager-comcontroler/src/time_handling.rs:36
@@ -4109,6 +4214,13 @@ msgstr ""
 msgctxt "pref time style"
 msgid "Micro seconds since the epoch"
 msgstr ""
+
+#~ msgctxt "menu"
+#~ msgid "Systemd Info"
+#~ msgstr "Informace o systemd"
+
+#~ msgid "Daemon Reload failed!"
+#~ msgstr "Znovunačtení procesu služby se nezdařilo!"
 
 #~ msgctxt "control"
 #~ msgid "Enable Unit File ➚"
