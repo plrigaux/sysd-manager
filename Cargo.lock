@@ -3159,7 +3159,7 @@ checksum = "0bf256ce5efdfa370213c1dabab5935a12e49f2c58d15e9eac2870d3b4f27263"
 
 [[package]]
 name = "sysd-manager"
-version = "2.25.0"
+version = "2.26.0"
 dependencies = [
  "chrono",
  "clap",
@@ -3205,7 +3205,7 @@ dependencies = [
 
 [[package]]
 name = "sysd-manager-base"
-version = "2.25.0"
+version = "2.26.0"
 dependencies = [
  "constcat",
  "gettext-rs",
@@ -3234,7 +3234,7 @@ dependencies = [
 
 [[package]]
 name = "sysd-manager-comcontroler"
-version = "2.25.0"
+version = "2.26.0"
 dependencies = [
  "chrono",
  "enumflags2",
@@ -3274,7 +3274,7 @@ dependencies = [
 
 [[package]]
 name = "sysd-manager-proxy"
-version = "2.24.1"
+version = "2.26.0"
 dependencies = [
  "clap",
  "dotenv",

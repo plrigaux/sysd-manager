@@ -1962,7 +1962,7 @@ impl UnitListPanelImp {
         let list_panel = self.obj().clone();
         glib::spawn_future_local(async move {
             info!("Start processing signals");
-            let (sender, mut receiver) = mpsc::channel(100);
+            let (sender, mut receiver) = mpsc::channel(400);
             let _handle = runtime().spawn(async { unit_load_batch(sender).await });
 
             while let Some(signal) = receiver.recv().await {
@@ -2044,7 +2044,7 @@ async fn unit_load_batch(sender: mpsc::Sender<SystemdSignal>) {
                 Ok(SystemdSignal::UnitNew(_, _)) | Ok(SystemdSignal::UnitRemoved(_, _,))
             )
         })
-        .chunks_timeout(200, Duration::from_millis(500));
+        .chunks_timeout(1000, Duration::from_millis(1000));
 
     tokio::pin!(batch_stream);
 
@@ -2059,7 +2059,7 @@ async fn unit_load_batch(sender: mpsc::Sender<SystemdSignal>) {
                 set.insert(toggled.toggle_unit());
             }
         }
-
+        debug!("new/rem unit len {}", set.len());
         for signal in set {
             if let Err(err) = sender.send(signal).await {
                 warn!("Sender Unit New/Removed Error {:?}", err);

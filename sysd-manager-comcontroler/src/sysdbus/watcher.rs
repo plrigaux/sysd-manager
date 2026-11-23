@@ -295,3 +295,26 @@ async fn signal_watcher(
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashSet;
+
+    use base::enums::UnitDBusLevel;
+
+    use crate::SystemdSignal;
+
+    #[test]
+    fn test_unit_new() {
+        let a = SystemdSignal::UnitNew(UnitDBusLevel::System, "test".to_string());
+        let b = SystemdSignal::UnitNew(UnitDBusLevel::System, "test".to_string());
+
+        assert_eq!(a, b);
+        assert_eq!(a, b);
+
+        let mut set = HashSet::new();
+
+        assert!(set.insert(a));
+        assert!(!set.insert(b));
+    }
+}
