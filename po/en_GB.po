@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-23 10:27-0500\n"
+"POT-Creation-Date: 2026-11-23 14:47-0500\n"
 "PO-Revision-Date: 2025-08-14 23:57+0000\n"
 "Last-Translator: Anonymous <noreply@weblate.org>\n"
 "Language-Team: English (United Kingdom) <https://hosted.weblate.org/projects/"
@@ -2138,56 +2138,56 @@ msgctxt "menu"
 msgid "Create Unit"
 msgstr "Reload All Units"
 
-#: src/widget/app_window/imp.rs:286
+#: src/widget/app_window/imp.rs:287
 #, fuzzy
 msgctxt "menu"
 msgid "Systemd Manager"
 msgstr "Systemd Info"
 
-#: src/widget/app_window/imp.rs:290
+#: src/widget/app_window/imp.rs:291
 #, fuzzy
 msgctxt "menu"
 msgid "Daemon Reload"
 msgstr "Reload All Units"
 
-#: src/widget/app_window/imp.rs:298
+#: src/widget/app_window/imp.rs:300
 #, fuzzy
 msgctxt "menu"
-msgid "Reset Failed"
+msgid "Reset all \"failed\" state"
 msgstr "Mask Unit"
 
-#: src/widget/app_window/imp.rs:301
+#: src/widget/app_window/imp.rs:303
 msgctxt "menu"
 msgid "Manager"
 msgstr ""
 
-#: src/widget/app_window/imp.rs:306
+#: src/widget/app_window/imp.rs:308
 msgctxt "menu"
 msgid "Preferences"
 msgstr "Preferences"
 
-#: src/widget/app_window/imp.rs:312
+#: src/widget/app_window/imp.rs:314
 #, fuzzy
 msgctxt "menu"
 msgid "Proxy Preferences"
 msgstr "Show Preferences"
 
-#: src/widget/app_window/imp.rs:317
+#: src/widget/app_window/imp.rs:319
 msgctxt "menu"
 msgid "Keyboard Shortcuts"
 msgstr "Keyboard Shortcuts"
 
-#: src/widget/app_window/imp.rs:321
+#: src/widget/app_window/imp.rs:323
 msgctxt "menu"
 msgid "About"
 msgstr "About"
 
-#: src/widget/app_window/imp.rs:702
+#: src/widget/app_window/imp.rs:704
 msgctxt "toast"
 msgid "Check Proxy"
 msgstr ""
 
-#: src/widget/app_window/imp.rs:808
+#: src/widget/app_window/imp.rs:810
 #, rust-format
 msgctxt "toast"
 msgid ""
@@ -3299,9 +3299,10 @@ msgstr "Reload All Units"
 
 #. action name
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:278
+#, fuzzy
 msgctxt "action"
-msgid "Reset failed"
-msgstr ""
+msgid "Reset \"failed\" state"
+msgstr "Mask Unit"
 
 #. action name
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:319

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-23 10:27-0500\n"
+"POT-Creation-Date: 2026-11-23 14:47-0500\n"
 "PO-Revision-Date: 2026-10-06 18:51+0000\n"
 "Last-Translator: Pavel Borecki <pavel.borecki@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/sysd-manager/"
@@ -2121,55 +2121,55 @@ msgctxt "menu"
 msgid "Create Unit"
 msgstr "Vytvořit jednotku"
 
-#: src/widget/app_window/imp.rs:286
+#: src/widget/app_window/imp.rs:287
 #, fuzzy
 msgctxt "menu"
 msgid "Systemd Manager"
 msgstr "SysD Manager"
 
-#: src/widget/app_window/imp.rs:290
+#: src/widget/app_window/imp.rs:291
 msgctxt "menu"
 msgid "Daemon Reload"
 msgstr "Znovunačíst proces služby"
 
-#: src/widget/app_window/imp.rs:298
+#: src/widget/app_window/imp.rs:300
 #, fuzzy
 msgctxt "menu"
-msgid "Reset Failed"
+msgid "Reset all \"failed\" state"
 msgstr "Vytvoření se nezdařilo! {}"
 
-#: src/widget/app_window/imp.rs:301
+#: src/widget/app_window/imp.rs:303
 #, fuzzy
 msgctxt "menu"
 msgid "Manager"
 msgstr "SysD Manager"
 
-#: src/widget/app_window/imp.rs:306
+#: src/widget/app_window/imp.rs:308
 msgctxt "menu"
 msgid "Preferences"
 msgstr "Předvolby"
 
-#: src/widget/app_window/imp.rs:312
+#: src/widget/app_window/imp.rs:314
 msgctxt "menu"
 msgid "Proxy Preferences"
 msgstr "Předvolby proxy"
 
-#: src/widget/app_window/imp.rs:317
+#: src/widget/app_window/imp.rs:319
 msgctxt "menu"
 msgid "Keyboard Shortcuts"
 msgstr "Klávesové zkratky"
 
-#: src/widget/app_window/imp.rs:321
+#: src/widget/app_window/imp.rs:323
 msgctxt "menu"
 msgid "About"
 msgstr "O aplikaci"
 
-#: src/widget/app_window/imp.rs:702
+#: src/widget/app_window/imp.rs:704
 msgctxt "toast"
 msgid "Check Proxy"
 msgstr ""
 
-#: src/widget/app_window/imp.rs:808
+#: src/widget/app_window/imp.rs:810
 #, rust-format
 msgctxt "toast"
 msgid ""
@@ -3287,9 +3287,10 @@ msgstr "Znovu načíst jednotku"
 
 #. action name
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:278
+#, fuzzy
 msgctxt "action"
-msgid "Reset failed"
-msgstr ""
+msgid "Reset \"failed\" state"
+msgstr "Vytvoření se nezdařilo! {}"
 
 #. action name
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:319
