@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-23 10:27-0500\n"
-"PO-Revision-Date: 2026-11-14 22:31+0000\n"
+"PO-Revision-Date: 2026-11-23 19:44+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -1553,7 +1553,6 @@ msgstr "_Supprimer le fichier d’unité"
 
 #. delete button tooltip
 #: data/interfaces/side_control_panel.ui:403
-#, fuzzy
 msgctxt "control"
 msgid ""
 "Completely delete a systemd unit file and remove it from the system.\n"
@@ -1568,13 +1567,13 @@ msgstr ""
 #: data/interfaces/side_control_panel.ui:421
 msgctxt "control"
 msgid "_Reset failed"
-msgstr ""
+msgstr "_Effacer l'état d'échec"
 
 #. Reset failed button tooltip
 #: data/interfaces/side_control_panel.ui:434
 msgctxt "control"
 msgid "Resets the <b>failed</b> state of this unit"
-msgstr ""
+msgstr "Réinitialise l’état <b>en échec</b> de cette unité"
 
 #. description
 #: data/interfaces/signals_window.ui:24
@@ -1868,7 +1867,6 @@ msgid "Units"
 msgstr "Unités"
 
 #: data/interfaces/unit_list_panel.ui:132
-#, fuzzy
 msgctxt "list page description"
 msgid ""
 "No units returned, set environment variable <b>RUST_LOG=info</b> to see what "
@@ -1877,11 +1875,11 @@ msgid ""
 "For troubleshooting, please refer to this <a href=\"https://github.com/"
 "plrigaux/sysd-manager/wiki/Troubleshoot\">wiki</a>"
 msgstr ""
-"Aucune unité renvoyée ; définissez la variable d'environnement "
-"<b>RUST_LOG=info</b> pour comprendre ce qui s'est passé.\n"
+"Aucune unité renvoyée ; définissez la variable d'environnement <b>"
+"RUST_LOG=info</b> pour comprendre ce qui s'est passé.\n"
 "\n"
 "Pour le dépannage, veuillez consulter ce <a href=\"https://github.com/"
-"plrigaux/sysd-manager/wiki/Troubleshoot\">wiki</a>."
+"plrigaux/sysd-manager/wiki/Troubleshoot\">wiki</a>"
 
 #: data/interfaces/unit_list_panel.ui:136
 msgctxt "list page title"
@@ -2098,10 +2096,9 @@ msgid "Create Unit"
 msgstr "Créer une Unité"
 
 #: src/widget/app_window/imp.rs:286
-#, fuzzy
 msgctxt "menu"
 msgid "Systemd Manager"
-msgstr "SysD Manager"
+msgstr "Gestionnaire Systemd"
 
 #: src/widget/app_window/imp.rs:290
 msgctxt "menu"
@@ -2109,16 +2106,14 @@ msgid "Daemon Reload"
 msgstr "Recharger la configuration"
 
 #: src/widget/app_window/imp.rs:298
-#, fuzzy
 msgctxt "menu"
 msgid "Reset Failed"
-msgstr "L'opération a échouée"
+msgstr ""
 
 #: src/widget/app_window/imp.rs:301
-#, fuzzy
 msgctxt "menu"
 msgid "Manager"
-msgstr "SysD Manager"
+msgstr "Gestionnaire"
 
 #: src/widget/app_window/imp.rs:306
 msgctxt "menu"
@@ -2146,23 +2141,23 @@ msgid "Check Proxy"
 msgstr "Vérifier Proxy"
 
 #: src/widget/app_window/imp.rs:808
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "toast"
 msgid ""
 "Reset all units <b>failed</b> state, failed!\n"
 "Reason: <red>{}</red>."
 msgstr ""
-"{} unité <unit>{}</unit> a échoué.\n"
+"Réinitialisation de l’état <b>en échec </b> de toutes les unités, à échoué!\n"
 "Raison : <red>{}</red>."
 
 #: src/widget/app_window/menu.rs:331
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "toast"
 msgid ""
 "Daemon Reload failed!\n"
 "Reason: <red>{}</red>."
 msgstr ""
-"{} a échoué.\n"
+"Le rechargement de la configuration à échoué !\n"
 "Raison : <red>{}</red>."
 
 #. about dialogue
@@ -2968,61 +2963,54 @@ msgid "None"
 msgstr "Aucun"
 
 #: src/widget/systemd_manager/imp.rs:68
-#, fuzzy
 msgctxt "manager"
 msgid "Version"
-msgstr "Session utilisateur"
+msgstr "Version"
 
 #: src/widget/systemd_manager/imp.rs:76
 msgctxt "manager"
 msgid "Architecture"
-msgstr ""
+msgstr "Architecture"
 
 #: src/widget/systemd_manager/imp.rs:98
 msgctxt "manager"
 msgid "Features"
-msgstr ""
+msgstr "Fonctionnalités"
 
 #: src/widget/systemd_manager/imp.rs:118
-#, fuzzy
 msgctxt "manager"
 msgid "Log Level"
-msgstr "Niveau DBus"
+msgstr "Niveau de journalisation"
 
 #: src/widget/systemd_manager/imp.rs:125
-#, fuzzy
 msgctxt "manager"
 msgid "Unit Paths"
-msgstr "Statut de l'unité"
+msgstr "Chemins de l'unité"
 
 #: src/widget/systemd_manager/imp.rs:265
-#, fuzzy
 msgctxt "manager"
 msgid "Configuration System"
-msgstr "_Configuration"
+msgstr "Configuration système"
 
 #: src/widget/systemd_manager/imp.rs:268 src/widget/systemd_manager/imp.rs:274
-#, fuzzy
 msgctxt "manager"
 msgid "Drop-ins"
-msgstr "Drop In"
+msgstr "Substitutions (Drop-ins)"
 
 #: src/widget/systemd_manager/imp.rs:271
-#, fuzzy
 msgctxt "manager"
 msgid "Configuration User"
-msgstr "_Configuration"
+msgstr "Configuration utilisateur"
 
 #: src/widget/systemd_manager/imp.rs:278
 msgctxt "manager"
 msgid "D-Bus Policies"
-msgstr ""
+msgstr "Politiques D-Bus"
 
 #: src/widget/systemd_manager/imp.rs:287
-#, fuzzy
 msgctxt "manager"
 msgid "Preset"
-msgstr "Prérégler"
+msgstr "Préréglage"
 
 #. find count
 #. find count initial
@@ -3191,7 +3179,7 @@ msgstr ""
 
 #. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
 #: src/widget/unit_control_panel/imp.rs:847
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "toast"
 msgid ""
 "{} failed.\n"
@@ -3957,7 +3945,6 @@ msgstr ""
 
 #. tooltip column cell
 #: sysd-manager-comcontroler/src/enums.rs:255
-#, fuzzy
 msgctxt "list"
 msgid "The unit file doesn't exist"
 msgstr "Le fichier d'unité n'existe pas"
@@ -4122,7 +4109,7 @@ msgstr "Problème de proxy SysD Manager"
 #: sysd-manager-comcontroler/src/errors.rs:88
 msgctxt "error"
 msgid "Authentication didn't work"
-msgstr ""
+msgstr "L'authentification a échoué"
 
 #. time style option
 #: sysd-manager-comcontroler/src/time_handling.rs:36
