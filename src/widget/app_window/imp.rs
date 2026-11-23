@@ -282,6 +282,7 @@ impl ObjectImpl for AppWindowImpl {
 
         let menu_section = gio::Menu::new();
 
+        //Menu item
         menu_section.append(
             Some(&pgettext("menu", "Systemd Manager")),
             Some(ACTION_APP_SYSTEMD_MANAGER),
@@ -294,8 +295,9 @@ impl ObjectImpl for AppWindowImpl {
         );
         menu_section.append_item(&menu_item);
 
+        //Menu item
         menu_section.append(
-            Some(&pgettext("menu", "Reset Failed")),
+            Some(&pgettext("menu", "Reset all \"failed\" state")),
             Some(ACTION_APP_SYSTEMD_MANAGER_RESET_FAILED),
         );
         main_menu.append_section(Some(&pgettext("menu", "Manager")), &menu_section);

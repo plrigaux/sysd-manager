@@ -275,7 +275,7 @@ impl SideControlPanelImpl {
         if let Some(parent) = self.control_panel() {
             parent.call_method(
                 //action name
-                &pgettext("action", "Reset failed"),
+                &pgettext("action", "Reset \"failed\" state"),
                 true,
                 button,
                 systemd::reset_failed_unit_block,
