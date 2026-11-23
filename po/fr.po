@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-23 14:47-0500\n"
-"PO-Revision-Date: 2026-11-23 19:44+0000\n"
+"PO-Revision-Date: 2026-11-23 20:01+0000\n"
 "Last-Translator: Pier <491172+plrigaux@users.noreply.github.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/fr/>\n"
@@ -2106,10 +2106,9 @@ msgid "Daemon Reload"
 msgstr "Recharger la configuration"
 
 #: src/widget/app_window/imp.rs:300
-#, fuzzy
 msgctxt "menu"
 msgid "Reset all \"failed\" state"
-msgstr "_Effacer l'état d'échec"
+msgstr "Réinitialiser tous les « en échec »"
 
 #: src/widget/app_window/imp.rs:303
 msgctxt "menu"
@@ -2148,7 +2147,7 @@ msgid ""
 "Reset all units <b>failed</b> state, failed!\n"
 "Reason: <red>{}</red>."
 msgstr ""
-"Réinitialisation de l’état <b>en échec </b> de toutes les unités, à échoué!\n"
+"Réinitialisation de l’état <b>en échec</b> de toutes les unités, à échoué!\n"
 "Raison : <red>{}</red>."
 
 #: src/widget/app_window/menu.rs:331
@@ -3187,7 +3186,7 @@ msgid ""
 "Reason: <red>{}</red>"
 msgstr ""
 "{} a échoué.\n"
-"Raison : <red>{}</red>."
+"Raison : <red>{}</red>"
 
 #: src/widget/unit_control_panel/mod.rs:140
 #, rust-format
@@ -3236,10 +3235,9 @@ msgstr "Recharger"
 
 #. action name
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:278
-#, fuzzy
 msgctxt "action"
 msgid "Reset \"failed\" state"
-msgstr "_Effacer l'état d'échec"
+msgstr "Réinitialiser les états « en échec »"
 
 #. action name
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:319
