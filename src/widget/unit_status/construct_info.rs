@@ -11,6 +11,7 @@ use crate::utils::writer::{
     HyperLinkType, SPECIAL_GLYPH_TREE_BRANCH, SPECIAL_GLYPH_TREE_RIGHT, SPECIAL_GLYPH_TREE_SPACE,
     SPECIAL_GLYPH_TREE_VERTICAL, UnitInfoWriter,
 };
+use crate::utils::ztool::{get_array_str, value_some, value_to, value_to_def};
 use crate::widget::{
     preferences::data::PREFERENCES, unit_status::construct_info::systemd::timestamp_is_set,
 };
@@ -490,22 +491,6 @@ fn insert_doc(unit_writer: &mut UnitInfoWriter, doc: &str) {
         unit_writer.hyperlink(doc, doc, HyperLinkType::Http);
     } else {
         unit_writer.insert(doc);
-    }
-}
-
-fn get_array_str<'a>(value: &'a Variant<'a>) -> Vec<&'a str> {
-    match value as &Variant {
-        Variant::Array(a) => {
-            let mut vec = Vec::with_capacity(a.len());
-            for mi in a.iter() {
-                vec.push(value_to(mi));
-            }
-            vec
-        }
-        _ => {
-            warn!("Wrong zvalue conversion: {:?}", value.value_signature());
-            Vec::new()
-        }
     }
 }
 
@@ -1070,45 +1055,6 @@ fn print_process(
 
 const SUFFIX: [&str; 9] = ["B", "K", "M", "G", "T", "P", "E", "Z", "Y"];
 const UNIT: u64 = 1024;
-
-fn value_to<'a, 'b, T>(value: &'a Variant<'b>) -> T
-where
-    T: std::default::Default + std::convert::TryFrom<&'a zbus::Variant<'b>>,
-    <T as TryFrom<&'a Variant<'b>>>::Error: std::fmt::Debug,
-{
-    value
-        .try_into()
-        .inspect_err(|e| warn!("Convetion Error: {e:?}"))
-        .unwrap_or_default()
-}
-
-fn value_some<'a, T>(value: Option<&'a OwnedVariant>) -> T
-where
-    T: std::default::Default + std::convert::TryFrom<&'a zbus::OwnedVariant>,
-    <T as TryFrom<&'a OwnedVariant>>::Error: std::fmt::Debug,
-{
-    value
-        .and_then(|v| {
-            v.try_into()
-                .inspect_err(|e| warn!("Convetion Error: {e:?}"))
-                .ok()
-        })
-        .unwrap_or_default()
-}
-
-fn value_to_def<'a, T>(value: Option<&'a OwnedVariant>, def: T) -> T
-where
-    T: std::default::Default + std::convert::TryFrom<&'a zbus::OwnedVariant>,
-    <T as TryFrom<&'a OwnedVariant>>::Error: std::fmt::Debug,
-{
-    value
-        .and_then(|v| {
-            v.try_into()
-                .inspect_err(|e| warn!("Convertion Error: {e:?}"))
-                .ok()
-        })
-        .unwrap_or(def)
-}
 
 /// Converts bytes to human-readable values in base 10
 fn human_bytes(bytes: u64) -> String {

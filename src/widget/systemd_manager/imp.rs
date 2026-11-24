@@ -1,7 +1,10 @@
 use crate::{
     systemd_gui::new_settings,
     upgrade,
-    utils::palette::{green, red},
+    utils::{
+        palette::{green, red},
+        ztool::{get_array_str, value_to},
+    },
     widget::close_window_shortcut,
 };
 use adw::{prelude::*, subclass::window::AdwWindowImpl};
@@ -195,25 +198,46 @@ fn get_var<'a>(map: &'a HashMap<String, zbus::OwnedVariant>, key: &'a str) -> &'
             warn!("key {key} not found!");
             None
         })
-        .and_then(|v| {
-            v.downcast_ref::<&str>()
-                .inspect_err(|e| warn!("Key {key}, variant downcast Failed: {:?}", e))
-                .ok()
-        })
+        .map(|v| value_to::<&str>(v))
         .unwrap_or_default()
 }
 
-fn get_var2<'a>(map: &'a HashMap<String, zbus::OwnedVariant>, key: &'a str) -> Vec<String> {
+fn get_var2<'a>(map: &'a HashMap<String, zbus::OwnedVariant>, key: &'a str) -> Vec<&'a str> {
     let Some(v) = map.get(key) else {
         warn!("key {key} not found!");
         return vec![];
     };
 
-    <zbus::Variant<'_> as Clone>::clone(v)
-        .downcast::<Vec<String>>()
-        .inspect_err(|e| warn!("Key {key}, variant downcast Failed: {:?}", e))
-        .unwrap_or_default()
+    get_array_str(v)
 }
+
+// fn get_var3<'a>(
+//     map: &'a HashMap<String, zbus::OwnedVariant>,
+//     key: &'a str,
+// ) -> Result<&'a [&'a str], zbus::Error> {
+//     let Some(v) = map.get(key) else {
+//         warn!("key {key} not found!");
+//         return Ok(&vec![]);
+//     };
+//     // let x = v as &zbus::Variant;
+//     // let x = <zbus::Array>::try_from(x);
+//     // let x: &zbus::Array = v.downcast_ref()?;
+//     let x: Vec<String> = v.downcast_ref()?;
+
+//     for c in x {
+//         //
+//     }
+//     // let vv = v as &zbus::Variant;
+
+//     // let v2: &zbus::Array = vv.downcast_ref().unwrap_or_default();
+
+//     // let d &[<'_>]= if let zbus::Variant::Array(a) = vv {
+//     //     a
+//     // } else {
+//     //     vec![]
+//     // };
+//     Ok(&vec![])
+// }
 
 // The central trait for subclassing a GObject
 #[glib::object_subclass]

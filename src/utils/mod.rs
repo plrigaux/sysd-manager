@@ -4,3 +4,4 @@ pub mod font_management;
 pub mod more_colors;
 pub mod palette;
 pub mod writer;
+pub mod ztool;
