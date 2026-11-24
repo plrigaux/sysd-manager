@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-23 14:47-0500\n"
-"PO-Revision-Date: 2026-11-16 09:42+0000\n"
+"PO-Revision-Date: 2026-11-25 07:51+0000\n"
 "Last-Translator: Andrei Stepanov <adem@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/ru/>\n"
@@ -739,7 +739,7 @@ msgstr ""
 #: data/interfaces/preferences.ui:19
 msgctxt "preference"
 msgid "_Main"
-msgstr "_Основная"
+msgstr "_Основное"
 
 #. group
 #: data/interfaces/preferences.ui:23
@@ -1537,7 +1537,6 @@ msgstr "_Удалить юнит-файл"
 
 #. delete button tooltip
 #: data/interfaces/side_control_panel.ui:403
-#, fuzzy
 msgctxt "control"
 msgid ""
 "Completely delete a systemd unit file and remove it from the system.\n"
@@ -1545,20 +1544,20 @@ msgid ""
 "<u>Note:</u> the unit must be <b>disabled</b> and <b>inactive</b>."
 msgstr ""
 "Полностью удалить юнит-файл systemd и убрать его из системы.\n"
-"                  \n"
+"\n"
 "<u>Примечание:</u> юнит должен быть <b>отключён</b> и <b>неактивен</b>."
 
 #. button
 #: data/interfaces/side_control_panel.ui:421
 msgctxt "control"
 msgid "_Reset failed"
-msgstr ""
+msgstr "_Сбросить состояние сбоя"
 
 #. Reset failed button tooltip
 #: data/interfaces/side_control_panel.ui:434
 msgctxt "control"
 msgid "Resets the <b>failed</b> state of this unit"
-msgstr ""
+msgstr "Сбрасывает состояние <b>сбоя</b> этого юнита"
 
 #. description
 #: data/interfaces/signals_window.ui:24
@@ -1852,7 +1851,6 @@ msgid "Units"
 msgstr "Юнитов"
 
 #: data/interfaces/unit_list_panel.ui:132
-#, fuzzy
 msgctxt "list page description"
 msgid ""
 "No units returned, set environment variable <b>RUST_LOG=info</b> to see what "
@@ -1861,8 +1859,8 @@ msgid ""
 "For troubleshooting, please refer to this <a href=\"https://github.com/"
 "plrigaux/sysd-manager/wiki/Troubleshoot\">wiki</a>"
 msgstr ""
-":wНе возвращено ни одного юнита; задайте переменную окружения "
-"<b>RUST_LOG=info</b>, чтобы увидеть, что произошло.\n"
+"Не возвращено ни одного юнита; задайте переменную окружения <b>"
+"RUST_LOG=info</b>, чтобы увидеть, что произошло.\n"
 "\n"
 "Для устранения неполадок обратитесь к этой <a href=\"https://github.com/"
 "plrigaux/sysd-manager/wiki/Troubleshoot\">wiki-странице</a>"
@@ -2082,7 +2080,6 @@ msgid "Create Unit"
 msgstr "Создать юнит"
 
 #: src/widget/app_window/imp.rs:287
-#, fuzzy
 msgctxt "menu"
 msgid "Systemd Manager"
 msgstr "SysD Manager"
@@ -2093,16 +2090,14 @@ msgid "Daemon Reload"
 msgstr "Перезагрузка демона"
 
 #: src/widget/app_window/imp.rs:300
-#, fuzzy
 msgctxt "menu"
 msgid "Reset all \"failed\" state"
-msgstr "Операция не удалась"
+msgstr "Сбросить все состояния «сбой»"
 
 #: src/widget/app_window/imp.rs:303
-#, fuzzy
 msgctxt "menu"
 msgid "Manager"
-msgstr "SysD Manager"
+msgstr "Менеджер"
 
 #: src/widget/app_window/imp.rs:308
 msgctxt "menu"
@@ -2130,23 +2125,23 @@ msgid "Check Proxy"
 msgstr "Проверить прокси"
 
 #: src/widget/app_window/imp.rs:810
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "toast"
 msgid ""
 "Reset all units <b>failed</b> state, failed!\n"
 "Reason: <red>{}</red>."
 msgstr ""
-"{} юнита <unit>{}</unit> завершилось неудачно.\n"
+"Не удалось сбросить состояние <b>сбоя</b> всех юнитов!\n"
 "Причина: <red>{}</red>."
 
 #: src/widget/app_window/menu.rs:331
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "toast"
 msgid ""
 "Daemon Reload failed!\n"
 "Reason: <red>{}</red>."
 msgstr ""
-"{} завершилось неудачно.\n"
+"Не удалось перезагрузить демон!\n"
 "Причина: <red>{}</red>."
 
 #. about dialogue
@@ -2950,61 +2945,54 @@ msgid "None"
 msgstr "Нет"
 
 #: src/widget/systemd_manager/imp.rs:68
-#, fuzzy
 msgctxt "manager"
 msgid "Version"
-msgstr "Сеанс пользователя"
+msgstr "Версия"
 
 #: src/widget/systemd_manager/imp.rs:76
 msgctxt "manager"
 msgid "Architecture"
-msgstr ""
+msgstr "Архитектура"
 
 #: src/widget/systemd_manager/imp.rs:98
 msgctxt "manager"
 msgid "Features"
-msgstr ""
+msgstr "Возможности"
 
 #: src/widget/systemd_manager/imp.rs:118
-#, fuzzy
 msgctxt "manager"
 msgid "Log Level"
-msgstr "Уровень D-Bus"
+msgstr "Уровень журналирования"
 
 #: src/widget/systemd_manager/imp.rs:125
-#, fuzzy
 msgctxt "manager"
 msgid "Unit Paths"
-msgstr "Статус юнита"
+msgstr "Пути юнитов"
 
 #: src/widget/systemd_manager/imp.rs:265
-#, fuzzy
 msgctxt "manager"
 msgid "Configuration System"
-msgstr "_Конфигурация"
+msgstr "Системная конфигурация"
 
 #: src/widget/systemd_manager/imp.rs:268 src/widget/systemd_manager/imp.rs:274
-#, fuzzy
 msgctxt "manager"
 msgid "Drop-ins"
-msgstr "Файл Drop-in"
+msgstr "Файлы Drop-in"
 
 #: src/widget/systemd_manager/imp.rs:271
-#, fuzzy
 msgctxt "manager"
 msgid "Configuration User"
-msgstr "_Конфигурация"
+msgstr "Пользовательская конфигурация"
 
 #: src/widget/systemd_manager/imp.rs:278
 msgctxt "manager"
 msgid "D-Bus Policies"
-msgstr ""
+msgstr "Политики D-Bus"
 
 #: src/widget/systemd_manager/imp.rs:287
-#, fuzzy
 msgctxt "manager"
 msgid "Preset"
-msgstr "Применить preset-правила"
+msgstr "Preset-правила"
 
 #. find count
 #. find count initial
@@ -3173,14 +3161,14 @@ msgstr ""
 
 #. toast message failed (no unit) -- "{ACTION} failed. Reason: <span fgcolor='{CSS}'>{SYSTEMD ERROR (English)}</span>."
 #: src/widget/unit_control_panel/imp.rs:847
-#, fuzzy, rust-format
+#, rust-format
 msgctxt "toast"
 msgid ""
 "{} failed.\n"
 "Reason: <red>{}</red>"
 msgstr ""
-"{} завершилось неудачно.\n"
-"Причина: <red>{}</red>."
+"Не удалось выполнить {}.\n"
+"Причина: <red>{}</red>"
 
 #: src/widget/unit_control_panel/mod.rs:140
 #, rust-format
@@ -3227,10 +3215,9 @@ msgstr "Перезагрузить"
 
 #. action name
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:278
-#, fuzzy
 msgctxt "action"
 msgid "Reset \"failed\" state"
-msgstr "Операция не удалась"
+msgstr "Сбросить состояние «сбой»"
 
 #. action name
 #: src/widget/unit_control_panel/side_control_panel/imp.rs:319
@@ -3925,7 +3912,6 @@ msgstr ""
 
 #. tooltip column cell
 #: sysd-manager-comcontroler/src/enums.rs:255
-#, fuzzy
 msgctxt "list"
 msgid "The unit file doesn't exist"
 msgstr "Юнит-файл не существует"
@@ -4088,7 +4074,7 @@ msgstr "Проблема с прокси SysD Manager"
 #: sysd-manager-comcontroler/src/errors.rs:88
 msgctxt "error"
 msgid "Authentication didn't work"
-msgstr ""
+msgstr "Не удалось пройти аутентификацию"
 
 #. time style option
 #: sysd-manager-comcontroler/src/time_handling.rs:36
