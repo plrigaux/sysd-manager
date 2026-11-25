@@ -97,7 +97,6 @@ base.workspace = true
 chrono.workspace = true
 clap.workspace = true
 constcat.workspace = true
-const_format = "0.2.34"
 dotenv.workspace = true
 enumflags2.workspace = true
 formatx.workspace = true

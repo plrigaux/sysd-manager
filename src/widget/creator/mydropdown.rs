@@ -226,7 +226,7 @@ mod imp {
 
         #[template_callback]
         fn notify_popover_visible_cb(&self, visible: glib::ParamSpec, popover: gtk::Popover) {
-            info!(
+            debug!(
                 "pop up visible {:?} {}",
                 visible.value_type(),
                 visible.name() // visible.values()
