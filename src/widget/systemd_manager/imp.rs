@@ -44,7 +44,7 @@ pub struct SystemdManagerDialogImp {
 }
 
 impl SystemdManagerDialogImp {
-    fn param_label(&self, label: &str, row: i32) {
+    fn set_config_label(&self, label: &str, row: i32) {
         let label = gtk::Label::builder()
             .label(label)
             .xalign(0.0)
@@ -53,7 +53,7 @@ impl SystemdManagerDialogImp {
         self.param_grid.attach(&label, 0, row, 1, 1);
     }
 
-    fn data_label(&self, label: &str, row: i32) {
+    fn set_config_value(&self, label: &str, row: i32) {
         let label = gtk::Label::builder()
             .label(label)
             .xalign(0.0)
@@ -69,17 +69,17 @@ impl SystemdManagerDialogImp {
 
         let mut row = 0;
         let param_label = pgettext("manager", "Version");
-        self.param_label(&param_label, row);
+        self.set_config_label(&param_label, row);
 
         let data_label = get_var(&map, "Version");
-        self.data_label(data_label, row);
+        self.set_config_value(data_label, row);
 
         row += 1;
 
         let param_label = pgettext("manager", "Architecture");
-        self.param_label(&param_label, row);
+        self.set_config_label(&param_label, row);
         let data_label = get_var(&map, "Architecture");
-        self.data_label(data_label, row);
+        self.set_config_value(data_label, row);
 
         let features = get_var(&map, "Features");
 
@@ -99,36 +99,39 @@ impl SystemdManagerDialogImp {
 
         row += 1;
         let param_label = pgettext("manager", "Features");
-        self.param_label(&param_label, row);
+        self.set_config_label(&param_label, row);
 
-        self.data_label(&color_features, row);
-        let mut paths = get_var2(&map, "UnitPath");
-
-        paths.sort();
-
-        let mut path_label_text = String::new();
-        let mut first = true;
-        for path in paths.iter() {
-            path_label_text.push_str(path);
-            if first {
-                first = false;
-            } else {
-                path_label_text.push('\n');
-            }
-        }
+        self.set_config_value(&color_features, row);
 
         row += 1;
         let param_label = pgettext("manager", "Log Level");
-        self.param_label(&param_label, row);
+        self.set_config_label(&param_label, row);
 
         let log_level = get_var(&map, "LogLevel");
-        self.data_label(log_level, row);
+        self.set_config_value(log_level, row);
+
+        row += 1;
+        let param_label = pgettext("manager", "Log Target");
+        self.set_config_label(&param_label, row);
+
+        let log_level = get_var(&map, "LogTarget");
+        self.set_config_value(log_level, row);
+
+        row += 1;
+        let param_label = pgettext("manager", "Environment Variables");
+        self.set_config_label(&param_label, row);
+
+        let env_vars = get_vars(&map, "Environment");
+        let env_vars = str_array_to_string(&env_vars);
+        self.set_config_value(&env_vars, row);
 
         row += 1;
         let param_label = pgettext("manager", "Unit Paths");
-        self.param_label(&param_label, row);
+        self.set_config_label(&param_label, row);
 
-        self.data_label(&path_label_text, row);
+        let path_label_text = get_path(map);
+
+        self.set_config_value(&path_label_text, row);
     }
 
     pub(crate) fn set_level(&self, level: base::enums::UnitDBusLevel) {
@@ -192,6 +195,18 @@ impl SystemdManagerDialogImp {
     }
 }
 
+fn get_path(map: std::cell::Ref<'_, HashMap<String, zbus::OwnedVariant>>) -> String {
+    let mut paths = get_vars(&map, "UnitPath");
+
+    paths.sort();
+
+    str_array_to_string(&paths)
+}
+
+fn str_array_to_string(values: &[&str]) -> String {
+    values.join("\n")
+}
+
 fn get_var<'a>(map: &'a HashMap<String, zbus::OwnedVariant>, key: &'a str) -> &'a str {
     map.get(key)
         .or_else(|| {
@@ -202,7 +217,7 @@ fn get_var<'a>(map: &'a HashMap<String, zbus::OwnedVariant>, key: &'a str) -> &'
         .unwrap_or_default()
 }
 
-fn get_var2<'a>(map: &'a HashMap<String, zbus::OwnedVariant>, key: &'a str) -> Vec<&'a str> {
+fn get_vars<'a>(map: &'a HashMap<String, zbus::OwnedVariant>, key: &'a str) -> Vec<&'a str> {
     let Some(v) = map.get(key) else {
         warn!("key {key} not found!");
         return vec![];
