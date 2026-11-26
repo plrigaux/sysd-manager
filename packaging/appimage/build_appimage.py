@@ -6,7 +6,7 @@ import subprocess
 import build_aux.build_common as bc
 from build_aux.build_common import color
 
-APP_IMAGE_DIR = "../AppImage"
+APP_IMAGE_DIR = "/tmp/SysDAppImage"
 APP_DIR = f"{APP_IMAGE_DIR}/SysDManager.AppDir"
 # APP_DIRLX = f"{APP_IMAGE_DIR}/LxSysDManager.AppDir"
 
@@ -405,7 +405,7 @@ def just_publish():
     file = f"{APP_IMAGE_DIR}/{app_image_file_name(version)}"
 
     # bc.just_publish(version, file)
-    bc.release_upload_file(f"{APP_IMAGE_DIR}/{file}")
+    bc.release_upload_file(file)
 
 
 def publish_upload():
