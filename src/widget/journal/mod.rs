@@ -1,21 +1,15 @@
 mod colorize;
 mod imp;
 pub mod list_boots;
-//mod journal_row;
-//pub mod more_colors;
-//pub mod palette;
 
-use std::cell::RefCell;
-
-use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
-use tracing::{info, warn};
-
+use super::InterPanelMessage;
 use crate::{
     systemd::journal_data::JournalEventChunk,
     widget::{app_window::AppWindow, text_search::TextSearchEntry},
 };
-
-use super::InterPanelMessage;
+use gtk::{glib, subclass::prelude::ObjectSubclassIsExt};
+use std::cell::RefCell;
+use tracing::{info, warn};
 
 glib::wrapper! {
     pub struct JournalPanel(ObjectSubclass<imp::JournalPanelImp>)

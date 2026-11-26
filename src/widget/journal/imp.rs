@@ -44,7 +44,7 @@ use gtk::{
 use std::{
     cell::{Cell, OnceCell, RefCell},
     sync::mpsc,
-    thread,
+    thread::{self, JoinHandle},
 };
 use systemd::journal_data::BOOT_IDX;
 use tracing::{debug, error, info, warn};
@@ -157,6 +157,7 @@ pub struct JournalPanelImp {
     event_added: Cell<bool>,
     vupper: Cell<f64>,
     block_double_call: Cell<bool>,
+    join_handle: RefCell<Option<JoinHandle<()>>>,
 }
 
 #[gtk::template_callbacks]
@@ -379,7 +380,7 @@ impl JournalPanelImp {
 
         let old_unit = self.unit.replace(Some(unit.clone()));
 
-        //Assume that the ne unit is not None
+        //Assume that the new unit is not None
         if old_unit.is_none_or(|o_unit| o_unit.primary() != unit.primary()) {
             self.new_text_view();
             self.update_journal_according_to_display_order(); //TODO CHECK if needed to be include tin if clause 
@@ -424,8 +425,6 @@ impl JournalPanelImp {
             return;
         };
 
-        self.block_double_call.set(true);
-
         //self.unit_journal_loaded.set(true); // maybe wait at the full loaded
 
         let journal_max_events_batch_size: usize =
@@ -455,16 +454,21 @@ impl JournalPanelImp {
             unit.primary()
         );
 
-        let journal_panel = self.obj().downgrade();
+        let journal_panel = self.downgrade();
         let journal_refresh_button = self.journal_refresh_button.downgrade();
         let level = unit.dbus_level();
         let primary_name = unit.primary();
 
         glib::spawn_future_local(async move {
-            let journal_panel = upgrade!(journal_panel);
+            let journal_panel_imp = upgrade!(journal_panel);
             let journal_refresh_button = upgrade!(journal_refresh_button);
 
-            //panel_stack.set_visible_child_name(PANEL_SPINNER);
+            if journal_panel_imp.block_double_call.get() {
+                warn!("Stop double call in");
+                return;
+            }
+
+            journal_panel_imp.block_double_call.set(true);
             journal_refresh_button.set_sensitive(false);
             let boot_filter2 = boot_filter.clone();
             let message_max_char = PREFERENCES.journal_event_max_size() as usize;
@@ -488,11 +492,10 @@ impl JournalPanelImp {
             .await
             .expect("Task needs to finish successfully.");
 
-            let journal_panel_imp = journal_panel.imp();
+            dbg!(journal_events.info());
+            // dbg!(&boot_filter2);
             journal_panel_imp.handle_journal_events(&journal_events);
 
-            // dbg!(journal_events.info());
-            // dbg!(&boot_filter2);
             //TODO better check all cases
             match journal_events.info() {
                 JournalEventChunkInfo::NoMore
@@ -518,8 +521,15 @@ impl JournalPanelImp {
 
     fn set_continuous_marker(&self) {
         if self.follow_check.is_active() {
-            // call thread
-            self.continuous_entry();
+            let no_thread_started = {
+                let jh = self.join_handle.borrow();
+                jh.as_ref().map(|jh| jh.is_finished()).unwrap_or(true)
+            };
+
+            if no_thread_started {
+                // call thread
+                self.continuous_entry();
+            }
         }
     }
 
@@ -622,9 +632,6 @@ impl JournalPanelImp {
 
         if writer.char_count() <= 0 {
             self.panel_stack.set_visible_child_name(PANEL_EMPTY);
-        // } else if let Some(child_name) = self.panel_stack.visible_child_name()
-        //     && child_name.as_str() == PANEL_JOURNAL
-        // {
         //Do nothing
         } else {
             self.panel_stack.set_visible_child_name(PANEL_JOURNAL);
@@ -685,7 +692,7 @@ impl JournalPanelImp {
         let message_max_char = PREFERENCES.journal_event_max_size() as usize;
         let timestamp_style = PREFERENCES.timestamp_style();
         info!("Calling journal continuous thread {:?}", unit_name);
-        thread::spawn(move || {
+        let join_handle = thread::spawn(move || {
             systemd::get_unit_journal_continuous(
                 unit_name,
                 level,
@@ -697,14 +704,17 @@ impl JournalPanelImp {
                 super::check_for_new_journal_entry,
             )
         });
+
+        self.join_handle.replace(Some(join_handle));
     }
 
     fn set_or_send_cancelling(&self, cancel_sender: Option<std::sync::mpsc::Sender<()>>) {
         let sender_op = self.cancel_continuous_sender.replace(cancel_sender);
         if let Some(cancel_continuous_sender) = sender_op {
-            let res = cancel_continuous_sender.send(());
-            if res.is_err() {
-                warn!("Error close thread sender")
+            if let Err(e) = cancel_continuous_sender.send(()) {
+                warn!("Error close thread sender: {:?}", e)
+            } else {
+                self.join_handle.replace(None);
             }
             info!("Cancel journal trail")
         }
@@ -779,6 +789,8 @@ impl JournalPanelImp {
     fn new_text_view(&self) {
         debug!("new_text_view");
         self.journal_event_times.set(None);
+        self.block_double_call.set(false);
+        self.join_handle.replace(None);
 
         let buffer = self.journal_text_view.buffer();
 

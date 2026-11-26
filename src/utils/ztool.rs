@@ -1,5 +1,3 @@
-use std::slice::Iter;
-
 use tracing::warn;
 use zbus::{OwnedVariant, Variant};
 
@@ -59,23 +57,25 @@ pub fn get_array_str<'a>(value: &'a Variant<'a>) -> Vec<&'a str> {
     }
 }
 
-pub fn get_iter<'a>(value: &'a Variant<'a>) -> Iter<'a, Variant<'a>> {
-    match value as &Variant {
-        Variant::Array(array) => {
-            // let v = array.inner();
-            array.iter()
-        }
-        _ => {
-            warn!("Wrong zvalue conversion: {:?}", value.value_signature());
-            Iter::default()
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
 
+    use std::slice::Iter;
+
     use super::*;
+
+    pub fn get_iter<'a>(value: &'a Variant<'a>) -> Iter<'a, Variant<'a>> {
+        match value as &Variant {
+            Variant::Array(array) => {
+                // let v = array.inner();
+                array.iter()
+            }
+            _ => {
+                warn!("Wrong zvalue conversion: {:?}", value.value_signature());
+                Iter::default()
+            }
+        }
+    }
 
     #[test]
     fn test_var_str() {

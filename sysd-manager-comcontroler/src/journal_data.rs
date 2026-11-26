@@ -90,10 +90,6 @@ impl JournalEventChunk {
             WhatGrab::Older => Some((last.timestamp, first.timestamp)),
         }
     }
-
-    /*     pub fn is_empty(&self) -> bool {
-        self.events.is_empty()
-    } */
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]

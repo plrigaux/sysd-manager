@@ -9,6 +9,11 @@ If this project saves you or your company time, consider [sponsoring](https://gi
 
 <!-- ## [Unreleased] -->
 
+## [2.26.1] - 2026-11-26
+
+### Fixed
+- Fixed journal events thread deadlock and memory leak
+
 ## [2.26.0] - 2026-11-23
 
 ### Added
@@ -32,13 +37,10 @@ If this project saves you or your company time, consider [sponsoring](https://gi
 ### Changed
 - Russian translation
 
-### Fixed
-- Provide a Flatpak workaround regading the no unit returned issues
-
 ## [2.24.6] - 2026-10-30
 
 ### Fixed
-- Provide a Flatpak workaround regading the no unit returned issues
+- Provide a Flatpak workaround regarding the no unit returned issues
 
 ## [2.24.5] - 2026-10-28
 
@@ -304,7 +306,7 @@ when switching Color Scheme Mode (Light and Dark)
 - Estonian translation
 
 ### Fixed
-- Start, Stop, Restart Unser Session Units delay
+- Start, Stop, Restart User Session Units delay
 
 ## [2.17.1] - 2026-04-09
 
@@ -409,7 +411,7 @@ when switching Color Scheme Mode (Light and Dark)
 
 - Creation of deb package
 - Add polkit rule to start or stop proxy
-- Add a UX for overrestrictive filters
+- Add a UX for over restrictive filters
 - Add Journal no events info
 - Curated unit lists in unit browser popup menu
 - New "Include Unit files" option
