@@ -82,7 +82,7 @@ def main():
         case "cargo_publish":
             cargo_publish()
         case "launchpad":
-            launchpad()
+            launchpad(release)
 
 
 def create(release):
