@@ -38,6 +38,7 @@ def main():
             "cargo",
             "publish",
             "cargo_publish",
+            "launchpad",
         ],
         help="action to perform",
     )
@@ -80,6 +81,8 @@ def main():
             publish()
         case "cargo_publish":
             cargo_publish()
+        case "launchpad":
+            launchpad()
 
 
 def create(release):
@@ -92,6 +95,18 @@ def create(release):
     write_rules()
     build_package()
     # upload_package(release)
+
+
+def launchpad(release):
+    create(release)
+
+    print(f"{color.BOLD}{color.DARK_ORANGE}Publish to Launchpad{color.END}")
+
+    version = bc.get_version_cargo()
+    version = ubuntu_version(version, release)
+    file = f"/tmp/sysd-manager_{version}_source.changes"
+
+    bc.cmd_run(["dput", "plrigaux-ppa", file])
 
 
 def set_up_dir():
