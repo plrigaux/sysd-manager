@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-11-23 14:47-0500\n"
-"PO-Revision-Date: 2026-11-04 19:18+0000\n"
+"PO-Revision-Date: 2026-11-27 17:29+0000\n"
 "Last-Translator: NooB9496 <noob9496@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/sysd-manager/"
 "translation/pl/>\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 2026.11.1.dev0\n"
+"X-Generator: Weblate 2026.12.dev0\n"
 
 #. Desktop File Name please do not translate
 #: data/applications/io.github.plrigaux.sysd-manager.desktop:3
@@ -50,106 +50,111 @@ msgid ""
 "disable, stop and start them. Also, you can view their config file and peak "
 "at their journal logs."
 msgstr ""
+"Zarządzaj swoimi usługami, licznikami czasu, gniazdami i innymi jednostkami. "
+"Możesz je włączać, wyłączać, zatrzymywać i uruchamiać. Możesz również "
+"przeglądać ich pliki konfiguracyjne oraz zapoznać się z ich dziennikami."
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:40
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:45
 msgid "Unit Status"
-msgstr ""
+msgstr "Stan jednostki"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:50
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:55
 msgid "Unit Dependencies"
-msgstr ""
+msgstr "Zależności między jednostkami"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:60
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:65
 msgid "Unit File"
-msgstr ""
+msgstr "Plik jednostki"
 
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:70
 #: data/metainfo/io.github.plrigaux.sysd-manager.metainfo.xml:75
 msgid "Unit Journal"
-msgstr ""
+msgstr "Dziennik jednostki"
 
 #: sysd-manager-proxy/data/io.github.plrigaux.SysDManager.policy:6
 msgid ""
 "Authentication is required to run privileged systemd calls via the SysD "
 "Manager Proxy"
 msgstr ""
+"Aby uruchamiać uprawnione wywołania systemd za pośrednictwem serwera proxy "
+"SysD Manager, wymagane jest uwierzytelnienie"
 
 #: data/interfaces/app_window.ui:43
 msgctxt "top button tooltip"
 msgid "Open Search Bar"
-msgstr ""
+msgstr "Otwórz pasek wyszukiwania"
 
 #: data/interfaces/app_window.ui:54
 msgid "To select system or session bus"
-msgstr ""
+msgstr "Aby wybrać magistralę systemową lub sesyjną"
 
 #. selector of differents units list
 #: data/interfaces/app_window.ui:61
 msgctxt "menu"
 msgid "Curated Lists"
-msgstr ""
+msgstr "Wybór polecanych pozycji"
 
 #: data/interfaces/app_window.ui:62
 msgctxt "tooltip"
 msgid "To display different units' presentation and subset"
-msgstr ""
+msgstr "Aby wyświetlić prezentację i podzbiór różnych jednostek"
 
 #: data/interfaces/app_window.ui:69
 msgctxt "top button tooltip"
 msgid "Refresh Unit List"
-msgstr ""
+msgstr "Odśwież listę jednostek"
 
 #. button
 #. Message answer
 #: data/interfaces/clean_dialog.ui:53 src/widget/clean_dialog/imp.rs:95
 msgctxt "clean"
 msgid "Clean"
-msgstr ""
+msgstr "Wyczyść"
 
 #. button
 #: data/interfaces/clean_dialog.ui:64
 msgctxt "clean"
 msgid "Cancel"
-msgstr ""
+msgstr "Anuluj"
 
 #. entry title
 #: data/interfaces/control_action_dialog.ui:28
 msgctxt "enable unit file"
 msgid "Unit file"
-msgstr ""
+msgstr "Plik jednostki"
 
 #. tooltip
 #: data/interfaces/control_action_dialog.ui:38
 msgctxt "enable unit file"
 msgid "Use Selected Unit"
-msgstr ""
+msgstr "Użyj wybranej jednostki"
 
 #. tooltip
 #: data/interfaces/control_action_dialog.ui:46
 msgctxt "enable unit file"
 msgid "Browse for Unit file"
-msgstr ""
+msgstr "Wybierz plik jednostki"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:54
 msgctxt "enable unit file"
 msgid "DBus Level"
-msgstr ""
+msgstr "Poziom DBus"
 
 #. subtitle
 #: data/interfaces/control_action_dialog.ui:59
 msgctxt "enable unit file"
 msgid "Whether the unit shall be enabled for runtime only"
-msgstr ""
+msgstr "Czy urządzenie ma być włączone wyłącznie na czas działania"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:60
 msgctxt "enable unit file"
 msgid "Runtime"
-msgstr ""
+msgstr "Czas działania"
 
 #. subtitle
 #: data/interfaces/control_action_dialog.ui:65
@@ -158,6 +163,8 @@ msgid ""
 "Control whether symlinks pointing to other units shall be replaced if "
 "necessary"
 msgstr ""
+"Określ, czy dowiązania symboliczne wskazujące na inne jednostki mają być w "
+"razie potrzeby zastąpione"
 
 #. title
 #: data/interfaces/control_action_dialog.ui:66
