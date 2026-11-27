@@ -306,11 +306,11 @@ def pack_libs():
     output = output.decode("utf-8")
 
     valid = re.compile(r"([\S]+) => (\S+)")
-    i = 0
-    for row in output.split("\n"):
+
+    for i, row in enumerate(output.split("\n")):
         m = valid.search(row)
         print(i)
-        i += 1
+
         print(row, m)
         if m:
             result[m[1]] = m[2]

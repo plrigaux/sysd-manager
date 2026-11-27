@@ -55,8 +55,47 @@
                       </object>
                     </property>
                     <property name="icon-name">dialog-information</property>
-                    <property name="name">info</property>
-                    <property name="title">Systemd Manager</property>
+                    <property name="name">details</property>
+                    <property name="title">Details</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwViewStackPage">
+                    <property name="child">
+                      <object class="AdwClamp">
+                        <property name="child">
+                          <object class="GtkScrolledWindow">
+                            <child>
+                              <object class="GtkBox">
+                                <property name="orientation">vertical</property>
+                                <child>
+                                  <object class="AdwPreferencesGroup">
+                                    <child>
+                                      <object class="AdwComboRow" id="log_level_combo_row">
+                                        <property name="title">Log Level</property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="AdwComboRow" id="log_target_combo_row">
+                                        <property name="title">Log Target</property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="AdwButtonRow">
+                                        <property name="title">Apply</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </property>
+                      </object>
+                    </property>
+                    <property name="icon-name">applications-engineering-symbolic</property>
+                    <property name="name">control</property>
+                    <property name="title">Control</property>
                   </object>
                 </child>
                 <child>

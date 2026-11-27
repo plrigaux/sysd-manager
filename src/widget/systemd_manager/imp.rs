@@ -26,6 +26,18 @@ use systemd::data::UnitInfo;
 use tokio::fs;
 use tracing::{error, info, warn};
 
+const LOG_LEVELS: &[&str; 8] = &[
+    "emerg", "alert", "crit", "err", "warning", "notice", "info", "debug",
+];
+
+const LOG_TARGETS: &[&str; 5] = &[
+    "console",
+    "console-prefixed",
+    "kmsg",
+    "journal-or-kmsg",
+    "auto",
+];
+
 const WINDOW_SIZE: &str = "systemd-manager-window-size";
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/systemd_manager.ui")]
@@ -38,6 +50,10 @@ pub struct SystemdManagerDialogImp {
     file_container: TemplateChild<gtk::Box>,
     #[template_child]
     param_grid: TemplateChild<gtk::Grid>,
+    #[template_child]
+    log_level_combo_row: TemplateChild<adw::ComboRow>,
+    #[template_child]
+    log_target_combo_row: TemplateChild<adw::ComboRow>,
 
     properties: RefCell<HashMap<String, zbus::OwnedVariant>>,
     level: Cell<UnitDBusLevel>,
@@ -226,34 +242,6 @@ fn get_vars<'a>(map: &'a HashMap<String, zbus::OwnedVariant>, key: &'a str) -> V
     get_array_str(v)
 }
 
-// fn get_var3<'a>(
-//     map: &'a HashMap<String, zbus::OwnedVariant>,
-//     key: &'a str,
-// ) -> Result<&'a [&'a str], zbus::Error> {
-//     let Some(v) = map.get(key) else {
-//         warn!("key {key} not found!");
-//         return Ok(&vec![]);
-//     };
-//     // let x = v as &zbus::Variant;
-//     // let x = <zbus::Array>::try_from(x);
-//     // let x: &zbus::Array = v.downcast_ref()?;
-//     let x: Vec<String> = v.downcast_ref()?;
-
-//     for c in x {
-//         //
-//     }
-//     // let vv = v as &zbus::Variant;
-
-//     // let v2: &zbus::Array = vv.downcast_ref().unwrap_or_default();
-
-//     // let d &[<'_>]= if let zbus::Variant::Array(a) = vv {
-//     //     a
-//     // } else {
-//     //     vec![]
-//     // };
-//     Ok(&vec![])
-// }
-
 // The central trait for subclassing a GObject
 #[glib::object_subclass]
 impl ObjectSubclass for SystemdManagerDialogImp {
@@ -286,6 +274,45 @@ impl ObjectImpl for SystemdManagerDialogImp {
                     systemd_manager_window.imp().level.get(),
                 ) {
                     Ok(map) => {
+                        {
+                            let log_level = get_var(&map, "LogLevel");
+
+                            if let Some((index, _)) = LOG_LEVELS
+                                .iter()
+                                .enumerate()
+                                .find(|(_, lv)| **lv == log_level)
+                            {
+                                systemd_manager_window
+                                    .imp()
+                                    .log_level_combo_row
+                                    .set_selected(index as u32);
+                            } else {
+                                warn!("Log Level in not found for value {:?}", log_level);
+                                systemd_manager_window
+                                    .imp()
+                                    .log_level_combo_row
+                                    .set_sensitive(false);
+                            }
+
+                            let log_target = get_var(&map, "LogTarget");
+
+                            if let Some((index, _)) = LOG_TARGETS
+                                .iter()
+                                .enumerate()
+                                .find(|(_, lv)| **lv == log_target)
+                            {
+                                systemd_manager_window
+                                    .imp()
+                                    .log_target_combo_row
+                                    .set_selected(index as u32);
+                            } else {
+                                warn!("Log Target not found for value {:?}", log_target);
+                                systemd_manager_window
+                                    .imp()
+                                    .log_target_combo_row
+                                    .set_sensitive(false);
+                            }
+                        }
                         systemd_manager_window.imp().properties.replace(map);
                         systemd_manager_window.imp().fill_data();
                     }
@@ -326,6 +353,11 @@ impl ObjectImpl for SystemdManagerDialogImp {
             let title_label = pgettext("manager", "Preset");
             dialog.write_file_section(&title_label, preset_files);
         });
+
+        let string_list = gtk::StringList::new(LOG_LEVELS);
+        self.log_level_combo_row.set_model(Some(&string_list));
+        let string_list = gtk::StringList::new(LOG_TARGETS);
+        self.log_target_combo_row.set_model(Some(&string_list));
     }
 }
 

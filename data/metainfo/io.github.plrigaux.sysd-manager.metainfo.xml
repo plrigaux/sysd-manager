@@ -7,8 +7,7 @@
   <metadata_license>CC0</metadata_license>
   <project_license>GPL-3.0+</project_license>
   <name comments="metainfo name">SysD Manager</name>
-  <summary comments="metainfo summary">A user-friendly application to manage systemd's units</summary>
-  <!--   <icon type="stock">io.github.plrigaux.sysd-manager</icon> -->
+  <summary comments="metainfo summary">Manage systemd units with ease</summary>
   <description>
     <p>
       Manage your Services, Timers, Sockets and other units. You can enable, disable, stop and

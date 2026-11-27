@@ -1,4 +1,4 @@
-#![allow(dead_code)]
+//#![allow(dead_code)]
 
 use crate::{errors::SystemdErrors, sysd_proxy_service_name, sysdbus::get_connection};
 use base::{
@@ -6,7 +6,6 @@ use base::{
     enums::UnitDBusLevel,
     proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse},
 };
-use futures_util::stream::StreamExt;
 use std::sync::OnceLock;
 use tokio::{
     task::JoinHandle,
@@ -65,26 +64,6 @@ pub trait SysDManagerComLink {
     fn reset_failed(&self) -> zbus::fdo::Result<()>;
 }
 
-///1 Ensure that the  proxy is up and running
-///2 Tertemine mode
-///2 Connect to the proxy and return a proxy object
-fn ensure_proxy_up() {
-    //TODO ensure_proxy_up
-}
-
-// fn get_proxy<'a>() -> Result<SysDManagerComLinkProxyBlocking<'a>, SystemdErrors> {
-//     let destination = run_context().destination_address();
-//     let connection = get_blocking_connection(UnitDBusLevel::System)?;
-
-//     info!("BusName Destination {}", destination);
-//     let proxy = SysDManagerComLinkProxyBlocking::builder(&connection)
-//         // .path(path)?
-//         .destination(destination)?
-//         .build()?;
-
-//     Ok(proxy)
-// }
-
 pub(crate) async fn get_proxy_async<'a>() -> Result<SysDManagerComLinkProxy<'a>, SystemdErrors> {
     let destination = super::RUN_CONTEXT
         .get()
@@ -102,26 +81,26 @@ pub(crate) async fn get_proxy_async<'a>() -> Result<SysDManagerComLinkProxy<'a>,
     Ok(proxy)
 }
 
-pub async fn start_unit(unit_name: &str, mode: &str) -> Result<String, SystemdErrors> {
-    let proxy = get_proxy_async().await?;
+// pub async fn start_unit(unit_name: &str, mode: &str) -> Result<String, SystemdErrors> {
+//     let proxy = get_proxy_async().await?;
 
-    let s = proxy.start_unit(unit_name, mode).await?;
-    Ok(s.to_string())
-}
+//     let s = proxy.start_unit(unit_name, mode).await?;
+//     Ok(s.to_string())
+// }
 
-pub async fn stop_unit(unit_name: &str, mode: &str) -> Result<String, SystemdErrors> {
-    let proxy = get_proxy_async().await?;
+// pub async fn stop_unit(unit_name: &str, mode: &str) -> Result<String, SystemdErrors> {
+//     let proxy = get_proxy_async().await?;
 
-    let s = proxy.stop_unit(unit_name, mode).await?;
-    Ok(s.to_string())
-}
+//     let s = proxy.stop_unit(unit_name, mode).await?;
+//     Ok(s.to_string())
+// }
 
-pub async fn restart_unit(unit_name: &str, mode: &str) -> Result<String, SystemdErrors> {
-    let proxy = get_proxy_async().await?;
+// pub async fn restart_unit(unit_name: &str, mode: &str) -> Result<String, SystemdErrors> {
+//     let proxy = get_proxy_async().await?;
 
-    let s = proxy.restart_unit(unit_name, mode).await?;
-    Ok(s.to_string())
-}
+//     let s = proxy.restart_unit(unit_name, mode).await?;
+//     Ok(s.to_string())
+// }
 
 pub async fn clean_unit(unit_name: &str, what: &[&str]) -> Result<(), SystemdErrors> {
     let proxy = get_proxy_async().await?;
@@ -148,10 +127,10 @@ pub async fn reload() -> Result<(), SystemdErrors> {
     Ok(())
 }
 
-fn extract_job_id(job: &str) -> Option<u32> {
-    job.rsplit_once('/')
-        .and_then(|(_, id)| id.parse::<u32>().ok())
-}
+// fn extract_job_id(job: &str) -> Option<u32> {
+//     job.rsplit_once('/')
+//         .and_then(|(_, id)| id.parse::<u32>().ok())
+// }
 
 pub async fn lazy_start_proxy_async() -> Result<(), SystemdErrors> {
     crate::sysdbus::init_proxy_async2().await?;
@@ -159,22 +138,22 @@ pub async fn lazy_start_proxy_async() -> Result<(), SystemdErrors> {
     Ok(())
 }
 
-pub(crate) async fn wait_hello(mut hello_stream: HelloStream) -> Result<(), SystemdErrors> {
-    if let Some(msg) = hello_stream.next().await {
-        let args = msg.args()?;
-        info!("Hello Proxy Args {:?}", args);
-    }
-    Ok(())
-}
+// pub(crate) async fn wait_hello(mut hello_stream: HelloStream) -> Result<(), SystemdErrors> {
+//     if let Some(msg) = hello_stream.next().await {
+//         let args = msg.args()?;
+//         info!("Hello Proxy Args {:?}", args);
+//     }
+//     Ok(())
+// }
 
-pub fn lazy_start_proxy_block() -> Result<(), SystemdErrors> {
-    crate::runtime().block_on(async move {
-        info!("--- Lazy START Begins");
-        lazy_start_proxy_async().await;
-        info!("--- Lazy START Ends");
-    });
-    Ok(())
-}
+// pub fn lazy_start_proxy_block() -> Result<(), SystemdErrors> {
+//     crate::runtime().block_on(async move {
+//         info!("--- Lazy START Begins");
+//         lazy_start_proxy_async().await;
+//         info!("--- Lazy START Ends");
+//     });
+//     Ok(())
+// }
 
 pub(crate) fn start_heart_beat() {
     if let Some(join_handle) = HEART_BEAT_HANDLE.get()
@@ -212,22 +191,6 @@ pub fn map_unknown_service_to_proxy_error(action_err: SystemdErrors) -> SystemdE
         action_err
     }
 }
-
-// #[macro_export]
-// macro_rules! proxy_call_blocking {
-//     ($func:ident, $($param:expr),+) => {
-//         match $crate::to_proxy::$func($($param),+) {
-//             Ok(ok) => Ok(ok),
-//             Err(SystemdErrors::ZFdoServiceUnknown(msg)) => {
-//                 warn!("Blocking ServiceUnkown: {:?} Func: {}", msg, stringify!($func));
-//                 $crate::to_proxy::lazy_start_proxy_block();
-//                 $crate::to_proxy::$func($($param),+)
-//                 .map_err(to_proxy::map_unknown_service_to_proxy_error)
-//             },
-//             Err(err) => Err(err)
-//         }
-//     }
-// }
 
 #[macro_export]
 macro_rules! proxy_call_async {

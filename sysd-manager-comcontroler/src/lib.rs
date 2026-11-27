@@ -548,8 +548,6 @@ async fn restartstop_unit_call(
 
             let proxy = get_proxy_async().await?;
             if action.use_proxy() && !unit_name.starts_with(PROXY_SERVICE) {
-                // proxy_call_blocking!(restart_unit, unit_name, mode.as_str())
-
                 match action.action(&proxy, unit_name, mode).await {
                     Ok(ok) => Ok(ok),
                     Err(SystemdErrors::ZFdoServiceUnknown(msg)) => {

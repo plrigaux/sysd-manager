@@ -1,17 +1,16 @@
 use std::collections::HashMap;
 
+use crate::{
+    data::ListedLoadedUnit,
+    errors::SystemdErrors,
+    sysdbus::{ListedUnitFile, get_connection},
+};
 use base::{
     enums::UnitDBusLevel,
     proxy::{DisEnAbleUnitFiles, DisEnAbleUnitFilesResponse, QueuedJobs},
 };
 use tokio::sync::OnceCell;
 use zbus::{OwnedObjectPath, OwnedVariant, fdo, proxy};
-
-use crate::{
-    data::ListedLoadedUnit,
-    errors::SystemdErrors,
-    sysdbus::{ListedUnitFile, get_connection},
-};
 
 #[proxy(
     interface = "org.freedesktop.DBus.Properties",
@@ -105,26 +104,26 @@ pub(crate) trait Systemd1Manager {
     fn reloading(&self, active: bool) -> zbus::Result<()>;
 
     #[zbus(allow_interactive_auth)]
-    fn reload(&self) -> zbus::fdo::Result<()>;
+    fn reload(&self) -> fdo::Result<()>;
 
     fn clean_unit(&self, unit_name: &str, what: &[&str]) -> zbus::Result<()>;
-    fn freeze_unit(&self, unit_name: &str) -> zbus::fdo::Result<()>;
-    fn thaw_unit(&self, unit_name: &str) -> zbus::fdo::Result<()>;
+    fn freeze_unit(&self, unit_name: &str) -> fdo::Result<()>;
+    fn thaw_unit(&self, unit_name: &str) -> fdo::Result<()>;
 
     #[zbus(allow_interactive_auth)]
-    fn start_unit(&self, unit_name: &str, mode: &str) -> zbus::fdo::Result<OwnedObjectPath>;
+    fn start_unit(&self, unit_name: &str, mode: &str) -> fdo::Result<OwnedObjectPath>;
 
     #[zbus(allow_interactive_auth)]
-    fn stop_unit(&self, unit_name: &str, mode: &str) -> zbus::fdo::Result<OwnedObjectPath>;
+    fn stop_unit(&self, unit_name: &str, mode: &str) -> fdo::Result<OwnedObjectPath>;
 
     #[zbus(allow_interactive_auth)]
-    fn restart_unit(&self, unit_name: &str, mode: &str) -> zbus::fdo::Result<OwnedObjectPath>;
+    fn restart_unit(&self, unit_name: &str, mode: &str) -> fdo::Result<OwnedObjectPath>;
 
     #[zbus(allow_interactive_auth)]
-    fn reload_unit(&self, unit_name: &str, mode: &str) -> zbus::fdo::Result<OwnedObjectPath>;
+    fn reload_unit(&self, unit_name: &str, mode: &str) -> fdo::Result<OwnedObjectPath>;
 
     ///returns an array with all currently queued jobs.
-    fn list_jobs(&self) -> zbus::fdo::Result<QueuedJobs>;
+    fn list_jobs(&self) -> fdo::Result<QueuedJobs>;
 
     fn create_drop_in(
         &mut self,
@@ -132,25 +131,25 @@ pub(crate) trait Systemd1Manager {
         unit_name: &str,
         file_name: &str,
         content: &str,
-    ) -> zbus::fdo::Result<()>;
-    fn save_file(&mut self, file_name: &str, content: &str) -> zbus::fdo::Result<u64>;
+    ) -> fdo::Result<()>;
+    fn save_file(&mut self, file_name: &str, content: &str) -> fdo::Result<u64>;
 
     #[zbus(allow_interactive_auth)]
-    fn revert_unit_files(&self, file_names: &[&str]) -> zbus::fdo::Result<Vec<DisEnAbleUnitFiles>>;
+    fn revert_unit_files(&self, file_names: &[&str]) -> fdo::Result<Vec<DisEnAbleUnitFiles>>;
 
     #[zbus(allow_interactive_auth)]
     fn enable_unit_files_with_flags(
         &self,
         files: &[&str],
         flags: u64,
-    ) -> zbus::fdo::Result<DisEnAbleUnitFilesResponse>;
+    ) -> fdo::Result<DisEnAbleUnitFilesResponse>;
 
     #[zbus(allow_interactive_auth)]
     fn disable_unit_files_with_flags_and_install_info(
         &self,
         files: &[&str],
         flags: u64,
-    ) -> zbus::fdo::Result<DisEnAbleUnitFilesResponse>;
+    ) -> fdo::Result<DisEnAbleUnitFilesResponse>;
 
     fn list_units(&self) -> Result<Vec<ListedLoadedUnit>, zbus::Error>;
     fn list_units_filtered(&self, states: &[&str]) -> Result<Vec<ListedLoadedUnit>, zbus::Error>;
@@ -171,8 +170,17 @@ pub(crate) trait Systemd1Manager {
 
     fn subscribe(&self) -> Result<(), zbus::Error>;
     fn unsubscribe(&self) -> Result<(), zbus::Error>;
-    fn reset_failed_unit(&self, unit_name: &str) -> zbus::fdo::Result<()>;
-    fn reset_failed(&self) -> zbus::fdo::Result<()>;
+    fn reset_failed_unit(&self, unit_name: &str) -> fdo::Result<()>;
+    fn reset_failed(&self) -> fdo::Result<()>;
+
+    #[zbus(property)]
+    fn set_log_level(&self, log_level: &str) -> fdo::Result<()>;
+
+    #[zbus(property)]
+    fn log_level(&self) -> fdo::Result<String>;
+
+    fn set_environment(&self, assignments: &[&str]) -> fdo::Result<()>;
+    fn unset_environment(&self, names: &[&str]) -> fdo::Result<()>;
 }
 
 static SYSTEM_MANAGER: OnceCell<Systemd1ManagerProxy> = OnceCell::const_new();
