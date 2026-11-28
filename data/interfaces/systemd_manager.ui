@@ -80,9 +80,27 @@
                                         <property name="title">Log Target</property>
                                       </object>
                                     </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkBox">
+                                    <property name="margin-top">15</property>
+                                    <property name="spacing">5</property>
                                     <child>
-                                      <object class="AdwButtonRow">
-                                        <property name="title">Apply</property>
+                                      <object class="GtkButton" id="reset_button">
+                                        <property name="css-classes">pill</property>
+                                        <property name="halign">end</property>
+                                        <property name="label">Reset</property>
+                                        <property name="valign">center</property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="GtkButton" id="apply_button">
+                                        <property name="css-classes">suggested-action
+pill</property>
+                                        <property name="halign">end</property>
+                                        <property name="label">Apply</property>
+                                        <property name="valign">center</property>
                                       </object>
                                     </child>
                                   </object>

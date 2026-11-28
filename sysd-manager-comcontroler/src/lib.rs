@@ -1603,3 +1603,85 @@ pub async fn reset_failed(level: UnitDBusLevel) -> Result<(), SystemdErrors> {
         proxy.reset_failed().await.map_err(|err| err.into())
     }
 }
+
+pub fn set_manager_log_level_block(
+    level: UnitDBusLevel,
+    log_level: &str,
+) -> Result<(), SystemdErrors> {
+    runtime().block_on(set_manager_log_level(level, log_level))
+}
+
+pub async fn set_manager_log_level(
+    level: UnitDBusLevel,
+    log_level: &str,
+) -> Result<(), SystemdErrors> {
+    #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
+    match level {
+        UnitDBusLevel::System | UnitDBusLevel::Both => {
+            if proxy_switcher::PROXY_SWITCHER.manager() {
+                proxy_call_async!(set_log_level, log_level)
+            } else {
+                let proxy = sysdbus::dbus_proxies::systemd_manager_async(level).await?;
+                proxy
+                    .set_log_level(log_level)
+                    .await
+                    .map_err(|err| err.into())
+            }
+        }
+        UnitDBusLevel::UserSession => sysdbus::dbus_proxies::systemd_manager_user_session_async()
+            .await?
+            .set_log_level(log_level)
+            .await
+            .map_err(|err| err.into()),
+    }
+
+    #[cfg(any(feature = "flatpak", feature = "appimage"))]
+    {
+        let proxy = sysdbus::dbus_proxies::systemd_manager_async(level).await?;
+        proxy
+            .set_log_level(log_level)
+            .await
+            .map_err(|err| err.into())
+    }
+}
+
+pub fn set_manager_log_target_block(
+    level: UnitDBusLevel,
+    log_target: &str,
+) -> Result<(), SystemdErrors> {
+    runtime().block_on(set_manager_log_target(level, log_target))
+}
+
+pub async fn set_manager_log_target(
+    level: UnitDBusLevel,
+    log_target: &str,
+) -> Result<(), SystemdErrors> {
+    #[cfg(not(any(feature = "flatpak", feature = "appimage")))]
+    match level {
+        UnitDBusLevel::System | UnitDBusLevel::Both => {
+            if proxy_switcher::PROXY_SWITCHER.manager() {
+                proxy_call_async!(set_log_target, log_target)
+            } else {
+                let proxy = sysdbus::dbus_proxies::systemd_manager_async(level).await?;
+                proxy
+                    .set_log_target(log_target)
+                    .await
+                    .map_err(|err| err.into())
+            }
+        }
+        UnitDBusLevel::UserSession => sysdbus::dbus_proxies::systemd_manager_user_session_async()
+            .await?
+            .set_log_target(log_target)
+            .await
+            .map_err(|err| err.into()),
+    }
+
+    #[cfg(any(feature = "flatpak", feature = "appimage"))]
+    {
+        let proxy = sysdbus::dbus_proxies::systemd_manager_async(level).await?;
+        proxy
+            .set_log_target(log_target)
+            .await
+            .map_err(|err| err.into())
+    }
+}

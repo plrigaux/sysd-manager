@@ -179,6 +179,12 @@ pub(crate) trait Systemd1Manager {
     #[zbus(property)]
     fn log_level(&self) -> fdo::Result<String>;
 
+    #[zbus(property)]
+    fn set_log_target(&self, log_target: &str) -> fdo::Result<()>;
+
+    #[zbus(property)]
+    fn log_target(&self) -> fdo::Result<String>;
+
     fn set_environment(&self, assignments: &[&str]) -> fdo::Result<()>;
     fn unset_environment(&self, names: &[&str]) -> fdo::Result<()>;
 }

@@ -346,6 +346,36 @@ impl SysDManagerProxy {
             )
         })
     }
+
+    async fn set_log_level(
+        &self,
+        #[zbus(header)] header: Header<'_>,
+        log_level: &str,
+    ) -> zbus::fdo::Result<()> {
+        info!("Set Log Level: {}", log_level);
+        let proxy: &sysdcom::SysDManagerComLinkProxy<'_> = get_proxy().await?;
+        self.check_autorisation(header).await?;
+        debug!("Polkit autorized");
+        proxy
+            .set_log_level(log_level)
+            .await
+            .inspect_err(|e| warn!("Error while calling set_log_level: {:?}", e))
+    }
+
+    async fn set_log_target(
+        &self,
+        #[zbus(header)] header: Header<'_>,
+        log_target: &str,
+    ) -> zbus::fdo::Result<()> {
+        info!("Set Log Target: {}", log_target);
+        let proxy: &sysdcom::SysDManagerComLinkProxy<'_> = get_proxy().await?;
+        self.check_autorisation(header).await?;
+        debug!("Polkit autorized");
+        proxy
+            .set_log_target(log_target)
+            .await
+            .inspect_err(|e| warn!("Error while calling set_log_target: {:?}", e))
+    }
 }
 
 async fn get_proxy() -> Result<&'static sysdcom::SysDManagerComLinkProxy<'static>, zbus::Error> {

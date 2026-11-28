@@ -3240,7 +3240,6 @@ name = "sysd-manager-proxy"
 version = "2.26.0"
 dependencies = [
  "clap",
- "enumflags2",
  "futures-util",
  "glib",
  "libc",

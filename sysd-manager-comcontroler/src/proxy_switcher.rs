@@ -60,6 +60,7 @@ pub static PROXY_SWITCHER: LazyLock<ProxySwitcher> = LazyLock::new(|| {
         ps.set_start_at_startup(val);
         let val = settings.boolean(KEY_PREF_PROXY_STOP_AT_CLOSE);
         ps.set_stop_at_close(val);
+        ps.set_manager(true);
     }
     ps
 });
@@ -83,6 +84,7 @@ pub struct ProxySwitcher {
     revert_unit_file: RwLock<bool>,
     start_at_start_up: RwLock<bool>,
     stop_at_close: RwLock<bool>,
+    manager: RwLock<bool>,
 }
 
 impl ProxySwitcher {
@@ -220,6 +222,14 @@ impl ProxySwitcher {
 
     pub fn set_reload(&self, value: bool) {
         *self.reload.write().unwrap() = value;
+    }
+
+    pub fn manager(&self) -> bool {
+        *self.manager.read().unwrap()
+    }
+
+    pub fn set_manager(&self, value: bool) {
+        *self.manager.write().unwrap() = value;
     }
 
     pub fn uses_any_proxy(&self) -> bool {

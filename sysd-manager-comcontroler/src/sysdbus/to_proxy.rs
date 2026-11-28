@@ -12,7 +12,7 @@ use tokio::{
     time::{self, Duration},
 };
 use tracing::{debug, info, warn};
-use zbus::{OwnedObjectPath, proxy};
+use zbus::{OwnedObjectPath, fdo, proxy};
 
 static HEART_BEAT_HANDLE: OnceLock<JoinHandle<Result<(), SystemdErrors>>> = OnceLock::new();
 
@@ -22,14 +22,14 @@ static HEART_BEAT_HANDLE: OnceLock<JoinHandle<Result<(), SystemdErrors>>> = Once
     default_path = "/io/github/plrigaux/SysDManager"
 )]
 pub trait SysDManagerComLink {
-    fn start_unit(&self, unit_name: &str, mode: &str) -> zbus::fdo::Result<OwnedObjectPath>;
-    fn stop_unit(&self, unit_name: &str, mode: &str) -> zbus::fdo::Result<OwnedObjectPath>;
-    fn restart_unit(&self, unit_name: &str, mode: &str) -> zbus::fdo::Result<OwnedObjectPath>;
-    fn reload_unit(&self, unit_name: &str, mode: &str) -> zbus::fdo::Result<OwnedObjectPath>;
+    fn start_unit(&self, unit_name: &str, mode: &str) -> fdo::Result<OwnedObjectPath>;
+    fn stop_unit(&self, unit_name: &str, mode: &str) -> fdo::Result<OwnedObjectPath>;
+    fn restart_unit(&self, unit_name: &str, mode: &str) -> fdo::Result<OwnedObjectPath>;
+    fn reload_unit(&self, unit_name: &str, mode: &str) -> fdo::Result<OwnedObjectPath>;
     fn clean_unit(&self, unit_name: &str, what: &[&str]) -> zbus::Result<()>;
-    fn freeze_unit(&self, unit_name: &str) -> zbus::fdo::Result<()>;
-    fn thaw_unit(&self, unit_name: &str) -> zbus::fdo::Result<()>;
-    fn reload(&self) -> zbus::fdo::Result<()>;
+    fn freeze_unit(&self, unit_name: &str) -> fdo::Result<()>;
+    fn thaw_unit(&self, unit_name: &str) -> fdo::Result<()>;
+    fn reload(&self) -> fdo::Result<()>;
 
     fn create_drop_in(
         &mut self,
@@ -37,31 +37,34 @@ pub trait SysDManagerComLink {
         unit_name: &str,
         file_name: &str,
         content: &str,
-    ) -> zbus::fdo::Result<()>;
-    fn save_file(&mut self, file_name: &str, content: &str) -> zbus::fdo::Result<u64>;
-    fn delete_file(&mut self, file_path: &str) -> zbus::fdo::Result<()>;
-    fn create_file(&mut self, file_name: &str, content: &str) -> zbus::fdo::Result<u64>;
+    ) -> fdo::Result<()>;
+    fn save_file(&mut self, file_name: &str, content: &str) -> fdo::Result<u64>;
+    fn delete_file(&mut self, file_path: &str) -> fdo::Result<()>;
+    fn create_file(&mut self, file_name: &str, content: &str) -> fdo::Result<u64>;
 
-    fn revert_unit_files(&self, file_names: &[&str]) -> zbus::fdo::Result<Vec<DisEnAbleUnitFiles>>;
+    fn revert_unit_files(&self, file_names: &[&str]) -> fdo::Result<Vec<DisEnAbleUnitFiles>>;
 
     fn enable_unit_files_with_flags(
         &mut self,
         files: &[&str],
         flags: u64,
-    ) -> zbus::fdo::Result<DisEnAbleUnitFilesResponse>;
+    ) -> fdo::Result<DisEnAbleUnitFilesResponse>;
 
     fn disable_unit_files_with_flags(
         &mut self,
         files: &[&str],
         flags: u64,
-    ) -> zbus::fdo::Result<DisEnAbleUnitFilesResponse>;
+    ) -> fdo::Result<DisEnAbleUnitFilesResponse>;
 
     #[zbus(signal)]
-    fn hello(msg: String) -> zbus::fdo::Result<()>;
+    fn hello(msg: String) -> fdo::Result<()>;
 
-    fn heart_beat(&self) -> zbus::fdo::Result<u64>;
-    fn reset_failed_unit(&self, unit_name: &str) -> zbus::fdo::Result<()>;
-    fn reset_failed(&self) -> zbus::fdo::Result<()>;
+    fn heart_beat(&self) -> fdo::Result<u64>;
+    fn reset_failed_unit(&self, unit_name: &str) -> fdo::Result<()>;
+    fn reset_failed(&self) -> fdo::Result<()>;
+
+    fn set_log_level(&self, log_level: &str) -> fdo::Result<()>;
+    fn set_log_target(&self, log_target: &str) -> fdo::Result<()>;
 }
 
 pub(crate) async fn get_proxy_async<'a>() -> Result<SysDManagerComLinkProxy<'a>, SystemdErrors> {
@@ -103,57 +106,34 @@ pub(crate) async fn get_proxy_async<'a>() -> Result<SysDManagerComLinkProxy<'a>,
 // }
 
 pub async fn clean_unit(unit_name: &str, what: &[&str]) -> Result<(), SystemdErrors> {
-    let proxy = get_proxy_async().await?;
-
-    proxy.clean_unit(unit_name, what).await?;
+    info!("By Proxy clean unit {:?}", what);
+    get_proxy_async().await?.clean_unit(unit_name, what).await?;
     Ok(())
 }
 
 pub async fn freeze_unit(unit_name: &str) -> Result<(), SystemdErrors> {
-    let proxy = get_proxy_async().await?;
-    proxy.freeze_unit(unit_name).await?;
+    info!("By Proxy Freeze unit");
+    get_proxy_async().await?.freeze_unit(unit_name).await?;
     Ok(())
 }
 
 pub async fn thaw_unit(unit_name: &str) -> Result<(), SystemdErrors> {
-    let proxy = get_proxy_async().await?;
-    proxy.thaw_unit(unit_name).await?;
+    info!("By Proxy Thaw unit ");
+    get_proxy_async().await?.thaw_unit(unit_name).await?;
     Ok(())
 }
 
 pub async fn reload() -> Result<(), SystemdErrors> {
-    let proxy = get_proxy_async().await?;
-    proxy.reload().await?;
+    info!("By Proxy reload ");
+    get_proxy_async().await?.reload().await?;
     Ok(())
 }
-
-// fn extract_job_id(job: &str) -> Option<u32> {
-//     job.rsplit_once('/')
-//         .and_then(|(_, id)| id.parse::<u32>().ok())
-// }
 
 pub async fn lazy_start_proxy_async() -> Result<(), SystemdErrors> {
     crate::sysdbus::init_proxy_async2().await?;
 
     Ok(())
 }
-
-// pub(crate) async fn wait_hello(mut hello_stream: HelloStream) -> Result<(), SystemdErrors> {
-//     if let Some(msg) = hello_stream.next().await {
-//         let args = msg.args()?;
-//         info!("Hello Proxy Args {:?}", args);
-//     }
-//     Ok(())
-// }
-
-// pub fn lazy_start_proxy_block() -> Result<(), SystemdErrors> {
-//     crate::runtime().block_on(async move {
-//         info!("--- Lazy START Begins");
-//         lazy_start_proxy_async().await;
-//         info!("--- Lazy START Ends");
-//     });
-//     Ok(())
-// }
 
 pub(crate) fn start_heart_beat() {
     if let Some(join_handle) = HEART_BEAT_HANDLE.get()
@@ -218,6 +198,7 @@ pub(crate) async fn create_drop_in(
     file_path: &str,
     content: &str,
 ) -> Result<(), SystemdErrors> {
+    info!("By Proxy Create Drop-in");
     let mut proxy = get_proxy_async().await?;
     proxy
         .create_drop_in(runtime, unit_name, file_path, content)
@@ -226,6 +207,7 @@ pub(crate) async fn create_drop_in(
 }
 
 pub async fn save_file(file_path: &str, content: &str) -> Result<u64, SystemdErrors> {
+    info!("By Proxy Save file {:?}", file_path);
     let mut proxy = get_proxy_async().await?;
     proxy
         .save_file(file_path, content)
@@ -234,11 +216,13 @@ pub async fn save_file(file_path: &str, content: &str) -> Result<u64, SystemdErr
 }
 
 pub async fn delete_file(file_path: &str) -> Result<(), SystemdErrors> {
+    info!("By Proxy delete File {:?}", file_path);
     let mut proxy = get_proxy_async().await?;
     proxy.delete_file(file_path).await.map_err(|e| e.into())
 }
 
 pub async fn create_file(file_path: &str, content: &str) -> Result<u64, SystemdErrors> {
+    info!("By Proxy Create File {:?}", file_path);
     let mut proxy = get_proxy_async().await?;
     proxy
         .create_file(file_path, content)
@@ -249,6 +233,7 @@ pub async fn create_file(file_path: &str, content: &str) -> Result<u64, SystemdE
 pub async fn revert_unit_files(
     unit_names: &[&str],
 ) -> Result<Vec<DisEnAbleUnitFiles>, SystemdErrors> {
+    info!("By Proxy Revert unit File");
     let proxy = get_proxy_async().await?;
     proxy
         .revert_unit_files(unit_names)
@@ -260,6 +245,7 @@ pub async fn enable_unit_files_with_flags(
     unit_files: &[&str],
     flags: u64,
 ) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
+    info!("By Proxy Enable unit file {:?} {}", unit_files, flags);
     let mut proxy: SysDManagerComLinkProxy<'_> = get_proxy_async().await?;
     proxy
         .enable_unit_files_with_flags(unit_files, flags)
@@ -271,6 +257,7 @@ pub async fn disable_unit_files_with_flags(
     unit_files: &[&str],
     flags: u64,
 ) -> Result<DisEnAbleUnitFilesResponse, SystemdErrors> {
+    info!("By Proxy Enable Unit File {:?} {}", unit_files, flags);
     let mut proxy: SysDManagerComLinkProxy<'_> = get_proxy_async().await?;
     proxy
         .disable_unit_files_with_flags(unit_files, flags)
@@ -279,6 +266,7 @@ pub async fn disable_unit_files_with_flags(
 }
 
 pub async fn reset_failed_unit(unit_name: &str) -> Result<(), SystemdErrors> {
+    info!("By Proxy Reset Failed Unit {:?}", unit_name);
     let proxy: SysDManagerComLinkProxy<'_> = get_proxy_async().await?;
     proxy
         .reset_failed_unit(unit_name)
@@ -287,6 +275,25 @@ pub async fn reset_failed_unit(unit_name: &str) -> Result<(), SystemdErrors> {
 }
 
 pub async fn reset_failed() -> Result<(), SystemdErrors> {
+    info!("By Proxy Reset Failed");
     let proxy: SysDManagerComLinkProxy<'_> = get_proxy_async().await?;
     proxy.reset_failed().await.map_err(|err| err.into())
+}
+
+pub async fn set_log_level(log_level: &str) -> Result<(), SystemdErrors> {
+    info!("By Proxy set log level {:?}", log_level);
+    get_proxy_async()
+        .await?
+        .set_log_level(log_level)
+        .await
+        .map_err(|err| err.into())
+}
+
+pub async fn set_log_target(log_target: &str) -> Result<(), SystemdErrors> {
+    info!("By Proxy set log target {:?}", log_target);
+    get_proxy_async()
+        .await?
+        .set_log_target(log_target)
+        .await
+        .map_err(|err| err.into())
 }

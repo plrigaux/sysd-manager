@@ -30,14 +30,17 @@ const LOG_LEVELS: &[&str; 8] = &[
     "emerg", "alert", "crit", "err", "warning", "notice", "info", "debug",
 ];
 
-const LOG_TARGETS: &[&str; 5] = &[
+const LOG_TARGETS: &[&str; 6] = &[
     "console",
     "console-prefixed",
     "kmsg",
     "journal-or-kmsg",
     "auto",
+    "null",
 ];
 
+const LOGTARGET: &str = "LogTarget";
+const LOGLEVEL: &str = "LogLevel";
 const WINDOW_SIZE: &str = "systemd-manager-window-size";
 #[derive(Default, gtk::CompositeTemplate)]
 #[template(resource = "/io/github/plrigaux/sysd-manager/systemd_manager.ui")]
@@ -54,6 +57,10 @@ pub struct SystemdManagerDialogImp {
     log_level_combo_row: TemplateChild<adw::ComboRow>,
     #[template_child]
     log_target_combo_row: TemplateChild<adw::ComboRow>,
+    #[template_child]
+    reset_button: TemplateChild<gtk::Button>,
+    #[template_child]
+    apply_button: TemplateChild<gtk::Button>,
 
     properties: RefCell<HashMap<String, zbus::OwnedVariant>>,
     level: Cell<UnitDBusLevel>,
@@ -81,6 +88,11 @@ impl SystemdManagerDialogImp {
     }
 
     fn fill_data(&self) {
+        // safely remove all children from a GtkGrid
+        while let Some(child) = self.param_grid.first_child() {
+            self.param_grid.remove(&child);
+        }
+
         let map = self.properties.borrow();
 
         let mut row = 0;
@@ -123,14 +135,14 @@ impl SystemdManagerDialogImp {
         let param_label = pgettext("manager", "Log Level");
         self.set_config_label(&param_label, row);
 
-        let log_level = get_var(&map, "LogLevel");
+        let log_level = get_var(&map, LOGLEVEL);
         self.set_config_value(log_level, row);
 
         row += 1;
         let param_label = pgettext("manager", "Log Target");
         self.set_config_label(&param_label, row);
 
-        let log_level = get_var(&map, "LogTarget");
+        let log_level = get_var(&map, LOGTARGET);
         self.set_config_value(log_level, row);
 
         row += 1;
@@ -209,6 +221,41 @@ impl SystemdManagerDialogImp {
             self.file_container.append(&link);
         }
     }
+
+    fn set_controls_values(&self) {
+        let map = self.properties.borrow();
+        let log_level = get_var(&map, LOGLEVEL);
+
+        if let Some((index, _)) = LOG_LEVELS
+            .iter()
+            .enumerate()
+            .find(|(_, lv)| **lv == log_level)
+        {
+            self.log_level_combo_row.set_selected(index as u32);
+        } else {
+            warn!("Log Level in not found for value {:?}", log_level);
+            self.log_level_combo_row.set_sensitive(false);
+        }
+
+        let log_target = get_var(&map, LOGTARGET);
+
+        if let Some((index, _)) = LOG_TARGETS
+            .iter()
+            .enumerate()
+            .find(|(_, lv)| **lv == log_target)
+        {
+            self.log_target_combo_row.set_selected(index as u32);
+        } else {
+            warn!("Log Target not found for value {:?}", log_target);
+            self.log_target_combo_row.set_sensitive(false);
+        }
+    }
+
+    fn get_param_value(&self, key: &str) -> String {
+        let map = self.properties.borrow();
+        let s_value = get_var(&map, key);
+        s_value.to_owned()
+    }
 }
 
 fn get_path(map: std::cell::Ref<'_, HashMap<String, zbus::OwnedVariant>>) -> String {
@@ -274,47 +321,9 @@ impl ObjectImpl for SystemdManagerDialogImp {
                     systemd_manager_window.imp().level.get(),
                 ) {
                     Ok(map) => {
-                        {
-                            let log_level = get_var(&map, "LogLevel");
-
-                            if let Some((index, _)) = LOG_LEVELS
-                                .iter()
-                                .enumerate()
-                                .find(|(_, lv)| **lv == log_level)
-                            {
-                                systemd_manager_window
-                                    .imp()
-                                    .log_level_combo_row
-                                    .set_selected(index as u32);
-                            } else {
-                                warn!("Log Level in not found for value {:?}", log_level);
-                                systemd_manager_window
-                                    .imp()
-                                    .log_level_combo_row
-                                    .set_sensitive(false);
-                            }
-
-                            let log_target = get_var(&map, "LogTarget");
-
-                            if let Some((index, _)) = LOG_TARGETS
-                                .iter()
-                                .enumerate()
-                                .find(|(_, lv)| **lv == log_target)
-                            {
-                                systemd_manager_window
-                                    .imp()
-                                    .log_target_combo_row
-                                    .set_selected(index as u32);
-                            } else {
-                                warn!("Log Target not found for value {:?}", log_target);
-                                systemd_manager_window
-                                    .imp()
-                                    .log_target_combo_row
-                                    .set_sensitive(false);
-                            }
-                        }
                         systemd_manager_window.imp().properties.replace(map);
                         systemd_manager_window.imp().fill_data();
+                        systemd_manager_window.imp().set_controls_values();
                     }
                     Err(e) => error!("Fail to retreive Systemd Manager Properties: {e:?}"),
                 }
@@ -358,6 +367,74 @@ impl ObjectImpl for SystemdManagerDialogImp {
         self.log_level_combo_row.set_model(Some(&string_list));
         let string_list = gtk::StringList::new(LOG_TARGETS);
         self.log_target_combo_row.set_model(Some(&string_list));
+
+        let this = self.downgrade();
+        self.reset_button.connect_clicked(move |_b| {
+            let this = upgrade!(this);
+            this.set_controls_values();
+        });
+
+        let this = self.downgrade();
+        self.apply_button.connect_clicked(move |_b| {
+            let this = upgrade!(this);
+            {
+                let log_level = this.get_param_value(LOGLEVEL);
+
+                let index = this.log_level_combo_row.selected() as usize;
+
+                let selected_log_level = LOG_LEVELS.get(index);
+
+                if selected_log_level != Some(&log_level.as_str())
+                    && let Some(log_level) = selected_log_level
+                {
+                    if let Err(err) =
+                        systemd::set_manager_log_level_block(this.level.get(), log_level)
+                    {
+                        error!(
+                            "Setting log_level {} on manager {} Failed! {:?}",
+                            log_level,
+                            this.level.get(),
+                            err
+                        );
+                    } else {
+                        if let Ok(v) = zbus::Variant::new(log_level).try_into_owned() {
+                            let mut map = this.properties.borrow_mut();
+                            map.insert(LOGLEVEL.to_owned(), v.to_owned());
+                        }
+                    }
+                }
+            }
+
+            {
+                let log_target = this.get_param_value(LOGTARGET);
+
+                let index = this.log_target_combo_row.selected() as usize;
+
+                let selected_log_target = LOG_TARGETS.get(index);
+
+                if selected_log_target != Some(&log_target.as_str())
+                    && let Some(log_target) = selected_log_target
+                {
+                    if let Err(err) =
+                        systemd::set_manager_log_target_block(this.level.get(), log_target)
+                    {
+                        error!(
+                            "Setting log_target {} on manager {} Failed! {:?}",
+                            log_target,
+                            this.level.get(),
+                            err
+                        );
+                    } else {
+                        if let Ok(v) = zbus::Variant::new(log_target).try_into_owned() {
+                            let mut map = this.properties.borrow_mut();
+                            map.insert(LOGTARGET.to_owned(), v.to_owned());
+                        }
+                    }
+                }
+            }
+            this.set_controls_values();
+            this.fill_data();
+        });
     }
 }
 
